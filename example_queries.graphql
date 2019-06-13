@@ -1,0 +1,49 @@
+{
+    study(clinical_study_name: $study_name) {
+	 clinical_study_name
+      study_arms {
+	   cohorts {
+          cases {
+            patient_id
+            demographics {
+              breed
+              patient_age_at_enrollment
+              sex
+            }
+            diagnoses {
+              disease_term
+              stage_of_disease
+            }
+          }
+        }
+      }
+    }
+}
+
+{
+	caseCountByBreed {
+	  breed
+	  cases
+	} 
+}
+
+
+{
+	caseCountByDiseaseTerm {
+	  disease_term
+	  cases
+	} 
+}
+{
+  casesByStudyAndBreeds(study_name: $study_name, 
+    breeds: $breeds,
+    disease_terms: $disease_terms
+  ) {
+      patient_id
+      breed
+      patient_age_at_enrollment
+      sex
+      disease_term
+      stage_of_disease
+  } 
+} 

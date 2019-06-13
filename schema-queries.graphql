@@ -1,0 +1,28 @@
+schema {
+ query: QueryType
+}
+
+type BreedCaseCount {
+  breed: String
+  cases: Int
+}
+
+type DiseaseTermCaseCount {
+  disease_term: String
+  cases: Int
+}
+
+type CaseDetail {
+  patient_id: String
+  breed: String
+  patient_age_at_enrollment: String
+  sex: String
+  disease_term: String
+  stage_of_disease: String
+}
+
+type QueryType {
+  caseCountByBreed: [BreedCaseCount] @cypher(statement: "MATCH (c:case)<-[:of_case]-(d:demographic) return d.breed as breed, count(c) as cases")
+  caseCountByDiseaseTerm: [DiseaseTermCaseCount] @cypher(statement: "MATCH (c:case)<-[:of_case]-(diag:diagnosis) return diag.disease_term as disease_term, count(c) as cases")
+  casesByStudyAndBreeds(study_name: String, breeds: [String], disease_terms: [String]): [CaseDetail] @cypher(statement: "MATCH (s:study)<-[:member_of]-(a:study_arm)<-[:member_of]-(c:cohort)<-[:member_of]-(case:case)<-[:of_case]-(d:demographic), (case)<-[:of_case]-(diag:diagnosis) WHERE s.clinical_study_name = $study_name and d.breed in $breeds and diag.disease_term in $disease_terms RETURN case.patient_id as patient_id, d.breed as breed, d.patient_age_at_enrollment as patient_age_at_enrollment, d.sex as sex, diag.disease_term as disease_term, diag.stage_of_disease as stage_of_disease")
+}
