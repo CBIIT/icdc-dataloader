@@ -33,3 +33,15 @@ RETURN case.patient_id as patient_id,
        d.sex as sex, 
        diag.disease_term as disease_term, 
        diag.stage_of_disease as stage_of_disease
+
+
+# Export 4 nodes
+match (s:study)<-[*]-(c:case)<-[:of_case]-(e:enrollment),
+      (c)<-[:of_case]-(diag:diagnosis),
+      (c)<-[:of_case]-(demo:demographic)
+return s.submitter_id as study_code, c.patient_first_name as patient_first_name, c.patient_id as patient_id, c.project_id as project_id,
+      demo.breed as breed, demo.date_of_birth as date_of_birth, demo.patient_age_at_enrollment as patient_age_at_enrollment, demo.sex as sex,
+      e.initials as initials, e.enrollment_document_number as enrollment_document_number, e.date_of_registration as date_of_registration, e.cohort_description as cohort_description, e.date_of_informed_consent as date_of_informed_consent,
+      e.site_short_name as site_short_name, e.veterinary_medical_center as veterinary_medical_center, e.patient_subgroup as patient_subgroup,
+      diag.histology_cytopathology as histology_cytopathology, diag.date_of_histology_confirmation as date_of_histology_confirmation, diag.date_of_diagnosis as date_of_diagnosis, diag.primary_disease_site as primary_disease_site,
+      diag.stage_of_disease as stage_of_disease, diag.disease_term as disease_term, diag.histological_grade as histological_grade
