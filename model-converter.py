@@ -2,45 +2,23 @@
 
 # Convert JSON scheme (from ICDC model-tool) to GraphQL schema
 
-from neo4j import GraphDatabase
-import os
-import csv
-import json
+import os, sys
+import yaml
 import argparse
+import inflect
 
-DEFINITION_YAML = '_definitions.yaml'
-PROPERTIES = 'properties'
-LINKS = 'links'
-OBJ_TYPE = 'type'
-TYPE = 'type'
-LINK_NAME = 'name'
-TARGET_TYPE = 'target_type'
-MULTIPLICITY = 'multiplicity'
-BACK_REF = 'backref'
-REL_LABEL = 'label'
-LABEL_NEXT = 'next'
-SYSTEM_PROPERTIES = 'systemProperties'
-
-ignoreTypes = {'ToOne', 'ToMany'}
-
-systemProperties = {
-    "id": "String",
-    "state": 'String',
-    "created_datetime": "String",
-    "updated_datetime": "String",
-    "project_id": "String"
-}
-
-# Convert snake case into Camel case
-def camelCase(org):
-    if type(org) == str:
-        return ''.join([x.capitalize() for x in org.split('_')])
-    else:
-        print('##### NOT a string, can\'t be camel cased!')
-        return org
+NODES = 'Nodes'
+RELATIONSHIPS = 'Relationships'
+PROPERTIES = 'Props'
+PROP_DEFINITIONS = 'PropDefinitions'
+DEFAULT_TYPE = 'String'
+PROP_TYPE = 'Type'
+END_POINTS = 'Ends'
+SRC = 'Src'
+DEST = 'Dst'
 
 # Get type info from description
-def getType(name, desc):
+def getType(name, props):
 
     mapping = {
         'string': 'String',
@@ -49,145 +27,107 @@ def getType(name, desc):
         'object': 'Object'
        }
 
-    # Default type is '___'
-    result = '___'
-    # Desc has type info
-    if 'type' in desc:
-        result = desc[TYPE]
-        if result in mapping:
-            result = mapping[result]
-        else:
-            print("########## unknown type: {}".format(result))
-    # Desc has Enum info
-    elif 'enum' in desc:
-        result = getEnumType(desc['enum'])
-    # Desc has $ref info
-    elif '$ref' in desc:
-        result = getRefType(desc)
-    # Treat anyOf as enum
-    elif 'anyOf' in desc:
-        enum = []
-        for i, t in enumerate(desc['anyOf']):
-            enum.append(getType('{}_{}'.format(name, i), t))
-        result = getType(name, {'enum': enum})
-    # Treat oneOf as enum
-    elif 'oneOf' in desc:
-        enum = []
-        for i, t in enumerate(desc['oneOf']):
-            enum.append(getType('{}_{}'.format(name, i), t))
-        result = getType(name, {'enum': enum})
-    else:
-        print('######### unknown data type description: {}'.format(desc))
+    result = DEFAULT_TYPE
+    if name in props:
+        prop = props[name]
+        if PROP_TYPE in prop:
+            if prop[PROP_TYPE] in mapping:
+                result = mapping[prop[PROP_TYPE]]
+            else:
+                print('Type: "{}" has no mapping!'.format(prop[PROP_TYPE]))
+                result = 'NONE'
 
     return result
 
-# Get type from first element of input array
-def getEnumType(array):
-    if not type(array) is list:
-        print('###### input is not an array: {}'.format(array))
-        return None
-    if len(array) == 0:
-        print('###### input is empty!')
-        return None
-    if type(array[0]) is str:
-        return 'String'
-    elif type(array[0]) is int:
-        return 'Int'
-    else:
-        print('###### Unknown data type in Enum: {}'.format(array[0]))
-
-# Get $ref type from description
-# Assume all Ref Types are defined inside DEFINITION_YAML object
-# And all "local Ref Types" starts with '#" are inside DEFINITION_YAML
-def getRefType(desc):
-    result = '$ref'
-    # print(desc)
-    ref = '$ref'
-    if ref in desc:
-        # Add DEFINITION_YAML in front of "local Ref Types"
-        if desc[ref].startswith('#/'):
-            desc[ref] = '{}{}'.format(DEFINITION_YAML, desc[ref])
-
-        if desc[ref].startswith(DEFINITION_YAML):
-            subType = desc[ref].split('#/')[1]
-            result = getType(subType, definitions[subType])
-        else:
-            print('###### Wrong ref type: {}'.format(desc[ref]))
-    else:
-        print('###### "{}" is not a Ref Type!'.format(desc))
-    return result
-
-def processNode(name, desc):
-    id = desc['id']
+def processNode(name, desc, props):
     props = {}
-    # Add system properties first
-    for prop in desc[SYSTEM_PROPERTIES]:
-        props[prop] = systemProperties[prop]
 
     # Gather properties
-    for prop, prop_desc in desc[PROPERTIES].items():
-        prop_type = getType(prop, prop_desc)
-        if prop == OBJ_TYPE:
-            # Don't use 'type' property
-            pass
-        elif prop_type in ignoreTypes:
-            pass
-        else:
+    if desc[PROPERTIES]:
+        for prop in desc[PROPERTIES]:
+            prop_type = getType(prop, props)
             props[prop] = prop_type
 
-    nodes[id] = props
+    nodes[name] = props
+
+def plural(word):
+    plurals = {
+        'program': 'programs',
+        'study': 'studies',
+        'study_site': 'study_sites',
+        'study_arm': 'study_arms',
+        'agent': 'agents',
+        'cohort': 'cohorts',
+        'case': 'cases',
+        'demographic': 'demographics',
+        'cycle': 'cycles',
+        'visit': 'visits',
+        'principal_investigator': 'principal_investigators',
+        'diagnosis': 'diagnoses',
+        'enrollment': 'enrollments',
+        'prior_therapy': 'prior_therapies',
+        'prior_surgery': 'prior_surgeries',
+        'agent_administration': 'agent_administrations',
+        'sample': 'samples',
+        'evaluation': 'evaluations',
+        'assay': 'assays',
+        'file': 'files',
+        'image': 'images',
+        'physical_exam': 'physical_exams',
+        'vital_signs': 'vital_signs',
+        'lab_exam': 'lab_exams',
+        'adverse_event': 'adverse_events',
+        'disease_extent': 'disease_extents',
+        'follow_up': 'follow_ups',
+        'off_study': 'off_studies',
+        'off_treatment': 'off_treatments'
+    }
+    if word in plurals:
+        return plurals[word]
+    else:
+        print('Plural for "{}" not found!'.format(word))
+        return 'NONE'
 
 def processEdges(name, desc):
-    id = desc['id']
-    props = nodes[id]
-    # Gather linked nodes
-    for rel in desc[LINKS]:
-        if LINK_NAME in rel and TARGET_TYPE in rel and MULTIPLICITY in rel:
-            linkName = rel[LINK_NAME]
-            targetType = rel[TARGET_TYPE]
-            relation = rel[MULTIPLICITY]
-            backRef = rel[BACK_REF]
-            label = rel[REL_LABEL]
-            if relation == 'many_to_one' or relation == 'many_to_many':
-                # Relationship with self, loop edge
-                if id == targetType and linkName == backRef and label == LABEL_NEXT:
-                    props['next_{}'.format(linkName)] = '[{}] @relation(name:"{}")'.format(targetType, label)
-                    props['prior_{}'.format(linkName)] = '[{}] @relation(name:"{}", direction:IN)'.format(targetType, label)
-                elif id == targetType:
-                    print('###### Special loop edge needs to be addressed!')
-                    print(rel)
-                # Normal relationship
-                else:
-                    props[linkName] = '[{}] @relation(name:"{}")'.format(targetType, label)
-                    nodes[targetType][backRef] = '[{}] @relation(name:"{}", direction:IN)'.format(id, label)
+    # for key, value in desc.items():
+    #     if key != END_POINTS:
+    #         print('{}: {}'.format(key, value))
+    if END_POINTS in desc:
+        for  end_points in desc[END_POINTS]:
+            src = end_points[SRC]
+            dest = end_points[DEST]
+            # print('{} -[:{}]-> {}'.format(src, name, dest))
+            if src in nodes:
+                nodes[src][plural(dest)] = '[{}]'.format(dest)
             else:
-                print('###### wrong relation: {}'.format(relation))
-                print(rel)
-        else:
-            print('###### Wrong link format: {}'.format(rel))
+                print('Source node "{}" not found!'.format(src))
+            if dest in nodes:
+                nodes[dest][plural(src)] = '[{}]'.format(src)
+            else:
+                print('Destination node "{}" not found!'.format(dest))
+    return
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Read JSON schema generated by ICDC model tool')
-    parser.add_argument('json', help='Input JSON file name')
+    parser = argparse.ArgumentParser(description='Convert ICDC YAML schema to GraphQL schema')
+    parser.add_argument('schema', help='Input YAML Schema file name')
+    parser.add_argument('props', help='Input YAML Property file name')
     parser.add_argument('graphql', help='Output GraphQL schema file name')
     args = parser.parse_args()
 
     nodes = {}
     definitions = {}
 
-    if os.path.isfile(args.json):
-        with open(args.json) as json_file:
-            obj = json.load(json_file)
+    if os.path.isfile(args.schema):
+        with open(args.schema) as schema_file, open(args.props) as props_file:
+            schema = yaml.safe_load(schema_file)
+            props = yaml.safe_load(props_file)[PROP_DEFINITIONS]
 
-            # Initialize definition object
-            if DEFINITION_YAML in obj:
-                definitions = obj[DEFINITION_YAML]
-
-            for key, value in obj.items():
+            for key, value in schema[NODES].items():
                 # Assume all keys start with '_' are not regular nodes
                 if not key.startswith('_'):
-                    processNode(key, value)
-            for key, value in obj.items():
+                    processNode(key, value, props)
+            # print("-------------processing edges-----------------")
+            for key, value in schema[RELATIONSHIPS].items():
                 # Assume all keys start with '_' are not regular nodes
                 if not key.startswith('_'):
                     processEdges(key, value)
@@ -197,7 +137,8 @@ if __name__ == '__main__':
 
     with open(args.graphql, 'w') as graphql_file:
         # Output Types
-        for name, props in nodes.items():
+        for name in sorted(nodes.keys()):
+            props = nodes[name]
             typeLine = 'type {} {{'.format(name)
             print(typeLine)
             print(typeLine, file=graphql_file)
