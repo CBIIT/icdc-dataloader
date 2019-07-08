@@ -16,6 +16,7 @@ PROP_TYPE = 'Type'
 END_POINTS = 'Ends'
 SRC = 'Src'
 DEST = 'Dst'
+CUSTOM_QUERY_FILE = 'schema-queries.graphql'
 
 # Get type info from description
 def getType(name, props):
@@ -149,5 +150,10 @@ if __name__ == '__main__':
             typeEnd = '}\n'
             print(typeEnd)
             print(typeEnd, file=graphql_file)
+
+        # Copy custom queries
+        with open(CUSTOM_QUERY_FILE) as query_file:
+            for line in query_file:
+                print(line, end='', file=graphql_file)
 
     print('Types: {}'.format(len(nodes)))
