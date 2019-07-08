@@ -17,36 +17,53 @@ END_POINTS = 'Ends'
 SRC = 'Src'
 DEST = 'Dst'
 CUSTOM_QUERY_FILE = 'schema-queries.graphql'
+VALUE_TYPE = 'value_type'
+LABEL_NEXT = 'next'
 
 # Get type info from description
-def getType(name, props):
-
+def mapType(type_name):
     mapping = {
         'string': 'String',
+        'number': 'Float',
         'integer': 'Int',
+        'boolean': 'Boolean',
         'array': 'Array',
-        'object': 'Object'
-       }
+        'object': 'Object',
+        'datetime': 'String',
+        'TBD': 'String'
+    }
+    result = DEFAULT_TYPE
 
+    if type_name in mapping:
+        result = mapping[type_name]
+    else:
+        print('Type: "{}" has no mapping, use default type: "{}"'.format(type_name, DEFAULT_TYPE))
+        
+    return result
+
+
+def getType(name, props):
     result = DEFAULT_TYPE
     if name in props:
         prop = props[name]
         if PROP_TYPE in prop:
-            if prop[PROP_TYPE] in mapping:
-                result = mapping[prop[PROP_TYPE]]
+            prop_desc = prop[PROP_TYPE]
+            if type(prop_desc) is str:
+                result = mapType(prop_desc)
+            elif type(prop_desc) is dict:
+                if VALUE_TYPE in prop_desc:
+                    result = mapType(prop_desc[VALUE_TYPE])
             else:
-                print('Type: "{}" has no mapping!'.format(prop[PROP_TYPE]))
-                result = 'NONE'
+                print('Property type: "{}" not supported, use default type: "{}"'.format(prop_desc, DEFAULT_TYPE))
 
     return result
 
-def processNode(name, desc, props):
-    props = {}
-
+def processNode(name, desc, propDescs):
     # Gather properties
+    props = {}
     if desc[PROPERTIES]:
         for prop in desc[PROPERTIES]:
-            prop_type = getType(prop, props)
+            prop_type = getType(prop, propDescs)
             props[prop] = prop_type
 
     nodes[name] = props
@@ -98,15 +115,22 @@ def processEdges(name, desc):
             src = end_points[SRC]
             dest = end_points[DEST]
             # print('{} -[:{}]-> {}'.format(src, name, dest))
-            if src in nodes:
-                nodes[src][plural(dest)] = '[{}]'.format(dest)
+            if src == dest:
+                if name == 'next':
+                    nodes[src]['next_{}'.format(dest)] = '[{}] @relation(name:"{}")'.format(dest, name)
+                    nodes[dest]['prior_{}'.format(dest)] = '[{}] @relation(name:"{}", direction:IN)'.format(dest, name)
+                else:
+                    print('Self loop relationship type: "{}" unknown'.format(name))
             else:
-                print('Source node "{}" not found!'.format(src))
-            if dest in nodes:
-                nodes[dest][plural(src)] = '[{}]'.format(src)
-            else:
-                print('Destination node "{}" not found!'.format(dest))
-    return
+                if src in nodes:
+                    nodes[src][plural(dest)] = '[{}] @relation(name:"{}")'.format(dest, name)
+                else:
+                    print('Source node "{}" not found!'.format(src))
+                if dest in nodes:
+                    nodes[dest][plural(src)] = '[{}] @relation(name:"{}", direction:IN)'.format(src, name)
+                else:
+                    print('Destination node "{}" not found!'.format(dest))
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Convert ICDC YAML schema to GraphQL schema')
