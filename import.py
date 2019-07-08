@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from neo4j import GraphDatabase
+from neo4j import GraphDatabase, ServiceUnavailable
 import os
 import csv
 import json
@@ -131,42 +131,45 @@ uri = args.uri if args.uri else "bolt://localhost:7687"
 password = args.password if args.password else os.environ['NEO_PASSWORD']
 user = args.user if args.user else 'neo4j'
 
-driver = GraphDatabase.driver(uri, auth=(user, password))
+try:
+    driver = GraphDatabase.driver(uri, auth=(user, password))
 
-
-with driver.session() as session:
-    for table in node_tables:
-        # insert nodes
-        if table[0].startswith('node_'):
-            #continue
-            print(table[0])
-            # label = table[0].replace('node_', '')
-            label = table[1]
-            with open('{}/{}.csv'.format(args.dir, table[0])) as inf:
-                reader = csv.DictReader(inf)
-                for row in reader:
-                    props = json.loads(row['_props'])
-                    prop_statement = 'SET n.created = "{}", n.acl = "{}", n._sysan = "{}"'.format(row['created'], row['acl'], row['_sysan'])
-                    if props:
-                        for key, val in props.items():
-                            prop_statement += ', n.{} = "{}"'.format(key, val)
-                    statement = 'MERGE (n:{0} {{id: "{1}"}}) on create {2} on match {2}'.format(label, row['node_id'], prop_statement)
-                    # print(statement)
-                    print(session.run(statement))
-    for table in edge_tables:
-        # insert edges
-        if table[0].startswith('edge_'):
-            print(table[0])
-            # label = table[0].replace('edge_', '')
-            label = table[1]
-            with open('{}/{}.csv'.format(args.dir, table[0])) as inf:
-                reader = csv.DictReader(inf)
-                for row in reader:
-                    props = json.loads(row['_props'])
-                    prop_statement = 'SET n.created = "{}", n.acl = "{}", n._sysan = "{}"'.format(row['created'], row['acl'], row['_sysan'])
-                    if props:
-                        for key, val in props.items():
-                            prop_statement += ', n.{} = "{}"'.format(key, val)
-                    statement = 'MATCH (n1 {{id: "{0}"}}), (n2 {{id: "{1}"}}) MERGE (n1)-[n:{2}]->(n2) on create {3} on match {3}'.format(row['src_id'], row['dst_id'], label, prop_statement)
-                    # print(statement)
-                    print(session.run(statement))
+    with driver.session() as session:
+        for table in node_tables:
+            # insert nodes
+            if table[0].startswith('node_'):
+                #continue
+                print(table[0])
+                # label = table[0].replace('node_', '')
+                label = table[1]
+                with open('{}/{}.csv'.format(args.dir, table[0])) as inf:
+                    reader = csv.DictReader(inf)
+                    for row in reader:
+                        props = json.loads(row['_props'])
+                        prop_statement = 'SET n.created = "{}", n.acl = "{}", n._sysan = "{}"'.format(row['created'], row['acl'], row['_sysan'])
+                        if props:
+                            for key, val in props.items():
+                                prop_statement += ', n.{} = "{}"'.format(key, val)
+                        statement = 'MERGE (n:{0} {{id: "{1}"}}) on create {2} on match {2}'.format(label, row['node_id'], prop_statement)
+                        # print(statement)
+                        print(session.run(statement))
+        for table in edge_tables:
+            # insert edges
+            if table[0].startswith('edge_'):
+                print(table[0])
+                # label = table[0].replace('edge_', '')
+                label = table[1]
+                with open('{}/{}.csv'.format(args.dir, table[0])) as inf:
+                    reader = csv.DictReader(inf)
+                    for row in reader:
+                        props = json.loads(row['_props'])
+                        prop_statement = 'SET n.created = "{}", n.acl = "{}", n._sysan = "{}"'.format(row['created'], row['acl'], row['_sysan'])
+                        if props:
+                            for key, val in props.items():
+                                prop_statement += ', n.{} = "{}"'.format(key, val)
+                        statement = 'MATCH (n1 {{id: "{0}"}}), (n2 {{id: "{1}"}}) MERGE (n1)-[n:{2}]->(n2) on create {3} on match {3}'.format(row['src_id'], row['dst_id'], label, prop_statement)
+                        # print(statement)
+                        print(session.run(statement))
+except ServiceUnavailable as err:
+    print(err)
+    print("Can't connect to Neo4j server at: \"{}\"".format(uri))
