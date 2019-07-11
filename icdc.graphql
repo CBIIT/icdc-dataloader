@@ -1,0 +1,397 @@
+type adverse_event {
+  ae_dose: Float
+  ae_agent_name: String
+  day_in_cycle: Int
+  date_resolved: String
+  adverse_event_term: String
+  adverse_event_description: String
+  adverse_event_grade: String
+  adverse_event_grade_description: String
+  attribution_to_research: String
+  attribution_to_ind: String
+  attribution_to_disease: String
+  attribution_to_commercial: String
+  attribution_to_other: String
+  ae_other: String
+  dose_limiting_toxicity: String
+  unexpected_adverse_event: String
+  crf_id: String
+  agent: agent @relation(name:"of_agent")
+  cases: [case] @relation(name:"had_adverse_event", direction:IN)
+  evaluation: evaluation @relation(name:"at_evaluation")
+  next_adverse_event: adverse_event @relation(name:"next")
+  prior_adverse_event: adverse_event @relation(name:"next", direction:IN)
+}
+
+type agent {
+  medication: String
+  document_number: String
+  study_arms: [study_arm] @relation(name:"of_study_arm")
+  agent_administrations: [agent_administration] @relation(name:"of_agent", direction:IN)
+  adverse_events: [adverse_event] @relation(name:"of_agent", direction:IN)
+}
+
+type agent_administration {
+  document_number: String
+  medication: String
+  route_of_administration: String
+  medication_lot_number: String
+  medication_vial_id: String
+  medication_actual_units_of_measure: String
+  medication_duration: Float
+  medication_units_of_measure: String
+  medication_actual_dose: Float
+  phase: String
+  start_time: String
+  stop_time: String
+  dose_level: Float
+  dose_units_of_measure: String
+  date_of_missed_dose: String
+  medication_missed_dose: String
+  missed_dose_amount: Float
+  missed_dose_units_of_measure: String
+  medication_course_number: String
+  comment: String
+  crf_id: String
+  agent: agent @relation(name:"of_agent")
+  visit: visit @relation(name:"on_visit")
+}
+
+type assay {
+  sample: sample @relation(name:"of_sample")
+  files: [file] @relation(name:"of_assay", direction:IN)
+  images: [image] @relation(name:"of_assay", direction:IN)
+}
+
+type case {
+  patient_id: String
+  patient_first_name: String
+  crf_id: String
+  cohort: cohort @relation(name:"member_of")
+  enrollment: enrollment @relation(name:"of_case", direction:IN)
+  demographic: demographic @relation(name:"of_case", direction:IN)
+  diagnoses: [diagnosis] @relation(name:"of_case", direction:IN)
+  cycles: [cycle] @relation(name:"of_case", direction:IN)
+  follow_ups: [follow_up] @relation(name:"of_case", direction:IN)
+  adverse_event: adverse_event @relation(name:"had_adverse_event")
+  off_study: off_study @relation(name:"went_off_study")
+  off_treatment: off_treatment @relation(name:"went_off_treatment")
+}
+
+type cohort {
+  cohort_description: String
+  cohort_dose: Float
+  cases: [case] @relation(name:"member_of", direction:IN)
+  study_arm: study_arm @relation(name:"member_of")
+}
+
+type cycle {
+  cycle_number: Int
+  date_of_cycle_start: String
+  date_of_cycle_end: String
+  case: case @relation(name:"of_case")
+  visits: [visit] @relation(name:"of_cycle", direction:IN)
+}
+
+type demographic {
+  breed: String
+  patient_age_at_enrollment: Float
+  date_of_birth: String
+  sex: String
+  weight: String
+  neutered_indicator: String
+  crf_id: String
+  case: case @relation(name:"of_case")
+}
+
+type diagnosis {
+  disease_term: String
+  primary_disease_site: String
+  stage_of_disease: String
+  date_of_diagnosis: String
+  histology_cytopathology: String
+  date_of_histology_confirmation: String
+  histological_grade: String
+  pathology_report: String
+  treatment_data: String
+  follow_up_data: String
+  concurrent_disease: String
+  concurrent_disease_type: String
+  crf_id: String
+  case: case @relation(name:"of_case")
+}
+
+type disease_extent {
+  crf_id: String
+  lesion_number: String
+  lesion_site: String
+  lesion_description: String
+  previously_irradiated: String
+  previously_treated: String
+  measurable_lesion: String
+  target_lesion: String
+  date_of_evaluation: String
+  measured_how: String
+  longest_measurement: String
+  evaluation_number: String
+  evaluation_code: String
+  evaluation: evaluation @relation(name:"at_evaluation")
+}
+
+type enrollment {
+  date_of_registration: String
+  registering_institution: String
+  initials: String
+  date_of_informed_consent: String
+  site_short_name: String
+  veterinary_medical_center: String
+  enrollment_document_number: String
+  cohort_description: String
+  patient_subgroup: String
+  case: case @relation(name:"of_case")
+  prior_therapies: [prior_therapy] @relation(name:"at_enrollment", direction:IN)
+  prior_surgeries: [prior_surgery] @relation(name:"at_enrollment", direction:IN)
+  physical_exams: [physical_exam] @relation(name:"at_enrollment", direction:IN)
+}
+
+type evaluation {
+  date_of_evaluation: String
+  visit: visit @relation(name:"on_visit")
+  physical_exams: [physical_exam] @relation(name:"at_evaluation", direction:IN)
+  lab_exams: [lab_exam] @relation(name:"at_evaluation", direction:IN)
+  adverse_events: [adverse_event] @relation(name:"at_evaluation", direction:IN)
+  disease_extents: [disease_extent] @relation(name:"at_evaluation", direction:IN)
+  vital_signs: [vital_signs] @relation(name:"at_evaluation", direction:IN)
+}
+
+type file {
+  assay: assay @relation(name:"of_assay")
+}
+
+type follow_up {
+  document_number: String
+  date_of_last_contact: String
+  patient_status: String
+  explain_unknown_status: String
+  contact_type: String
+  treatment_since_last_contact: Boolean
+  physical_exam_performed: Boolean
+  physical_exam_changes: String
+  crf_id: String
+  case: case @relation(name:"of_case")
+}
+
+type image {
+  assay: assay @relation(name:"of_assay")
+}
+
+type lab_exam {
+  evaluation: evaluation @relation(name:"at_evaluation")
+}
+
+type off_study {
+  document_number: String
+  date_off_study: String
+  reason_off_study: String
+  date_of_disease_progression: String
+  date_off_treatment: String
+  best_resp_vet_tx_tp_secondary_response: String
+  date_last_medication_administration: String
+  best_resp_vet_tx_tp_best_response: String
+  date_of_best_response: String
+  case: case @relation(name:"went_off_study", direction:IN)
+}
+
+type off_treatment {
+  document_number: String
+  date_off_treatment: String
+  reason_off_treatment: String
+  date_of_disease_progression: String
+  best_resp_vet_tx_tp_secondary_response: String
+  date_last_medication_administration: String
+  best_resp_vet_tx_tp_best_response: String
+  date_of_best_response: String
+  case: case @relation(name:"went_off_treatment", direction:IN)
+}
+
+type physical_exam {
+  date_of_examination: String
+  day_in_cycle: Int
+  body_system: String
+  pe_finding: String
+  pe_comment: String
+  phase_pe: String
+  assessment_timepoint: Int
+  crf_id: String
+  enrollment: enrollment @relation(name:"at_enrollment")
+  evaluation: evaluation @relation(name:"at_evaluation")
+}
+
+type principal_investigator {
+  pi_first_name: String
+  pi_last_name: String
+  pi_middle_initial: String
+  studies: [study] @relation(name:"of_study")
+}
+
+type prior_surgery {
+  date_of_surgery: String
+  procedure: String
+  anatomical_site_of_surgery: String
+  surgical_finding: String
+  residual_disease: String
+  therapeutic_indicator: String
+  crf_id: String
+  enrollment: enrollment @relation(name:"at_enrollment")
+  next_prior_surgery: prior_surgery @relation(name:"next")
+  prior_prior_surgery: prior_surgery @relation(name:"next", direction:IN)
+}
+
+type prior_therapy {
+  date_of_first_dose: String
+  date_of_last_dose: String
+  agent_name: String
+  dose_schedule: String
+  total_dose: Float
+  agent_units_of_measure: String
+  best_response: String
+  nonresponse_therapy_type: String
+  prior_therapy_type: String
+  prior_steroid_exposure: Boolean
+  number_of_prior_regimens_steroid: Int
+  total_number_of_doses_steroid: Int
+  date_of_last_dose_steroid: String
+  prior_nsaid_exposure: Boolean
+  number_of_prior_regimens_nsaid: Int
+  total_number_of_doses_nsaid: Int
+  date_of_last_dose_nsaid: String
+  tx_loc_geo_loc_ind_nsaid: String
+  min_rsdl_dz_tx_ind_nsaids_treatment_pe: String
+  therapy_type: String
+  any_therapy: Boolean
+  number_of_prior_regimens_any_therapy: Int
+  total_number_of_doses_any_therapy: Int
+  date_of_last_dose_any_therapy: String
+  treatment_performed_at_site: Boolean
+  treatment_performed_in_minimal_residual: Boolean
+  enrollment: enrollment @relation(name:"at_enrollment")
+  next_prior_therapy: prior_therapy @relation(name:"next")
+  prior_prior_therapy: prior_therapy @relation(name:"next", direction:IN)
+}
+
+type program {
+  name: String
+  program_description: String
+  external_program_url: String
+}
+
+type sample {
+  sample_id: String
+  sample_type: String
+  general_sample_pathology: String
+  date_of_sample_collection: String
+  necropsy_sample: String
+  length_of_tumor: String
+  width_of_tumor: String
+  analysis_area: String
+  analysis_area_percentage_tumor: String
+  analysis_area_percentage_stroma: String
+  analysis_area_percentage_glass: String
+  analysis_area_percentage_pigmented_tumor: String
+  total_tissue_area: String
+  tumor_tissue_area: String
+  non_tumor_tissue_area: String
+  percentage_tumor: String
+  percentage_stroma: String
+  comment: String
+  visit: visit @relation(name:"on_visit")
+  assays: [assay] @relation(name:"of_sample", direction:IN)
+  next_sample: sample @relation(name:"next")
+  prior_sample: sample @relation(name:"next", direction:IN)
+}
+
+type study {
+  clinical_study_id: String
+  clinical_study_designation: String
+  clinical_study_name: String
+  clinical_study_description: String
+  clinical_study_type: String
+  date_of_iacuc_approval: String
+  dates_of_conduct: String
+  study_arms: [study_arm] @relation(name:"member_of", direction:IN)
+  study_sites: [study_site] @relation(name:"of_study", direction:IN)
+  principal_investigators: [principal_investigator] @relation(name:"of_study", direction:IN)
+}
+
+type study_arm {
+  arm: String
+  ctep_treatment_assignment_code: String
+  cohorts: [cohort] @relation(name:"member_of", direction:IN)
+  study: study @relation(name:"member_of")
+  agents: [agent] @relation(name:"of_study_arm", direction:IN)
+}
+
+type study_site {
+  site_short_name: String
+  veterinary_medical_center: String
+  registering_institution: String
+  studies: [study] @relation(name:"of_study")
+}
+
+type visit {
+  visit_date: String
+  visit_number: String
+  cycle: cycle @relation(name:"of_cycle")
+  agent_administrations: [agent_administration] @relation(name:"on_visit", direction:IN)
+  samples: [sample] @relation(name:"on_visit", direction:IN)
+  evaluations: [evaluation] @relation(name:"on_visit", direction:IN)
+  next_visit: visit @relation(name:"next")
+  prior_visit: visit @relation(name:"next", direction:IN)
+}
+
+type vital_signs {
+  date_of_vital_signs: String
+  body_temperature: Float
+  pulse: Int
+  respiration_rate: Int
+  respiration_pattern: String
+  systolic_bp: Int
+  pulse_ox: Float
+  patient_weight: Float
+  body_surface_area: Float
+  modified_ecog: String
+  ecg: Boolean
+  assessment_timepoint: Int
+  phase: String
+  crf_id: String
+  evaluation: evaluation @relation(name:"at_evaluation")
+}
+
+schema {
+ query: QueryType
+}
+
+type BreedCaseCount {
+  breed: String
+  cases: Int
+}
+
+type DiseaseTermCaseCount {
+  disease_term: String
+  cases: Int
+}
+
+type CaseDetail {
+  patient_id: String
+  breed: String
+  patient_age_at_enrollment: String
+  sex: String
+  disease_term: String
+  stage_of_disease: String
+}
+
+type QueryType {
+  caseCountByBreed: [BreedCaseCount] @cypher(statement: "MATCH (c:case)<-[:of_case]-(d:demographic) return d.breed as breed, count(c) as cases")
+  caseCountByDiseaseTerm: [DiseaseTermCaseCount] @cypher(statement: "MATCH (c:case)<-[:of_case]-(diag:diagnosis) return diag.disease_term as disease_term, count(c) as cases")
+  casesByStudyAndBreeds(study_name: String, breeds: [String], disease_terms: [String]): [CaseDetail] @cypher(statement: "MATCH (s:study)<-[:member_of]-(a:study_arm)<-[:member_of]-(c:cohort)<-[:member_of]-(case:case)<-[:of_case]-(d:demographic), (case)<-[:of_case]-(diag:diagnosis) WHERE s.clinical_study_name = $study_name and d.breed in $breeds and diag.disease_term in $disease_terms RETURN case.patient_id as patient_id, d.breed as breed, d.patient_age_at_enrollment as patient_age_at_enrollment, d.sex as sex, diag.disease_term as disease_term, diag.stage_of_disease as stage_of_disease")
+}
