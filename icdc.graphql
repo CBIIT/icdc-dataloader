@@ -16,17 +16,17 @@ type adverse_event {
   dose_limiting_toxicity: String
   unexpected_adverse_event: String
   crf_id: String
-  agent: agent @relation(name:"of_agent")
+  agent: agent @relation(name:"of_agent", direction:OUT)
   cases: [case] @relation(name:"had_adverse_event", direction:IN)
-  evaluation: evaluation @relation(name:"at_evaluation")
-  next_adverse_event: adverse_event @relation(name:"next")
+  evaluation: evaluation @relation(name:"at_evaluation", direction:OUT)
+  next_adverse_event: adverse_event @relation(name:"next", direction:OUT)
   prior_adverse_event: adverse_event @relation(name:"next", direction:IN)
 }
 
 type agent {
   medication: String
   document_number: String
-  study_arms: [study_arm] @relation(name:"of_study_arm")
+  study_arms: [study_arm] @relation(name:"of_study_arm", direction:OUT)
   agent_administrations: [agent_administration] @relation(name:"of_agent", direction:IN)
   adverse_events: [adverse_event] @relation(name:"of_agent", direction:IN)
 }
@@ -53,12 +53,12 @@ type agent_administration {
   medication_course_number: String
   comment: String
   crf_id: String
-  agent: agent @relation(name:"of_agent")
-  visit: visit @relation(name:"on_visit")
+  agent: agent @relation(name:"of_agent", direction:OUT)
+  visit: visit @relation(name:"on_visit", direction:OUT)
 }
 
 type assay {
-  sample: sample @relation(name:"of_sample")
+  sample: sample @relation(name:"of_sample", direction:OUT)
   files: [file] @relation(name:"of_assay", direction:IN)
   images: [image] @relation(name:"of_assay", direction:IN)
 }
@@ -67,29 +67,29 @@ type case {
   patient_id: String
   patient_first_name: String
   crf_id: String
-  cohort: cohort @relation(name:"member_of")
+  cohort: cohort @relation(name:"member_of", direction:OUT)
   enrollment: enrollment @relation(name:"of_case", direction:IN)
   demographic: demographic @relation(name:"of_case", direction:IN)
   diagnoses: [diagnosis] @relation(name:"of_case", direction:IN)
   cycles: [cycle] @relation(name:"of_case", direction:IN)
   follow_ups: [follow_up] @relation(name:"of_case", direction:IN)
-  adverse_event: adverse_event @relation(name:"had_adverse_event")
-  off_study: off_study @relation(name:"went_off_study")
-  off_treatment: off_treatment @relation(name:"went_off_treatment")
+  adverse_event: adverse_event @relation(name:"had_adverse_event", direction:OUT)
+  off_study: off_study @relation(name:"went_off_study", direction:OUT)
+  off_treatment: off_treatment @relation(name:"went_off_treatment", direction:OUT)
 }
 
 type cohort {
   cohort_description: String
   cohort_dose: Float
   cases: [case] @relation(name:"member_of", direction:IN)
-  study_arm: study_arm @relation(name:"member_of")
+  study_arm: study_arm @relation(name:"member_of", direction:OUT)
 }
 
 type cycle {
   cycle_number: Int
   date_of_cycle_start: String
   date_of_cycle_end: String
-  case: case @relation(name:"of_case")
+  case: case @relation(name:"of_case", direction:OUT)
   visits: [visit] @relation(name:"of_cycle", direction:IN)
 }
 
@@ -101,7 +101,7 @@ type demographic {
   weight: String
   neutered_indicator: String
   crf_id: String
-  case: case @relation(name:"of_case")
+  case: case @relation(name:"of_case", direction:OUT)
 }
 
 type diagnosis {
@@ -118,7 +118,7 @@ type diagnosis {
   concurrent_disease: String
   concurrent_disease_type: String
   crf_id: String
-  case: case @relation(name:"of_case")
+  case: case @relation(name:"of_case", direction:OUT)
 }
 
 type disease_extent {
@@ -135,7 +135,7 @@ type disease_extent {
   longest_measurement: String
   evaluation_number: String
   evaluation_code: String
-  evaluation: evaluation @relation(name:"at_evaluation")
+  evaluation: evaluation @relation(name:"at_evaluation", direction:OUT)
 }
 
 type enrollment {
@@ -148,7 +148,7 @@ type enrollment {
   enrollment_document_number: String
   cohort_description: String
   patient_subgroup: String
-  case: case @relation(name:"of_case")
+  case: case @relation(name:"of_case", direction:OUT)
   prior_therapies: [prior_therapy] @relation(name:"at_enrollment", direction:IN)
   prior_surgeries: [prior_surgery] @relation(name:"at_enrollment", direction:IN)
   physical_exams: [physical_exam] @relation(name:"at_enrollment", direction:IN)
@@ -156,7 +156,7 @@ type enrollment {
 
 type evaluation {
   date_of_evaluation: String
-  visit: visit @relation(name:"on_visit")
+  visit: visit @relation(name:"on_visit", direction:OUT)
   physical_exams: [physical_exam] @relation(name:"at_evaluation", direction:IN)
   lab_exams: [lab_exam] @relation(name:"at_evaluation", direction:IN)
   adverse_events: [adverse_event] @relation(name:"at_evaluation", direction:IN)
@@ -165,7 +165,7 @@ type evaluation {
 }
 
 type file {
-  assay: assay @relation(name:"of_assay")
+  assay: assay @relation(name:"of_assay", direction:OUT)
 }
 
 type follow_up {
@@ -178,15 +178,15 @@ type follow_up {
   physical_exam_performed: Boolean
   physical_exam_changes: String
   crf_id: String
-  case: case @relation(name:"of_case")
+  case: case @relation(name:"of_case", direction:OUT)
 }
 
 type image {
-  assay: assay @relation(name:"of_assay")
+  assay: assay @relation(name:"of_assay", direction:OUT)
 }
 
 type lab_exam {
-  evaluation: evaluation @relation(name:"at_evaluation")
+  evaluation: evaluation @relation(name:"at_evaluation", direction:OUT)
 }
 
 type off_study {
@@ -223,15 +223,15 @@ type physical_exam {
   phase_pe: String
   assessment_timepoint: Int
   crf_id: String
-  enrollment: enrollment @relation(name:"at_enrollment")
-  evaluation: evaluation @relation(name:"at_evaluation")
+  enrollment: enrollment @relation(name:"at_enrollment", direction:OUT)
+  evaluation: evaluation @relation(name:"at_evaluation", direction:OUT)
 }
 
 type principal_investigator {
   pi_first_name: String
   pi_last_name: String
   pi_middle_initial: String
-  studies: [study] @relation(name:"of_study")
+  studies: [study] @relation(name:"of_study", direction:OUT)
 }
 
 type prior_surgery {
@@ -242,8 +242,8 @@ type prior_surgery {
   residual_disease: String
   therapeutic_indicator: String
   crf_id: String
-  enrollment: enrollment @relation(name:"at_enrollment")
-  next_prior_surgery: prior_surgery @relation(name:"next")
+  enrollment: enrollment @relation(name:"at_enrollment", direction:OUT)
+  next_prior_surgery: prior_surgery @relation(name:"next", direction:OUT)
   prior_prior_surgery: prior_surgery @relation(name:"next", direction:IN)
 }
 
@@ -274,8 +274,8 @@ type prior_therapy {
   date_of_last_dose_any_therapy: String
   treatment_performed_at_site: Boolean
   treatment_performed_in_minimal_residual: Boolean
-  enrollment: enrollment @relation(name:"at_enrollment")
-  next_prior_therapy: prior_therapy @relation(name:"next")
+  enrollment: enrollment @relation(name:"at_enrollment", direction:OUT)
+  next_prior_therapy: prior_therapy @relation(name:"next", direction:OUT)
   prior_prior_therapy: prior_therapy @relation(name:"next", direction:IN)
 }
 
@@ -304,9 +304,9 @@ type sample {
   percentage_tumor: String
   percentage_stroma: String
   comment: String
-  visit: visit @relation(name:"on_visit")
+  visit: visit @relation(name:"on_visit", direction:OUT)
   assays: [assay] @relation(name:"of_sample", direction:IN)
-  next_sample: sample @relation(name:"next")
+  next_sample: sample @relation(name:"next", direction:OUT)
   prior_sample: sample @relation(name:"next", direction:IN)
 }
 
@@ -327,7 +327,7 @@ type study_arm {
   arm: String
   ctep_treatment_assignment_code: String
   cohorts: [cohort] @relation(name:"member_of", direction:IN)
-  study: study @relation(name:"member_of")
+  study: study @relation(name:"member_of", direction:OUT)
   agents: [agent] @relation(name:"of_study_arm", direction:IN)
 }
 
@@ -335,17 +335,17 @@ type study_site {
   site_short_name: String
   veterinary_medical_center: String
   registering_institution: String
-  studies: [study] @relation(name:"of_study")
+  studies: [study] @relation(name:"of_study", direction:OUT)
 }
 
 type visit {
   visit_date: String
   visit_number: String
-  cycle: cycle @relation(name:"of_cycle")
+  cycle: cycle @relation(name:"of_cycle", direction:OUT)
   agent_administrations: [agent_administration] @relation(name:"on_visit", direction:IN)
   samples: [sample] @relation(name:"on_visit", direction:IN)
   evaluations: [evaluation] @relation(name:"on_visit", direction:IN)
-  next_visit: visit @relation(name:"next")
+  next_visit: visit @relation(name:"next", direction:OUT)
   prior_visit: visit @relation(name:"next", direction:IN)
 }
 
@@ -364,7 +364,7 @@ type vital_signs {
   assessment_timepoint: Int
   phase: String
   crf_id: String
-  evaluation: evaluation @relation(name:"at_evaluation")
+  evaluation: evaluation @relation(name:"at_evaluation", direction:OUT)
 }
 
 schema {

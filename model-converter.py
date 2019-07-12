@@ -116,23 +116,23 @@ def addRelationshipToNode(node, multiplier, relationship, otherNode, dest=False)
         if dest:
             node[plural(otherNode)] = '[{}] @relation(name:"{}", direction:IN)'.format(otherNode, relationship)
         else:
-            node[otherNode] = '{} @relation(name:"{}")'.format(otherNode, relationship)
+            node[otherNode] = '{} @relation(name:"{}", direction:OUT)'.format(otherNode, relationship)
     elif multiplier == 'one_to_one':
         if relationship == NEXT_RELATIONSHIP:
             if dest:
                 node['prior_' + otherNode] = '{} @relation(name:"{}", direction:IN)'.format(otherNode, relationship)
             else:
-                node['next_' + otherNode] = '{} @relation(name:"{}")'.format(otherNode, relationship)
+                node['next_' + otherNode] = '{} @relation(name:"{}", direction:OUT)'.format(otherNode, relationship)
         else:
             if dest:
                 node[otherNode] = '{} @relation(name:"{}", direction:IN)'.format(otherNode, relationship)
             else:
-                node[otherNode] = '{} @relation(name:"{}")'.format(otherNode, relationship)
+                node[otherNode] = '{} @relation(name:"{}", direction:OUT)'.format(otherNode, relationship)
     elif multiplier == 'many_to_many':
         if dest:
             node[plural(otherNode)] = '[{}] @relation(name:"{}", direction:IN)'.format(otherNode, relationship)
         else:
-            node[plural(otherNode)] = '[{}] @relation(name:"{}")'.format(otherNode, relationship)
+            node[plural(otherNode)] = '[{}] @relation(name:"{}", direction:OUT)'.format(otherNode, relationship)
     else:
         print('Unsupported relationship multiplier: "{}"'.format(multiplier))
 
