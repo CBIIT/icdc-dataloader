@@ -131,9 +131,8 @@ uri = args.uri if args.uri else "bolt://localhost:7687"
 password = args.password if args.password else os.environ['NEO_PASSWORD']
 user = args.user if args.user else 'neo4j'
 
+driver = GraphDatabase.driver(uri, auth=(user, password))
 try:
-    driver = GraphDatabase.driver(uri, auth=(user, password))
-
     with driver.session() as session:
         for table in node_tables:
             # insert nodes
@@ -173,3 +172,6 @@ try:
 except ServiceUnavailable as err:
     print(err)
     print("Can't connect to Neo4j server at: \"{}\"".format(uri))
+
+finally:
+    driver.close()
