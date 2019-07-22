@@ -72,7 +72,7 @@ class ICDC_Schema:
                 print(e)
 
         self.nodes = {}
-        self.relationships = []
+        self.relationships = {}
         self.numRelationships = 0
 
         for key, value in self.org_schema[NODES].items():
@@ -109,9 +109,10 @@ class ICDC_Schema:
             for  end_points in desc[END_POINTS]:
                 src = end_points[SRC]
                 dest = end_points[DEST]
+                self.relationships['{}->{}'.format(src, dest)] = name
                 if MULTIPLIER in end_points:
                     actual_multiplier = end_points[MULTIPLIER]
-                    print('End point multiplier: "{}" overriding relationship multiplier: "{}"'.format(actual_multiplier, multiplier))
+                    # print('End point multiplier: "{}" overriding relationship multiplier: "{}"'.format(actual_multiplier, multiplier))
                 else:
                     actual_multiplier = multiplier
 
