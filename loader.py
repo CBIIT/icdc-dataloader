@@ -7,6 +7,7 @@ import argparse
 import re
 from neo4j import GraphDatabase, ServiceUnavailable
 from icdc_schema import ICDC_Schema
+from utils import *
 
 NODE_TYPE = 'type'
 ID = 'submitter_id'
@@ -33,7 +34,9 @@ if __name__ == '__main__':
     password = args.password if args.password else os.environ['NEO_PASSWORD']
     user = args.user if args.user else 'neo4j'
 
-    print(args)
+    log = get_logger('Data Loader')
+
+    log.debug(args)
     # sys.exit()
 
     try:
@@ -42,9 +45,9 @@ if __name__ == '__main__':
         driver = GraphDatabase.driver(uri, auth=(user, password))
         with driver.session() as session:
             for txt in file_list:
-                print("=======================")
+                log.debug("=======================")
                 with open(txt) as in_file:
-                    print('Validating file "{}" ...'.format(txt), end='')
+                    log.info('Validating file "{}" ...'.format(txt))
                     reader = csv.DictReader(in_file, delimiter='\t')
                     line_num = 0
                     for org_obj in reader:
@@ -52,9 +55,9 @@ if __name__ == '__main__':
                         line_num += 1
                         validate_result = is_validate_data(obj)
                         if not validate_result['result']:
-                            print('\nInvalid data at line {}: "{}"!'.format(line_num, validate_result['message']))
+                            log.critical('\nInvalid data at line {}: "{}"!'.format(line_num, validate_result['message']))
                             sys.exit(1)
-                    print('Done\n"{}" is a valid file, loading into Neo4j ...'.format(txt), end='')
+                    log.info('"{}" is a valid file, loading into Neo4j ...'.format(txt))
 
                 with open(txt) as in_file:
                     reader = csv.DictReader(in_file, delimiter='\t')
@@ -81,26 +84,25 @@ if __name__ == '__main__':
                                 post_statement += 'MATCH (m:{} {{{}: "{}"}})\n'.format(other_node, other_id, value)
                                 post_statement += 'MERGE (n)-[:{}]->(m);'.format(relationship)
                             else:
-                                # print('Type of {}:{} is "{}"'.format(key, value, type(value)))
+                                log.debug('Type of {}:{} is "{}"'.format(key, value, type(value)))
                                 # TODO: deal with numbers and booleans that doesn't require double quotes
                                 prop_statement += ', n.{} = "{}"'.format(key, value)
 
                         statement += prop_statement
                         statement += ' ON MATCH ' + prop_statement + ';'
 
-                        # print(pre_statement)
-                        result = session.run(pre_statement)
-                        # print(result)
-                        # print(statement)
+                        log.debug(pre_statement)
+                        result_pre = session.run(pre_statement)
+                        log.debug(result_pre)
+                        log.debug(statement)
                         result = session.run(statement)
-                        # print(result)
-                        # print(after_statement)
-                        result = session.run(post_statement)
-                        # print(result)
-                    print('Done.')
+                        log.debug(result)
+                        log.debug(post_statement)
+                        result_post = session.run(post_statement)
+                        log.debug(result_post)
         driver.close()
 
 
     except ServiceUnavailable as err:
-        print(err)
-        print("Can't connect to Neo4j server at: \"{}\"".format(uri))
+        log.exception(err)
+        log.critical("Can't connect to Neo4j server at: \"{}\"".format(uri))
