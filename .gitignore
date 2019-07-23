@@ -1,3 +1,4 @@
 tmp/
 venv/
 Pentaho-scripts/
+__pycache__/
