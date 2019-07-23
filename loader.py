@@ -20,6 +20,13 @@ def is_validate_data(obj):
         return {'result': False, 'message': "{} or {} doesn't exist!".format(NODE_TYPE, ID)}
     return {'result': True}
 
+def cleanup_node(node):
+    obj = {}
+    for key, value in node.items():
+        obj[key.strip()] = value.strip()
+    return obj
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Load TSV(TXT) files (from Pentaho) to Neo4j')
     parser.add_argument('-i', '--uri', help='Neo4j uri like bolt://12.34.56.78:7687')
@@ -51,7 +58,7 @@ if __name__ == '__main__':
                     reader = csv.DictReader(in_file, delimiter='\t')
                     line_num = 0
                     for org_obj in reader:
-                        obj = {key.strip():value.strip() for (key,value) in org_obj.items()}
+                        obj = cleanup_node(org_obj)
                         line_num += 1
                         validate_result = is_validate_data(obj)
                         if not validate_result['result']:
@@ -62,7 +69,7 @@ if __name__ == '__main__':
                 with open(txt) as in_file:
                     reader = csv.DictReader(in_file, delimiter='\t')
                     for org_obj in reader:
-                        obj = {key.strip():value.strip() for (key,value) in org_obj.items()}
+                        obj = cleanup_node(org_obj)
                         label = obj[NODE_TYPE]
                         id = obj[ID]
                         # pre_statement is used to make sure related nodes exist, create one if necessary
