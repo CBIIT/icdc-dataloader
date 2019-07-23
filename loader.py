@@ -14,20 +14,118 @@ ID = 'submitter_id'
 
 excluded_fields = { NODE_TYPE }
 
-def is_validate_data(obj):
-    # return {'result': False, 'message': 'Fail everything!'}
-    if NODE_TYPE not in obj or ID not in obj:
-        return {'result': False, 'message': "{} or {} doesn't exist!".format(NODE_TYPE, ID)}
-    return {'result': True}
+class Loader:
+    def __init__(self, log, driver, schema, file_list):
+        self.log = log
+        self.driver = driver
+        self.schema = schema
+        self.file_list = file_list
 
-def cleanup_node(node):
-    obj = {}
-    for key, value in node.items():
-        obj[key.strip()] = value.strip()
-    return obj
+    def load(self):
+        for txt in self.file_list:
+            self.validate_file(txt)
+
+        self.nodes_created = 0
+        self.relationships_created = 0
+        with self.driver.session() as session:
+            for txt in self.file_list:
+                self.load_nodes(session, txt)
+            for txt in self.file_list:
+                self.load_relationships(session, txt)
+        self.log.info('{} nodes and {} relationships created!'.format(self.nodes_created, self.relationships_created))
 
 
-if __name__ == '__main__':
+    def is_validate_data(self, obj):
+        # return {'result': False, 'message': 'Fail everything!'}
+        if NODE_TYPE not in obj or ID not in obj:
+            return {'result': False, 'message': "{} or {} doesn't exist!".format(NODE_TYPE, ID)}
+        return {'result': True}
+
+    def cleanup_node(self, node):
+        obj = {}
+        for key, value in node.items():
+            obj[key.strip()] = value.strip()
+        return obj
+
+
+    # Validate file
+    def validate_file(self, file_name):
+        with open(file_name) as in_file:
+            self.log.info('Validating file "{}" ...'.format(file_name))
+            reader = csv.DictReader(in_file, delimiter='\t')
+            line_num = 0
+            for org_obj in reader:
+                obj = self.cleanup_node(org_obj)
+                line_num += 1
+                validate_result = self.is_validate_data(obj)
+                if not validate_result['result']:
+                    self.log.critical('\nInvalid data at line {}: "{}"!'.format(line_num, validate_result['message']))
+                    return False
+            return True
+
+
+    # load file
+    def load_nodes(self, session, file_name):
+        self.log.info('Loading nodes from file: {}'.format(file_name))
+
+        with open(file_name) as in_file:
+            reader = csv.DictReader(in_file, delimiter='\t')
+            for org_obj in reader:
+                obj = self.cleanup_node(org_obj)
+                label = obj[NODE_TYPE]
+                id = obj[ID]
+                # statement is used to create current node
+                statement = 'MERGE (n:{} {{{}: "{}"}}) ON CREATE '.format(label, ID, id)
+                # prop_statement set properties of current node
+                prop_statement = 'SET n.{} = "{}" '.format(ID, id)
+                # post_statement is used to create relationships between nodes
+                for key, value in obj.items():
+                    if key in excluded_fields:
+                        continue
+                    elif re.match(r'\w+\.{}'.format(ID), key):
+                        other_node, other_id = key.split('.')
+                    elif key != ID:
+                        # log.debug('Type of {}:{} is "{}"'.format(key, value, type(value)))
+                        # TODO: deal with numbers and booleans that doesn't require double quotes
+                        prop_statement += ', n.{} = "{}"'.format(key, value)
+
+                statement += prop_statement
+                statement += ' ON MATCH ' + prop_statement + ';'
+
+                self.log.debug(statement)
+                result = session.run(statement)
+                count = result.summary().counters.nodes_created
+                self.nodes_created += count
+                self.log.debug(count)
+
+    def load_relationships(self, session, file_name):
+        self.log.info('Loading relationships from file: {}'.format(file_name))
+
+        with open(file_name) as in_file:
+            reader = csv.DictReader(in_file, delimiter='\t')
+            for org_obj in reader:
+                obj = self.cleanup_node(org_obj)
+                label = obj[NODE_TYPE]
+                id = obj[ID]
+                # post_statement is used to create relationships between nodes
+                statement = ''
+                for key, value in obj.items():
+                    if key in excluded_fields:
+                        continue
+                    elif re.match(r'\w+\.{}'.format(ID), key):
+                        other_node, other_id = key.split('.')
+                        relationship = self.schema.relationships['{}->{}'.format(label, other_node)]
+                        statement += 'MATCH (n:{} {{{}: "{}"}})\n'.format(label, ID, id)
+                        statement += 'MATCH (m:{} {{{}: "{}"}})\n'.format(other_node, other_id, value)
+                        statement += 'MERGE (n)-[:{}]->(m);'.format(relationship)
+
+                self.log.debug(statement)
+                result = session.run(statement)
+                count = result.summary().counters.relationships_created
+                self.relationships_created += count
+                self.log.debug(count)
+
+def main():
     parser = argparse.ArgumentParser(description='Load TSV(TXT) files (from Pentaho) to Neo4j')
     parser.add_argument('-i', '--uri', help='Neo4j uri like bolt://12.34.56.78:7687')
     parser.add_argument('-u', '--user', help='Neo4j user')
@@ -44,72 +142,19 @@ if __name__ == '__main__':
     log = get_logger('Data Loader')
 
     log.debug(args)
-    # sys.exit()
 
     try:
         file_list = glob.glob('{}/*.txt'.format(args.dir))
         schema = ICDC_Schema(args.schema)
         driver = GraphDatabase.driver(uri, auth=(user, password))
-        with driver.session() as session:
-            for txt in file_list:
-                log.debug("=======================")
-                with open(txt) as in_file:
-                    log.info('Validating file "{}" ...'.format(txt))
-                    reader = csv.DictReader(in_file, delimiter='\t')
-                    line_num = 0
-                    for org_obj in reader:
-                        obj = cleanup_node(org_obj)
-                        line_num += 1
-                        validate_result = is_validate_data(obj)
-                        if not validate_result['result']:
-                            log.critical('\nInvalid data at line {}: "{}"!'.format(line_num, validate_result['message']))
-                            sys.exit(1)
-                    log.info('"{}" is a valid file, loading into Neo4j ...'.format(txt))
+        loader = Loader(log, driver, schema, file_list)
+        loader.load()
 
-                with open(txt) as in_file:
-                    reader = csv.DictReader(in_file, delimiter='\t')
-                    for org_obj in reader:
-                        obj = cleanup_node(org_obj)
-                        label = obj[NODE_TYPE]
-                        id = obj[ID]
-                        # pre_statement is used to make sure related nodes exist, create one if necessary
-                        pre_statement = ''
-                        # statement is used to create current node
-                        statement = 'MERGE (n:{} {{{}: "{}"}}) ON CREATE '.format(label, ID, id)
-                        # prop_statement set properties of current node
-                        prop_statement = 'SET n.{} = "{}" '.format(ID, id)
-                        # post_statement is used to create relationships between nodes
-                        post_statement = ''
-                        for key, value in obj.items():
-                            if key in excluded_fields:
-                                continue
-                            elif re.match(r'\w+\.{}'.format(ID), key):
-                                other_node, other_id = key.split('.')
-                                relationship = schema.relationships['{}->{}'.format(label, other_node)]
-                                pre_statement += 'MERGE (m:{} {{{}: "{}"}});'.format(other_node, other_id, value)
-                                post_statement += 'MATCH (n:{} {{{}: "{}"}})\n'.format(label, ID, id)
-                                post_statement += 'MATCH (m:{} {{{}: "{}"}})\n'.format(other_node, other_id, value)
-                                post_statement += 'MERGE (n)-[:{}]->(m);'.format(relationship)
-                            else:
-                                log.debug('Type of {}:{} is "{}"'.format(key, value, type(value)))
-                                # TODO: deal with numbers and booleans that doesn't require double quotes
-                                prop_statement += ', n.{} = "{}"'.format(key, value)
-
-                        statement += prop_statement
-                        statement += ' ON MATCH ' + prop_statement + ';'
-
-                        log.debug(pre_statement)
-                        result_pre = session.run(pre_statement)
-                        log.debug(result_pre)
-                        log.debug(statement)
-                        result = session.run(statement)
-                        log.debug(result)
-                        log.debug(post_statement)
-                        result_post = session.run(post_statement)
-                        log.debug(result_post)
         driver.close()
-
 
     except ServiceUnavailable as err:
         log.exception(err)
         log.critical("Can't connect to Neo4j server at: \"{}\"".format(uri))
+
+if __name__ == '__main__':
+    main()
