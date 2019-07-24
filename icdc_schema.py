@@ -116,7 +116,8 @@ class ICDC_Schema:
             else:
                 node[self.plural(otherNode)] = '[{}] @relation(name:"{}", direction:OUT)'.format(otherNode, relationship)
         else:
-            self.log.warn('Unsupported relationship multiplier: "{}"'.format(multiplier))
+            self.log.warning('Unsupported relationship multiplier: "{}"'.format(multiplier))
+
 
     def get_type(self, name):
         result = DEFAULT_TYPE
@@ -190,7 +191,7 @@ class ICDC_Schema:
         if word in plurals:
             return plurals[word]
         else:
-            self.log.warn('Plural for "{}" not found!'.format(word))
+            self.log.warning('Plural for "{}" not found!'.format(word))
             return 'NONE'
 
 if __name__ == '__main__':
