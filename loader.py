@@ -59,7 +59,7 @@ class Loader:
         else:
             return obj[id_field]
 
-    def is_validate_data(self, obj):
+    def is_valid_data(self, obj):
         if NODE_TYPE not in obj:
             return {'result': False, 'message': "{} doesn't exist!".format(NODE_TYPE)}
 
@@ -86,7 +86,7 @@ class Loader:
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 line_num += 1
-                validate_result = self.is_validate_data(obj)
+                validate_result = self.is_valid_data(obj)
                 if not validate_result['result']:
                     self.log.critical('\nInvalid data at line {}: "{}"!'.format(line_num, validate_result['message']))
                     return False
