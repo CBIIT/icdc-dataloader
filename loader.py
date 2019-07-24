@@ -22,7 +22,9 @@ class Loader:
 
     def load(self):
         for txt in self.file_list:
-            self.validate_file(txt)
+            if not self.validate_file(txt):
+                self.log.error('Validating file "{}" failed!'.format(txt))
+                sys.exit(1)
 
         self.nodes_created = 0
         self.relationships_created = 0
@@ -54,7 +56,7 @@ class Loader:
         if not id_field:
             return None
         if id_field not in obj:
-            self.log.error('get_id: there is no "{}" field in node, can\'t retrieve id!'.format(id_field))
+            self.log.debug('get_id: there is no "{}" field in node, can\'t retrieve id!'.format(id_field))
             return None
         else:
             return obj[id_field]
@@ -63,10 +65,10 @@ class Loader:
         if NODE_TYPE not in obj:
             return {'result': False, 'message': "{} doesn't exist!".format(NODE_TYPE)}
 
-        id = self.get_id(obj)
-        id_field = self.get_id_field(obj)
-        if not id:
-            return {'result': False, 'message': "{} is empty".format(id_field)}
+        # id = self.get_id(obj)
+        # id_field = self.get_id_field(obj)
+        # if id_field and not id:
+        #     return {'result': False, 'message': "{} is empty".format(id_field)}
 
         return {'result': True}
 
@@ -88,7 +90,7 @@ class Loader:
                 line_num += 1
                 validate_result = self.is_valid_data(obj)
                 if not validate_result['result']:
-                    self.log.critical('\nInvalid data at line {}: "{}"!'.format(line_num, validate_result['message']))
+                    self.log.error('Invalid data at line {}: "{}"!'.format(line_num, validate_result['message']))
                     return False
             return True
 
@@ -105,10 +107,13 @@ class Loader:
                 id = self.get_id(obj)
                 id_field = self.get_id_field(obj)
                 # statement is used to create current node
-                statement = 'MERGE (n:{} {{{}: "{}"}}) ON CREATE '.format(label, id_field, id)
+                statement = ''
                 # prop_statement set properties of current node
-                prop_statement = 'SET n.{} = "{}" '.format(id_field, id)
-                # post_statement is used to create relationships between nodes
+                if id:
+                    prop_statement = 'SET n.{} = "{}"'.format(id_field, id)
+                else:
+                    prop_statement = []
+
                 for key, value in obj.items():
                     if key in excluded_fields:
                         continue
@@ -117,10 +122,17 @@ class Loader:
                     elif key != id_field:
                         # log.debug('Type of {}:{} is "{}"'.format(key, value, type(value)))
                         # TODO: deal with numbers and booleans that doesn't require double quotes
-                        prop_statement += ', n.{} = "{}"'.format(key, value)
+                        if id:
+                            prop_statement += ', n.{} = "{}"'.format(key, value)
+                        else:
+                            prop_statement.append('{}: "{}"'.format(key, value))
 
-                statement += prop_statement
-                statement += ' ON MATCH ' + prop_statement + ';'
+                if id:
+                    statement += 'MERGE (n:{} {{{}: "{}"}})'.format(label, id_field, id)
+                    statement += ' ON CREATE ' + prop_statement
+                    statement += ' ON MATCH ' + prop_statement
+                else:
+                    statement += 'MERGE (n:{} {{ {} }})'.format(label, ', '.join(prop_statement))
 
                 self.log.debug(statement)
                 result = session.run(statement)
@@ -146,8 +158,15 @@ class Loader:
                 label = obj[NODE_TYPE]
                 id = self.get_id(obj)
                 id_field = self.get_id_field(obj)
-                # post_statement is used to create relationships between nodes
+                # statement is used to create relationships between nodes
                 statement = ''
+                # condition_statement is used to find current node
+                if id:
+                    condition_statement = '{}: "{}"'.format(id_field, id)
+                else:
+                    condition_statement = []
+
+                relationship = None
                 for key, value in obj.items():
                     if key in excluded_fields:
                         continue
@@ -157,16 +176,25 @@ class Loader:
                         if not relationship:
                             self.log.error('Relationship not found!')
                             sys.exit(1)
-                        if self.node_exists(session, other_node, other_id, value):
-                            statement += 'MATCH (n:{} {{{}: "{}"}})\n'.format(label, id_field, id)
-                            statement += 'MATCH (m:{} {{{}: "{}"}})\n'.format(other_node, other_id, value)
-                            statement += 'MERGE (n)-[:{}]->(m);'.format(relationship)
-                            self.log.debug(statement)
-                            result = session.run(statement)
-                            count = result.summary().counters.relationships_created
-                            self.relationships_created += count
+                        if not self.node_exists(session, other_node, other_id, value):
+                            self.log.warning('Node (:{} {{{}: "{}"}} not found in DB!'.format(other_node, other_id, value))
                         else:
-                            self.log.warning('Node (:{} {{{}: {}}} not found in DB!'.format(other_node, other_id, value))
+                            statement += 'MATCH (m:{} {{{}: "{}"}}) '.format(other_node, other_id, value)
+                    elif not id:
+                        condition_statement.append('{}: "{}"'.format(key, value))
+
+                if statement and relationship:
+                    if id:
+                        statement += 'MATCH (n:{} {{ {} }}) '.format(label, condition_statement)
+                    else:
+                        statement += 'MATCH (n:{} {{ {} }}) '.format(label, ', '.join(condition_statement))
+
+                    statement += 'MERGE (n)-[:{}]->(m);'.format(relationship)
+
+                    self.log.debug(statement)
+                    result = session.run(statement)
+                    count = result.summary().counters.relationships_created
+                    self.relationships_created += count
 
 
 def main():
