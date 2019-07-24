@@ -10,7 +10,6 @@ from icdc_schema import ICDC_Schema
 from utils import *
 
 NODE_TYPE = 'type'
-ID = 'submitter_id'
 
 excluded_fields = { NODE_TYPE }
 
@@ -35,10 +34,40 @@ class Loader:
         self.log.info('{} nodes and {} relationships created!'.format(self.nodes_created, self.relationships_created))
 
 
+    def get_id_field(self, obj):
+        if NODE_TYPE not in obj:
+            self.log.error('get_id_field: there is no "{}" field in node, can\'t retrieve id!'.format(NODE_TYPE))
+            return None
+        node_type = obj[NODE_TYPE]
+        if node_type:
+            # TODO: put it somewhere in model to avoid hard coded special case for study
+            if node_type == 'study':
+                return 'clinical_study_designation'
+            else:
+                return node_type + '_id'
+        else:
+            self.log.error('get_id_field: "{}" field is empty'.format(NODE_TYPE))
+            return None
+
+    def get_id(self, obj):
+        id_field = self.get_id_field(obj)
+        if not id_field:
+            return None
+        if id_field not in obj:
+            self.log.error('get_id: there is no "{}" field in node, can\'t retrieve id!'.format(id_field))
+            return None
+        else:
+            return obj[id_field]
+
     def is_validate_data(self, obj):
-        # return {'result': False, 'message': 'Fail everything!'}
-        if NODE_TYPE not in obj or ID not in obj:
-            return {'result': False, 'message': "{} or {} doesn't exist!".format(NODE_TYPE, ID)}
+        if NODE_TYPE not in obj:
+            return {'result': False, 'message': "{} doesn't exist!".format(NODE_TYPE)}
+
+        id = self.get_id(obj)
+        id_field = self.get_id_field(obj)
+        if not id:
+            return {'result': False, 'message': "{} is empty".format(id_field)}
+
         return {'result': True}
 
     def cleanup_node(self, node):
@@ -73,18 +102,19 @@ class Loader:
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 label = obj[NODE_TYPE]
-                id = obj[ID]
+                id = self.get_id(obj)
+                id_field = self.get_id_field(obj)
                 # statement is used to create current node
-                statement = 'MERGE (n:{} {{{}: "{}"}}) ON CREATE '.format(label, ID, id)
+                statement = 'MERGE (n:{} {{{}: "{}"}}) ON CREATE '.format(label, id_field, id)
                 # prop_statement set properties of current node
-                prop_statement = 'SET n.{} = "{}" '.format(ID, id)
+                prop_statement = 'SET n.{} = "{}" '.format(id_field, id)
                 # post_statement is used to create relationships between nodes
                 for key, value in obj.items():
                     if key in excluded_fields:
                         continue
-                    elif re.match(r'\w+\.{}'.format(ID), key):
-                        other_node, other_id = key.split('.')
-                    elif key != ID:
+                    elif re.match(r'\w+\.\w+', key):
+                        continue
+                    elif key != id_field:
                         # log.debug('Type of {}:{} is "{}"'.format(key, value, type(value)))
                         # TODO: deal with numbers and booleans that doesn't require double quotes
                         prop_statement += ', n.{} = "{}"'.format(key, value)
@@ -96,7 +126,15 @@ class Loader:
                 result = session.run(statement)
                 count = result.summary().counters.nodes_created
                 self.nodes_created += count
-                self.log.debug(count)
+
+    def node_exists(self, session, label, property, value):
+        statement = 'MATCH (m:{} {{{}: "{}"}}) return m'.format(label, property, value)
+        result = session.run(statement)
+        count = result.detach()
+        self.log.debug('{} node(s) found'.format(count))
+        if count > 1:
+            self.log.warning('More than one nodes found! ')
+        return count >= 1
 
     def load_relationships(self, session, file_name):
         self.log.info('Loading relationships from file: {}'.format(file_name))
@@ -106,24 +144,30 @@ class Loader:
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 label = obj[NODE_TYPE]
-                id = obj[ID]
+                id = self.get_id(obj)
+                id_field = self.get_id_field(obj)
                 # post_statement is used to create relationships between nodes
                 statement = ''
                 for key, value in obj.items():
                     if key in excluded_fields:
                         continue
-                    elif re.match(r'\w+\.{}'.format(ID), key):
+                    elif re.match(r'\w+\.\w+', key):
                         other_node, other_id = key.split('.')
-                        statement += 'MATCH (n:{} {{{}: "{}"}})\n'.format(label, ID, id)
-                        statement += 'MATCH (m:{} {{{}: "{}"}})\n'.format(other_node, other_id, value)
-                        statement += 'MERGE (n)-[:{}]->(m);'.format(relationship)
                         relationship = self.schema.get_relationship(label, other_node)
+                        if not relationship:
+                            self.log.error('Relationship not found!')
+                            sys.exit(1)
+                        if self.node_exists(session, other_node, other_id, value):
+                            statement += 'MATCH (n:{} {{{}: "{}"}})\n'.format(label, id_field, id)
+                            statement += 'MATCH (m:{} {{{}: "{}"}})\n'.format(other_node, other_id, value)
+                            statement += 'MERGE (n)-[:{}]->(m);'.format(relationship)
+                            self.log.debug(statement)
+                            result = session.run(statement)
+                            count = result.summary().counters.relationships_created
+                            self.relationships_created += count
+                        else:
+                            self.log.warning('Node (:{} {{{}: {}}} not found in DB!'.format(other_node, other_id, value))
 
-                self.log.debug(statement)
-                result = session.run(statement)
-                count = result.summary().counters.relationships_created
-                self.relationships_created += count
-                self.log.debug(count)
 
 def main():
     parser = argparse.ArgumentParser(description='Load TSV(TXT) files (from Pentaho) to Neo4j')
