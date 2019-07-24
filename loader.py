@@ -114,10 +114,10 @@ class Loader:
                         continue
                     elif re.match(r'\w+\.{}'.format(ID), key):
                         other_node, other_id = key.split('.')
-                        relationship = self.schema.relationships['{}->{}'.format(label, other_node)]
                         statement += 'MATCH (n:{} {{{}: "{}"}})\n'.format(label, ID, id)
                         statement += 'MATCH (m:{} {{{}: "{}"}})\n'.format(other_node, other_id, value)
                         statement += 'MERGE (n)-[:{}]->(m);'.format(relationship)
+                        relationship = self.schema.get_relationship(label, other_node)
 
                 self.log.debug(statement)
                 result = session.run(statement)

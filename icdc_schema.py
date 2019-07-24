@@ -69,7 +69,9 @@ class ICDC_Schema:
             for  end_points in desc[END_POINTS]:
                 src = end_points[SRC]
                 dest = end_points[DEST]
-                self.relationships['{}->{}'.format(src, dest)] = name
+                if src not in self.relationships:
+                    self.relationships[src] = {}
+                self.relationships[src][dest] = name
                 if MULTIPLIER in end_points:
                     actual_multiplier = end_points[MULTIPLIER]
                     self.log.debug('End point multiplier: "{}" overriding relationship multiplier: "{}"'.format(actual_multiplier, multiplier))
@@ -134,6 +136,20 @@ class ICDC_Schema:
                     self.log.debug('Property type: "{}" not supported, use default type: "{}"'.format(prop_desc, DEFAULT_TYPE))
 
         return result
+
+
+    def get_relationship(self, src, dest):
+        if src in self.relationships:
+            relationships = self.relationships[src]
+            if relationships and dest in relationships:
+                return relationships[dest]
+            else:
+                self.log('No relationships found for "{}"-->"{}"'.format(src, dest))
+                return None
+        else:
+            self.log.debug('No relationships start from "{}"'.format(src))
+            return None
+
 
     # Get type info from description
     def map_type(self, type_name):
