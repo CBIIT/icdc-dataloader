@@ -31,15 +31,32 @@ type GenderCaseCount {
   cases: Int
 }
 
+type StudyOfProgram {
+  program_id: String
+  clinical_study_id: String
+  clinical_study_designation: String
+  clinical_study_name: String
+  clinical_study_description: String
+  clinical_study_type: String
+  date_of_iacuc_approval: String
+  dates_of_conduct: String
+  numberOfCases: Int
+}
+
 type QueryType {
   numberOfStudies: Int @cypher(statement: "MATCH (n:study) RETURN  count (n)")
   numberOfCases: Int @cypher(statement: "MATCH (n:case) RETURN  count (n)")
   numberOfSamples:Int @cypher(statement: "MATCH (n:sample) RETURN  count (n)")
   numberOfFiles: Int @cypher(statement: "MATCH (n:file) RETURN  count (n)")
+  numberOfAliquots: Int @cypher(statement: "MATCH (n:aliquot) return count(n)")
+  studiesByProgramId(program_id: String): [StudyOfProgram] @cypher(statement: "MATCH (p:program {program_id: $program_id})<-[*]-(s:study)<-[*]-(c:case) RETURN p.program_id AS program_id, s.clinical_study_id AS clinical_study_id, s.clinical_study_designation AS clinical_study_designation, s.clinical_study_name AS clinical_study_name, s.clinical_study_description AS clinical_study_description, s.clinical_study_type AS clinical_study_type, s.date_of_iacuc_approval AS date_of_iacuc_approval, s.dates_of_conduct AS dates_of_conduct, count(c) as numberOfCases")
+  casesByStudyId(study_id: String): [case] @cypher(statement: "MATCH (s:study {clinical_study_designation: $study_id})<-[*]-(c:case) return c")
+  samplesByCaseId(case_id: String): [sample] @cypher(statement: "MATCH (c:case {case_id: $case_id})<-[*]-(s:sample) RETURN s")
+  filesBySampleId(sample_id: String): [file] @cypher(statement: "MATCH (s:sample {sample_id: $sample_id})<-[*]-(f:file) RETURN f")
+
   caseCountByStudyCode: [StudyCodeCaseCount] @cypher(statement: "MATCH (s:study)<-[:member_of]-(:study_arm)<-[member_of]-(:cohort)<-[:member_of]-(c:case) RETURN s.submitter_id AS study_code, count(c) AS cases ORDER BY s.submitter_id")
   caseCountByDiagnosis: [DiagnosisCaseCount] @cypher(statement: "MATCH (d:diagnosis)-[:of_case]->(c:case) RETURN d.disease_term AS diagnosis, count(c) AS cases ORDER BY d.disease_term")
   caseCountByGender: [GenderCaseCount] @cypher(statement: "MATCH (d:demographic)-[:of_case]->(c:case) RETURN d.sex AS gender, count(c) AS cases ORDER BY d.sex")
   caseCountByBreed: [BreedCaseCount] @cypher(statement: "MATCH (c:case)<-[:of_case]-(d:demographic) RETURN d.breed AS breed, count(c) AS cases")
   casesByStudyAndBreeds(study_name: String, breeds: [String], disease_terms: [String]): [CaseDetail] @cypher(statement: "MATCH (s:study)<-[:member_of]-(a:study_arm)<-[:member_of]-(c:cohort)<-[:member_of]-(case:case)<-[:of_case]-(d:demographic), (case)<-[:of_case]-(diag:diagnosis) WHERE s.clinical_study_name = $study_name and d.breed IN $breeds and diag.disease_term IN $disease_terms RETURN case.patient_id AS patient_id, d.breed AS breed, d.patient_age_at_enrollment AS patient_age_at_enrollment, d.sex AS sex, diag.disease_term AS disease_term, diag.stage_of_disease AS stage_of_disease")
-#  numberOfBiospecimenAliguots: Int
 }
