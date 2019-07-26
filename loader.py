@@ -8,6 +8,7 @@ import re
 from neo4j import GraphDatabase, ServiceUnavailable
 from icdc_schema import ICDC_Schema
 from utils import *
+from timeit import default_timer as timer
 
 NODE_TYPE = 'type'
 
@@ -21,6 +22,7 @@ class Loader:
         self.file_list = file_list
 
     def load(self):
+        start = timer()
         for txt in self.file_list:
             if not self.validate_file(txt):
                 self.log.error('Validating file "{}" failed!'.format(txt))
@@ -28,12 +30,24 @@ class Loader:
 
         self.nodes_created = 0
         self.relationships_created = 0
+        self.nodes_stat = {}
+        self.relationships_stat = {}
         with self.driver.session() as session:
             for txt in self.file_list:
                 self.load_nodes(session, txt)
             for txt in self.file_list:
                 self.load_relationships(session, txt)
+        end = timer()
+
+        # Print statistics
+        for node in sorted(self.nodes_stat.keys()):
+            count = self.nodes_stat[node]
+            self.log.info('Node: (:{}) loaded: {}'.format(node, count))
+        for rel in sorted(self.relationships_stat.keys()):
+            count = self.relationships_stat[rel]
+            self.log.info('Relationship: [:{}] loaded: {}'.format(rel, count))
         self.log.info('{} nodes and {} relationships created!'.format(self.nodes_created, self.relationships_created))
+        self.log.info('Loading time: {:.2f} seconds'.format(end - start))  # Time in seconds, e.g. 5.38091952400282
 
 
     def get_id_field(self, obj):
@@ -138,6 +152,7 @@ class Loader:
                 result = session.run(statement)
                 count = result.summary().counters.nodes_created
                 self.nodes_created += count
+                self.nodes_stat[label] = self.nodes_stat.get(label, 0) + count
 
     def node_exists(self, session, label, property, value):
         statement = 'MATCH (m:{} {{{}: "{}"}}) return m'.format(label, property, value)
@@ -195,6 +210,7 @@ class Loader:
                     result = session.run(statement)
                     count = result.summary().counters.relationships_created
                     self.relationships_created += count
+                    self.relationships_stat[relationship] = self.relationships_stat.get(relationship, 0) + count
 
 
 def main():
