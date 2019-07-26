@@ -46,7 +46,7 @@ class Loader:
         for rel in sorted(self.relationships_stat.keys()):
             count = self.relationships_stat[rel]
             self.log.info('Relationship: [:{}] loaded: {}'.format(rel, count))
-        self.log.info('{} nodes and {} relationships created!'.format(self.nodes_created, self.relationships_created))
+        self.log.info('{} nodes and {} relationships loaded!'.format(self.nodes_created, self.relationships_created))
         self.log.info('Loading time: {:.2f} seconds'.format(end - start))  # Time in seconds, e.g. 5.38091952400282
 
 
