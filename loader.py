@@ -134,12 +134,11 @@ class Loader:
                     elif re.match(r'\w+\.\w+', key):
                         continue
                     elif key != id_field:
-                        # log.debug('Type of {}:{} is "{}"'.format(key, value, type(value)))
-                        # TODO: deal with numbers and booleans that doesn't require double quotes
+                        value_string = self.get_value_string(key, value)
                         if id:
-                            prop_statement += ', n.{} = "{}"'.format(key, value)
+                            prop_statement += ', n.{} = {}'.format(key, value_string)
                         else:
-                            prop_statement.append('{}: "{}"'.format(key, value))
+                            prop_statement.append('{}: {}'.format(key, value_string))
 
                 if id:
                     statement += 'MERGE (n:{} {{{}: "{}"}})'.format(label, id_field, id)
@@ -153,6 +152,14 @@ class Loader:
                 count = result.summary().counters.nodes_created
                 self.nodes_created += count
                 self.nodes_stat[label] = self.nodes_stat.get(label, 0) + count
+
+    def get_value_string(self, key, value):
+        key_type = self.schema.get_type(key)
+        if key_type == 'String':
+            value_string = '"{}"'.format(value)
+        else:
+            value_string = value if value else 0
+        return value_string
 
     def node_exists(self, session, label, property, value):
         statement = 'MATCH (m:{} {{{}: "{}"}}) return m'.format(label, property, value)
@@ -196,7 +203,7 @@ class Loader:
                         else:
                             statement += 'MATCH (m:{} {{{}: "{}"}}) '.format(other_node, other_id, value)
                     elif not id:
-                        condition_statement.append('{}: "{}"'.format(key, value))
+                        condition_statement.append('{}: {}'.format(key, self.get_value_string(key, value)))
 
                 if statement and relationship:
                     if id:

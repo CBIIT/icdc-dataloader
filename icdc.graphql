@@ -1,5 +1,5 @@
 type adverse_event {
-  ae_dose: Float
+  ae_dose: String
   ae_agent_name: String
   day_in_cycle: Int
   date_resolved: String
@@ -38,17 +38,17 @@ type agent_administration {
   medication_lot_number: String
   medication_vial_id: String
   medication_actual_units_of_measure: String
-  medication_duration: Float
+  medication_duration: String
   medication_units_of_measure: String
-  medication_actual_dose: Float
+  medication_actual_dose: String
   phase: String
   start_time: String
   stop_time: String
-  dose_level: Float
+  dose_level: String
   dose_units_of_measure: String
   date_of_missed_dose: String
   medication_missed_dose: String
-  missed_dose_amount: Float
+  missed_dose_amount: String
   missed_dose_units_of_measure: String
   medication_course_number: String
   comment: String
@@ -80,7 +80,7 @@ type case {
 
 type cohort {
   cohort_description: String
-  cohort_dose: Float
+  cohort_dose: String
   cases: [case] @relation(name:"member_of", direction:IN)
   study_arm: study_arm @relation(name:"member_of", direction:OUT)
 }
@@ -252,7 +252,7 @@ type prior_therapy {
   date_of_last_dose: String
   agent_name: String
   dose_schedule: String
-  total_dose: Float
+  total_dose: String
   agent_units_of_measure: String
   best_response: String
   nonresponse_therapy_type: String
@@ -356,14 +356,14 @@ type visit {
 
 type vital_signs {
   date_of_vital_signs: String
-  body_temperature: Float
-  pulse: Int
-  respiration_rate: Int
+  body_temperature: String
+  pulse: String
+  respiration_rate: String
   respiration_pattern: String
-  systolic_bp: Int
-  pulse_ox: Float
-  patient_weight: Float
-  body_surface_area: Float
+  systolic_bp: String
+  pulse_ox: String
+  patient_weight: String
+  body_surface_area: String
   modified_ecog: String
   ecg: Boolean
   assessment_timepoint: Int
