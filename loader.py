@@ -212,9 +212,17 @@ class Loader:
                     self.relationships_created += count
                     self.relationships_stat[relationship] = self.relationships_stat.get(relationship, 0) + count
 
+def removeTrailingSlash(uri):
+    if uri.endswith('/'):
+        return re.sub('/+$', '', uri)
+    else:
+        return uri
 
+# Data loader will try to load all TSV(.TXT) files from given directory into Neo4j
+# optional arguments includes:
+# -i or --uri followed by Neo4j server address and port in format like bolt://12.34.56.78:7687
 def main():
-    parser = argparse.ArgumentParser(description='Load TSV(TXT) files (from Pentaho) to Neo4j')
+    parser = argparse.ArgumentParser(description='Load TSV(TXT) files (from Pentaho) into Neo4j')
     parser.add_argument('-i', '--uri', help='Neo4j uri like bolt://12.34.56.78:7687')
     parser.add_argument('-u', '--user', help='Neo4j user')
     parser.add_argument('-p', '--password', help='Neo4j password')
@@ -224,6 +232,8 @@ def main():
     args = parser.parse_args()
 
     uri = args.uri if args.uri else "bolt://localhost:7687"
+    uri = removeTrailingSlash(uri)
+
     password = args.password if args.password else os.environ['NEO_PASSWORD']
     user = args.user if args.user else 'neo4j'
 
