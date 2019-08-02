@@ -44,18 +44,22 @@ class ICDC_Schema:
         if NODES not in self.org_schema:
             self.log.error('Can\'t load any nodes!')
             sys.exit(1)
+
+        elif PROP_DEFINITIONS not in self.org_schema:
+            self.log.error('Can\'t load any properties!')
+            sys.exit(1)
+
         for key, value in self.org_schema[NODES].items():
             # Assume all keys start with '_' are not regular nodes
             if not key.startswith('_'):
                 self.process_node(key, value)
         self.log.debug("-------------processing edges-----------------")
-        if RELATIONSHIPS not in self.org_schema:
-            self.log.error('Can\'t load any relationships!')
-            sys.exit(1)
-        for key, value in self.org_schema[RELATIONSHIPS].items():
-            # Assume all keys start with '_' are not regular nodes
-            if not key.startswith('_'):
-                self.numRelationships += self.process_edges(key, value)
+        if RELATIONSHIPS in self.org_schema:
+            for key, value in self.org_schema[RELATIONSHIPS].items():
+                # Assume all keys start with '_' are not regular nodes
+                if not key.startswith('_'):
+                    self.numRelationships += self.process_edges(key, value)
+
 
     def process_node(self, name, desc):
         # Gather properties

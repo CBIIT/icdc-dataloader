@@ -268,12 +268,15 @@ def main():
 
     try:
         file_list = glob.glob('{}/*.txt'.format(args.dir))
-        schema = ICDC_Schema(args.schema)
-        driver = GraphDatabase.driver(uri, auth=(user, password))
-        loader = Loader(log, driver, schema, file_list)
-        loader.load()
+        if file_list:
+            schema = ICDC_Schema(args.schema)
+            driver = GraphDatabase.driver(uri, auth=(user, password))
+            loader = Loader(log, driver, schema, file_list)
+            loader.load()
 
-        driver.close()
+            driver.close()
+        else:
+            log.info('No files to load.')
 
     except ServiceUnavailable as err:
         log.exception(err)
