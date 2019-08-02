@@ -17,6 +17,7 @@ LABEL_NEXT = 'next'
 MULTIPLIER = 'Mul'
 NEXT_RELATIONSHIP = 'next'
 DEFAULT_MULTIPLIER = 'many-to=one'
+UNITS = 'units'
 
 
 class ICDC_Schema:
@@ -130,7 +131,7 @@ class ICDC_Schema:
                 if type(prop_desc) is str:
                     result = self.map_type(prop_desc)
                 elif type(prop_desc) is dict:
-                    if VALUE_TYPE in prop_desc:
+                    if VALUE_TYPE in prop_desc and UNITS not in prop_desc:
                         result = self.map_type(prop_desc[VALUE_TYPE])
                 else:
                     self.log.debug('Property type: "{}" not supported, use default type: "{}"'.format(prop_desc, DEFAULT_TYPE))
