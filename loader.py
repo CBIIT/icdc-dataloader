@@ -11,6 +11,7 @@ from utils import *
 from timeit import default_timer as timer
 
 NODE_TYPE = 'type'
+PSWD_ENV = 'NEO_PASSWORD'
 
 excluded_fields = { NODE_TYPE }
 
@@ -237,16 +238,33 @@ def main():
     parser.add_argument('dir', help='Data directory')
 
     args = parser.parse_args()
+    log = get_logger('Data Loader')
+    log.debug(args)
 
     uri = args.uri if args.uri else "bolt://localhost:7687"
     uri = removeTrailingSlash(uri)
 
-    password = args.password if args.password else os.environ['NEO_PASSWORD']
+    password = args.password
+    if not password:
+        if PSWD_ENV not in os.environ:
+            log.error('Password not specified! Please specify password with -p or --password argument, or set {} env var'.format(PSWD_ENV))
+            sys.exit(1)
+        else:
+            password = os.environ[PSWD_ENV]
     user = args.user if args.user else 'neo4j'
 
-    log = get_logger('Data Loader')
+    if not args.schema:
+        log.error('Please specify schema file(s) with -s or --schema argument')
+        sys.exit(1)
 
-    log.debug(args)
+    for schema_file in args.schema:
+        if not os.path.isfile(schema_file):
+            log.error('{} is not a file'.format(schema_file))
+            sys.exit(1)
+
+    if not os.path.isdir(args.dir):
+        log.error('{} is not a directory'.format(args.dir))
+        sys.exit(1)
 
     try:
         file_list = glob.glob('{}/*.txt'.format(args.dir))

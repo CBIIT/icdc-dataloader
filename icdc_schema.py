@@ -1,5 +1,6 @@
 import os
 import yaml
+import sys
 from utils import *
 
 NODES = 'Nodes'
@@ -30,7 +31,8 @@ class ICDC_Schema:
                 if os.path.isfile(aFile):
                     with open(aFile) as schema_file:
                         schema = yaml.safe_load(schema_file)
-                        self.org_schema.update(schema)
+                        if schema:
+                            self.org_schema.update(schema)
             except Exception as e:
                 self.log.exception(e)
 
@@ -39,11 +41,17 @@ class ICDC_Schema:
         self.numRelationships = 0
 
         self.log.debug("-------------processing nodes-----------------")
+        if NODES not in self.org_schema:
+            self.log.error('Can\'t load any nodes!')
+            sys.exit(1)
         for key, value in self.org_schema[NODES].items():
             # Assume all keys start with '_' are not regular nodes
             if not key.startswith('_'):
                 self.process_node(key, value)
         self.log.debug("-------------processing edges-----------------")
+        if RELATIONSHIPS not in self.org_schema:
+            self.log.error('Can\'t load any relationships!')
+            sys.exit(1)
         for key, value in self.org_schema[RELATIONSHIPS].items():
             # Assume all keys start with '_' are not regular nodes
             if not key.startswith('_'):
