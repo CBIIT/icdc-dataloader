@@ -119,6 +119,25 @@ other_tables = [
     'transaction_snapshots'
 ]
 
+def transform_program(obj):
+    if 'name' in obj and 'program_id' not in obj:
+        obj['program_id'] = obj['name']
+        obj['program_name'] = obj['name']
+        del obj['name']
+    return obj
+
+def transform_study(obj):
+    if 'submitter_id' in obj and 'clinical_study_designation' not in obj:
+        obj['clinical_study_designation'] = obj['submitter_id']
+        del obj['submitter_id']
+    return obj
+
+def transform_case(obj):
+    if 'submitter_id' in obj and 'case_id' not in obj:
+        obj['case_id'] = obj['submitter_id']
+        del obj['submitter_id']
+    return obj
+
 parser = argparse.ArgumentParser(description='Import GEN3 PostgreSQL database in csv files into Neo4j')
 parser.add_argument('dir', help='Data directory')
 parser.add_argument('-i', '--uri', help='Neo4j uri like bolt://12.34.56.78:7687')
@@ -135,27 +154,37 @@ driver = GraphDatabase.driver(uri, auth=(user, password))
 try:
     with driver.session() as session:
         for table in node_tables:
+            nodes_created_count = 0
             # insert nodes
             if table[0].startswith('node_'):
                 #continue
-                print(table[0])
+                print('Loading table: "{}"'.format(table[0]))
                 # label = table[0].replace('node_', '')
                 label = table[1]
                 with open('{}/{}.csv'.format(args.dir, table[0])) as inf:
                     reader = csv.DictReader(inf)
                     for row in reader:
                         props = json.loads(row['_props'])
+                        if label == 'program':
+                            props = transform_program(props)
+                        elif label == 'study':
+                            props = transform_study(props)
+                        elif label == 'case':
+                            props = transform_case(props)
                         prop_statement = 'SET n.created = "{}", n.acl = "{}", n._sysan = "{}"'.format(row['created'], row['acl'], row['_sysan'])
                         if props:
                             for key, val in props.items():
                                 prop_statement += ', n.{} = "{}"'.format(key, val)
                         statement = 'MERGE (n:{0} {{id: "{1}"}}) on create {2} on match {2}'.format(label, row['node_id'], prop_statement)
                         # print(statement)
-                        print(session.run(statement))
+                        result = session.run(statement)
+                        nodes_created_count += result.summary().counters.nodes_created
+                print('{} node(s) created'.format(nodes_created_count))
         for table in edge_tables:
+            edge_created_count = 0
             # insert edges
             if table[0].startswith('edge_'):
-                print(table[0])
+                print('Loading table: "{}"'.format(table[0]))
                 # label = table[0].replace('edge_', '')
                 label = table[1]
                 with open('{}/{}.csv'.format(args.dir, table[0])) as inf:
@@ -168,7 +197,9 @@ try:
                                 prop_statement += ', n.{} = "{}"'.format(key, val)
                         statement = 'MATCH (n1 {{id: "{0}"}}), (n2 {{id: "{1}"}}) MERGE (n1)-[n:{2}]->(n2) on create {3} on match {3}'.format(row['src_id'], row['dst_id'], label, prop_statement)
                         # print(statement)
-                        print(session.run(statement))
+                        result = session.run(statement)
+                        edge_created_count += result.summary().counters.relationships_created
+                print('{} relationship(s) created'.format(edge_created_count))
 except ServiceUnavailable as err:
     print(err)
     print("Can't connect to Neo4j server at: \"{}\"".format(uri))
