@@ -429,7 +429,7 @@ type QueryType {
   samplesByCaseId(case_id: String): [sample] @cypher(statement: "MATCH (c:case {case_id: $case_id})<-[*]-(s:sample) RETURN s")
   filesBySampleId(sample_id: String): [file] @cypher(statement: "MATCH (s:sample {sample_id: $sample_id})<-[*]-(f:file) RETURN f")
 
-  caseCountByStudyCode: [StudyCodeCaseCount] @cypher(statement: "MATCH (s:study)<-[:member_of]-(:study_arm)<-[member_of]-(:cohort)<-[:member_of]-(c:case) RETURN s.clinical_study_id AS study_code, count(c) AS cases ORDER BY s.clinical_study_id")
+  caseCountByStudyCode: [StudyCodeCaseCount] @cypher(statement: "MATCH (s:study)<-[:member_of]-(:study_arm)<-[member_of]-(:cohort)<-[:member_of]-(c:case) RETURN s.clinical_study_designation AS study_code, count(c) AS cases ORDER BY s.clinical_study_designation")
   caseCountByDiagnosis: [DiagnosisCaseCount] @cypher(statement: "MATCH (d:diagnosis)-[:of_case]->(c:case) RETURN d.disease_term AS diagnosis, count(c) AS cases ORDER BY d.disease_term")
   caseCountByGender: [GenderCaseCount] @cypher(statement: "MATCH (d:demographic)-[:of_case]->(c:case) RETURN d.sex AS gender, count(c) AS cases ORDER BY d.sex")
   caseCountByBreed: [BreedCaseCount] @cypher(statement: "MATCH (c:case)<-[:of_case]-(d:demographic) RETURN d.breed AS breed, count(c) AS cases")
