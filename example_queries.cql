@@ -51,7 +51,8 @@ match (p:program)<--(s:study)<--(a:study_arm)<--(co:cohort)
 return p, s, a, co
 
 # Detailed View
-match (p:program)<--(s:study)<--(a:study_arm)<--(co:cohort)<--(case:case)<--(cycle:cycle),
+match (p:program)<--(s:study)<--(a:study_arm)<--(co:cohort)
+optional match (co)<--(case:case)<--(cycle:cycle),
       (diag:diagnosis)-->(case)<--(demo:demographic),
       (e:enrollment)-->(case)
 return p, s, a, co, case, cycle, diag, demo, e
