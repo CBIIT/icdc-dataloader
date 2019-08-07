@@ -64,9 +64,10 @@ type assay {
 }
 
 type case {
+  case_id: String
   patient_id: String
   patient_first_name: String
-  case_id: String
+  crf_id: String
   cohort: cohort @relation(name:"member_of", direction:OUT)
   enrollment: enrollment @relation(name:"of_case", direction:IN)
   demographic: demographic @relation(name:"of_case", direction:IN)
@@ -112,10 +113,10 @@ type diagnosis {
   histology_cytopathology: String
   date_of_histology_confirmation: String
   histological_grade: String
-  pathology_report: String
-  treatment_data: String
-  follow_up_data: String
-  concurrent_disease: String
+  pathology_report: Boolean
+  treatment_data: Boolean
+  follow_up_data: Boolean
+  concurrent_disease: Boolean
   concurrent_disease_type: String
   crf_id: String
   case: case @relation(name:"of_case", direction:OUT)
@@ -284,8 +285,8 @@ type program {
   program_acronym: String
   program_short_description: String
   program_full_description: String
-  external_program_url: String
-  program_sort_order: String
+  program_external_url: String
+  program_sort_order: Int
   studies: [study] @relation(name:"member_of", direction:IN)
 }
 
