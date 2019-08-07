@@ -45,3 +45,13 @@ return s.submitter_id as study_code, c.patient_first_name as patient_first_name,
       e.site_short_name as site_short_name, e.veterinary_medical_center as veterinary_medical_center, e.patient_subgroup as patient_subgroup,
       diag.histology_cytopathology as histology_cytopathology, diag.date_of_histology_confirmation as date_of_histology_confirmation, diag.date_of_diagnosis as date_of_diagnosis, diag.primary_disease_site as primary_disease_site,
       diag.stage_of_disease as stage_of_disease, diag.disease_term as disease_term, diag.histological_grade as histological_grade
+
+# Summary View
+match (p:program)<--(s:study)<--(a:study_arm)<--(co:cohort)
+return p, s, a, co
+
+# Detailed View
+match (p:program)<--(s:study)<--(a:study_arm)<--(co:cohort)<--(case:case)<--(cycle:cycle),
+      (diag:diagnosis)-->(case)<--(demo:demographic),
+      (e:enrollment)-->(case)
+return p, s, a, co, case, cycle, diag, demo, e
