@@ -23,6 +23,12 @@ UNITS = 'units'
 
 class ICDC_Schema:
     def __init__(self, files):
+        if not files:
+            raise Exception('File list is empty, couldn\'t initialize ICDC_Schema object!')
+        else:
+            for data_file in files:
+                if not os.path.isfile(data_file):
+                    raise Exception('File "{}" doesn\'t exist'.format(data_file))
         self.log = get_logger('ICDC Schema')
         self.org_schema = {}
         for aFile in files:
