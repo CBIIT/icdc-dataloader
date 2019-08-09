@@ -128,6 +128,7 @@ class Loader:
 
         with open(file_name) as in_file:
             reader = csv.DictReader(in_file, delimiter='\t')
+            nodes_created = 0
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 label = obj[NODE_TYPE]
@@ -164,7 +165,9 @@ class Loader:
                 result = session.run(statement)
                 count = result.summary().counters.nodes_created
                 self.nodes_created += count
+                nodes_created += count
                 self.nodes_stat[label] = self.nodes_stat.get(label, 0) + count
+            self.log.info('{} (:{}) node(s) loaded'.format(nodes_created, label))
 
     def get_value_string(self, key, value):
         key_type = self.schema.get_type(key)
@@ -188,6 +191,7 @@ class Loader:
 
         with open(file_name) as in_file:
             reader = csv.DictReader(in_file, delimiter='\t')
+            relationships_created = 0
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 label = obj[NODE_TYPE]
@@ -230,7 +234,10 @@ class Loader:
                     result = session.run(statement)
                     count = result.summary().counters.relationships_created
                     self.relationships_created += count
+                    relationships_created += count
                     self.relationships_stat[relationship] = self.relationships_stat.get(relationship, 0) + count
+            self.log.info('{} [:{}] relationship(s) loaded'.format(relationships_created, relationship))
+
 
 def removeTrailingSlash(uri):
     if uri.endswith('/'):
