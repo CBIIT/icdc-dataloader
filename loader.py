@@ -173,6 +173,19 @@ class Loader:
         key_type = self.schema.get_type(key)
         if key_type == 'String':
             value_string = '"{}"'.format(value)
+        elif key_type == 'Boolean':
+            cleaned_value = None
+            if re.search(r'yes|true', value, re.IGNORECASE):
+                cleaned_value = True
+            elif re.search(r'no|false', value, re.IGNORECASE):
+                cleaned_value = False
+            else:
+                self.log.warning('Unsupported Boolean value: "{}"'.format(value))
+                cleaned_value = None
+            if cleaned_value != None:
+                value_string = '{}'.format(cleaned_value)
+            else:
+                value_string = '""'
         else:
             value_string = value if value else 0
         return value_string
