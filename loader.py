@@ -236,7 +236,7 @@ class Loader:
                     self.relationships_created += count
                     relationships_created += count
                     self.relationships_stat[relationship] = self.relationships_stat.get(relationship, 0) + count
-            self.log.info('{} [:{}] relationship(s) loaded'.format(relationships_created, relationship))
+            self.log.info('{0} (:{2})->[:{1}]->(:{3}) relationship(s) loaded'.format(relationships_created, relationship, label, other_node))
 
 
 def removeTrailingSlash(uri):
