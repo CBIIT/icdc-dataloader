@@ -163,7 +163,7 @@ class ICDC_Schema:
             if relationships and dest in relationships:
                 return relationships[dest]
             else:
-                self.log('No relationships found for "{}"-->"{}"'.format(src, dest))
+                self.log.error('No relationships found for "{}"-->"{}"'.format(src, dest))
                 return None
         else:
             self.log.debug('No relationships start from "{}"'.format(src))
