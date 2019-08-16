@@ -5,13 +5,16 @@ import os, sys
 import glob
 import argparse
 import re
-from neo4j import GraphDatabase, ServiceUnavailable, Driver
+from neo4j import GraphDatabase, ServiceUnavailable, Driver, Session
 from icdc_schema import ICDC_Schema
 from utils import *
 from timeit import default_timer as timer
 
 NODE_TYPE = 'type'
 PSWD_ENV = 'NEO_PASSWORD'
+VISIT_NODE = 'visit'
+VISIT_ID = 'visit_id'
+VISIT_DATE = 'visit_date'
 
 excluded_fields = { NODE_TYPE }
 
@@ -180,7 +183,7 @@ class Loader:
             elif re.search(r'no|false', value, re.IGNORECASE):
                 cleaned_value = False
             else:
-                self.log.warning('Unsupported Boolean value: "{}"'.format(value))
+                self.log.debug('Unsupported Boolean value: "{}"'.format(value))
                 cleaned_value = None
             if cleaned_value != None:
                 value_string = '{}'.format(cleaned_value)
@@ -205,6 +208,7 @@ class Loader:
         with open(file_name) as in_file:
             reader = csv.DictReader(in_file, delimiter='\t')
             relationships_created = 0
+            visits_created = 0
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 label = obj[NODE_TYPE]
@@ -229,7 +233,14 @@ class Loader:
                             self.log.error('Relationship not found!')
                             sys.exit(1)
                         if not self.node_exists(session, other_node, other_id, value):
-                            self.log.warning('Node (:{} {{{}: "{}"}} not found in DB!'.format(other_node, other_id, value))
+                            if other_node == 'visit':
+                                if self.create_visit(session, other_node, value, obj):
+                                    statement += 'MATCH (m:{} {{{}: "{}"}}) '.format(other_node, other_id, value)
+                                    visits_created += 1
+                                else:
+                                    self.log.error('Couldn\'t create {} node automatically!'.format(VISIT_NODE))
+                            else:
+                                self.log.warning('Node (:{} {{{}: "{}"}} not found in DB!'.format(other_node, other_id, value))
                         else:
                             statement += 'MATCH (m:{} {{{}: "{}"}}) '.format(other_node, other_id, value)
                     elif not id:
@@ -250,6 +261,45 @@ class Loader:
                     relationships_created += count
                     self.relationships_stat[relationship] = self.relationships_stat.get(relationship, 0) + count
             self.log.info('{0} (:{2})->[:{1}]->(:{3}) relationship(s) loaded'.format(relationships_created, relationship, label, other_node))
+            if visits_created > 0:
+                self.log.info('{} (:{}) node(s) loaded'.format(visits_created, VISIT_NODE))
+
+    def create_visit(self, session, node_type, node_id, src):
+        if node_type != VISIT_NODE:
+            self.log.error("Can't create (:{}) node for type: '{}'".format(VISIT_NODE, node_type))
+            return False
+        if not node_id:
+            self.log.error("Can't create (:{}) node for id: '{}'".format(VISIT_NODE, node_id))
+            return False
+        if not src:
+            self.log.error("Can't create (:{}) node for empty object".format(VISIT_NODE))
+            return False
+        if not session or not isinstance(session, Session):
+            self.log.error("Neo4j session is not valid!")
+            return False
+        date_map = {
+            'vital_signs': 'date_of_vital_signs',
+            'physical_exam': 'date_of_examination',
+            'disease_extent': 'date_of_evaluation'
+        }
+        if not NODE_TYPE in src:
+            self.log.error('Given object doesn\'t have a "{}" field!'.format(NODE_TYPE))
+            return False
+        source_type = src[NODE_TYPE]
+        date = src[date_map[source_type]]
+        if not NODE_TYPE in src:
+            self.log.error('Given object doesn\'t have a "{}" field!'.format(NODE_TYPE))
+            return False
+        statement = 'MERGE (v:{} {{ {}: "{}", {}: "{}" }})'.format(VISIT_NODE, VISIT_ID, node_id, VISIT_DATE, date)
+        self.log.debug(statement)
+        result = session.run(statement)
+        if result:
+            count = result.summary().counters.nodes_created
+            self.nodes_stat[VISIT_NODE] = self.nodes_stat.get(VISIT_NODE, 0) + count
+            return count > 0
+        else:
+            return False
+
 
 
 def removeTrailingSlash(uri):
