@@ -18,7 +18,7 @@ type adverse_event {
   crf_id: String
   agent: agent @relation(name:"of_agent", direction:OUT)
   cases: [case] @relation(name:"had_adverse_event", direction:IN)
-  evaluation: evaluation @relation(name:"at_evaluation", direction:OUT)
+  visit: visit @relation(name:"on_visit", direction:OUT)
   next_adverse_event: adverse_event @relation(name:"next", direction:OUT)
   prior_adverse_event: adverse_event @relation(name:"next", direction:IN)
 }
@@ -74,6 +74,7 @@ type case {
   diagnoses: [diagnosis] @relation(name:"of_case", direction:IN)
   cycles: [cycle] @relation(name:"of_case", direction:IN)
   follow_ups: [follow_up] @relation(name:"of_case", direction:IN)
+  samples: [sample] @relation(name:"of_case", direction:IN)
   adverse_event: adverse_event @relation(name:"had_adverse_event", direction:OUT)
   off_study: off_study @relation(name:"went_off_study", direction:OUT)
   off_treatment: off_treatment @relation(name:"went_off_treatment", direction:OUT)
@@ -136,7 +137,7 @@ type disease_extent {
   longest_measurement: String
   evaluation_number: String
   evaluation_code: String
-  evaluation: evaluation @relation(name:"at_evaluation", direction:OUT)
+  visit: visit @relation(name:"on_visit", direction:OUT)
 }
 
 type enrollment {
@@ -153,16 +154,6 @@ type enrollment {
   prior_therapies: [prior_therapy] @relation(name:"at_enrollment", direction:IN)
   prior_surgeries: [prior_surgery] @relation(name:"at_enrollment", direction:IN)
   physical_exams: [physical_exam] @relation(name:"at_enrollment", direction:IN)
-}
-
-type evaluation {
-  date_of_evaluation: String
-  visit: visit @relation(name:"on_visit", direction:OUT)
-  physical_exams: [physical_exam] @relation(name:"at_evaluation", direction:IN)
-  lab_exams: [lab_exam] @relation(name:"at_evaluation", direction:IN)
-  adverse_events: [adverse_event] @relation(name:"at_evaluation", direction:IN)
-  disease_extents: [disease_extent] @relation(name:"at_evaluation", direction:IN)
-  vital_signs: [vital_signs] @relation(name:"at_evaluation", direction:IN)
 }
 
 type file {
@@ -187,7 +178,7 @@ type image {
 }
 
 type lab_exam {
-  evaluation: evaluation @relation(name:"at_evaluation", direction:OUT)
+  visit: visit @relation(name:"on_visit", direction:OUT)
 }
 
 type off_study {
@@ -222,10 +213,10 @@ type physical_exam {
   pe_finding: String
   pe_comment: String
   phase_pe: String
-  assessment_timepoint: Int
+  assessment_timepoint: String
   crf_id: String
   enrollment: enrollment @relation(name:"at_enrollment", direction:OUT)
-  evaluation: evaluation @relation(name:"at_evaluation", direction:OUT)
+  visit: visit @relation(name:"on_visit", direction:OUT)
 }
 
 type principal_investigator {
@@ -295,20 +286,21 @@ type sample {
   sample_type: String
   general_sample_pathology: String
   date_of_sample_collection: String
-  necropsy_sample: String
-  length_of_tumor: String
-  width_of_tumor: String
-  analysis_area: String
-  analysis_area_percentage_tumor: String
-  analysis_area_percentage_stroma: String
-  analysis_area_percentage_glass: String
-  analysis_area_percentage_pigmented_tumor: String
-  total_tissue_area: String
-  tumor_tissue_area: String
-  non_tumor_tissue_area: String
-  percentage_tumor: String
-  percentage_stroma: String
+  necropsy_sample: Boolean
+  length_of_tumor: Float
+  width_of_tumor: Float
+  analysis_area: Float
+  analysis_area_percentage_tumor: Float
+  analysis_area_percentage_stroma: Float
+  analysis_area_percentage_glass: Float
+  analysis_area_percentage_pigmented_tumor: Float
+  total_tissue_area: Float
+  tumor_tissue_area: Float
+  non_tumor_tissue_area: Float
+  percentage_tumor: Float
+  percentage_stroma: Float
   comment: String
+  case: case @relation(name:"of_case", direction:OUT)
   visit: visit @relation(name:"on_visit", direction:OUT)
   assays: [assay] @relation(name:"of_sample", direction:IN)
   next_sample: sample @relation(name:"next", direction:OUT)
@@ -350,7 +342,11 @@ type visit {
   cycle: cycle @relation(name:"of_cycle", direction:OUT)
   agent_administrations: [agent_administration] @relation(name:"on_visit", direction:IN)
   samples: [sample] @relation(name:"on_visit", direction:IN)
-  evaluations: [evaluation] @relation(name:"on_visit", direction:IN)
+  physical_exams: [physical_exam] @relation(name:"on_visit", direction:IN)
+  lab_exams: [lab_exam] @relation(name:"on_visit", direction:IN)
+  adverse_events: [adverse_event] @relation(name:"on_visit", direction:IN)
+  disease_extents: [disease_extent] @relation(name:"on_visit", direction:IN)
+  vital_signs: [vital_signs] @relation(name:"on_visit", direction:IN)
   next_visit: visit @relation(name:"next", direction:OUT)
   prior_visit: visit @relation(name:"next", direction:IN)
 }
@@ -367,10 +363,10 @@ type vital_signs {
   body_surface_area: String
   modified_ecog: String
   ecg: Boolean
-  assessment_timepoint: Int
+  assessment_timepoint: String
   phase: String
   crf_id: String
-  evaluation: evaluation @relation(name:"at_evaluation", direction:OUT)
+  visit: visit @relation(name:"on_visit", direction:OUT)
 }
 
 schema {
