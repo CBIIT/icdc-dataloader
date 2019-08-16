@@ -57,6 +57,21 @@ optional match (co)<--(case:case)<--(cycle:cycle),
       (e:enrollment)-->(case)
 return p, s, a, co, case, cycle, diag, demo, e
 
+# Studie by Program
+MATCH (s:study)
+OPTIONAL MATCH (p:program)<-[*]-(s)
+OPTIONAL MATCH (s)<-[*]-(c:case)
+RETURN p.program_id AS program_id,
+       s.clinical_study_id AS clinical_study_id,
+       s.clinical_study_designation AS clinical_study_designation,
+       s.clinical_study_name AS clinical_study_name,
+       s.clinical_study_description AS clinical_study_description,
+       s.clinical_study_type AS clinical_study_type,
+       s.date_of_iacuc_approval AS date_of_iacuc_approval,
+       s.dates_of_conduct AS dates_of_conduct,
+       count(c) as numberOfCases
+ORDER BY clinical_study_designation
+
 # Case Overview Query
 MATCH (s:study)
 WITH COLLECT(DISTINCT(s.clinical_study_designation)) AS all_studies
