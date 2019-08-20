@@ -295,6 +295,7 @@ class Loader:
         result = session.run(statement)
         if result:
             count = result.summary().counters.nodes_created
+            self.nodes_created += count
             self.nodes_stat[VISIT_NODE] = self.nodes_stat.get(VISIT_NODE, 0) + count
             return count > 0
         else:
