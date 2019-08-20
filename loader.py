@@ -148,14 +148,27 @@ class Loader:
                 for key, value in obj.items():
                     if key in excluded_fields:
                         continue
-                    elif re.match(r'\w+\.\w+', key):
+                    elif key == id_field:
                         continue
-                    elif key != id_field:
-                        value_string = self.get_value_string(key, value)
-                        if id:
-                            prop_statement += ', n.{} = {}'.format(key, value_string)
-                        else:
-                            prop_statement.append('{}: {}'.format(key, value_string))
+
+                    field_name = key
+                    if re.match(r'\w+\.\w+', key):
+                        header = key.split('.')
+                        if len(header) > 2:
+                            self.log.warning('Column header "{}" has multiple periods!'.format(key))
+                        field_name = header[1]
+                        parent = header[0]
+                        combined = '{}_{}'.format(parent, field_name)
+                        if field_name in obj:
+                            self.log.warning('"{}" field is in both "{}" and parent "{}", use "{}" instead !'.format(
+                                key, label, parent, combined))
+                            field_name = combined
+
+                    value_string = self.get_value_string(field_name, value)
+                    if id:
+                        prop_statement += ', n.{} = {}'.format(field_name, value_string)
+                    else:
+                        prop_statement.append('{}: {}'.format(field_name, value_string))
 
                 if id:
                     statement += 'MERGE (n:{} {{{}: "{}"}})'.format(label, id_field, id)
@@ -226,7 +239,11 @@ class Loader:
                 for key, value in obj.items():
                     if key in excluded_fields:
                         continue
-                    elif re.match(r'\w+\.\w+', key):
+                    if key == id_field:
+                        continue
+
+                    field_name = key
+                    if re.match(r'\w+\.\w+', key):
                         other_node, other_id = key.split('.')
                         relationship = self.schema.get_relationship(label, other_node)
                         if not relationship:
@@ -243,8 +260,21 @@ class Loader:
                                 self.log.warning('Node (:{} {{{}: "{}"}} not found in DB!'.format(other_node, other_id, value))
                         else:
                             statement += 'MATCH (m:{} {{{}: "{}"}}) '.format(other_node, other_id, value)
-                    elif not id:
-                        condition_statement.append('{}: {}'.format(key, self.get_value_string(key, value)))
+
+                        # Add parent id to search conditions
+                        header = key.split('.')
+                        if len(header) > 2:
+                            self.log.warning('Column header "{}" has multiple periods!'.format(key))
+                        field_name = header[1]
+                        parent = header[0]
+                        combined = '{}_{}'.format(parent, field_name)
+                        if field_name in obj:
+                            self.log.warning('"{}" field is in both "{}" and parent "{}", use "{}" instead !'.format(
+                                key, label, parent, combined))
+                            field_name = combined
+
+                    if not id:
+                        condition_statement.append('{}: {}'.format(field_name, self.get_value_string(field_name, value)))
 
                 if statement and relationship:
                     if id:
@@ -260,7 +290,8 @@ class Loader:
                     self.relationships_created += count
                     relationships_created += count
                     self.relationships_stat[relationship] = self.relationships_stat.get(relationship, 0) + count
-            self.log.info('{0} (:{2})->[:{1}]->(:{3}) relationship(s) loaded'.format(relationships_created, relationship, label, other_node))
+            if relationship and other_node:
+                self.log.info('{0} (:{2})->[:{1}]->(:{3}) relationship(s) loaded'.format(relationships_created, relationship, label, other_node))
             if visits_created > 0:
                 self.log.info('{} (:{}) node(s) loaded'.format(visits_created, VISIT_NODE))
 
