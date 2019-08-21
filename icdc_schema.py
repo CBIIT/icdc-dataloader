@@ -165,6 +165,24 @@ class ICDC_Schema:
 
         return result
 
+    def validate_node(self, type, obj):
+        if not type or type not in self.nodes:
+            return {'result': False, 'message': 'Node type: "{}" doesn\'t exist!'.format(type)}
+        if not obj:
+            return {'result': False, 'message': 'Node is empty!'}
+
+        if not isinstance(obj, dict):
+            return {'result': False, 'message': 'Node is not a dict!'}
+
+        # Make sure all required properties exist, and are not empty
+        for prop in self.nodes[type].get(REQUIRED, set()):
+            if prop not in obj:
+                return {'result': False, 'message': 'Missing required property: "{}"!'.format(prop)}
+            elif not obj[prop]:
+                return {'result': False, 'message': 'Required property: "{}" is empty!'.format(prop)}
+
+        return {'result': True}
+
 
     # Find realtionship type from src to dest
     def get_relationship(self, src, dest):

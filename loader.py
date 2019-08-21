@@ -91,16 +91,6 @@ class Loader:
         else:
             return obj[id_field]
 
-    def is_valid_data(self, obj):
-        if NODE_TYPE not in obj:
-            return {'result': False, 'message': "{} doesn't exist!".format(NODE_TYPE)}
-
-        # id = self.get_id(obj)
-        # id_field = self.get_id_field(obj)
-        # if id_field and not id:
-        #     return {'result': False, 'message': "{} is empty".format(id_field)}
-
-        return {'result': True}
 
     def cleanup_node(self, node):
         obj = {}
@@ -118,7 +108,7 @@ class Loader:
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 line_num += 1
-                validate_result = self.is_valid_data(obj)
+                validate_result = self.schema.validate_node(obj[NODE_TYPE], obj)
                 if not validate_result['result']:
                     self.log.error('Invalid data at line {}: "{}"!'.format(line_num, validate_result['message']))
                     return False
