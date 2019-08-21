@@ -2,6 +2,7 @@ import os
 import yaml
 import sys
 from utils import *
+import re
 
 NODES = 'Nodes'
 RELATIONSHIPS = 'Relationships'
@@ -181,8 +182,41 @@ class ICDC_Schema:
             elif not obj[prop]:
                 return {'result': False, 'message': 'Required property: "{}" is empty!'.format(prop)}
 
+        properties = self.nodes[type][PROPERTIES]
+        # Validate all properties in given object
+        for key, value in obj.items():
+            if key not in properties:
+                self.log.debug('Property "{}" is not in data model!'.format(key))
+            else:
+                model_type = properties[key]
+                if not self.valid_type(model_type, value):
+                    return {'result': False, 'message': 'Property: "{}":"{}" is not a valid "{}" type!'.format(key, value, model_type)}
+
         return {'result': True}
 
+    def valid_type(self, model_type, value):
+        if model_type == 'Float':
+            try:
+                if value:
+                    _ = float(value)
+            except ValueError:
+                return False
+        elif model_type == 'Int':
+            try:
+                if value:
+                    _ = int(value)
+            except ValueError:
+                return False
+        elif model_type == 'Boolean':
+            if value and not re.match(r'yes|true', value, re.IGNORECASE) and not re.match(r'no|false', value, re.IGNORECASE) and not re.match(r'ltf', value, re.IGNORECASE):
+                return False
+        elif model_type == 'Array':
+            if not isinstance(value, list):
+                return False
+        elif model_type == 'Object':
+            if not isinstance(value, dict):
+                return False
+        return True
 
     # Find realtionship type from src to dest
     def get_relationship(self, src, dest):
