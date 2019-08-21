@@ -226,7 +226,7 @@ type physical_exam {
   pe_finding: String
   pe_comment: String
   phase_pe: String
-  assessment_timepoint: Int
+  assessment_timepoint: String
   crf_id: String
   enrollment: enrollment @relation(name:"at_enrollment", direction:OUT)
   visit: visit @relation(name:"on_visit", direction:OUT)
@@ -378,7 +378,7 @@ type vital_signs {
   body_surface_area: String
   modified_ecog: String
   ecg: Boolean
-  assessment_timepoint: Int
+  assessment_timepoint: String
   phase: String
   crf_id: String
   visit: visit @relation(name:"on_visit", direction:OUT)
