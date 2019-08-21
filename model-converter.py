@@ -17,8 +17,8 @@ if __name__ == '__main__':
 
     with open(args.graphql, 'w') as graphql_file:
         # Output Types
-        for name in sorted(schema.nodes.keys()):
-            props = schema.nodes[name]
+        for name in schema.get_node_names():
+            props = schema.get_props_for_node(name)
             typeLine = 'type {} {{'.format(name)
             print(typeLine)
             print(typeLine, file=graphql_file)
@@ -35,4 +35,4 @@ if __name__ == '__main__':
             for line in query_file:
                 print(line, end='', file=graphql_file)
 
-    print('Types: {}, Relationships: {}'.format(len(schema.nodes), schema.numRelationships))
+    print('Types: {}, Relationships: {}'.format(schema.node_count(), schema.relationship_count()))

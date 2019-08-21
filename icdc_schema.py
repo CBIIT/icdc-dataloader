@@ -44,7 +44,7 @@ class ICDC_Schema:
 
         self.nodes = {}
         self.relationships = {}
-        self.numRelationships = 0
+        self.relationship_count = 0
 
         self.log.debug("-------------processing nodes-----------------")
         if NODES not in self.org_schema:
@@ -64,7 +64,7 @@ class ICDC_Schema:
             for key, value in self.org_schema[RELATIONSHIPS].items():
                 # Assume all keys start with '_' are not regular nodes
                 if not key.startswith('_'):
-                    self.numRelationships += self.process_edges(key, value)
+                    self.relationship_count += self.process_edges(key, value)
 
 
     def process_node(self, name, desc):
@@ -75,7 +75,7 @@ class ICDC_Schema:
                 prop_type = self.get_type(prop)
                 props[prop] = prop_type
 
-        self.nodes[name] = props
+        self.nodes[name] = { PROPERTIES: props }
 
     def process_edges(self, name, desc):
         count = 0
@@ -117,25 +117,25 @@ class ICDC_Schema:
         node = self.nodes[name]
         if multiplier == 'many_to_one':
             if dest:
-                node[self.plural(otherNode)] = '[{}] @relation(name:"{}", direction:IN)'.format(otherNode, relationship)
+                node[PROPERTIES][self.plural(otherNode)] = '[{}] @relation(name:"{}", direction:IN)'.format(otherNode, relationship)
             else:
-                node[otherNode] = '{} @relation(name:"{}", direction:OUT)'.format(otherNode, relationship)
+                node[PROPERTIES][otherNode] = '{} @relation(name:"{}", direction:OUT)'.format(otherNode, relationship)
         elif multiplier == 'one_to_one':
             if relationship == NEXT_RELATIONSHIP:
                 if dest:
-                    node['prior_' + otherNode] = '{} @relation(name:"{}", direction:IN)'.format(otherNode, relationship)
+                    node[PROPERTIES]['prior_' + otherNode] = '{} @relation(name:"{}", direction:IN)'.format(otherNode, relationship)
                 else:
-                    node['next_' + otherNode] = '{} @relation(name:"{}", direction:OUT)'.format(otherNode, relationship)
+                    node[PROPERTIES]['next_' + otherNode] = '{} @relation(name:"{}", direction:OUT)'.format(otherNode, relationship)
             else:
                 if dest:
-                    node[otherNode] = '{} @relation(name:"{}", direction:IN)'.format(otherNode, relationship)
+                    node[PROPERTIES][otherNode] = '{} @relation(name:"{}", direction:IN)'.format(otherNode, relationship)
                 else:
-                    node[otherNode] = '{} @relation(name:"{}", direction:OUT)'.format(otherNode, relationship)
+                    node[PROPERTIES][otherNode] = '{} @relation(name:"{}", direction:OUT)'.format(otherNode, relationship)
         elif multiplier == 'many_to_many':
             if dest:
-                node[self.plural(otherNode)] = '[{}] @relation(name:"{}", direction:IN)'.format(otherNode, relationship)
+                node[PROPERTIES][self.plural(otherNode)] = '[{}] @relation(name:"{}", direction:IN)'.format(otherNode, relationship)
             else:
-                node[self.plural(otherNode)] = '[{}] @relation(name:"{}", direction:OUT)'.format(otherNode, relationship)
+                node[PROPERTIES][self.plural(otherNode)] = '[{}] @relation(name:"{}", direction:OUT)'.format(otherNode, relationship)
         else:
             self.log.warning('Unsupported relationship multiplier: "{}"'.format(multiplier))
 
@@ -157,6 +157,7 @@ class ICDC_Schema:
         return result
 
 
+    # Find realtionship type from src to dest
     def get_relationship(self, src, dest):
         if src in self.relationships:
             relationships = self.relationships[src]
@@ -228,6 +229,23 @@ class ICDC_Schema:
         else:
             self.log.warning('Plural for "{}" not found!'.format(word))
             return 'NONE'
+
+    # Get all node names, sorted
+    def get_node_names(self):
+        return sorted(self.nodes.keys())
+
+    def node_count(self):
+        return len(self.nodes)
+
+    def relationship_count(self):
+        return self.relationship_count
+
+    # Get all properties of a node (name)
+    def get_props_for_node(self, node_name):
+        if node_name in self.nodes:
+            return self.nodes[node_name][PROPERTIES]
+        else:
+            return None
 
 if __name__ == '__main__':
     files = ['/Users/yingm3/work/icdc/code/model-tool/model-desc/icdc-model.yml', '/Users/yingm3/work/icdc/code/model-tool/model-desc/icdc-model-props.yml']
