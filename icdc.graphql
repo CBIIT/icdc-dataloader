@@ -381,7 +381,7 @@ type BreedCaseCount {
 type CaseDetail {
   patient_id: String
   breed: String
-  patient_age_at_enrollment: String
+  patient_age_at_enrollment: Float
   sex: String
   disease_term: String
   stage_of_disease: String
