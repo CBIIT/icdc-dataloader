@@ -44,7 +44,7 @@ class ICDC_Schema:
 
         self.nodes = {}
         self.relationships = {}
-        self.relationship_count = 0
+        self.num_relationship = 0
 
         self.log.debug("-------------processing nodes-----------------")
         if NODES not in self.org_schema:
@@ -64,7 +64,7 @@ class ICDC_Schema:
             for key, value in self.org_schema[RELATIONSHIPS].items():
                 # Assume all keys start with '_' are not regular nodes
                 if not key.startswith('_'):
-                    self.relationship_count += self.process_edges(key, value)
+                    self.num_relationship += self.process_edges(key, value)
 
 
     def process_node(self, name, desc):
@@ -238,7 +238,7 @@ class ICDC_Schema:
         return len(self.nodes)
 
     def relationship_count(self):
-        return self.relationship_count
+        return self.num_relationship
 
     # Get all properties of a node (name)
     def get_props_for_node(self, node_name):
