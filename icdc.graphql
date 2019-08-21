@@ -69,6 +69,7 @@ type case {
   patient_first_name: String
   crf_id: String
   cohort: cohort @relation(name:"member_of", direction:OUT)
+  study: study @relation(name:"member_of", direction:OUT)
   enrollment: enrollment @relation(name:"of_case", direction:IN)
   demographic: demographic @relation(name:"of_case", direction:IN)
   diagnoses: [diagnosis] @relation(name:"of_case", direction:IN)
@@ -85,6 +86,7 @@ type cohort {
   cohort_dose: String
   cases: [case] @relation(name:"member_of", direction:IN)
   study_arm: study_arm @relation(name:"member_of", direction:OUT)
+  study: study @relation(name:"member_of", direction:OUT)
 }
 
 type cycle {
@@ -121,6 +123,7 @@ type diagnosis {
   concurrent_disease_type: String
   crf_id: String
   case: case @relation(name:"of_case", direction:OUT)
+  files: [file] @relation(name:"from_diagnosis", direction:IN)
 }
 
 type disease_extent {
@@ -157,7 +160,17 @@ type enrollment {
 }
 
 type file {
+  file_name: String
+  file_type: String
+  file_description: String
+  file_format: String
+  file_size: Float
+  md5sum: String
+  file_status: String
+  uuid: String
+  file_locations: String
   assay: assay @relation(name:"of_assay", direction:OUT)
+  diagnosis: diagnosis @relation(name:"from_diagnosis", direction:OUT)
 }
 
 type follow_up {
@@ -213,7 +226,7 @@ type physical_exam {
   pe_finding: String
   pe_comment: String
   phase_pe: String
-  assessment_timepoint: String
+  assessment_timepoint: Int
   crf_id: String
   enrollment: enrollment @relation(name:"at_enrollment", direction:OUT)
   visit: visit @relation(name:"on_visit", direction:OUT)
@@ -317,6 +330,8 @@ type study {
   dates_of_conduct: String
   study_arms: [study_arm] @relation(name:"member_of", direction:IN)
   program: program @relation(name:"member_of", direction:OUT)
+  cases: [case] @relation(name:"member_of", direction:IN)
+  cohorts: [cohort] @relation(name:"member_of", direction:IN)
   study_sites: [study_site] @relation(name:"of_study", direction:IN)
   principal_investigators: [principal_investigator] @relation(name:"of_study", direction:IN)
 }
@@ -363,7 +378,7 @@ type vital_signs {
   body_surface_area: String
   modified_ecog: String
   ecg: Boolean
-  assessment_timepoint: String
+  assessment_timepoint: Int
   phase: String
   crf_id: String
   visit: visit @relation(name:"on_visit", direction:OUT)
