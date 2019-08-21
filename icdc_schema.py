@@ -21,6 +21,7 @@ NEXT_RELATIONSHIP = 'next'
 DEFAULT_MULTIPLIER = 'many-to=one'
 UNITS = 'units'
 REQUIRED = 'Req'
+NODE_TYPE = 'type'
 
 class ICDC_Schema:
     def __init__(self, files):
@@ -185,7 +186,11 @@ class ICDC_Schema:
         properties = self.nodes[type][PROPERTIES]
         # Validate all properties in given object
         for key, value in obj.items():
-            if key not in properties:
+            if key == NODE_TYPE:
+                continue
+            elif re.match(r'\w+\.\w+', key):
+                continue
+            elif key not in properties:
                 self.log.debug('Property "{}" is not in data model!'.format(key))
             else:
                 model_type = properties[key]
