@@ -19,7 +19,7 @@ MULTIPLIER = 'Mul'
 NEXT_RELATIONSHIP = 'next'
 DEFAULT_MULTIPLIER = 'many-to=one'
 UNITS = 'units'
-
+REQUIRED = 'Req'
 
 class ICDC_Schema:
     def __init__(self, files):
@@ -70,12 +70,15 @@ class ICDC_Schema:
     def process_node(self, name, desc):
         # Gather properties
         props = {}
+        required = set()
         if desc[PROPERTIES]:
             for prop in desc[PROPERTIES]:
                 prop_type = self.get_type(prop)
                 props[prop] = prop_type
+                if self.is_required_prop(prop):
+                    required.add(prop)
 
-        self.nodes[name] = { PROPERTIES: props }
+        self.nodes[name] = { PROPERTIES: props, REQUIRED: required }
 
     def process_edges(self, name, desc):
         count = 0
@@ -139,6 +142,12 @@ class ICDC_Schema:
         else:
             self.log.warning('Unsupported relationship multiplier: "{}"'.format(multiplier))
 
+    def is_required_prop(self, name):
+        result = False
+        if name in self.org_schema[PROP_DEFINITIONS]:
+            prop = self.org_schema[PROP_DEFINITIONS][name]
+            result = prop.get(REQUIRED, False)
+        return result
 
     def get_type(self, name):
         result = DEFAULT_TYPE
