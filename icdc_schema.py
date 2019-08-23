@@ -200,7 +200,8 @@ class ICDC_Schema:
 
         return {'result': True}
 
-    def valid_type(self, model_type, value):
+    @staticmethod
+    def valid_type(model_type, value):
         if model_type == 'Float':
             try:
                 if value:
