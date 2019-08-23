@@ -26,6 +26,7 @@ def main():
     parser.add_argument('-u', '--user', help='Neo4j user')
     parser.add_argument('-p', '--password', help='Neo4j password')
     parser.add_argument('-s', '--schema', help='Schema files', action='append')
+    parser.add_argument('-c', '--cheat-mode', help='Skip validations, aka. Cheat Mode', action='store_true')
     parser.add_argument('dir', help='Data directory')
 
     args = parser.parse_args()
@@ -63,7 +64,7 @@ def main():
             schema = ICDC_Schema(args.schema)
             driver = GraphDatabase.driver(uri, auth=(user, password))
             loader = DataLoader(log, driver, schema, file_list)
-            loader.load()
+            loader.load(args.cheat_mode)
 
             driver.close()
         else:

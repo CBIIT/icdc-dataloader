@@ -35,12 +35,15 @@ class DataLoader:
         self.schema = schema
         self.file_list = file_list
 
-    def load(self):
+    def load(self, cheat_mode=False):
         start = timer()
-        for txt in self.file_list:
-            if not self.validate_file(txt):
-                self.log.error('Validating file "{}" failed!'.format(txt))
-                sys.exit(1)
+        if not cheat_mode:
+            for txt in self.file_list:
+                if not self.validate_file(txt):
+                    self.log.error('Validating file "{}" failed!'.format(txt))
+                    sys.exit(1)
+        else:
+            self.log.info('Cheat mode enabled, all validations skipped!')
 
         self.nodes_created = 0
         self.relationships_created = 0
