@@ -63,6 +63,7 @@ class DataLoader:
         self.log.info('{} nodes and {} relationships loaded!'.format(self.nodes_created, self.relationships_created))
         self.log.info('Loading time: {:.2f} seconds'.format(end - start))  # Time in seconds, e.g. 5.38091952400282
 
+    # Get node's id field, such as case_id for case node, or clinical_study_designation for study node
     def get_id_field(self, obj):
         if NODE_TYPE not in obj:
             self.log.error('get_id_field: there is no "{}" field in node, can\'t retrieve id!'.format(NODE_TYPE))
@@ -78,6 +79,7 @@ class DataLoader:
             self.log.error('get_id_field: "{}" field is empty'.format(NODE_TYPE))
             return None
 
+    # Find node's id
     def get_id(self, obj):
         id_field = self.get_id_field(obj)
         if not id_field:
@@ -88,7 +90,8 @@ class DataLoader:
         else:
             return obj[id_field]
 
-    def cleanup_node(self, node):
+    @staticmethod
+    def cleanup_node(node):
         obj = {}
         for key, value in node.items():
             obj[key.strip()] = value.strip()
@@ -119,13 +122,13 @@ class DataLoader:
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 label = obj[NODE_TYPE]
-                id = self.get_id(obj)
+                node_id = self.get_id(obj)
                 id_field = self.get_id_field(obj)
                 # statement is used to create current node
                 statement = ''
                 # prop_statement set properties of current node
-                if id:
-                    prop_statement = 'SET n.{} = "{}"'.format(id_field, id)
+                if node_id:
+                    prop_statement = 'SET n.{} = "{}"'.format(id_field, node_id)
                 else:
                     prop_statement = []
 
@@ -149,13 +152,13 @@ class DataLoader:
                             field_name = combined
 
                     value_string = self.get_value_string(field_name, value)
-                    if id:
+                    if node_id:
                         prop_statement += ', n.{} = {}'.format(field_name, value_string)
                     else:
                         prop_statement.append('{}: {}'.format(field_name, value_string))
 
-                if id:
-                    statement += 'MERGE (n:{} {{{}: "{}"}})'.format(label, id_field, id)
+                if node_id:
+                    statement += 'MERGE (n:{} {{{}: "{}"}})'.format(label, id_field, node_id)
                     statement += ' ON CREATE ' + prop_statement
                     statement += ' ON MATCH ' + prop_statement
                 else:
@@ -190,8 +193,8 @@ class DataLoader:
             value_string = value if value else 0
         return value_string
 
-    def node_exists(self, session, label, property, value):
-        statement = 'MATCH (m:{} {{{}: "{}"}}) return m'.format(label, property, value)
+    def node_exists(self, session, label, prop, value):
+        statement = 'MATCH (m:{} {{{}: "{}"}}) return m'.format(label, prop, value)
         result = session.run(statement)
         count = result.detach()
         self.log.debug('{} node(s) found'.format(count))
@@ -209,13 +212,13 @@ class DataLoader:
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 label = obj[NODE_TYPE]
-                id = self.get_id(obj)
+                node_id = self.get_id(obj)
                 id_field = self.get_id_field(obj)
                 # statement is used to create relationships between nodes
                 statement = ''
                 # condition_statement is used to find current node
-                if id:
-                    condition_statement = '{}: "{}"'.format(id_field, id)
+                if node_id:
+                    condition_statement = '{}: "{}"'.format(id_field, node_id)
                 else:
                     condition_statement = []
 
@@ -258,12 +261,12 @@ class DataLoader:
                                 key, label, parent, combined))
                             field_name = combined
 
-                    if not id:
+                    if not node_id:
                         condition_statement.append(
                             '{}: {}'.format(field_name, self.get_value_string(field_name, value)))
 
                 if statement and relationship:
-                    if id:
+                    if node_id:
                         statement += 'MATCH (n:{} {{ {} }}) '.format(label, condition_statement)
                     else:
                         statement += 'MATCH (n:{} {{ {} }}) '.format(label, ', '.join(condition_statement))

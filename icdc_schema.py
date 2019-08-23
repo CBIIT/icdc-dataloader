@@ -157,9 +157,9 @@ class ICDC_Schema:
             prop = self.org_schema[PROP_DEFINITIONS][name]
             if PROP_TYPE in prop:
                 prop_desc = prop[PROP_TYPE]
-                if type(prop_desc) is str:
+                if isinstance(prop_desc, str):
                     result = self.map_type(prop_desc)
-                elif type(prop_desc) is dict:
+                elif isinstance(prop_desc, dict):
                     if VALUE_TYPE in prop_desc and UNITS not in prop_desc:
                         result = self.map_type(prop_desc[VALUE_TYPE])
                 else:
@@ -167,9 +167,10 @@ class ICDC_Schema:
 
         return result
 
-    def validate_node(self, type, obj):
-        if not type or type not in self.nodes:
-            return {'result': False, 'message': 'Node type: "{}" doesn\'t exist!'.format(type)}
+
+    def validate_node(self, model_type, obj):
+        if not model_type or model_type not in self.nodes:
+            return {'result': False, 'message': 'Node type: "{}" doesn\'t exist!'.format(model_type)}
         if not obj:
             return {'result': False, 'message': 'Node is empty!'}
 
@@ -177,13 +178,13 @@ class ICDC_Schema:
             return {'result': False, 'message': 'Node is not a dict!'}
 
         # Make sure all required properties exist, and are not empty
-        for prop in self.nodes[type].get(REQUIRED, set()):
+        for prop in self.nodes[model_type].get(REQUIRED, set()):
             if prop not in obj:
                 return {'result': False, 'message': 'Missing required property: "{}"!'.format(prop)}
             elif not obj[prop]:
                 return {'result': False, 'message': 'Required property: "{}" is empty!'.format(prop)}
 
-        properties = self.nodes[type][PROPERTIES]
+        properties = self.nodes[model_type][PROPERTIES]
         # Validate all properties in given object
         for key, value in obj.items():
             if key == NODE_TYPE:
