@@ -7,6 +7,7 @@ from neo4j import GraphDatabase, ServiceUnavailable
 from icdc_schema import ICDC_Schema
 from utils import *
 from data_loader import DataLoader
+from s3 import *
 
 PSWD_ENV = 'NEO_PASSWORD'
 
@@ -27,11 +28,40 @@ def main():
     parser.add_argument('-p', '--password', help='Neo4j password')
     parser.add_argument('-s', '--schema', help='Schema files', action='append')
     parser.add_argument('-c', '--cheat-mode', help='Skip validations, aka. Cheat Mode', action='store_true')
+    parser.add_argument('-b', '--bucket', help='S3 bucket name')
+    parser.add_argument('-f', '--s3-folder', help='S3 folder')
     parser.add_argument('dir', help='Data directory')
 
     args = parser.parse_args()
+
     log = get_logger('Data Loader')
-    log.debug(args)
+    dir = args.dir
+    if args.s3_folder:
+        if not os.path.exists(args.dir):
+            os.makedirs(dir)
+        else:
+            # exist_files = glob.glob('{}/*.txt'.format(args.dir))
+            exist_files = glob.glob('{}/*'.format(args.dir))
+            if len(exist_files) > 0:
+                log.error('Folder: "{}" is not empty, please empty it first'.format(args.dir))
+                sys.exit(1)
+
+
+    if args.s3_folder:
+        if not args.bucket:
+            log.error('Please specify S3 bucket name with -b/--bucket argument!')
+            sys.exit(1)
+        bucket = S3Bucket(args.bucket)
+        if not os.path.isdir(dir):
+            log.error('{} is not a directory!'.format(dir))
+            sys.exit(1)
+        if not bucket.download_files_in_folder(args.s3_folder, dir):
+            log.error('Download files from S3 bucket "{}" failed!'.format(args.bucket))
+            sys.exit(1)
+
+    if not os.path.isdir(args.dir):
+        log.error('{} is not a directory!'.format(args.dir))
+        sys.exit(1)
 
     uri = args.uri if args.uri else "bolt://localhost:7687"
     uri = removeTrailingSlash(uri)
@@ -53,10 +83,6 @@ def main():
         if not os.path.isfile(schema_file):
             log.error('{} is not a file'.format(schema_file))
             sys.exit(1)
-
-    if not os.path.isdir(args.dir):
-        log.error('{} is not a directory'.format(args.dir))
-        sys.exit(1)
 
     try:
         file_list = glob.glob('{}/*.txt'.format(args.dir))
