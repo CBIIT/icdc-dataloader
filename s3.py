@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import boto3
+import botocore
 from utils import *
 
 class S3Bucket:
@@ -47,11 +48,23 @@ class S3Bucket:
 
     def download_files_in_folder(self, folder, local_path):
         # TODO: give error message if bucket doesn't exist
-        result = self.client.list_objects_v2(Bucket=self.bucket_name,  Prefix=folder)
-        for file in result.get('Contents', []):
-            if file['Size'] > 0:
-                key = file['Key']
-                base_name = os.path.basename(key)
-                file_name = os.path.join(local_path, base_name)
-                self.log.info('Downloading "{}" from AWS S3'.format(base_name))
-                self.download_file(key, file_name)
+        try:
+            bucket_exists = self.client.head_bucket(Bucket=self.bucket_name)
+            result = self.client.list_objects_v2(Bucket=self.bucket_name,  Prefix=folder)
+            for file in result.get('Contents', []):
+                if file['Size'] > 0:
+                    key = file['Key']
+                    base_name = os.path.basename(key)
+                    file_name = os.path.join(local_path, base_name)
+                    self.log.info('Downloading "{}" from AWS S3'.format(base_name))
+                    self.download_file(key, file_name)
+            return True
+        except botocore.exceptions.ClientError as e:
+            # If a client error is thrown, then check that it was a 404 error.
+            # If it was a 404 error, then the bucket does not exist.
+            error_code = int(e.response['Error']['Code'])
+            if error_code == 403:
+                self.log.error('Don\'t have permission to access for Bucket: "{}"'.format(self.bucket_name))
+            elif error_code == 404:
+                self.log.error('Bucket: "{}" does NOT exist!'.format(self.bucket_name))
+            return False

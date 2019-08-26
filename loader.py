@@ -47,7 +47,9 @@ def main():
         if not os.path.isdir(dir):
             log.error('{} is not a directory!'.format(dir))
             sys.exit(1)
-        bucket.download_files_in_folder(args.s3_folder, dir)
+        if not bucket.download_files_in_folder(args.s3_folder, dir):
+            log.error('Download files from S3 bucket "{}" failed!'.format(args.bucket))
+            sys.exit(1)
 
     if not os.path.isdir(args.dir):
         log.error('{} is not a directory!'.format(args.dir))
