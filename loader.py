@@ -36,8 +36,16 @@ def main():
 
     log = get_logger('Data Loader')
     dir = args.dir
-    if args.s3_folder and not os.path.exists(args.dir):
-        os.makedirs(dir)
+    if args.s3_folder:
+        if not os.path.exists(args.dir):
+            os.makedirs(dir)
+        else:
+            # exist_files = glob.glob('{}/*.txt'.format(args.dir))
+            exist_files = glob.glob('{}/*'.format(args.dir))
+            if len(exist_files) > 0:
+                log.error('Folder: "{}" is not empty, please empty it first'.format(args.dir))
+                sys.exit(1)
+
 
     if args.s3_folder:
         if not args.bucket:
