@@ -49,7 +49,7 @@ class S3Bucket:
     def download_files_in_folder(self, folder, local_path):
         # TODO: give error message if bucket doesn't exist
         try:
-            bucket_exists = self.client.head_bucket(Bucket=self.bucket_name)
+            self.client.head_bucket(Bucket=self.bucket_name)
             result = self.client.list_objects_v2(Bucket=self.bucket_name,  Prefix=folder)
             for file in result.get('Contents', []):
                 if file['Size'] > 0:
