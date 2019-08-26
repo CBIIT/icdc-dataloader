@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, sys
+import os
 import csv
 import re
 from neo4j import  Driver, Session
@@ -41,7 +41,7 @@ class DataLoader:
             for txt in self.file_list:
                 if not self.validate_file(txt):
                     self.log.error('Validating file "{}" failed!'.format(txt))
-                    sys.exit(1)
+                    return False
         else:
             self.log.info('Cheat mode enabled, all validations skipped!')
 
@@ -65,6 +65,7 @@ class DataLoader:
             self.log.info('Relationship: [:{}] loaded: {}'.format(rel, count))
         self.log.info('{} nodes and {} relationships loaded!'.format(self.nodes_created, self.relationships_created))
         self.log.info('Loading time: {:.2f} seconds'.format(end - start))  # Time in seconds, e.g. 5.38091952400282
+        return True
 
     # Get node's id field, such as case_id for case node, or clinical_study_designation for study node
     def get_id_field(self, obj):
@@ -238,7 +239,7 @@ class DataLoader:
                         relationship = self.schema.get_relationship(label, other_node)
                         if not relationship:
                             self.log.error('Relationship not found!')
-                            sys.exit(1)
+                            return False
                         if not self.node_exists(session, other_node, other_id, value):
                             if other_node == 'visit':
                                 if self.create_visit(session, other_node, value, obj):
@@ -288,6 +289,7 @@ class DataLoader:
                                                                                label, other_node))
             if visits_created > 0:
                 self.log.info('{} (:{}) node(s) loaded'.format(visits_created, VISIT_NODE))
+        return True
 
     def create_visit(self, session, node_type, node_id, src):
         if node_type != VISIT_NODE:
