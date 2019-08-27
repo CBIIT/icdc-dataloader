@@ -38,8 +38,8 @@ class S3Bucket:
 
     def upload_file(self, key, fileName):
         with open(fileName, 'rb') as data:
-            object = self.upload_file_obj(key, data)
-            if object:
+            obj = self.upload_file_obj(key, data)
+            if obj:
                 return {'bucket': self.bucket.name, 'key': key}
             else:
                 message = "Upload file {} to S3 failed!".format(fileName)
