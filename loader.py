@@ -35,15 +35,14 @@ def main():
     args = parser.parse_args()
 
     log = get_logger('Data Loader')
-    dir = args.dir
+    directory = args.dir
     if args.s3_folder:
-        if not os.path.exists(args.dir):
-            os.makedirs(dir)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
         else:
-            # exist_files = glob.glob('{}/*.txt'.format(args.dir))
-            exist_files = glob.glob('{}/*'.format(args.dir))
+            exist_files = glob.glob('{}/*'.format(directory))
             if len(exist_files) > 0:
-                log.error('Folder: "{}" is not empty, please empty it first'.format(args.dir))
+                log.error('Folder: "{}" is not empty, please empty it first'.format(directory))
                 sys.exit(1)
 
 
@@ -52,15 +51,15 @@ def main():
             log.error('Please specify S3 bucket name with -b/--bucket argument!')
             sys.exit(1)
         bucket = S3Bucket(args.bucket)
-        if not os.path.isdir(dir):
-            log.error('{} is not a directory!'.format(dir))
+        if not os.path.isdir(directory):
+            log.error('{} is not a directory!'.format(directory))
             sys.exit(1)
-        if not bucket.download_files_in_folder(args.s3_folder, dir):
+        if not bucket.download_files_in_folder(args.s3_folder, directory):
             log.error('Download files from S3 bucket "{}" failed!'.format(args.bucket))
             sys.exit(1)
 
-    if not os.path.isdir(args.dir):
-        log.error('{} is not a directory!'.format(args.dir))
+    if not os.path.isdir(directory):
+        log.error('{} is not a directory!'.format(directory))
         sys.exit(1)
 
     uri = args.uri if args.uri else "bolt://localhost:7687"
@@ -85,7 +84,7 @@ def main():
             sys.exit(1)
 
     try:
-        file_list = glob.glob('{}/*.txt'.format(args.dir))
+        file_list = glob.glob('{}/*.txt'.format(directory))
         if file_list:
             schema = ICDC_Schema(args.schema)
             driver = GraphDatabase.driver(uri, auth=(user, password))
