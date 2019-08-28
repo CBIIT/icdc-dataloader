@@ -106,7 +106,7 @@ class DataLoader:
         with open(file_name) as in_file:
             self.log.info('Validating file "{}" ...'.format(file_name))
             reader = csv.DictReader(in_file, delimiter='\t')
-            line_num = 0
+            line_num = 1
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 line_num += 1
