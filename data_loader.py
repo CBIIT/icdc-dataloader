@@ -12,6 +12,7 @@ NODE_TYPE = 'type'
 VISIT_NODE = 'visit'
 VISIT_ID = 'visit_id'
 VISIT_DATE = 'visit_date'
+PROP_TYPE = 'Type'
 
 excluded_fields = {NODE_TYPE}
 
@@ -178,9 +179,9 @@ class DataLoader:
 
     def get_value_string(self, key, value):
         key_type = self.schema.get_type(key)
-        if key_type == 'String':
+        if key_type[PROP_TYPE] == 'String':
             value_string = '"{}"'.format(value)
-        elif key_type == 'Boolean':
+        elif key_type[PROP_TYPE] == 'Boolean':
             cleaned_value = None
             if re.search(r'yes|true', value, re.IGNORECASE):
                 cleaned_value = True

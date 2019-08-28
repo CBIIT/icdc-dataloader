@@ -23,7 +23,7 @@ if __name__ == '__main__':
             print(typeLine)
             print(typeLine, file=graphql_file)
             for prop, propType in props.items():
-                propLine = '  {}: {}'.format(prop, propType)
+                propLine = '  {}: {}'.format(prop, propType[PROP_TYPE])
                 print(propLine)
                 print(propLine, file=graphql_file)
             typeEnd = '}\n'

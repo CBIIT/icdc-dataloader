@@ -22,6 +22,7 @@ DEFAULT_MULTIPLIER = 'many-to=one'
 UNITS = 'units'
 REQUIRED = 'Req'
 NODE_TYPE = 'type'
+ENUM = 'enum'
 
 class ICDC_Schema:
     def __init__(self, files):
@@ -122,25 +123,25 @@ class ICDC_Schema:
         node = self.nodes[name]
         if multiplier == 'many_to_one':
             if dest:
-                node[PROPERTIES][self.plural(otherNode)] = '[{}] @relation(name:"{}", direction:IN)'.format(otherNode, relationship)
+                node[PROPERTIES][self.plural(otherNode)] = { PROP_TYPE: '[{}] @relation(name:"{}", direction:IN)'.format(otherNode, relationship) }
             else:
-                node[PROPERTIES][otherNode] = '{} @relation(name:"{}", direction:OUT)'.format(otherNode, relationship)
+                node[PROPERTIES][otherNode] = {PROP_TYPE: '{} @relation(name:"{}", direction:OUT)'.format(otherNode, relationship) }
         elif multiplier == 'one_to_one':
             if relationship == NEXT_RELATIONSHIP:
                 if dest:
-                    node[PROPERTIES]['prior_' + otherNode] = '{} @relation(name:"{}", direction:IN)'.format(otherNode, relationship)
+                    node[PROPERTIES]['prior_' + otherNode] = {PROP_TYPE: '{} @relation(name:"{}", direction:IN)'.format(otherNode, relationship) }
                 else:
-                    node[PROPERTIES]['next_' + otherNode] = '{} @relation(name:"{}", direction:OUT)'.format(otherNode, relationship)
+                    node[PROPERTIES]['next_' + otherNode] = {PROP_TYPE: '{} @relation(name:"{}", direction:OUT)'.format(otherNode, relationship) }
             else:
                 if dest:
-                    node[PROPERTIES][otherNode] = '{} @relation(name:"{}", direction:IN)'.format(otherNode, relationship)
+                    node[PROPERTIES][otherNode] = {PROP_TYPE: '{} @relation(name:"{}", direction:IN)'.format(otherNode, relationship) }
                 else:
-                    node[PROPERTIES][otherNode] = '{} @relation(name:"{}", direction:OUT)'.format(otherNode, relationship)
+                    node[PROPERTIES][otherNode] = {PROP_TYPE: '{} @relation(name:"{}", direction:OUT)'.format(otherNode, relationship) }
         elif multiplier == 'many_to_many':
             if dest:
-                node[PROPERTIES][self.plural(otherNode)] = '[{}] @relation(name:"{}", direction:IN)'.format(otherNode, relationship)
+                node[PROPERTIES][self.plural(otherNode)] = {PROP_TYPE: '[{}] @relation(name:"{}", direction:IN)'.format(otherNode, relationship) }
             else:
-                node[PROPERTIES][self.plural(otherNode)] = '[{}] @relation(name:"{}", direction:OUT)'.format(otherNode, relationship)
+                node[PROPERTIES][self.plural(otherNode)] = {PROP_TYPE: '[{}] @relation(name:"{}", direction:OUT)'.format(otherNode, relationship) }
         else:
             self.log.warning('Unsupported relationship multiplier: "{}"'.format(multiplier))
 
@@ -152,16 +153,23 @@ class ICDC_Schema:
         return result
 
     def get_type(self, name):
-        result = DEFAULT_TYPE
+        result = { PROP_TYPE: DEFAULT_TYPE }
         if name in self.org_schema[PROP_DEFINITIONS]:
             prop = self.org_schema[PROP_DEFINITIONS][name]
             if PROP_TYPE in prop:
                 prop_desc = prop[PROP_TYPE]
                 if isinstance(prop_desc, str):
-                    result = self.map_type(prop_desc)
+                    result[PROP_TYPE] = self.map_type(prop_desc)
                 elif isinstance(prop_desc, dict):
                     if VALUE_TYPE in prop_desc and UNITS not in prop_desc:
-                        result = self.map_type(prop_desc[VALUE_TYPE])
+                        result[PROP_TYPE] = self.map_type(prop_desc[VALUE_TYPE])
+                elif isinstance(prop_desc, list):
+                    enum = set()
+                    for t in prop_desc:
+                        if not re.search(r'://', t):
+                            enum.add(t)
+                    if len(enum) > 0:
+                        result[ENUM] = enum
                 else:
                     self.log.debug('Property type: "{}" not supported, use default type: "{}"'.format(prop_desc, DEFAULT_TYPE))
 
@@ -202,27 +210,33 @@ class ICDC_Schema:
 
     @staticmethod
     def valid_type(model_type, value):
-        if model_type == 'Float':
+        if model_type[PROP_TYPE] == 'Float':
             try:
                 if value:
                     _ = float(value)
             except ValueError:
                 return False
-        elif model_type == 'Int':
+        elif model_type[PROP_TYPE] == 'Int':
             try:
                 if value:
                     _ = int(value)
             except ValueError:
                 return False
-        elif model_type == 'Boolean':
+        elif model_type[PROP_TYPE] == 'Boolean':
             if value and not re.match(r'\byes\b|\btrue\b', value, re.IGNORECASE) and not re.match(r'\bno\b|\bfalse\b', value, re.IGNORECASE) and not re.match(r'\bltf\b', value, re.IGNORECASE):
                 return False
-        elif model_type == 'Array':
+        elif model_type[PROP_TYPE] == 'Array':
             if not isinstance(value, list):
                 return False
-        elif model_type == 'Object':
+        elif model_type[PROP_TYPE] == 'Object':
             if not isinstance(value, dict):
                 return False
+        elif model_type[PROP_TYPE] == 'String':
+            if  ENUM in model_type:
+                if not isinstance(value, str):
+                    return False
+                if not value in model_type[ENUM]:
+                    return False
         return True
 
     # Find realtionship type from src to dest
