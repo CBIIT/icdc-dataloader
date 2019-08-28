@@ -215,7 +215,7 @@ class ICDC_Schema:
             except ValueError:
                 return False
         elif model_type == 'Boolean':
-            if value and not re.match(r'yes|true', value, re.IGNORECASE) and not re.match(r'no|false', value, re.IGNORECASE) and not re.match(r'ltf', value, re.IGNORECASE):
+            if value and not re.match(r'\byes\b|\btrue\b', value, re.IGNORECASE) and not re.match(r'\bno\b|\bfalse\b', value, re.IGNORECASE) and not re.match(r'\bltf\b', value, re.IGNORECASE):
                 return False
         elif model_type == 'Array':
             if not isinstance(value, list):
