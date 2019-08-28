@@ -104,7 +104,6 @@ class ICDC_Schema:
                     actual_multiplier = multiplier
 
                 count += 1
-                self.log.debug('{} -[:{}]-> {}'.format(src, name, dest))
                 if src in self.nodes:
                     self.add_relationship_to_node(src, actual_multiplier, name, dest)
                     # nodes[src][self.plural(dest)] = '[{}] @relation(name:"{}")'.format(dest, name)

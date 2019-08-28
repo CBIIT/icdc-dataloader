@@ -93,7 +93,6 @@ class DataLoader:
         if not id_field:
             return None
         if id_field not in obj:
-            self.log.debug('get_id: there is no "{}" field in node, can\'t retrieve id!'.format(id_field))
             return None
         else:
             return obj[id_field]
@@ -173,7 +172,6 @@ class DataLoader:
                 else:
                     statement += 'MERGE (n:{} {{ {} }})'.format(label, ', '.join(prop_statement))
 
-                self.log.debug(statement)
                 result = session.run(statement)
                 count = result.summary().counters.nodes_created
                 self.nodes_created += count
@@ -206,7 +204,6 @@ class DataLoader:
         statement = 'MATCH (m:{} {{{}: "{}"}}) return m'.format(label, prop, value)
         result = session.run(statement)
         count = result.detach()
-        self.log.debug('{} node(s) found'.format(count))
         if count > 1:
             self.log.warning('More than one nodes found! ')
         return count >= 1
@@ -282,7 +279,6 @@ class DataLoader:
 
                     statement += 'MERGE (n)-[:{}]->(m);'.format(relationship)
 
-                    self.log.debug(statement)
                     result = session.run(statement)
                     count = result.summary().counters.relationships_created
                     self.relationships_created += count
@@ -323,7 +319,6 @@ class DataLoader:
             self.log.error('Given object doesn\'t have a "{}" field!'.format(NODE_TYPE))
             return False
         statement = 'MERGE (v:{} {{ {}: "{}", {}: "{}" }})'.format(VISIT_NODE, VISIT_ID, node_id, VISIT_DATE, date)
-        self.log.debug(statement)
         result = session.run(statement)
         if result:
             count = result.summary().counters.nodes_created
