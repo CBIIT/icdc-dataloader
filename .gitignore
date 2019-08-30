@@ -1,4 +1,6 @@
 tmp/
 venv/
+env/
+.idea/
 Pentaho-scripts/
 __pycache__/
