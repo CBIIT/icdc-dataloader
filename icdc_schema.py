@@ -251,6 +251,18 @@ class ICDC_Schema:
             self.log.debug('No relationships start from "{}"'.format(src))
             return None
 
+    # Find destination node name from (:src)-[:name]->(:dest)
+    def get_dest_node_for_relationship(self, src, name):
+        if src in self.relationships:
+            relationships = self.relationships[src]
+            if relationships:
+                for dest, rel in relationships.items():
+                    if rel == name:
+                        return dest
+        else:
+            self.log.error('Couldn\'t find any relationship from (:{})'.format(src))
+        return None
+
 
     # Get type info from description
     def map_type(self, type_name):
