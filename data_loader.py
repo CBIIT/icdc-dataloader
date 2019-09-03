@@ -39,12 +39,12 @@ class DataLoader:
         self.schema = schema
         self.file_list = file_list
 
-    def load(self, cheat_mode=False):
+    def load(self, cheat_mode, max_violations):
         start = timer()
         if not cheat_mode:
             validation_failed = False
             for txt in self.file_list:
-                if not self.validate_file(txt):
+                if not self.validate_file(txt, max_violations) :
                     self.log.error('Validating file "{}" failed!'.format(txt))
                     validation_failed = True
             if validation_failed:
@@ -108,12 +108,13 @@ class DataLoader:
         return obj
 
     # Validate file
-    def validate_file(self, file_name):
+    def validate_file(self, file_name, max_violations):
         with open(file_name) as in_file:
             self.log.info('Validating file "{}" ...'.format(file_name))
             reader = csv.DictReader(in_file, delimiter='\t')
             line_num = 1
             validation_failed = False
+            violations = 0
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 line_num += 1
@@ -121,6 +122,9 @@ class DataLoader:
                 if not validate_result['result']:
                     self.log.error('Invalid data at line {}: "{}"!'.format(line_num, validate_result['message']))
                     validation_failed = True
+                    violations += 1
+                    if violations >= max_violations:
+                        return False
             return not validation_failed
 
     # load file
