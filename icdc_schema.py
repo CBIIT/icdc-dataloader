@@ -238,7 +238,7 @@ class ICDC_Schema:
                     return False
         return True
 
-    # Find realtionship type from src to dest
+    # Find relationship type from src to dest
     def get_relationship(self, src, dest):
         if src in self.relationships:
             relationships = self.relationships[src]

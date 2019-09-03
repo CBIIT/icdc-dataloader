@@ -221,11 +221,7 @@ class DataLoader:
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 label = obj[NODE_TYPE]
-                id_field = self.get_id_field(obj)
-                # statement is used to create relationships between nodes
-                statement = ''
-                # condition_statement is used to find current node
-
+                # criteria_statement is used to find current node
                 criteria_statement = self.getSearchCriteriaForNode(obj)
                 relationships = []
 
@@ -240,8 +236,8 @@ class DataLoader:
                         if not self.node_exists(session, other_node, other_id, value):
                             if other_node == 'visit':
                                 if self.create_visit(session, other_node, value, obj):
-                                    statement += 'MATCH (m:{} {{{}: "{}"}}) '.format(other_node, other_id, value)
                                     visits_created += 1
+                                    relationships.append( {PARENT_TYPE: other_node, PARENT_ID_FIELD: other_id, PARENT_ID: value, RELATIONSHIP_NAME: relationship_name})
                                 else:
                                     self.log.error('Couldn\'t create {} node automatically!'.format(VISIT_NODE))
                             else:
