@@ -169,6 +169,7 @@ type file {
   file_status: String
   uuid: String
   file_locations: String
+  sample: sample @relation(name:"of_sample", direction:OUT)
   assay: assay @relation(name:"of_assay", direction:OUT)
   diagnosis: diagnosis @relation(name:"from_diagnosis", direction:OUT)
 }
@@ -316,6 +317,7 @@ type sample {
   case: case @relation(name:"of_case", direction:OUT)
   visit: visit @relation(name:"on_visit", direction:OUT)
   assays: [assay] @relation(name:"of_sample", direction:IN)
+  files: [file] @relation(name:"of_sample", direction:IN)
   next_sample: sample @relation(name:"next", direction:OUT)
   prior_sample: sample @relation(name:"next", direction:IN)
 }
