@@ -77,7 +77,7 @@ def export_result(manifest,bucket,bucket_name,folder_name,directory,input_s3_buc
 
                 data_matrix.append([record["parent"],f_uuid,record["name"],record["type"],record['description'],f_size,f_md5,"uploaded",f_location,f_format,"['open']"])
         timestr = time.strftime("%Y%m%d-%H%M%S")
-        output_file_name =timestr + ".tsv"
+        output_file_name =timestr + ".txt"
         output_file = join(directory,output_file_name)
 
         write_tsv_file(output_file,data_matrix)
