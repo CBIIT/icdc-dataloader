@@ -4,3 +4,4 @@ env/
 .idea/
 Pentaho-scripts/
 __pycache__/
+*.pyc
