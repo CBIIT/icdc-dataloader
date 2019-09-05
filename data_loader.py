@@ -136,7 +136,7 @@ class DataLoader:
             nodes_created = 0
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
-                label = obj[NODE_TYPE]
+                node_type = obj[NODE_TYPE]
                 node_id = self.get_id(obj)
                 id_field = self.get_id_field(obj)
                 # statement is used to create current node
@@ -163,7 +163,7 @@ class DataLoader:
                         combined = '{}_{}'.format(parent, field_name)
                         if field_name in obj:
                             self.log.warning('"{}" field is in both "{}" and parent "{}", use "{}" instead !'.format(
-                                key, label, parent, combined))
+                                key, node_type, parent, combined))
                             field_name = combined
 
                     value_string = self.get_value_string(field_name, value)
@@ -173,18 +173,18 @@ class DataLoader:
                         prop_statement.append('{}: {}'.format(field_name, value_string))
 
                 if node_id:
-                    statement += 'MERGE (n:{} {{{}: "{}"}})'.format(label, id_field, node_id)
+                    statement += 'MERGE (n:{} {{{}: "{}"}})'.format(node_type, id_field, node_id)
                     statement += ' ON CREATE ' + prop_statement
                     statement += ' ON MATCH ' + prop_statement
                 else:
-                    statement += 'MERGE (n:{} {{ {} }})'.format(label, ', '.join(prop_statement))
+                    statement += 'MERGE (n:{} {{ {} }})'.format(node_type, ', '.join(prop_statement))
 
                 result = session.run(statement)
                 count = result.summary().counters.nodes_created
                 self.nodes_created += count
                 nodes_created += count
-                self.nodes_stat[label] = self.nodes_stat.get(label, 0) + count
-            self.log.info('{} (:{}) node(s) loaded'.format(nodes_created, label))
+                self.nodes_stat[node_type] = self.nodes_stat.get(node_type, 0) + count
+            self.log.info('{} (:{}) node(s) loaded'.format(nodes_created, node_type))
 
     def get_value_string(self, key, value):
         key_type = self.schema.get_type(key)
@@ -224,7 +224,7 @@ class DataLoader:
             visits_created = 0
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
-                label = obj[NODE_TYPE]
+                node_type = obj[NODE_TYPE]
                 # criteria_statement is used to find current node
                 criteria_statement = self.getSearchCriteriaForNode(obj)
                 relationships = []
@@ -233,7 +233,7 @@ class DataLoader:
                 for key, value in obj.items():
                     if re.match(r'\w+\.\w+', key):
                         other_node, other_id = key.split('.')
-                        relationship_name = self.schema.get_relationship(label, other_node)
+                        relationship_name = self.schema.get_relationship(node_type, other_node)
                         if not relationship_name:
                             self.log.error('Relationship not found!')
                             return False
@@ -253,18 +253,20 @@ class DataLoader:
 
                 for relationship in relationships:
                     relationship_name = relationship[RELATIONSHIP_NAME]
-                    statement = 'MATCH (m:{} {{{}: "{}"}}) '.format(relationship[PARENT_TYPE], relationship[PARENT_ID_FIELD], relationship[PARENT_ID])
-                    statement += 'MATCH (n:{} {{ {} }}) '.format(label, criteria_statement)
+                    parent_node = relationship[PARENT_TYPE]
+                    statement = 'MATCH (m:{} {{{}: "{}"}}) '.format(parent_node, relationship[PARENT_ID_FIELD], relationship[PARENT_ID])
+                    statement += 'MATCH (n:{} {{ {} }}) '.format(node_type, criteria_statement)
                     statement += 'MERGE (n)-[:{}]->(m);'.format(relationship_name)
 
                     result = session.run(statement)
                     count = result.summary().counters.relationships_created
                     self.relationships_created += count
-                    relationships_created[relationship_name] = relationships_created.get(relationship_name, 0) + count
+                    relationship_pattern = '(:{})->[:{}]->(:{})'.format(node_type, relationship_name, parent_node)
+                    relationships_created[relationship_pattern] = relationships_created.get(relationship_pattern, 0) + count
                     self.relationships_stat[relationship_name] = self.relationships_stat.get(relationship_name, 0) + count
 
-            for name, count in relationships_created.items():
-                self.log.info('{0} (:{2})->[:{1}]->(:{3}) relationship(s) loaded'.format(count, name, label, self.schema.get_dest_node_for_relationship(label, name)))
+            for rel, count in relationships_created.items():
+                self.log.info('{} {} relationship(s) loaded'.format(count, rel))
             if visits_created > 0:
                 self.log.info('{} (:{}) node(s) loaded'.format(visits_created, VISIT_NODE))
 
@@ -273,7 +275,7 @@ class DataLoader:
     def getSearchCriteriaForNode(self, node):
         id_field = self.get_id_field(node)
         node_id = self.get_id(node)
-        label = node[NODE_TYPE]
+        node_type = node[NODE_TYPE]
         if node_id:
             criteria_statement = '{}: "{}"'.format(id_field, node_id)
         else:
@@ -293,7 +295,7 @@ class DataLoader:
                     combined = '{}_{}'.format(parent, field_name)
                     if field_name in node:
                         self.log.warning('"{}" field is in both "{}" and parent "{}", use "{}" instead !'.format(
-                            key, label, parent, combined))
+                            key, node_type, parent, combined))
                         field_name = combined
 
                 else:
