@@ -17,6 +17,8 @@ PARENT_TYPE = 'parent_type'
 PARENT_ID_FIELD = 'parent_id_field'
 PARENT_ID = 'parent_id'
 RELATIONSHIP_NAME = 'name'
+NODES_CREATED = 'nodes_created'
+RELATIONSHIP_CREATED = 'relationship_created'
 excluded_fields = {NODE_TYPE}
 
 
@@ -72,7 +74,7 @@ class DataLoader:
             self.log.info('Relationship: [:{}] loaded: {}'.format(rel, count))
         self.log.info('{} nodes and {} relationships loaded!'.format(self.nodes_created, self.relationships_created))
         self.log.info('Loading time: {:.2f} seconds'.format(end - start))  # Time in seconds, e.g. 5.38091952400282
-        return True
+        return {NODES_CREATED: self.nodes_created, RELATIONSHIP_CREATED: self.relationships_created}
 
     # Get node's id field, such as case_id for case node, or clinical_study_designation for study node
     def get_id_field(self, obj):
