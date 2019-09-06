@@ -31,7 +31,17 @@ class TestLoader(unittest.TestCase):
             "data/COTC007B/COTC007B_prior_surgery.txt",
             "data/COTC007B/COTC007B_study.txt",
             "data/COTC007B/COTC007B_study_arm.txt",
-            "data/COTC007B/COTC_program.txt"
+            "data/COTC007B/COTC_program.txt",
+            "data/NCATS/NCATS01-arm.txt",
+            "data/NCATS/NCATS01-blood_samples.txt",
+            "data/NCATS/NCATS01-case.txt",
+            "data/NCATS/NCATS01-cohort.txt",
+            "data/NCATS/NCATS01-demographic.txt",
+            "data/NCATS/NCATS01-diagnosis.txt",
+            "data/NCATS/NCATS01-enrollment.txt",
+            "data/NCATS/NCATS01-normal_samples.txt",
+            "data/NCATS/NCATS01-study.txt",
+            "data/NCATS/NCATS01-tumor_samples.txt"
         ]
 
     def test_remove_traling_slash(self):
@@ -61,8 +71,13 @@ class TestLoader(unittest.TestCase):
         loader = DataLoader(self.log, self.driver, self.schema, self.file_list)
         load_result = loader.load(True, 1)
         self.assertIsInstance(load_result, dict, msg='Load data failed!')
-        self.assertEqual(983, load_result[NODES_CREATED])
-        self.assertEqual(1033, load_result[RELATIONSHIP_CREATED])
+        self.assertEqual(1366, load_result[NODES_CREATED])
+        self.assertEqual(1415, load_result[RELATIONSHIP_CREATED])
+
+    def test_validate_parents_exit_in_file(self):
+        loader = DataLoader(self.log, self.driver, self.schema, self.file_list)
+        result = loader.validate_parents_exit_in_file('data/Pathology-Report-Mapping-File.txt', 100)
+        self.assertTrue(result)
 
 
 if __name__ == '__main__':

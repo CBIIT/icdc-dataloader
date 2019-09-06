@@ -1,0 +1,6 @@
+type	study_arm.study_arm_id	cohort_id	cohort_description	cohort_dose
+cohort	transcriptomics and proteomics analysis 1	B Cell Lymphoma	Patients with B Cell Lymphoma	
+cohort	transcriptomics and proteomics analysis 1	T Cell Lymphoma	Patients with T Cell Lymphoma	
+cohort	transcriptomics and proteomics analysis 1	Osteosarcoma	Patients with Osteosarcoma	
+cohort	transcriptomics and proteomics analysis 1	Pulmonary Neoplasms	Patients with Pulmonary Neoplasms	
+cohort	transcriptomics and proteomics analysis 1	Melanoma	Patients with Melanoma	

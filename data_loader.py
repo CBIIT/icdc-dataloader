@@ -109,6 +109,36 @@ class DataLoader:
             obj[key.strip()] = value.strip()
         return obj
 
+    # Validate all parents exist in a data (TSV/TXT) file
+    def validate_parents_exit_in_file(self, file_name, max_violations):
+        with self.driver.session() as session:
+            with open(file_name) as in_file:
+                self.log.info('Validating relationships in file "{}" ...'.format(file_name))
+                reader = csv.DictReader(in_file, delimiter='\t')
+                line_num = 1
+                validation_failed = False
+                violations = 0
+                for org_obj in reader:
+                    obj = self.cleanup_node(org_obj)
+                    node_type = obj[NODE_TYPE]
+                    line_num += 1
+                    # Validate parent exist
+                    for key, value in obj.items():
+                        if re.match(r'\w+\.\w+', key):
+                            other_node, other_id = key.split('.')
+                            relationship_name = self.schema.get_relationship(node_type, other_node)
+                            if not relationship_name:
+                                self.log.error('Relationship not found!')
+                                return False
+                            # Todo: create a session
+                            if not self.node_exists(session, other_node, other_id, value):
+                                self.log.error('Invalid data at line {}: "Parent (:{}) doesn\'t exist"!'.format(line_num, other_node))
+                                validation_failed = True
+                                violations += 1
+                                if violations >= max_violations:
+                                    return False
+                return not validation_failed
+
     # Validate file
     def validate_file(self, file_name, max_violations):
         with open(file_name) as in_file:
