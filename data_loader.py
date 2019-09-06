@@ -132,7 +132,7 @@ class DataLoader:
                                 return False
                             # Todo: create a session
                             if not self.node_exists(session, other_node, other_id, value):
-                                self.log.error('Invalid data at line {}: "Parent (:{}) doesn\'t exist"!'.format(line_num, other_node))
+                                self.log.error('Invalid data at line {}: Parent (:{} {{ {}: "{}" }}) doesn\'t exist!'.format(line_num, other_node, other_id, value))
                                 validation_failed = True
                                 violations += 1
                                 if violations >= max_violations:
