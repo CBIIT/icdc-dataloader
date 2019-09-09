@@ -1,12 +1,12 @@
-type	visit.visit_id	body_surface_area	respiration_pattern	ecg	date_of_vital_signs	pulse	pulse_ox	respiration_rate	assessment_timepoint	systolic_bp	body_temperature	time_of_observation	modified_ecog	patient_weight
-vital_signs	COTC007B040220121031	0.9	PANTING		20121031	120	98	60		122	100.6	900	Normal Activity	28.6
-vital_signs	COTC007B040220121031	0.9	PANTING		20121031	120	98	60		122	100.6	900	Normal Activity	28.6
-vital_signs	COTC007B040220121101	0.9	PANT		20121101	110	98	60		150	101.2	1000	Normal Activity	28.3
-vital_signs	COTC007B040220121102	0.9	PANT		20121102	120		60		135	101.4	800	Normal Activity	28.5
-vital_signs	COTC007B040220121103	0.9	PANT		20121103	125		60		143	101.2	900	Normal Activity	28.3
-vital_signs	COTC007B040220121104	0.9	WNL		20121104	110		20		137	98	900	Normal Activity	28.6
-vital_signs	COTC007B040220121105	0.9	PANT		20121105	120	99	60		145	100.2	900	Normal Activity	28.2
-vital_signs	COTC007B040220121106		WNL		20121106	100		40		155	101.5	700	Normal Activity	26.5
-vital_signs	COTC007B040220121108		PANTING		20121108	120		60			101.2	700	Normal Activity	26.8
-vital_signs	COTC007B040220121115		PANTING		20121115	81		60			101.8	930	Normal Activity	27
-vital_signs	COTC007B040220121121		PANTING		20121121	124		60			102.2	900	Normal Activity	26.6
+type	case_id	visit.visit_id	body_surface_area	respiration_pattern	ecg	date_of_vital_signs	pulse	pulse_ox	respiration_rate	assessment_timepoint	systolic_bp	body_temperature	time_of_observation	modified_ecog	patient_weight
+vital_signs	COTC007B0402	COTC007B040220121031	0.9	PANTING		20121031	120	98	60		122	100.6	900	Normal Activity	28.6
+vital_signs	COTC007B0402	COTC007B040220121031	0.9	PANTING		20121031	120	98	60		122	100.6	900	Normal Activity	28.6
+vital_signs	COTC007B0402	COTC007B040220121101	0.9	PANT		20121101	110	98	60		150	101.2	1000	Normal Activity	28.3
+vital_signs	COTC007B0402	COTC007B040220121102	0.9	PANT		20121102	120		60		135	101.4	800	Normal Activity	28.5
+vital_signs	COTC007B0402	COTC007B040220121103	0.9	PANT		20121103	125		60		143	101.2	900	Normal Activity	28.3
+vital_signs	COTC007B0402	COTC007B040220121104	0.9	WNL		20121104	110		20		137	98	900	Normal Activity	28.6
+vital_signs	COTC007B0402	COTC007B040220121105	0.9	PANT		20121105	120	99	60		145	100.2	900	Normal Activity	28.2
+vital_signs	COTC007B0402	COTC007B040220121106		WNL		20121106	100		40		155	101.5	700	Normal Activity	26.5
+vital_signs	COTC007B0402	COTC007B040220121108		PANTING		20121108	120		60			101.2	700	Normal Activity	26.8
+vital_signs	COTC007B0402	COTC007B040220121115		PANTING		20121115	81		60			101.8	930	Normal Activity	27
+vital_signs	COTC007B0402	COTC007B040220121121		PANTING		20121121	124		60			102.2	900	Normal Activity	26.6

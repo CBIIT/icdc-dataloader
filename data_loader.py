@@ -7,6 +7,7 @@ from neo4j import  Driver, Session
 from utils import *
 from timeit import default_timer as timer
 from icdc_schema import ICDC_Schema
+from datetime import datetime, timedelta
 
 NODE_TYPE = 'type'
 VISIT_NODE = 'visit'
@@ -19,9 +20,16 @@ PARENT_ID = 'parent_id'
 RELATIONSHIP_NAME = 'name'
 NODES_CREATED = 'nodes_created'
 RELATIONSHIP_CREATED = 'relationship_created'
+START_DATE = 'date_of_cycle_start'
+END_DATE = 'date_of_cycle_end'
+DATE_FORMAT = '%Y%m%d'
+OF_CYCLE = 'of_cycle'
+CYCLE_NODE = 'cycle'
 excluded_fields = {NODE_TYPE}
 CASE_NODE = 'case'
 CASE_ID = 'case_id'
+PREDATE = 7
+
 
 
 class DataLoader:
@@ -395,8 +403,40 @@ class DataLoader:
             count = result.summary().counters.nodes_created
             self.nodes_created += count
             self.nodes_stat[VISIT_NODE] = self.nodes_stat.get(VISIT_NODE, 0) + count
-            return count > 0
+            if count > 0:
+                case_id = src[CASE_ID]
+                if not self.connect_visit_to_cycle(session, node_id, case_id, date):
+                    self.log.error('Visit: "{}" is NOT connected to a cycle!'.format(node_id))
+                return True
         else:
             return False
 
-
+    def connect_visit_to_cycle(self, session, visit_id, case_id, visit_date):
+        find_cycles_stmt = 'MATCH (c:cycle) WHERE c.case_id = "{}" RETURN c ORDER BY c.date_of_cycle_start'.format(case_id)
+        result = session.run(find_cycles_stmt)
+        if result:
+            first_date = None
+            for record in result.records():
+                cycle = record.data()['c']
+                date = datetime.strptime(visit_date, DATE_FORMAT)
+                start_date = datetime.strptime(cycle[START_DATE], DATE_FORMAT)
+                if not first_date:
+                    first_date = start_date
+                    pre_date = first_date - timedelta(days=PREDATE)
+                end_date = datetime.strptime(cycle[END_DATE], DATE_FORMAT)
+                if (date >= start_date and date <= end_date) or (date < first_date and date >= pre_date):
+                    cycle_id = cycle.id
+                    connect_stmt = 'MATCH (v:{} {{{}: "{}"}}) MATCH (c:{}) WHERE id(c) = {} MERGE (v)-[:{}]->(c)'.format(VISIT_NODE, VISIT_ID, visit_id, CYCLE_NODE, cycle_id, OF_CYCLE)
+                    cnt_result = session.run(connect_stmt)
+                    relationship_created = cnt_result.summary().counters.relationships_created
+                    if relationship_created > 0:
+                        self.relationships_created += relationship_created
+                        self.relationships_stat[OF_CYCLE] = self.relationships_stat.get(OF_CYCLE, 0) + relationship_created
+                        return True
+                    else:
+                        self.log.error('Create relationship failed!')
+                        return False
+            return False
+        else:
+            self.log.error('No cycles found for case: {}'.format(case_id))
+            return False

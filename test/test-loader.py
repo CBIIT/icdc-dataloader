@@ -71,12 +71,14 @@ class TestLoader(unittest.TestCase):
         load_result = loader.load(True, 1)
         self.assertIsInstance(load_result, dict, msg='Load data failed!')
         self.assertEqual(1366, load_result[NODES_CREATED])
-        self.assertEqual(1415, load_result[RELATIONSHIP_CREATED])
+        self.assertEqual(1446, load_result[RELATIONSHIP_CREATED])
 
     def test_validate_parents_exist_in_file(self):
         loader = DataLoader(self.driver, self.schema, self.file_list)
         # result = loader.validate_parents_exit_in_file('data/Pathology-Report-Mapping-File.txt', 100)
-        result = loader.validate_cases_exist_in_file('data/Pathology-Report-Mapping-File.txt', 100)
+        result = loader.validate_cases_exist_in_file('data/pathology-reports-failure.txt', 100)
+        self.assertFalse(result)
+        result = loader.validate_cases_exist_in_file('data/pathology-reports-success.txt', 100)
         self.assertTrue(result)
 
 
