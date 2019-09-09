@@ -278,7 +278,6 @@ def main():
 
     Upload_Fails_Budget = args.max_violations if args.max_violations else 0
 
-
     if(not flag_are_args_completed):
         sys.exit(1)
 
@@ -287,10 +286,8 @@ def main():
         SCHEMA = ICDC_Schema(args.schema)
         NEO4J_DRIVER = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
         Data_Loader = DataLoader(log,NEO4J_DRIVER, SCHEMA, [args.manifest])
-
         input_bucket = S3Bucket(args.input_s3_bucket)
         output_bucket = S3Bucket(args.output_s3_bucket)
-
         start = timer()
         if not validate_input(args,Data_Loader):
             log.error('validate input fails')
@@ -312,7 +309,7 @@ def main():
 
     except ServiceUnavailable as err:
         log.exception(err)
-        log.critical("Can't connect to Neo4j server at: \"{}\"".format(uri))
+        log.critical("Can't connect to Neo4j server at: \"{}\"".format(NEO4J_URI))
 
 
 
