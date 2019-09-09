@@ -15,17 +15,9 @@ from loader import *
 # https://github.com/CBIIT/icdc-model-tool/blob/master/model-desc/icdc-model.yml and
 MANIFEST_FIELDS =["uuid","file_size","file_md5","file_status","file_locations","file_format","acl"]
 log = get_logger('S3 Loader')
-Upload_Fails_Budget = 0
-BLOCKSIZE = 65536  #number of bit for hashing
-
-NEO4J_URI = 'bolt://localhost:7687'
-NEO4J_USER = 'neo4j'
-NEO4J_PASSWORD = ''
-NEO4J_DRIVER = GraphDatabase.driver(NEO4J_URI, auth = (NEO4J_USER, NEO4J_PASSWORD))
-SCHEMA = ICDC_Schema(['./test/data/icdc-model.yml', './test/data/icdc-model-props.yml'])
-FILE_LIST=[]
-
-
+PSWD_ENV = 'NEO_PASSWORD'
+BLOCKSIZE=65536
+Upload_Fails_Budget=0
 
 def upload_files_based_on_manifest(bucket,s3_folder,directory,bucket_name,manifest):
     start = timer()
@@ -70,7 +62,7 @@ def upload_file(bucket,s3,f):
 
 
 def export_result(manifest,bucket,bucket_name,folder_name,directory,input_s3_bucket,input_s3_folder):
-    log.info('Fill the file info into manifest')
+    log.info('Completing the initial manifest')
     try:
         data_matrix = []
         fieldnames =[]
@@ -180,21 +172,21 @@ def check_file_exist(args):
 
 
 
-def check_file_parent(args):
+def check_file_parent(manifest,loader):
     log.info('Validate that the parent record of each file.')
     # call data loader function to validate the data
-    loader = DataLoader(get_logger('Data Loader'), NEO4J_DRIVER, SCHEMA, [args.manifest])
-    return  loader.validate_cases_exist_in_file(args.manifest, 100)
+
+    return  loader.validate_cases_exist_in_file(manifest, 100)
 
 
-def validate_input(args):
+def validate_input(args,loader):
     pass_check =[]
 
     pass_check.append(check_manifest(args))
     if pass_check[0]:
         log.info('Pass validating manifest .')
 
-    pass_check.append(check_file_parent(args))
+    pass_check.append(check_file_parent(args.manifest,loader))
     if pass_check[1]:
         log.info('Pass validating parents .')
     pass_check.append(check_file_exist(args))
@@ -211,84 +203,114 @@ def validate_input(args):
 
 def main():
 
-
     parser = argparse.ArgumentParser(description='Upload files from local to S3')
-    # parser.add_argument('-t', '--manifest', help='input manifest',action="store_true")
-    # parser.add_argument('-d', '--dir', help='upload files\'s location',action="store_true")
-    # parser.add_argument('-isb', '--input-s3-bucket', help='S3 bucket name for files',action="store_true")
-    # parser.add_argument('-isf', '--input-s3-folder', help='S3 folder for files',action="store_true")
-    # parser.add_argument('-osb', '--output-s3-bucket',help='s3 bucket for manifest',action="store_true")
-    # parser.add_argument('-osf', '--output-s3-folder',help='s3 folder for manifest',action="store_true")
-
-    parser.add_argument('-t', '--manifest', help='input manifest' , default="/Users/cheny39/Documents/PythonProject/tmp/input_template.txt")
-    parser.add_argument('-d', '--dir', help='upload files\'s location' , default="/Users/cheny39/Documents/PythonProject/tmp/")
-    parser.add_argument('-isb', '--input-s3-bucket', help='S3 bucket name for files', default="yizhen-file-loader")
-    parser.add_argument('-isf', '--input-s3-folder', help='S3 folder for files',default="input")
-    parser.add_argument('-osb', '--output-s3-bucket',help='s3 bucket for manifest',default="yizhen-file-loader")
-    parser.add_argument('-osf', '--output-s3-folder',help='s3 folder for manifest',default="output")
-
+    parser.add_argument('-t', '--manifest', help='input manifest')
+    parser.add_argument('-d', '--dir', help='upload files\'s location')
+    parser.add_argument('-isb', '--input-s3-bucket', help='S3 bucket name for files')
+    parser.add_argument('-isf', '--input-s3-folder', help='S3 folder for files')
+    parser.add_argument('-osb', '--output-s3-bucket',help='s3 bucket for manifest')
+    parser.add_argument('-osf', '--output-s3-folder',help='s3 folder for manifest')
     parser.add_argument('-s', '--schema', help='Schema files', action='append')
-    parser.add_argument('-c', '--cheat-mode', help='Skip validations, aka. Cheat Mode', action='store_true')
-    parser.add_argument('-m', '--max-violations', help='Max violations to display', nargs='?', type=int, default=10)
+    parser.add_argument('-f', '--max-violations', help='Max violations to display', nargs='?', type=int, default=0)
+    parser.add_argument('-md5', '--max-block-for-md5', help='Max Blocks for MD5 ', nargs='?', type=int, default=65536)
     parser.add_argument('-i', '--uri', help='Neo4j uri like bolt://12.34.56.78:7687')
     parser.add_argument('-u', '--user', help='Neo4j user')
     parser.add_argument('-p', '--password', help='Neo4j password')
 
+
     args = parser.parse_args()
-
-
     
-    # for simplicity sake, we use Optional arguments instead of positional argument(required argument), extra arg check is required.
-    # check args
-    # flag_are_args_completed = True
-    # if(not args.manifest):
-    #     log.error('the following arguments are required: -t')
-    #     flag_are_args_completed=False
-    #
-    # if(not args.dir):
-    #     log.error('the following arguments are required: -d')
-    #     flag_are_args_completed=False
-    #
-    # if(not args.input_s3_bucket):
-    #     log.error('the following arguments are required: -isb')
-    #     flag_are_args_completed=False
-    #
-    # if(not args.input_s3_folder):
-    #     log.error('the following arguments are required: -isf')
-    #     flag_are_args_completed=False
-    #
-    # if(not args.output_s3_bucket):
-    #     log.error('the following arguments are required: -osb')
-    #     flag_are_args_completed=False
-    #
-    # if(not args.output_s3_folder):
-    #     log.error('the following arguments are required: -osf')
-    #     flag_are_args_completed=False
-    #
-    # if(not flag_are_args_completed):
-    #     sys.exit(1)
+    #check args
+    flag_are_args_completed = True
+    if(not args.manifest):
+        log.error('the following arguments are required: -t')
+        flag_are_args_completed=False
+
+    if(not args.dir):
+        log.error('the following arguments are required: -d')
+        flag_are_args_completed=False
+
+    if(not args.input_s3_bucket):
+        log.error('the following arguments are required: -isb')
+        flag_are_args_completed=False
+
+    if(not args.input_s3_folder):
+        log.error('the following arguments are required: -isf')
+        flag_are_args_completed=False
+
+    if(not args.output_s3_bucket):
+        log.error('the following arguments are required: -osb')
+        flag_are_args_completed=False
+
+    if(not args.output_s3_folder):
+        log.error('the following arguments are required: -osf')
+        flag_are_args_completed=False
+
+    NEO4J_URI = args.uri if args.uri else "bolt://localhost:7687"
+    NEO4J_URI = removeTrailingSlash(NEO4J_URI)
+
+    NEO4J_PASSWORD = args.password
+    if not NEO4J_PASSWORD:
+        if PSWD_ENV not in os.environ:
+            log.error(
+                'Password not specified! Please specify password with -p or --password argument, or set {} env var'.format(
+                    PSWD_ENV))
+            flag_are_args_completed = False
+        else:
+            NEO4J_PASSWORD = os.environ[PSWD_ENV]
+
+    NEO4J_USER = args.user if args.user else 'neo4j'
+
+    if not args.schema:
+        log.error('Please specify schema file(s) with -s or --schema argument')
+        flag_are_args_completed = False
 
 
-    
-    input_bucket = S3Bucket(args.input_s3_bucket)
-    output_bucket = S3Bucket(args.output_s3_bucket)
-    start = timer()
-    if not validate_input(args):
-        log.error('validate input fails')
+    for schema_file in args.schema:
+        if not os.path.isfile(schema_file):
+            log.error('{} is not a file'.format(schema_file))
+            flag_are_args_completed = False
+
+    BLOCKSIZE =args.max_block_for_md5 if args.max_block_for_md5 else 65536
+
+    Upload_Fails_Budget = args.max_violations if args.max_violations else 0
+
+
+    if(not flag_are_args_completed):
+        sys.exit(1)
+
+
+    try:
+        SCHEMA = ICDC_Schema(args.schema)
+        NEO4J_DRIVER = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
+        Data_Loader = DataLoader(log,NEO4J_DRIVER, SCHEMA, [args.manifest])
+
+        input_bucket = S3Bucket(args.input_s3_bucket)
+        output_bucket = S3Bucket(args.output_s3_bucket)
+
+        start = timer()
+        if not validate_input(args,Data_Loader):
+            log.error('validate input fails')
+            NEO4J_DRIVER.close()
+            sys.exit(1)
         NEO4J_DRIVER.close()
-        sys.exit(1)
-    NEO4J_DRIVER.close()
 
-    if not upload_files_based_on_manifest(input_bucket,args.input_s3_folder, args.dir,args.input_s3_bucket,args.manifest):
-        log.error('Upload files to S3 bucket "{}" failed!'.format(args.input_s3_bucket))
-        sys.exit(1)
+        if not upload_files_based_on_manifest(input_bucket, args.input_s3_folder, args.dir, args.input_s3_bucket,
+                                              args.manifest):
+            log.error('Upload files to S3 bucket "{}" failed!'.format(args.input_s3_bucket))
+            sys.exit(1)
 
+        if not export_result(args.manifest, output_bucket, args.output_s3_bucket, args.output_s3_folder, args.dir,
+                             args.input_s3_bucket, args.input_s3_folder):
+            log.error('Upload files to S3 bucket "{}" failed!'.format(args.output_s3_bucket))
+            sys.exit(1)
+        end = timer()
+        log.info('Cheers, Job Finished !! Total Execution Time: {:.2f} seconds'.format(end - start))
 
-    if not export_result(args.manifest,output_bucket,args.output_s3_bucket,args.output_s3_folder,args.dir,args.input_s3_bucket,args.input_s3_folder):
-        log.error('Upload files to S3 bucket "{}" failed!'.format(args.output_s3_bucket))
-        sys.exit(1)
-    end = timer()
-    log.info('Cheers, Job Finished !! Total Execution Time: {:.2f} seconds'.format(end - start))
+    except ServiceUnavailable as err:
+        log.exception(err)
+        log.critical("Can't connect to Neo4j server at: \"{}\"".format(uri))
+
 
 
 if __name__ == '__main__':
