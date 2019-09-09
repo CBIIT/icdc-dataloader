@@ -20,6 +20,8 @@ RELATIONSHIP_NAME = 'name'
 NODES_CREATED = 'nodes_created'
 RELATIONSHIP_CREATED = 'relationship_created'
 excluded_fields = {NODE_TYPE}
+CASE_NODE = 'case'
+CASE_ID = 'case_id'
 
 
 class DataLoader:
@@ -109,8 +111,34 @@ class DataLoader:
             obj[key.strip()] = value.strip()
         return obj
 
+    # Validate all cases exist in a data (TSV/TXT) file
+    def validate_cases_exist_in_file(self, file_name, max_violations):
+        with self.driver.session() as session:
+            with open(file_name) as in_file:
+                self.log.info('Validating relationships in file "{}" ...'.format(file_name))
+                reader = csv.DictReader(in_file, delimiter='\t')
+                line_num = 1
+                validation_failed = False
+                violations = 0
+                for org_obj in reader:
+                    obj = self.cleanup_node(org_obj)
+                    node_type = obj[NODE_TYPE]
+                    line_num += 1
+                    # Validate parent exist
+                    if CASE_ID in obj:
+                        case_id = obj[CASE_ID]
+                        if not self.node_exists(session, CASE_NODE, CASE_ID, case_id):
+                            self.log.error(
+                                'Invalid data at line {}: Parent (:{} {{ {}: "{}" }}) doesn\'t exist!'.format(
+                                    line_num, CASE_NODE, CASE_ID, case_id))
+                            validation_failed = True
+                            violations += 1
+                            if violations >= max_violations:
+                                return False
+                return not validation_failed
+
     # Validate all parents exist in a data (TSV/TXT) file
-    def validate_parents_exit_in_file(self, file_name, max_violations):
+    def validate_parents_exist_in_file(self, file_name, max_violations):
         with self.driver.session() as session:
             with open(file_name) as in_file:
                 self.log.info('Validating relationships in file "{}" ...'.format(file_name))

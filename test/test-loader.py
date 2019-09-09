@@ -76,7 +76,8 @@ class TestLoader(unittest.TestCase):
 
     def test_validate_parents_exit_in_file(self):
         loader = DataLoader(self.log, self.driver, self.schema, self.file_list)
-        result = loader.validate_parents_exit_in_file('data/Pathology-Report-Mapping-File.txt', 100)
+        # result = loader.validate_parents_exit_in_file('data/Pathology-Report-Mapping-File.txt', 100)
+        result = loader.validate_cases_exit_in_file('data/Pathology-Report-Mapping-File.txt', 100)
         self.assertTrue(result)
 
 
