@@ -35,7 +35,7 @@ def main():
 
     args = parser.parse_args()
 
-    log = get_logger('Data Loader')
+    log = get_logger('Loader')
     directory = args.dir
     if args.s3_folder:
         if not os.path.exists(directory):
