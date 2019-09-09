@@ -1,18 +1,29 @@
 #!/usr/bin/env python3
-import os, sys
+
 import argparse
 from s3 import *
-import uuid
-import csv
 from os.path import isfile, join
-from timeit import default_timer as timer
 import time
 import hashlib
+from icdc_schema import *
+from data_loader import *
+from utils import *
+from loader import *
 
-MANIFEST_FIELDS =["parent","uuid","name","type","description","size","md5","status","location","format","acl"]
+# MANIFEST FIELDS Based on data model uc-cdis manifest setting
+# https://github.com/uc-cdis/indexd_utils/blob/master/manifest.tsv
+# https://github.com/CBIIT/icdc-model-tool/blob/master/model-desc/icdc-model.yml and
+MANIFEST_FIELDS =["uuid","file_size","file_md5","file_status","file_locations","file_format","acl"]
 log = get_logger('S3 Loader')
 Upload_Fails_Budget = 0
 BLOCKSIZE = 65536  #number of bit for hashing
+
+NEO4J_URI = 'bolt://localhost:7687'
+NEO4J_USER = 'neo4j'
+NEO4J_PASSWORD = os.environ['NEO_PASSWORD']
+NEO4J_DRIVER = GraphDatabase.driver(NEO4J_URI, auth = (NEO4J_USER, NEO4J_PASSWORD))
+SCHEMA = ICDC_Schema(['data/icdc-model.yml', 'data/icdc-model-props.yml'])
+FILE_LIST=[]
 
 def upload_files_based_on_manifest(bucket,s3_folder,directory,bucket_name,manifest):
     start = timer()
@@ -24,12 +35,15 @@ def upload_files_based_on_manifest(bucket,s3_folder,directory,bucket_name,manife
     with open(manifest) as csv_file:
         tsv_reader = csv.DictReader(csv_file, delimiter='\t')
         for record in tsv_reader:
-
-            if upload_file(bucket,join(s3_folder, record["name"]), join(directory, record["name"])):
+            file_name =record["file_name"]
+            if upload_file(bucket,join(s3_folder, file_name), join(directory, file_name)):
                 number_of_files_uploaded += 1
                 number_of_files_need_to_upload+=1
-                bits_uploaded+=os.stat(join(directory, record["name"])).st_size
+                bits_uploaded+=os.stat(join(directory, file_name)).st_size
+                log.info('File :  {}  uploaded'.format(file_name))
+
             else:
+                log.info('==========> File :  {} upload fails'.format(file_name))
                 upload_fails_count += 1
                 if upload_fails_count > Upload_Fails_Budget:
                     log.error('==========> Too many uploading failures, {} files upload fails'.format(upload_fails_count))
@@ -57,30 +71,39 @@ def export_result(manifest,bucket,bucket_name,folder_name,directory,input_s3_buc
     log.info('Fill the file info into manifest')
     try:
         data_matrix = []
-        data_matrix.append(MANIFEST_FIELDS)
+        fieldnames =[]
         with open(manifest) as csv_file:
             tsv_reader = csv.DictReader(csv_file, delimiter='\t')
+            data_matrix =[]
             for record in tsv_reader:
-                f =join(directory,record["name"])
-                f_size = os.stat(f).st_size
-                f_name = f
-                f_location =join("s3://",input_s3_bucket ,input_s3_folder,record["name"])
-                f_format = (os.path.splitext(f)[1]).split('.')[1].lower()
-                f_uuid =uuid.uuid4()
+                del record["case_id"]
+                if not fieldnames:
+                    for key in record:
+                        if key =="case_id":
+                            continue
+                        fieldnames.append(key)
+                    fieldnames+=MANIFEST_FIELDS
+                f =join(directory,record["file_name"])
+                record["file_size"] = os.stat(f).st_size
+                record["file_locations"] =join("s3://",input_s3_bucket ,input_s3_folder,record["file_name"])
+                record["file_format"]= (os.path.splitext(f)[1]).split('.')[1].lower()
+                record["uuid"] =uuid.uuid4()
                 hasher = hashlib.sha256()
-                with open(join(directory,record["name"]), 'rb') as afile:
+                with open(f, 'rb') as afile:
                     buf = afile.read(BLOCKSIZE)
                     while len(buf) > 0:
                         hasher.update(buf)
                         buf = afile.read(BLOCKSIZE)
-                f_md5=hasher.hexdigest()
+                record["file_md5"]=hasher.hexdigest()
+                record["file_status"] = "uploaded"
+                record["acl"] = "open"
+                data_matrix.append(record)
 
-                data_matrix.append([record["parent"],f_uuid,record["name"],record["type"],record['description'],f_size,f_md5,"uploaded",f_location,f_format,"['open']"])
         timestr = time.strftime("%Y%m%d-%H%M%S")
         output_file_name =timestr + ".txt"
         output_file = join(directory,output_file_name)
 
-        write_tsv_file(output_file,data_matrix)
+        write_tsv_file(output_file,data_matrix,fieldnames)
         log.info('Upload the manifest info into S3')
         if upload_file(bucket,join(folder_name,output_file_name),output_file):
             return True
@@ -91,10 +114,12 @@ def export_result(manifest,bucket,bucket_name,folder_name,directory,input_s3_buc
         return False
 
 
-def write_tsv_file(f,data):
+def write_tsv_file(f,data,fieldnames):
     with open(f, 'wt') as out_file:
-        tsv_writer = csv.writer(out_file, delimiter='\t')
-        for  index in range(len(data)):
+
+        tsv_writer = csv.DictWriter(out_file, delimiter='\t',fieldnames=fieldnames)
+        tsv_writer.writeheader()
+        for index in range(len(data)):
             tsv_writer.writerow(data[index])
 
 
@@ -112,9 +137,8 @@ def check_manifest(args):
         with open(args.manifest) as csv_file:
             tsv_reader =  csv.DictReader(csv_file, delimiter='\t')
             row1 = next(tsv_reader)
-            for field in MANIFEST_FIELDS:
-                if field not in row1:
-                    log.error('==========> Field in manifest: "{}" is not found'.format(field))
+            if "file_name" not in row1:
+                    log.error('==========> Field in manifest: "{}" is not found'.format("file_name"))
                     pass_check= False
     return pass_check
 
@@ -134,27 +158,31 @@ def check_file_exist(args):
 
     with open(args.manifest) as csv_file:
         tsv_reader =  csv.DictReader(csv_file, delimiter='\t')
+        line_count = 1;
         for record in tsv_reader:
-            if "name" in record and record["name"]!="":
-                if not isfile(os.path.join(args.dir, record["name"])):
-                    log.error('==========> File: "{}" is not found'.format(record["name"]))
+            line_count+=1
+            if "file_name" in record and record["file_name"]!="":
+                if not isfile(os.path.join(args.dir, record["file_name"])):
+                    log.error('==========> File: "{}" is not found'.format(record["file_name"]))
                     pass_check = False
             else:
-                log.error('==========> Empty file name for parent {} '.format(record["parent"]))
+                log.error('==========> Empty file name in line {}'.format(line_count))
                 pass_check = False
+            if "case_id" not in record or record["case_id"] == "":
+                    log.error('==========> Empty case id name in line {}'.format(line_count))
+                    pass_check = False
 
 
     return pass_check
+
+
 
 
 def check_file_parent(args):
     log.info('Validate that the parent record of each file.')
-    pass_check =True
-    
     # call data loader function to validate the data
-    # data_loader.function(args.manifest)  TBD
-
-    return pass_check
+    loader = DataLoader(log, NEO4J_DRIVER, SCHEMA, [args.manifest])
+    return  loader.validate_cases_exist_in_file(args.manifest, 100)
 
 
 def validate_input(args):
@@ -192,9 +220,9 @@ def main():
 
     parser.add_argument('-t', '--manifest', help='input manifest' , default="/Users/cheny39/Documents/PythonProject/tmp/input_template.txt")
     parser.add_argument('-d', '--dir', help='upload files\'s location' , default="/Users/cheny39/Documents/PythonProject/tmp/")
-    parser.add_argument('-isb', '--input-s3-bucket', help='S3 bucket name for files', default="icdcfile")
+    parser.add_argument('-isb', '--input-s3-bucket', help='S3 bucket name for files', default="yizhen-file-loader")
     parser.add_argument('-isf', '--input-s3-folder', help='S3 folder for files',default="input")
-    parser.add_argument('-osb', '--output-s3-bucket',help='s3 bucket for manifest',default="icdcfile")
+    parser.add_argument('-osb', '--output-s3-bucket',help='s3 bucket for manifest',default="yizhen-file-loader")
     parser.add_argument('-osf', '--output-s3-folder',help='s3 folder for manifest',default="output")
 
     args = parser.parse_args()
