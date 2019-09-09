@@ -13,8 +13,15 @@ VISIT_NODE = 'visit'
 VISIT_ID = 'visit_id'
 VISIT_DATE = 'visit_date'
 PROP_TYPE = 'Type'
-
+PARENT_TYPE = 'parent_type'
+PARENT_ID_FIELD = 'parent_id_field'
+PARENT_ID = 'parent_id'
+RELATIONSHIP_NAME = 'name'
+NODES_CREATED = 'nodes_created'
+RELATIONSHIP_CREATED = 'relationship_created'
 excluded_fields = {NODE_TYPE}
+CASE_NODE = 'case'
+CASE_ID = 'case_id'
 
 
 class DataLoader:
@@ -36,12 +43,12 @@ class DataLoader:
         self.schema = schema
         self.file_list = file_list
 
-    def load(self, cheat_mode=False):
+    def load(self, cheat_mode, max_violations):
         start = timer()
         if not cheat_mode:
             validation_failed = False
             for txt in self.file_list:
-                if not self.validate_file(txt):
+                if not self.validate_file(txt, max_violations) :
                     self.log.error('Validating file "{}" failed!'.format(txt))
                     validation_failed = True
             if validation_failed:
@@ -69,7 +76,7 @@ class DataLoader:
             self.log.info('Relationship: [:{}] loaded: {}'.format(rel, count))
         self.log.info('{} nodes and {} relationships loaded!'.format(self.nodes_created, self.relationships_created))
         self.log.info('Loading time: {:.2f} seconds'.format(end - start))  # Time in seconds, e.g. 5.38091952400282
-        return True
+        return {NODES_CREATED: self.nodes_created, RELATIONSHIP_CREATED: self.relationships_created}
 
     # Get node's id field, such as case_id for case node, or clinical_study_designation for study node
     def get_id_field(self, obj):
@@ -104,13 +111,69 @@ class DataLoader:
             obj[key.strip()] = value.strip()
         return obj
 
+    # Validate all cases exist in a data (TSV/TXT) file
+    def validate_cases_exist_in_file(self, file_name, max_violations):
+        with self.driver.session() as session:
+            with open(file_name) as in_file:
+                self.log.info('Validating relationships in file "{}" ...'.format(file_name))
+                reader = csv.DictReader(in_file, delimiter='\t')
+                line_num = 1
+                validation_failed = False
+                violations = 0
+                for org_obj in reader:
+                    obj = self.cleanup_node(org_obj)
+                    line_num += 1
+                    # Validate parent exist
+                    if CASE_ID in obj:
+                        case_id = obj[CASE_ID]
+                        if not self.node_exists(session, CASE_NODE, CASE_ID, case_id):
+                            self.log.error(
+                                'Invalid data at line {}: Parent (:{} {{ {}: "{}" }}) doesn\'t exist!'.format(
+                                    line_num, CASE_NODE, CASE_ID, case_id))
+                            validation_failed = True
+                            violations += 1
+                            if violations >= max_violations:
+                                return False
+                return not validation_failed
+
+    # Validate all parents exist in a data (TSV/TXT) file
+    def validate_parents_exist_in_file(self, file_name, max_violations):
+        with self.driver.session() as session:
+            with open(file_name) as in_file:
+                self.log.info('Validating relationships in file "{}" ...'.format(file_name))
+                reader = csv.DictReader(in_file, delimiter='\t')
+                line_num = 1
+                validation_failed = False
+                violations = 0
+                for org_obj in reader:
+                    obj = self.cleanup_node(org_obj)
+                    node_type = obj[NODE_TYPE]
+                    line_num += 1
+                    # Validate parent exist
+                    for key, value in obj.items():
+                        if re.match(r'\w+\.\w+', key):
+                            other_node, other_id = key.split('.')
+                            relationship_name = self.schema.get_relationship(node_type, other_node)
+                            if not relationship_name:
+                                self.log.error('Relationship not found!')
+                                return False
+                            # Todo: create a session
+                            if not self.node_exists(session, other_node, other_id, value):
+                                self.log.error('Invalid data at line {}: Parent (:{} {{ {}: "{}" }}) doesn\'t exist!'.format(line_num, other_node, other_id, value))
+                                validation_failed = True
+                                violations += 1
+                                if violations >= max_violations:
+                                    return False
+                return not validation_failed
+
     # Validate file
-    def validate_file(self, file_name):
+    def validate_file(self, file_name, max_violations):
         with open(file_name) as in_file:
             self.log.info('Validating file "{}" ...'.format(file_name))
             reader = csv.DictReader(in_file, delimiter='\t')
             line_num = 1
             validation_failed = False
+            violations = 0
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 line_num += 1
@@ -118,6 +181,9 @@ class DataLoader:
                 if not validate_result['result']:
                     self.log.error('Invalid data at line {}: "{}"!'.format(line_num, validate_result['message']))
                     validation_failed = True
+                    violations += 1
+                    if violations >= max_violations:
+                        return False
             return not validation_failed
 
     # load file
@@ -129,7 +195,7 @@ class DataLoader:
             nodes_created = 0
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
-                label = obj[NODE_TYPE]
+                node_type = obj[NODE_TYPE]
                 node_id = self.get_id(obj)
                 id_field = self.get_id_field(obj)
                 # statement is used to create current node
@@ -156,7 +222,7 @@ class DataLoader:
                         combined = '{}_{}'.format(parent, field_name)
                         if field_name in obj:
                             self.log.warning('"{}" field is in both "{}" and parent "{}", use "{}" instead !'.format(
-                                key, label, parent, combined))
+                                key, node_type, parent, combined))
                             field_name = combined
 
                     value_string = self.get_value_string(field_name, value)
@@ -166,18 +232,18 @@ class DataLoader:
                         prop_statement.append('{}: {}'.format(field_name, value_string))
 
                 if node_id:
-                    statement += 'MERGE (n:{} {{{}: "{}"}})'.format(label, id_field, node_id)
+                    statement += 'MERGE (n:{} {{{}: "{}"}})'.format(node_type, id_field, node_id)
                     statement += ' ON CREATE ' + prop_statement
                     statement += ' ON MATCH ' + prop_statement
                 else:
-                    statement += 'MERGE (n:{} {{ {} }})'.format(label, ', '.join(prop_statement))
+                    statement += 'MERGE (n:{} {{ {} }})'.format(node_type, ', '.join(prop_statement))
 
                 result = session.run(statement)
                 count = result.summary().counters.nodes_created
                 self.nodes_created += count
                 nodes_created += count
-                self.nodes_stat[label] = self.nodes_stat.get(label, 0) + count
-            self.log.info('{} (:{}) node(s) loaded'.format(nodes_created, label))
+                self.nodes_stat[node_type] = self.nodes_stat.get(node_type, 0) + count
+            self.log.info('{} (:{}) node(s) loaded'.format(nodes_created, node_type))
 
     def get_value_string(self, key, value):
         key_type = self.schema.get_type(key)
@@ -213,84 +279,91 @@ class DataLoader:
 
         with open(file_name) as in_file:
             reader = csv.DictReader(in_file, delimiter='\t')
-            relationships_created = 0
+            relationships_created = {}
             visits_created = 0
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
-                label = obj[NODE_TYPE]
-                node_id = self.get_id(obj)
-                id_field = self.get_id_field(obj)
-                # statement is used to create relationships between nodes
-                statement = ''
-                # condition_statement is used to find current node
-                if node_id:
-                    condition_statement = '{}: "{}"'.format(id_field, node_id)
-                else:
-                    condition_statement = []
+                node_type = obj[NODE_TYPE]
+                # criteria_statement is used to find current node
+                criteria_statement = self.getSearchCriteriaForNode(obj)
+                relationships = []
 
-                relationship = None
+                # Find all relationships in incoming data, and create them one by one
                 for key, value in obj.items():
-                    if key in excluded_fields:
-                        continue
-                    if key == id_field:
-                        continue
-
-                    field_name = key
                     if re.match(r'\w+\.\w+', key):
                         other_node, other_id = key.split('.')
-                        relationship = self.schema.get_relationship(label, other_node)
-                        if not relationship:
+                        relationship_name = self.schema.get_relationship(node_type, other_node)
+                        if not relationship_name:
                             self.log.error('Relationship not found!')
                             return False
                         if not self.node_exists(session, other_node, other_id, value):
                             if other_node == 'visit':
                                 if self.create_visit(session, other_node, value, obj):
-                                    statement += 'MATCH (m:{} {{{}: "{}"}}) '.format(other_node, other_id, value)
                                     visits_created += 1
+                                    relationships.append( {PARENT_TYPE: other_node, PARENT_ID_FIELD: other_id, PARENT_ID: value, RELATIONSHIP_NAME: relationship_name})
                                 else:
                                     self.log.error('Couldn\'t create {} node automatically!'.format(VISIT_NODE))
                             else:
                                 self.log.warning(
                                     'Node (:{} {{{}: "{}"}} not found in DB!'.format(other_node, other_id, value))
                         else:
-                            statement += 'MATCH (m:{} {{{}: "{}"}}) '.format(other_node, other_id, value)
+                            relationships.append({PARENT_TYPE: other_node, PARENT_ID_FIELD: other_id, PARENT_ID: value, RELATIONSHIP_NAME: relationship_name})
 
-                        # Add parent id to search conditions
-                        header = key.split('.')
-                        if len(header) > 2:
-                            self.log.warning('Column header "{}" has multiple periods!'.format(key))
-                        field_name = header[1]
-                        parent = header[0]
-                        combined = '{}_{}'.format(parent, field_name)
-                        if field_name in obj:
-                            self.log.warning('"{}" field is in both "{}" and parent "{}", use "{}" instead !'.format(
-                                key, label, parent, combined))
-                            field_name = combined
 
-                    if not node_id:
-                        condition_statement.append(
-                            '{}: {}'.format(field_name, self.get_value_string(field_name, value)))
-
-                if statement and relationship:
-                    if node_id:
-                        statement += 'MATCH (n:{} {{ {} }}) '.format(label, condition_statement)
-                    else:
-                        statement += 'MATCH (n:{} {{ {} }}) '.format(label, ', '.join(condition_statement))
-
-                    statement += 'MERGE (n)-[:{}]->(m);'.format(relationship)
+                for relationship in relationships:
+                    relationship_name = relationship[RELATIONSHIP_NAME]
+                    parent_node = relationship[PARENT_TYPE]
+                    statement = 'MATCH (m:{} {{{}: "{}"}}) '.format(parent_node, relationship[PARENT_ID_FIELD], relationship[PARENT_ID])
+                    statement += 'MATCH (n:{} {{ {} }}) '.format(node_type, criteria_statement)
+                    statement += 'MERGE (n)-[:{}]->(m);'.format(relationship_name)
 
                     result = session.run(statement)
                     count = result.summary().counters.relationships_created
                     self.relationships_created += count
-                    relationships_created += count
-                    self.relationships_stat[relationship] = self.relationships_stat.get(relationship, 0) + count
-            if relationship and other_node:
-                self.log.info(
-                    '{0} (:{2})->[:{1}]->(:{3}) relationship(s) loaded'.format(relationships_created, relationship,
-                                                                               label, other_node))
+                    relationship_pattern = '(:{})->[:{}]->(:{})'.format(node_type, relationship_name, parent_node)
+                    relationships_created[relationship_pattern] = relationships_created.get(relationship_pattern, 0) + count
+                    self.relationships_stat[relationship_name] = self.relationships_stat.get(relationship_name, 0) + count
+
+            for rel, count in relationships_created.items():
+                self.log.info('{} {} relationship(s) loaded'.format(count, rel))
             if visits_created > 0:
                 self.log.info('{} (:{}) node(s) loaded'.format(visits_created, VISIT_NODE))
+
         return True
+
+    def getSearchCriteriaForNode(self, node):
+        id_field = self.get_id_field(node)
+        node_id = self.get_id(node)
+        node_type = node[NODE_TYPE]
+        if node_id:
+            criteria_statement = '{}: "{}"'.format(id_field, node_id)
+        else:
+            criteria = []
+            for key, value in node.items():
+                if key in excluded_fields:
+                    continue
+                if key == id_field:
+                    continue
+                if re.match(r'\w+\.\w+', key):
+                    # Add parent id to search conditions
+                    header = key.split('.')
+                    if len(header) > 2:
+                        self.log.warning('Column header "{}" has multiple periods!'.format(key))
+                    field_name = header[1]
+                    parent = header[0]
+                    combined = '{}_{}'.format(parent, field_name)
+                    if field_name in node:
+                        self.log.warning('"{}" field is in both "{}" and parent "{}", use "{}" instead !'.format(
+                            key, node_type, parent, combined))
+                        field_name = combined
+
+                else:
+                    field_name = key
+                criteria.append(
+                    '{}: {}'.format(field_name, self.get_value_string(field_name, value)))
+            criteria_statement = ', '.join(criteria)
+
+        return criteria_statement
 
     def create_visit(self, session, node_type, node_id, src):
         if node_type != VISIT_NODE:

@@ -28,6 +28,7 @@ def main():
     parser.add_argument('-p', '--password', help='Neo4j password')
     parser.add_argument('-s', '--schema', help='Schema files', action='append')
     parser.add_argument('-c', '--cheat-mode', help='Skip validations, aka. Cheat Mode', action='store_true')
+    parser.add_argument('-m', '--max-violations', help='Max violations to display', nargs='?', type=int, default=10)
     parser.add_argument('-b', '--bucket', help='S3 bucket name')
     parser.add_argument('-f', '--s3-folder', help='S3 folder')
     parser.add_argument('dir', help='Data directory')
@@ -89,7 +90,7 @@ def main():
             schema = ICDC_Schema(args.schema)
             driver = GraphDatabase.driver(uri, auth=(user, password))
             loader = DataLoader(log, driver, schema, file_list)
-            loader.load(args.cheat_mode)
+            loader.load(args.cheat_mode, args.max_violations)
 
             driver.close()
         else:

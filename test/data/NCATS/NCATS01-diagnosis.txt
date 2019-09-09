@@ -1,0 +1,61 @@
+type	case.case_id	disease_term	pathology_report	follow_up_data	treatment_data	concurrent_disease 	concurrent_disease_type 	histological_grade	primary_disease_site	diagnosis_id
+diagnosis	NCATS01CCB010015	B-cell Lymphoma :: Stage 3	yes	yes	yes	No	unknown		Lymph Node, Popliteal	NCATS01CCB010015
+diagnosis	NCATS01CCB010031	T-cell Lymphoma :: Stage 3	yes	yes	yes	No	unknown		Lymph Node, Popliteal	NCATS01CCB010031
+diagnosis	NCATS01CCB010045	T-cell Lymphoma :: Stage 3	yes	yes	yes	No	unknown		Lymph Node, Popliteal	NCATS01CCB010045
+diagnosis	NCATS01CCB010072	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes	yes	No	unknown		Humerus	NCATS01CCB010072
+diagnosis	NCATS01CCB010091	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes	yes	No	unknown		Femur	NCATS01CCB010091
+diagnosis	NCATS01CCB010093	T-cell Lymphoma :: Stage 3	yes	yes	yes	No	unknown		Lymph Node, Popliteal	NCATS01CCB010093
+diagnosis	NCATS01CCB010178	B-cell Lymphoma :: Stage 3	yes	yes	yes	No	unknown		Lymph Node, Popliteal	NCATS01CCB010178
+diagnosis	NCATS01CCB010208	B-cell Lymphoma :: Stage 3	yes	yes	yes	Yes	unknown		Lymph Node, Popliteal	NCATS01CCB010208
+diagnosis	NCATS01CCB010233	T-cell Lymphoma :: Stage 3	yes	yes	yes	No	unknown		Lymph Node, Popliteal	NCATS01CCB010233
+diagnosis	NCATS01CCB010234	B-cell Lymphoma :: Stage 3	yes	yes	yes	No	unknown		Lymph Node, Popliteal	NCATS01CCB010234
+diagnosis	NCATS01CCB010235	B-cell Lymphoma :: Stage 3	yes	yes	yes	No	unknown		Lymph Node, Popliteal	NCATS01CCB010235
+diagnosis	NCATS01CCB010243	T-cell Lymphoma :: Stage 3	yes	yes	yes	No	unknown		Lymph Node, Popliteal	NCATS01CCB010243
+diagnosis	NCATS01CCB010311	B-cell Lymphoma :: Stage 3	yes	yes	yes	No	unknown	III	Lymph Node, Popliteal	NCATS01CCB010311
+diagnosis	NCATS01CCB010285	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (metastatic)	yes	yes	yes	No	unknown		Lung Multiple Sites	NCATS01CCB010285
+diagnosis	NCATS01CCB010378	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/mandible	yes	Yes	Yes	No	none		Mandible	NCATS01CCB010378
+diagnosis	NCATS01CCB020018	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes	yes	No			Tibia	NCATS01CCB020018
+diagnosis	NCATS01CCB020026	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes	yes	No			Femur	NCATS01CCB020026
+diagnosis	NCATS01CCB020027	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes	yes	No			Tibia	NCATS01CCB020027
+diagnosis	NCATS01CCB020128	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/mandible	yes	Yes	Yes	Yes	Mammary masses;Suspect Left Thalamocortical lesion;Grade III/VI systolic heart murmur;Dental Disease		Mandible	NCATS01CCB020128
+diagnosis	NCATS01CCB020031	B-cell Lymphoma :: Stage 4	yes	yes	yes	Yes	anorexia;increased WBC and neutrophils,increased liver enzymes;small nodule in left testicle		Lymph Node	NCATS01CCB020031
+diagnosis	NCATS01CCB020035	B-cell Lymphoma :: Stage 4	yes	yes	yes	No			Lymph Node, Popliteal	NCATS01CCB020035
+diagnosis	NCATS01CCB020036	B-cell Lymphoma :: Stage 4	yes	yes	yes	No			Lymph Node	NCATS01CCB020036
+diagnosis	NCATS01CCB020054	B-cell Lymphoma :: Stage 2	yes	yes	yes	No			Lymph Node	NCATS01CCB020054
+diagnosis	NCATS01CCB030001	B-cell Lymphoma :: Stage 3	yes	yes	yes	No			Lymph Node, Popliteal	NCATS01CCB030001
+diagnosis	NCATS01CCB030003	T-cell Lymphoma :: Stage 5	yes	yes	yes	No			Lymph Node, Popliteal	NCATS01CCB030003
+diagnosis	NCATS01CCB030026	T-cell Lymphoma :: Stage 4	yes	yes	yes	No			Lymph Node, Popliteal	NCATS01CCB030026
+diagnosis	NCATS01CCB030156	T-cell Lymphoma :: Stage 3	yes	yes	yes	No			Lymph Node	NCATS01CCB030156
+diagnosis	NCATS01CCB030035	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes	yes	No			Humerus	NCATS01CCB030035
+diagnosis	NCATS01CCB030064	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes	yes	No			Radius	NCATS01CCB030064
+diagnosis	NCATS01CCB030077	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes	yes	No			Humerus	NCATS01CCB030077
+diagnosis	NCATS01CCB030078	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes	yes	No			Humerus	NCATS01CCB030078
+diagnosis	NCATS01CCB030162	Lip and oropharyngeal neoplasms malignant :: Melanoma-lingual	yes	yes	yes	No			Mouth	NCATS01CCB030162
+diagnosis	NCATS01CCB030227	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/maxilla	yes	yes	yes	No			Mouth	NCATS01CCB030227
+diagnosis	NCATS01CCB030255	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (single lung lobe)	yes	yes	yes	Yes	Heart murmur: 2/6 systolic, left apical		Lung, Caudal Right Lobe	NCATS01CCB030255
+diagnosis	NCATS01CCB040184	Lymphoma :: Stage 4	Yes	yes	yes	Yes	on prednisone		Lymph Node	NCATS01CCB040184
+diagnosis	NCATS01CCB040254	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (metastatic)	yes	yes	yes	Yes	Allergies, on prednisone		Lung, Cranial Left Lobe	NCATS01CCB040254
+diagnosis	NCATS01CCB040382	Respiratory tract and pleural neoplasms malignant cell type unspecified NEC :: Other carcinoma	yes	yes	yes	No			Lung, Caudal Aspect Of Left Caudal Lobe	NCATS01CCB040382
+diagnosis	NCATS01CCB050022	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes	yes	No			Humerus	NCATS01CCB050022
+diagnosis	NCATS01CCB050096	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/mandible	yes	Yes	no	No			Mouth	NCATS01CCB050096
+diagnosis	NCATS01CCB050170	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/maxilla	yes	LTF	yes	No			Mouth	NCATS01CCB050170
+diagnosis	NCATS01CCB050177	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/maxilla	yes	yes	yes	No			Mouth	NCATS01CCB050177
+diagnosis	NCATS01CCB050216	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (single lung lobe)	no	no	no	Yes	Oral Melanoma		Lung, Caudal Aspect Of Left Caudal Lobe	NCATS01CCB050216
+diagnosis	NCATS01CCB050227	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (single lung lobe)	yes	no	no	No			Lung, Caudal Aspect Of Left Caudal Lobe	NCATS01CCB050227
+diagnosis	NCATS01CCB050297	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (single lung lobe)	yes	no	no	No			Lung, Cranial Left Lobe	NCATS01CCB050297
+diagnosis	NCATS01CCB050327	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (single lung lobe)	yes	yes	no	No			Lung, Caudal Right Lobe	NCATS01CCB050327
+diagnosis	NCATS01CCB060030	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/mandible	yes	yes	yes	No			Mouth	NCATS01CCB060030
+diagnosis	NCATS01CCB060039	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/mandible	yes	yes	yes	No			Mouth	NCATS01CCB060039
+diagnosis	NCATS01CCB060051	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (single lung lobe)	yes	yes	yes	Yes	fibrosarcoma		Lung, Cranial Left Lobe	NCATS01CCB060051
+diagnosis	NCATS01CCB070003	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes	yes	No			Humerus	NCATS01CCB070003
+diagnosis	NCATS01CCB070007	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (single lung lobe)	yes	no	no	Yes	Cushings		Lung, Cranial Left Lobe	NCATS01CCB070007
+diagnosis	NCATS01CCB070013	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes	yes	No			Radius	NCATS01CCB070013
+diagnosis	NCATS01CCB070020	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (single lung lobe)	yes	LTF	yes	No			Lung, Caudal Right Lobe	NCATS01CCB070020
+diagnosis	NCATS01CCB070034	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (single lung lobe)	yes	no	no	No			Lung, Caudal Aspect Of Left Caudal Lobe	NCATS01CCB070034
+diagnosis	NCATS01CCB070102	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/mandible	yes	yes	yes	No			Mandible	NCATS01CCB070102
+diagnosis	NCATS01CCB080012	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/mandible	yes	Yes	yes	Yes	osteoarthritis, hip		Mandible	NCATS01CCB080012
+diagnosis	NCATS01CCB030258	T-cell Lymphoma :: Stage 2	yes	yes	yes	No			Lymph Node	NCATS01CCB030258
+diagnosis	NCATS01CCB030300	T-cell Lymphoma :: Stage 3	yes	yes	yes	No			Lymph Node, Popliteal	NCATS01CCB030300
+diagnosis	NCATS01CCB050004	B-cell Lymphoma :: Stage 3	yes	yes	yes	No			Lymph Node, Popliteal	NCATS01CCB050004
+diagnosis	NCATS01CCB060034	T-cell Lymphoma :: Stage 5	yes	yes	yes	No		IV	Lymph Node	NCATS01CCB060034
+diagnosis	NCATS01CCB080018	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/maxilla	yes	yes	yes	Yes	lick granuloma that is chronic on right hind leg being treated with Primor		Mouth	NCATS01CCB080018
