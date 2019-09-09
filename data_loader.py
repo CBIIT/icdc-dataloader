@@ -122,7 +122,6 @@ class DataLoader:
                 violations = 0
                 for org_obj in reader:
                     obj = self.cleanup_node(org_obj)
-                    node_type = obj[NODE_TYPE]
                     line_num += 1
                     # Validate parent exist
                     if CASE_ID in obj:
