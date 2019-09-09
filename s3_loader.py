@@ -19,6 +19,8 @@ PSWD_ENV = 'NEO_PASSWORD'
 BLOCKSIZE=65536
 Upload_Fails_Budget=0
 
+
+# Upload files to S3 on the files included in the manifest
 def upload_files_based_on_manifest(bucket,s3_folder,directory,bucket_name,manifest):
     start = timer()
     log.info('Upload Files to S3 '.format(s3_folder + "/" + bucket_name))
@@ -50,6 +52,7 @@ def upload_files_based_on_manifest(bucket,s3_folder,directory,bucket_name,manife
     return True
 
 
+# Upload file to S3
 def upload_file(bucket,s3,f):
 
     try:
@@ -61,6 +64,8 @@ def upload_file(bucket,s3,f):
         return False
 
 
+
+# Completing the initial manifest and then upload to S3
 def export_result(manifest,bucket,bucket_name,folder_name,directory,input_s3_bucket,input_s3_folder):
     log.info('Completing the initial manifest')
     try:
@@ -108,91 +113,89 @@ def export_result(manifest,bucket,bucket_name,folder_name,directory,input_s3_buc
         return False
 
 
+# Write data into tsv file
 def write_tsv_file(f,data,fieldnames):
     with open(f, 'wt') as out_file:
-
         tsv_writer = csv.DictWriter(out_file, delimiter='\t',fieldnames=fieldnames)
         tsv_writer.writeheader()
         for index in range(len(data)):
             tsv_writer.writerow(data[index])
 
-
+# check_manifest exists or not
+# check the field file_name/case id in the manifest which should not be null/empty
+# check files included in the manifest exists or not
 def check_manifest(args):
     log.info('Validate manifest .')
     pass_check = True
      # check manifest
     if not os.path.isfile(args.manifest):
-        log.error('==========>  Manifest: "{}" is not found'.format(args.manifest))
+        log.error('==========>  Manifest: "{}" does not exists'.format(args.manifest))
         pass_check=False
     else:
         log.info('Reading manifest .')
         log.info('validating fields in  manifest .')
         #check fields in the manifest, if missing fields stops
         with open(args.manifest) as csv_file:
-            tsv_reader =  csv.DictReader(csv_file, delimiter='\t')
-            row1 = next(tsv_reader)
-            if "file_name" not in row1:
-                    log.error('==========> Field in manifest: "{}" is not found'.format("file_name"))
-                    pass_check= False
+            tsv_reader = csv.DictReader(csv_file, delimiter='\t')
+            line_count = 1;
+            for record in tsv_reader:
+                line_count += 1
+                if "file_name" in record and record["file_name"] != "":
+                    if not isfile(os.path.join(args.dir, record["file_name"])):
+                        log.error('==========> Invalid data at line {} : File "{}" doesn\'t exist!'.format(line_count, record["file_name"]))
+                        pass_check = False
+                else:
+                    log.error('==========> Invalid data at line {} : Empty file name in line '.format(line_count))
+                    pass_check = False
+                if "case_id" not in record or record["case_id"] == "":
+                    log.error('==========> Invalid data at line {} : Empty case id name'.format(line_count))
+                    pass_check = False
     return pass_check
 
 
-
+# check file directory exist
 def check_file_exist(args):
     log.info('Checking the files included in manifest exists in given location .')
     pass_check = True
 
     if not os.path.exists(args.dir):
-        log.error('==========> Folder: "{}" is not found'.format(args.dir))
+        log.error('==========> Folder: "{}" does not exists '.format(args.dir))
         pass_check=False
 
     if not os.path.isdir(args.dir):
         log.error('==========> {} is not a directory!'.format(args.dir))
         pass_check=False
 
-    with open(args.manifest) as csv_file:
-        tsv_reader =  csv.DictReader(csv_file, delimiter='\t')
-        line_count = 1;
-        for record in tsv_reader:
-            line_count+=1
-            if "file_name" in record and record["file_name"]!="":
-                if not isfile(os.path.join(args.dir, record["file_name"])):
-                    log.error('==========> Invalid data at line {} : File "{}" doesn\'t exist!'.format(line_count,record["file_name"]))
-                    pass_check = False
-            else:
-                log.error('==========> Invalid data at line {} : Empty file name in line '.format(line_count))
-                pass_check = False
-            if "case_id" not in record or record["case_id"] == "":
-                    log.error('==========> Invalid data at line {} : Empty case id name'.format(line_count))
-                    pass_check = False
-
-
     return pass_check
 
 
 
-
+# check file node's parent
 def check_file_parent(manifest,loader):
     log.info('Validate that the parent record of each file.')
     # call data loader function to validate the data
 
     return  loader.validate_cases_exist_in_file(manifest, 100)
 
-
+ # validate input value
+ #  1. Check manifest
+ #  2. Check upload file directory
+ #  3. Check  file node's parent
 def validate_input(args,loader):
     pass_check =[]
-
-    pass_check.append(check_manifest(args))
-    if pass_check[0]:
-        log.info('Pass validating manifest .')
-
-    pass_check.append(check_file_parent(args.manifest,loader))
-    if pass_check[1]:
-        log.info('Pass validating parents .')
+    index = 0
     pass_check.append(check_file_exist(args))
-
-    if pass_check[2]:
+    if pass_check[index]:
         log.info('Pass checking file exists')
+    index+=1
+    pass_check.append(check_manifest(args))
+    if pass_check[index]:
+        log.info('Pass validating manifest .')
+    index += 1
+    pass_check.append(check_file_parent(args.manifest,loader))
+    if pass_check[index]:
+        log.info('Pass validating parents .')
+
 
     if False in pass_check :
         return False
