@@ -416,6 +416,7 @@ class DataLoader:
         result = session.run(find_cycles_stmt)
         if result:
             first_date = None
+            pre_date = None
             for record in result.records():
                 cycle = record.data()['c']
                 date = datetime.strptime(visit_date, DATE_FORMAT)
