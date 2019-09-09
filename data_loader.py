@@ -25,10 +25,8 @@ CASE_ID = 'case_id'
 
 
 class DataLoader:
-    def __init__(self, log, driver, schema, file_list):
-        if not log:
-            raise Exception('Invalid log object')
-        elif not driver or not isinstance(driver, Driver):
+    def __init__(self, driver, schema, file_list):
+        if not driver or not isinstance(driver, Driver):
             raise Exception('Invalid Neo4j driver object')
         elif not schema or not isinstance(schema, ICDC_Schema):
             raise Exception('Invalid ICDC_Schema object')
@@ -38,7 +36,7 @@ class DataLoader:
             for data_file in file_list:
                 if not os.path.isfile(data_file):
                     raise Exception('File "{}" doesn\'t exist'.format(data_file))
-        self.log = log
+        self.log = get_logger('Data Loader')
         self.driver = driver
         self.schema = schema
         self.file_list = file_list

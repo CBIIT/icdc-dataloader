@@ -54,12 +54,11 @@ class TestLoader(unittest.TestCase):
         self.assertEqual('bolt://12.34.56.78', removeTrailingSlash('bolt://12.34.56.78////'))
 
     def test_loader_construction(self):
-        self.assertRaises(Exception, DataLoader, None, None, None, None)
-        self.assertRaises(Exception, DataLoader, self.log, None, None, None)
-        self.assertRaises(Exception, DataLoader, self.log, self.driver, None, None)
-        self.assertRaises(Exception, DataLoader, self.log, self.driver, self.schema , None)
-        self.assertRaises(Exception, DataLoader, self.log, self.driver, self.schema , ['a', 'b'])
-        loader = DataLoader(self.log, self.driver, self.schema, self.file_list)
+        self.assertRaises(Exception, DataLoader, None, None, None)
+        self.assertRaises(Exception, DataLoader, self.driver, None, None)
+        self.assertRaises(Exception, DataLoader, self.driver, self.schema , None)
+        self.assertRaises(Exception, DataLoader, self.driver, self.schema , ['a', 'b'])
+        loader = DataLoader(self.driver, self.schema, self.file_list)
         self.assertIsInstance(loader, DataLoader)
 
     def test_load(self):
@@ -68,14 +67,14 @@ class TestLoader(unittest.TestCase):
             result = session.run(cleanup_db)
             self.log.info('{} nodes deleted!'.format(result.summary().counters.nodes_deleted))
             self.log.info('{} relationships deleted!'.format(result.summary().counters.relationships_deleted))
-        loader = DataLoader(self.log, self.driver, self.schema, self.file_list)
+        loader = DataLoader(self.driver, self.schema, self.file_list)
         load_result = loader.load(True, 1)
         self.assertIsInstance(load_result, dict, msg='Load data failed!')
         self.assertEqual(1366, load_result[NODES_CREATED])
         self.assertEqual(1415, load_result[RELATIONSHIP_CREATED])
 
     def test_validate_parents_exist_in_file(self):
-        loader = DataLoader(self.log, self.driver, self.schema, self.file_list)
+        loader = DataLoader(self.driver, self.schema, self.file_list)
         # result = loader.validate_parents_exit_in_file('data/Pathology-Report-Mapping-File.txt', 100)
         result = loader.validate_cases_exist_in_file('data/Pathology-Report-Mapping-File.txt', 100)
         self.assertTrue(result)
