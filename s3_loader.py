@@ -20,10 +20,12 @@ BLOCKSIZE = 65536  #number of bit for hashing
 
 NEO4J_URI = 'bolt://localhost:7687'
 NEO4J_USER = 'neo4j'
-NEO4J_PASSWORD = os.environ['NEO_PASSWORD']
+NEO4J_PASSWORD = ''
 NEO4J_DRIVER = GraphDatabase.driver(NEO4J_URI, auth = (NEO4J_USER, NEO4J_PASSWORD))
-SCHEMA = ICDC_Schema(['data/icdc-model.yml', 'data/icdc-model-props.yml'])
+SCHEMA = ICDC_Schema(['./test/data/icdc-model.yml', './test/data/icdc-model-props.yml'])
 FILE_LIST=[]
+
+
 
 def upload_files_based_on_manifest(bucket,s3_folder,directory,bucket_name,manifest):
     start = timer()
@@ -163,13 +165,13 @@ def check_file_exist(args):
             line_count+=1
             if "file_name" in record and record["file_name"]!="":
                 if not isfile(os.path.join(args.dir, record["file_name"])):
-                    log.error('==========> File: "{}" is not found'.format(record["file_name"]))
+                    log.error('==========> Invalid data at line {} : File "{}" doesn\'t exist!'.format(line_count,record["file_name"]))
                     pass_check = False
             else:
-                log.error('==========> Empty file name in line {}'.format(line_count))
+                log.error('==========> Invalid data at line {} : Empty file name in line '.format(line_count))
                 pass_check = False
             if "case_id" not in record or record["case_id"] == "":
-                    log.error('==========> Empty case id name in line {}'.format(line_count))
+                    log.error('==========> Invalid data at line {} : Empty case id name'.format(line_count))
                     pass_check = False
 
 
@@ -181,7 +183,7 @@ def check_file_exist(args):
 def check_file_parent(args):
     log.info('Validate that the parent record of each file.')
     # call data loader function to validate the data
-    loader = DataLoader(log, NEO4J_DRIVER, SCHEMA, [args.manifest])
+    loader = DataLoader(get_logger('Data Loader'), NEO4J_DRIVER, SCHEMA, [args.manifest])
     return  loader.validate_cases_exist_in_file(args.manifest, 100)
 
 
@@ -225,6 +227,13 @@ def main():
     parser.add_argument('-osb', '--output-s3-bucket',help='s3 bucket for manifest',default="yizhen-file-loader")
     parser.add_argument('-osf', '--output-s3-folder',help='s3 folder for manifest',default="output")
 
+    parser.add_argument('-s', '--schema', help='Schema files', action='append')
+    parser.add_argument('-c', '--cheat-mode', help='Skip validations, aka. Cheat Mode', action='store_true')
+    parser.add_argument('-m', '--max-violations', help='Max violations to display', nargs='?', type=int, default=10)
+    parser.add_argument('-i', '--uri', help='Neo4j uri like bolt://12.34.56.78:7687')
+    parser.add_argument('-u', '--user', help='Neo4j user')
+    parser.add_argument('-p', '--password', help='Neo4j password')
+
     args = parser.parse_args()
 
 
@@ -266,8 +275,9 @@ def main():
     start = timer()
     if not validate_input(args):
         log.error('validate input fails')
+        NEO4J_DRIVER.close()
         sys.exit(1)
-
+    NEO4J_DRIVER.close()
 
     if not upload_files_based_on_manifest(input_bucket,args.input_s3_folder, args.dir,args.input_s3_bucket,args.manifest):
         log.error('Upload files to S3 bucket "{}" failed!'.format(args.input_s3_bucket))
