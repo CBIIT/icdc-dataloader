@@ -9,6 +9,8 @@ from icdc_schema import *
 from data_loader import *
 from utils import *
 from loader import *
+import subprocess
+import errno
 
 # MANIFEST FIELDS Based on data model uc-cdis manifest setting
 # https://github.com/uc-cdis/indexd_utils/blob/master/manifest.tsv
@@ -23,7 +25,7 @@ Upload_Fails_Budget=0
 # Upload files to S3 on the files included in the manifest
 def upload_files_based_on_manifest(bucket,s3_folder,directory,bucket_name,manifest):
     start = timer()
-    log.info('Upload Files to S3 '.format(s3_folder + "/" + bucket_name))
+    log.info('Uploading Files to S3 {} .'.format(s3_folder + "/" + bucket_name))
     upload_fails_count = 0
     number_of_files_uploaded = 0
     number_of_files_need_to_upload=0
@@ -36,13 +38,13 @@ def upload_files_based_on_manifest(bucket,s3_folder,directory,bucket_name,manife
                 number_of_files_uploaded += 1
                 number_of_files_need_to_upload+=1
                 bits_uploaded+=os.stat(join(directory, file_name)).st_size
-                log.info('File :  {}  uploaded'.format(file_name))
+                log.info('File :  {}  uploaded !'.format(file_name))
 
             else:
-                log.info('==========> File :  {} upload fails'.format(file_name))
+                log.info('==========> File :  {} upload fails !'.format(file_name))
                 upload_fails_count += 1
                 if upload_fails_count > Upload_Fails_Budget:
-                    log.error('==========> Too many uploading failures, {} files upload fails'.format(upload_fails_count))
+                    log.error('==========> Too many uploading failures, {} files upload fails !'.format(upload_fails_count))
                     return False
     end = timer()
     log.info('  {} File(s) uploaded, {} File(s) upload fails , Total {} file(s) need to be uploaded '.format(number_of_files_uploaded, upload_fails_count,number_of_files_need_to_upload))
@@ -60,14 +62,14 @@ def upload_file(bucket,s3,f):
         bucket.upload_file(s3,f)
         return True
     except Exception as e:
-        log.error('==========> Upload file to S3 fails. Error {}'.format(e))
+        log.error('==========> Upload file to S3 fails!  Error {}'.format(e))
         return False
 
 
 
 # Completing the initial manifest and then upload to S3
 def export_result(manifest,bucket,bucket_name,folder_name,directory,input_s3_bucket,input_s3_folder):
-    log.info('Completing the initial manifest')
+    log.info('Completing the initial manifest .')
     try:
         data_matrix = []
         fieldnames =[]
@@ -100,10 +102,18 @@ def export_result(manifest,bucket,bucket_name,folder_name,directory,input_s3_buc
 
         timestr = time.strftime("%Y%m%d-%H%M%S")
         output_file_name =timestr + ".txt"
-        output_file = join(directory,output_file_name)
+        output_file = join(directory,folder_name,output_file_name)
+
+        if not os.path.exists(join(directory,folder_name)):
+            try:
+                os.makedirs(join(directory,folder_name))
+            except OSError as exc:  # Guard against race condition
+                if exc.errno != errno.EEXIST:
+                    print (exc)
+                    return False
 
         write_tsv_file(output_file,data_matrix,fieldnames)
-        log.info('Upload the manifest info into S3')
+        log.info('Upload the manifest info into S3 .')
         if upload_file(bucket,join(folder_name,output_file_name),output_file):
             return True
         else:
@@ -115,21 +125,25 @@ def export_result(manifest,bucket,bucket_name,folder_name,directory,input_s3_buc
 
 # Write data into tsv file
 def write_tsv_file(f,data,fieldnames):
-    with open(f, 'wt') as out_file:
-        tsv_writer = csv.DictWriter(out_file, delimiter='\t',fieldnames=fieldnames)
-        tsv_writer.writeheader()
-        for index in range(len(data)):
-            tsv_writer.writerow(data[index])
+    try:
+        with open(f, 'wt') as out_file:
+            tsv_writer = csv.DictWriter(out_file, delimiter='\t',fieldnames=fieldnames)
+            tsv_writer.writeheader()
+            for index in range(len(data)):
+                tsv_writer.writerow(data[index])
+    except IOError as e:
+        print (e)
+
 
 # check_manifest exists or not
 # check the field file_name/case id in the manifest which should not be null/empty
 # check files included in the manifest exists or not
 def check_manifest(args):
-    log.info('Validate manifest .')
+    log.info('Validating manifest.')
     pass_check = True
      # check manifest
     if not os.path.isfile(args.manifest):
-        log.error('==========>  Manifest: "{}" does not exists'.format(args.manifest))
+        log.error('==========>  Manifest: "{}" does not exists !'.format(args.manifest))
         pass_check=False
     else:
         log.info('Reading manifest .')
@@ -145,10 +159,10 @@ def check_manifest(args):
                         log.error('==========> Invalid data at line {} : File "{}" doesn\'t exist!'.format(line_count, record["file_name"]))
                         pass_check = False
                 else:
-                    log.error('==========> Invalid data at line {} : Empty file name in line '.format(line_count))
+                    log.error('==========> Invalid data at line {} : Empty file name in line!'.format(line_count))
                     pass_check = False
                 if "case_id" not in record or record["case_id"] == "":
-                    log.error('==========> Invalid data at line {} : Empty case id name'.format(line_count))
+                    log.error('==========> Invalid data at line {} : Empty case id name!'.format(line_count))
                     pass_check = False
     return pass_check
 
@@ -159,7 +173,7 @@ def check_file_exist(args):
     pass_check = True
 
     if not os.path.exists(args.dir):
-        log.error('==========> Folder: "{}" does not exists '.format(args.dir))
+        log.error('==========> Folder: "{}" does not exists!'.format(args.dir))
         pass_check=False
 
     if not os.path.isdir(args.dir):
@@ -172,7 +186,7 @@ def check_file_exist(args):
 
 # check file node's parent
 def check_file_parent(manifest,loader):
-    log.info('Validate that the parent record of each file.')
+    log.info('Validating the parent record of each file.')
     # call data loader function to validate the data
 
     return  loader.validate_cases_exist_in_file(manifest, 100)
@@ -196,11 +210,29 @@ def validate_input(args,loader):
     if pass_check[index]:
         log.info('Pass validating parents .')
 
-
     if False in pass_check :
         return False
     else:
         return True
+
+
+def call_data_loader(python,neo4j_password,schemas,dir):
+    schema_cmd =[]
+    for schema in schemas:
+        schema_cmd.append("-s")
+        schema_cmd.append(schema)
+    cmd =[python, "loader.py", "-c","-p",neo4j_password]+schema_cmd
+    cmd +=[dir]
+    process_status = subprocess.run(cmd,check=True)
+    if process_status.returncode==0 :
+        log.info('Finish load file into neo4j database.')
+        return True
+    else:
+        log.error(process_status.stderr)
+        return False
+
+
+
 
 # File loader will try to upload all files from given directory into S3
 
@@ -219,11 +251,14 @@ def main():
     parser.add_argument('-i', '--uri', help='Neo4j uri like bolt://12.34.56.78:7687')
     parser.add_argument('-u', '--user', help='Neo4j user')
     parser.add_argument('-p', '--password', help='Neo4j password')
+    parser.add_argument('-python', '--python', help='python version',default="python")
+    parser.add_argument('-manual', '--manual_load_data_into_db', help='True for Manual load data into db', default="False")
 
 
     args = parser.parse_args()
     
     #check args
+    print (args.manual_load_data_into_db)
     flag_are_args_completed = True
     if(not args.manifest):
         log.error('the following arguments are required: -t')
@@ -290,20 +325,29 @@ def main():
         output_bucket = S3Bucket(args.output_s3_bucket)
         start = timer()
         if not validate_input(args,Data_Loader):
-            log.error('validate input fails')
+            log.error('Validate input fails')
             NEO4J_DRIVER.close()
             sys.exit(1)
         NEO4J_DRIVER.close()
 
         if not upload_files_based_on_manifest(input_bucket, args.input_s3_folder, args.dir, args.input_s3_bucket,
                                               args.manifest):
-            log.error('Upload files to S3 bucket "{}" failed!'.format(args.input_s3_bucket))
+            log.error('Upload file(s) to S3 bucket "{}" failed!'.format(args.input_s3_bucket))
             sys.exit(1)
 
         if not export_result(args.manifest, output_bucket, args.output_s3_bucket, args.output_s3_folder, args.dir,
                              args.input_s3_bucket, args.input_s3_folder):
-            log.error('Upload files to S3 bucket "{}" failed!'.format(args.output_s3_bucket))
+            log.error('Upload file(s) to S3 bucket "{}" failed!'.format(args.output_s3_bucket))
             sys.exit(1)
+
+        # call data loader
+        if args.manual_load_data_into_db.lower() == "false":
+            if not call_data_loader(args.python, NEO4J_PASSWORD,args.schema,join(args.dir,args.output_s3_folder)):
+                log.error('Load file(s) into database failed!')
+                sys.exit(1)
+        else:
+            log.info('Choose to manually load file(s) into database')
+
         end = timer()
         log.info('Cheers, Job Finished !! Total Execution Time: {:.2f} seconds'.format(end - start))
 
