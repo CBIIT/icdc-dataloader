@@ -78,9 +78,11 @@ def export_result(manifest, bucket, bucket_name, folder_name, directory, input_s
             data_matrix = []
             for record in tsv_reader:
                 del record["case_id"]
+                del record["clinical_study_designation"]
+                del record["patient_id"]
                 if not fieldnames:
                     for key in record:
-                        if key == "case_id":
+                        if key == "case_id" or key == "clinical_study_designation" or key == "patient_id":
                             continue
                         fieldnames.append(key)
                     fieldnames += MANIFEST_FIELDS
