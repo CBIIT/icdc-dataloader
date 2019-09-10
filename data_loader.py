@@ -436,7 +436,6 @@ class DataLoader:
                 else:
                     self.log.warning('Line: {}: No end dates for cycle started on {} for {}'.format(line_num, start_date.strftime(DATE_FORMAT), case_id))
                     end_date = datetime.strptime(FOREVER, DATE_FORMAT)
-                # TODO: Only connect to first cycle instead of all cycles
                 if (date >= start_date and date <= end_date) or (date < first_date and date >= pre_date):
                     if date < first_date and date >= pre_date:
                         self.log.info('Line: {}: Date: {} is before first cycle, but within {} days before first cycle started: {}, connected to first cycle'.format(line_num, visit_date, PREDATE, first_date.strftime(DATE_FORMAT)))
