@@ -35,7 +35,7 @@ def main():
 
     args = parser.parse_args()
 
-    log = get_logger('Data Loader')
+    log = get_logger('Loader')
     directory = args.dir
     if args.s3_folder:
         if not os.path.exists(directory):
@@ -89,7 +89,7 @@ def main():
         if file_list:
             schema = ICDC_Schema(args.schema)
             driver = GraphDatabase.driver(uri, auth=(user, password))
-            loader = DataLoader(log, driver, schema, file_list)
+            loader = DataLoader(driver, schema, file_list)
             loader.load(args.cheat_mode, args.max_violations)
 
             driver.close()
