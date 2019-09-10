@@ -90,7 +90,7 @@ def export_result(manifest, bucket, bucket_name, folder_name, directory, input_s
                 record["file_size"] = os.stat(f).st_size
                 record["file_locations"] = join("s3://", input_s3_bucket, input_s3_folder, record["file_name"])
                 record["file_format"] = (os.path.splitext(f)[1]).split('.')[1].lower()
-                record["uuid"] = uuid.uuid4()
+                record["uuid"] = get_uuid_for_node("file",record["file_locations"])
                 hasher = hashlib.sha256()
                 with open(f, 'rb') as afile:
                     buf = afile.read(BLOCKSIZE)
@@ -318,7 +318,7 @@ def main():
     try:
         SCHEMA = ICDC_Schema(args.schema)
         NEO4J_DRIVER = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
-        Data_Loader = DataLoader(log, NEO4J_DRIVER, SCHEMA, [args.manifest])
+        Data_Loader = DataLoader(NEO4J_DRIVER, SCHEMA, [args.manifest])
         input_bucket = S3Bucket(args.input_s3_bucket)
         output_bucket = S3Bucket(args.output_s3_bucket)
         start = timer()
