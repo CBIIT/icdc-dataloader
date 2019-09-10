@@ -1,0 +1,2 @@
+type	clinical_study_designation	patient_id	diagnosis.diagnosis_id	file_type	file_description	file_name	uuid	file_size	file_md5	file_status	file_locations	file_format	acl
+file	NCATS01	CCB080018	NCATS01CCB080018	pathology report		Test.pdf	c0c559dd-2184-4aee-a2fc-103c23ebaffd	20333	cbc79ff28808e4cb219f9dfd432579c0d7d6c2192e81f4ba5206dbdc5f2469ce	uploaded	s3://yizhen-file-loader/input/Test.pdf	pdf	open

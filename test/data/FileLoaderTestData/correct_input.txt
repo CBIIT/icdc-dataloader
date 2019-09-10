@@ -1,0 +1,2 @@
+type	clinical_study_designation	patient_id	case_id	diagnosis.diagnosis_id	file_type	file_description	file_name
+file	NCATS01	CCB080018	NCATS01CCB080018	NCATS01CCB080018	pathology report		Test.pdf
