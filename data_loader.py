@@ -186,7 +186,8 @@ class DataLoader:
                 line_num += 1
                 validate_result = self.schema.validate_node(obj[NODE_TYPE], obj)
                 if not validate_result['result']:
-                    self.log.error('Invalid data at line {}: "{}"!'.format(line_num, validate_result['message']))
+                    for msg in validate_result['messages']:
+                        self.log.error('Invalid data at line {}: "{}"!'.format(line_num, msg))
                     validation_failed = True
                     violations += 1
                     if violations >= max_violations:

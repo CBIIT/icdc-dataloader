@@ -177,19 +177,22 @@ class ICDC_Schema:
 
     def validate_node(self, model_type, obj):
         if not model_type or model_type not in self.nodes:
-            return {'result': False, 'message': 'Node type: "{}" doesn\'t exist!'.format(model_type)}
+            return {'result': False, 'messages': ['Node type: "{}" doesn\'t exist!'.format(model_type)]}
         if not obj:
-            return {'result': False, 'message': 'Node is empty!'}
+            return {'result': False, 'messages': ['Node is empty!']}
 
         if not isinstance(obj, dict):
-            return {'result': False, 'message': 'Node is not a dict!'}
+            return {'result': False, 'messages': ['Node is not a dict!']}
 
         # Make sure all required properties exist, and are not empty
+        result = {'result': True, 'messages': []}
         for prop in self.nodes[model_type].get(REQUIRED, set()):
             if prop not in obj:
-                return {'result': False, 'message': 'Missing required property: "{}"!'.format(prop)}
+                result['result'] = False
+                result['messages'].append('Missing required property: "{}"!'.format(prop))
             elif not obj[prop]:
-                return {'result': False, 'message': 'Required property: "{}" is empty!'.format(prop)}
+                result['result'] = False
+                result['messages'].append('Required property: "{}" is empty!'.format(prop))
 
         properties = self.nodes[model_type][PROPERTIES]
         # Validate all properties in given object
@@ -203,9 +206,10 @@ class ICDC_Schema:
             else:
                 model_type = properties[key]
                 if not self.valid_type(model_type, value):
-                    return {'result': False, 'message': 'Property: "{}":"{}" is not a valid "{}" type!'.format(key, value, model_type)}
+                    result['result'] = False
+                    result['messages'].append('Property: "{}":"{}" is not a valid "{}" type!'.format(key, value, model_type))
 
-        return {'result': True}
+        return result
 
     @staticmethod
     def valid_type(model_type, value):
