@@ -29,6 +29,7 @@ excluded_fields = {NODE_TYPE}
 CASE_NODE = 'case'
 CASE_ID = 'case_id'
 PREDATE = 7
+FOREVER = '99991231'
 
 
 
@@ -287,7 +288,9 @@ class DataLoader:
             reader = csv.DictReader(in_file, delimiter='\t')
             relationships_created = {}
             visits_created = 0
+            line_num = 1
             for org_obj in reader:
+                line_num += 1
                 obj = self.cleanup_node(org_obj)
                 node_type = obj[NODE_TYPE]
                 # criteria_statement is used to find current node
@@ -300,15 +303,15 @@ class DataLoader:
                         other_node, other_id = key.split('.')
                         relationship_name = self.schema.get_relationship(node_type, other_node)
                         if not relationship_name:
-                            self.log.error('Relationship not found!')
+                            self.log.error('Line: {}: Relationship not found!'.format(line_num))
                             return False
                         if not self.node_exists(session, other_node, other_id, value):
                             if other_node == 'visit':
-                                if self.create_visit(session, other_node, value, obj):
+                                if self.create_visit(session, line_num, other_node, value, obj):
                                     visits_created += 1
                                     relationships.append( {PARENT_TYPE: other_node, PARENT_ID_FIELD: other_id, PARENT_ID: value, RELATIONSHIP_NAME: relationship_name})
                                 else:
-                                    self.log.error('Couldn\'t create {} node automatically!'.format(VISIT_NODE))
+                                    self.log.error('Line: {}: Couldn\'t create {} node automatically!'.format(line_num, VISIT_NODE))
                             else:
                                 self.log.warning(
                                     'Node (:{} {{{}: "{}"}} not found in DB!'.format(other_node, other_id, value))
@@ -371,15 +374,15 @@ class DataLoader:
 
         return criteria_statement
 
-    def create_visit(self, session, node_type, node_id, src):
+    def create_visit(self, session, line_num, node_type, node_id, src):
         if node_type != VISIT_NODE:
-            self.log.error("Can't create (:{}) node for type: '{}'".format(VISIT_NODE, node_type))
+            self.log.error("Line: {}: Can't create (:{}) node for type: '{}'".format(line_num, VISIT_NODE, node_type))
             return False
         if not node_id:
-            self.log.error("Can't create (:{}) node for id: '{}'".format(VISIT_NODE, node_id))
+            self.log.error("Line: {}: Can't create (:{}) node for id: '{}'".format(line_num, VISIT_NODE, node_id))
             return False
         if not src:
-            self.log.error("Can't create (:{}) node for empty object".format(VISIT_NODE))
+            self.log.error("Line: {}: Can't create (:{}) node for empty object".format(line_num, VISIT_NODE))
             return False
         if not session or not isinstance(session, Session):
             self.log.error("Neo4j session is not valid!")
@@ -390,12 +393,15 @@ class DataLoader:
             'disease_extent': 'date_of_evaluation'
         }
         if not NODE_TYPE in src:
-            self.log.error('Given object doesn\'t have a "{}" field!'.format(NODE_TYPE))
+            self.log.error('Line: {}: Given object doesn\'t have a "{}" field!'.format(line_num, NODE_TYPE))
             return False
         source_type = src[NODE_TYPE]
         date = src[date_map[source_type]]
+        if not date:
+            self.log.error('Line: {}: Visit date is empty!'.format(line_num))
+            return False
         if not NODE_TYPE in src:
-            self.log.error('Given object doesn\'t have a "{}" field!'.format(NODE_TYPE))
+            self.log.error('Line: {}: Given object doesn\'t have a "{}" field!'.format(line_num, NODE_TYPE))
             return False
         statement = 'MERGE (v:{} {{ {}: "{}", {}: "{}" }})'.format(VISIT_NODE, VISIT_ID, node_id, VISIT_DATE, date)
         result = session.run(statement)
@@ -405,13 +411,13 @@ class DataLoader:
             self.nodes_stat[VISIT_NODE] = self.nodes_stat.get(VISIT_NODE, 0) + count
             if count > 0:
                 case_id = src[CASE_ID]
-                if not self.connect_visit_to_cycle(session, node_id, case_id, date):
-                    self.log.error('Visit: "{}" is NOT connected to a cycle!'.format(node_id))
+                if not self.connect_visit_to_cycle(session, line_num, node_id, case_id, date):
+                    self.log.error('Line: {}: Visit: "{}" does NOT belong to a cycle!'.format(line_num, node_id))
                 return True
         else:
             return False
 
-    def connect_visit_to_cycle(self, session, visit_id, case_id, visit_date):
+    def connect_visit_to_cycle(self, session, line_num, visit_id, case_id, visit_date):
         find_cycles_stmt = 'MATCH (c:cycle) WHERE c.case_id = "{}" RETURN c ORDER BY c.date_of_cycle_start'.format(case_id)
         result = session.run(find_cycles_stmt)
         if result:
@@ -424,8 +430,15 @@ class DataLoader:
                 if not first_date:
                     first_date = start_date
                     pre_date = first_date - timedelta(days=PREDATE)
-                end_date = datetime.strptime(cycle[END_DATE], DATE_FORMAT)
+                if cycle[END_DATE]:
+                    end_date = datetime.strptime(cycle[END_DATE], DATE_FORMAT)
+                else:
+                    self.log.warning('Line: {}: No end dates for cycle started on {} for {}'.format(line_num, start_date.strftime(DATE_FORMAT), case_id))
+                    end_date = datetime.strptime(FOREVER, DATE_FORMAT)
+                # TODO: Only connect to first cycle instead of all cycles
                 if (date >= start_date and date <= end_date) or (date < first_date and date >= pre_date):
+                    if date < first_date and date >= pre_date:
+                        self.log.info('Line: {}: Date: {} is before first cycle, but within {} days before first cycle started: {}, connected to first cycle'.format(line_num, visit_date, PREDATE, first_date.strftime(DATE_FORMAT)))
                     cycle_id = cycle.id
                     connect_stmt = 'MATCH (v:{} {{{}: "{}"}}) MATCH (c:{}) WHERE id(c) = {} MERGE (v)-[:{}]->(c)'.format(VISIT_NODE, VISIT_ID, visit_id, CYCLE_NODE, cycle_id, OF_CYCLE)
                     cnt_result = session.run(connect_stmt)
@@ -435,9 +448,9 @@ class DataLoader:
                         self.relationships_stat[OF_CYCLE] = self.relationships_stat.get(OF_CYCLE, 0) + relationship_created
                         return True
                     else:
-                        self.log.error('Create relationship failed!')
+                        self.log.error('Line: {}: Create (:visit)-[:of_cycle]->(:cycle) relationship failed!'.format(line_num))
                         return False
             return False
         else:
-            self.log.error('No cycles found for case: {}'.format(case_id))
+            self.log.error('Line: {}: No cycles found for case: {}'.format(line_num, case_id))
             return False
