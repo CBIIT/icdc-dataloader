@@ -427,6 +427,9 @@ class DataLoader:
         if result:
             first_date = None
             pre_date = None
+            relationship_name = self.schema.get_relationship(VISIT_NODE, CYCLE_NODE)
+            if not relationship_name:
+                return False
             for record in result.records():
                 cycle = record.data()['c']
                 date = datetime.strptime(visit_date, DATE_FORMAT)
@@ -443,17 +446,35 @@ class DataLoader:
                     if date < first_date and date >= pre_date:
                         self.log.info('Line: {}: Date: {} is before first cycle, but within {} days before first cycle started: {}, connected to first cycle'.format(line_num, visit_date, PREDATE, first_date.strftime(DATE_FORMAT)))
                     cycle_id = cycle.id
-                    connect_stmt = 'MATCH (v:{} {{{}: "{}"}}) MATCH (c:{}) WHERE id(c) = {} MERGE (v)-[:{} {{ {}: true }}]->(c)'.format(VISIT_NODE, VISIT_ID, visit_id, CYCLE_NODE, cycle_id, OF_CYCLE, INFERRED)
+                    connect_stmt = 'MATCH (v:{} {{{}: "{}"}}) MATCH (c:{}) WHERE id(c) = {} MERGE (v)-[:{} {{ {}: true }}]->(c)'.format(VISIT_NODE, VISIT_ID, visit_id, CYCLE_NODE, cycle_id, relationship_name, INFERRED)
                     cnt_result = session.run(connect_stmt)
                     relationship_created = cnt_result.summary().counters.relationships_created
                     if relationship_created > 0:
                         self.relationships_created += relationship_created
-                        self.relationships_stat[OF_CYCLE] = self.relationships_stat.get(OF_CYCLE, 0) + relationship_created
+                        self.relationships_stat[relationship_name] = self.relationships_stat.get(relationship_name, 0) + relationship_created
                         return True
                     else:
                         self.log.error('Line: {}: Create (:visit)-[:of_cycle]->(:cycle) relationship failed!'.format(line_num))
                         return False
-            return False
+            return self.connect_visit_to_case(session, line_num, visit_id, case_id)
         else:
             self.log.error('Line: {}: No cycles found for case: {}'.format(line_num, case_id))
             return False
+
+    def connect_visit_to_case(self, session, line_num, visit_id, case_id):
+        relationship_name = self.schema.get_relationship(VISIT_NODE, CASE_NODE)
+        if not relationship_name:
+            return False
+        cnt_statement = 'MATCH (c:case {{ case_id: "{}"}}) MATCH (v:visit {{ {}: "{}" }}) '.format(case_id, VISIT_ID, visit_id)
+        cnt_statement += 'MERGE (c)<-[:{} {{ {}: true }}]-(v)'.format(relationship_name, INFERRED)
+        result = session.run(cnt_statement)
+        relationship_created = result.summary().counters.relationships_created
+        if relationship_created > 0:
+            self.relationships_created += relationship_created
+            self.relationships_stat[relationship_name] = self.relationships_stat.get(relationship_name, 0) + relationship_created
+            return True
+        else:
+            self.log.error('Line: {}: Create (:{})-[:{}]->(:{}) relationship failed!'.format(line_num, VISIT_NODE, relationship_name, CASE_NODE))
+            return False
+
+
