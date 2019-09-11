@@ -95,6 +95,8 @@ class DataLoader:
             # TODO: put it somewhere in model to avoid hard coded special case for study
             if node_type == 'study':
                 return 'clinical_study_designation'
+            if node_type == 'program':
+                return 'program_acronym'
             else:
                 return node_type + '_id'
         else:
