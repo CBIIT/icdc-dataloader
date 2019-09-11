@@ -30,6 +30,7 @@ CASE_NODE = 'case'
 CASE_ID = 'case_id'
 PREDATE = 7
 FOREVER = '99991231'
+INFERRED = 'inferred'
 
 
 
@@ -406,7 +407,7 @@ class DataLoader:
         if not NODE_TYPE in src:
             self.log.error('Line: {}: Given object doesn\'t have a "{}" field!'.format(line_num, NODE_TYPE))
             return False
-        statement = 'MERGE (v:{} {{ {}: "{}", {}: "{}" }})'.format(VISIT_NODE, VISIT_ID, node_id, VISIT_DATE, date)
+        statement = 'MERGE (v:{} {{ {}: "{}", {}: "{}", {}: true }})'.format(VISIT_NODE, VISIT_ID, node_id, VISIT_DATE, date, INFERRED)
         result = session.run(statement)
         if result:
             count = result.summary().counters.nodes_created
@@ -442,7 +443,7 @@ class DataLoader:
                     if date < first_date and date >= pre_date:
                         self.log.info('Line: {}: Date: {} is before first cycle, but within {} days before first cycle started: {}, connected to first cycle'.format(line_num, visit_date, PREDATE, first_date.strftime(DATE_FORMAT)))
                     cycle_id = cycle.id
-                    connect_stmt = 'MATCH (v:{} {{{}: "{}"}}) MATCH (c:{}) WHERE id(c) = {} MERGE (v)-[:{}]->(c)'.format(VISIT_NODE, VISIT_ID, visit_id, CYCLE_NODE, cycle_id, OF_CYCLE)
+                    connect_stmt = 'MATCH (v:{} {{{}: "{}"}}) MATCH (c:{}) WHERE id(c) = {} MERGE (v)-[:{} {{ {}: true }}]->(c)'.format(VISIT_NODE, VISIT_ID, visit_id, CYCLE_NODE, cycle_id, OF_CYCLE, INFERRED)
                     cnt_result = session.run(connect_stmt)
                     relationship_created = cnt_result.summary().counters.relationships_created
                     if relationship_created > 0:
