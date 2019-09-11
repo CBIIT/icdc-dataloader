@@ -34,6 +34,7 @@ class TestLoader(unittest.TestCase):
             "data/COTC007B/COTC_program.txt",
             "data/NCATS/NCATS01-arm.txt",
             "data/NCATS/NCATS01-blood_samples.txt",
+            "data/NCATS/NCATS01-pathology-reports-20190910-170434.txt",
             "data/NCATS/NCATS01-case.txt",
             "data/NCATS/NCATS01-program.txt",
             "data/NCATS/NCATS01-cohort.txt",
@@ -71,8 +72,8 @@ class TestLoader(unittest.TestCase):
         loader = DataLoader(self.driver, self.schema, self.file_list)
         load_result = loader.load(True, 1)
         self.assertIsInstance(load_result, dict, msg='Load data failed!')
-        self.assertEqual(1367, load_result[NODES_CREATED])
-        self.assertEqual(1508, load_result[RELATIONSHIP_CREATED])
+        self.assertEqual(1428, load_result[NODES_CREATED])
+        self.assertEqual(1569, load_result[RELATIONSHIP_CREATED])
 
     def test_validate_parents_exist_in_file(self):
         loader = DataLoader(self.driver, self.schema, self.file_list)
