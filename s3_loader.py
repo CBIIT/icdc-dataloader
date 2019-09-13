@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import threading
 import argparse
 from s3 import *
 from os.path import isfile, join
@@ -11,6 +11,8 @@ from utils import *
 from loader import *
 import subprocess
 import errno
+import boto3
+from boto3.s3.transfer import TransferConfig
 
 # MANIFEST FIELDS Based on data model uc-cdis manifest setting
 # https://github.com/uc-cdis/indexd_utils/blob/master/manifest.tsv
@@ -20,6 +22,8 @@ log = get_logger('S3 Loader')
 PSWD_ENV = 'NEO_PASSWORD'
 BLOCKSIZE = 65536
 Upload_Fails_Budget = 0
+s3_client = boto3.client('s3')
+config = TransferConfig(multipart_threshold=1024 * 25,max_concurrency=10 * 4 ,multipart_chunksize=1024 * 25, use_threads=True)
 
 
 # Upload files to S3 on the files included in the manifest
@@ -32,21 +36,24 @@ def upload_files_based_on_manifest(bucket, s3_folder, directory, bucket_name, ma
     bits_uploaded = 0
     with open(manifest) as csv_file:
         tsv_reader = csv.DictReader(csv_file, delimiter='\t')
+        file_uploded =[]
         for record in tsv_reader:
             file_name = record["file_name"]
-            if upload_file(bucket, join(s3_folder, file_name), join(directory, file_name)):
-                number_of_files_uploaded += 1
-                number_of_files_need_to_upload += 1
-                bits_uploaded += os.stat(join(directory, file_name)).st_size
-                log.info('File :  {}  uploaded !'.format(file_name))
+            if file_name not in file_uploded:
+                if upload_file(bucket_name, join(s3_folder, file_name), join(directory, file_name)):
+                    number_of_files_uploaded += 1
+                    number_of_files_need_to_upload += 1
+                    bits_uploaded += os.stat(join(directory, file_name)).st_size
+                    log.info('File :  {}  uploaded !'.format(file_name))
+                    file_uploded.append(file_name)
 
-            else:
-                log.info('==========> File :  {} upload fails !'.format(file_name))
-                upload_fails_count += 1
-                if upload_fails_count > Upload_Fails_Budget:
-                    log.error(
-                        '==========> Too many uploading failures, {} files upload fails !'.format(upload_fails_count))
-                    return False
+                else:
+                    log.info('==========> File :  {} upload fails !'.format(file_name))
+                    upload_fails_count += 1
+                    if upload_fails_count > Upload_Fails_Budget:
+                        log.error(
+                            '==========> Too many uploading failures, {} files upload fails !'.format(upload_fails_count))
+                        return False
     end = timer()
     log.info('  {} File(s) uploaded, {} File(s) upload fails , Total {} file(s) need to be uploaded '.format(
         number_of_files_uploaded, upload_fails_count, number_of_files_need_to_upload))
@@ -57,10 +64,10 @@ def upload_files_based_on_manifest(bucket, s3_folder, directory, bucket_name, ma
 
 
 # Upload file to S3
-def upload_file(bucket, s3, f):
+def upload_file(bucket_name, s3_location, file_location):
     try:
-        log.info('Uploading {}'.format(f))
-        bucket.upload_file(s3, f)
+        log.info('Uploading {}'.format(file_location))
+        s3_client.upload_file(file_location, bucket_name, s3_location,Config=config,Callback=ProgressPercentage(file_location))
         return True
     except Exception as e:
         log.error('==========> Upload file to S3 fails!  Error {}'.format(e))
@@ -68,7 +75,7 @@ def upload_file(bucket, s3, f):
 
 
 # Completing the initial manifest and then upload to S3
-def export_result(manifest, bucket, bucket_name, folder_name, directory, input_s3_bucket, input_s3_folder):
+def export_result(manifest, bucket, bucket_name, folder_name, directory, input_s3_bucket, input_s3_folder,output_file_name):
     log.info('Completing the initial manifest .')
     try:
         data_matrix = []
@@ -102,8 +109,7 @@ def export_result(manifest, bucket, bucket_name, folder_name, directory, input_s
                 record["acl"] = "open"
                 data_matrix.append(record)
 
-        timestr = time.strftime("%Y%m%d-%H%M%S")
-        output_file_name = timestr + ".txt"
+
         output_file = join(directory, folder_name, output_file_name)
 
         if not os.path.exists(join(directory, folder_name)):
@@ -116,7 +122,7 @@ def export_result(manifest, bucket, bucket_name, folder_name, directory, input_s
 
         write_tsv_file(output_file, data_matrix, fieldnames)
         log.info('Upload the manifest info into S3 .')
-        if upload_file(bucket, join(folder_name, output_file_name), output_file):
+        if upload_file(bucket_name, join(folder_name, output_file_name), output_file):
             return True
         else:
             return False
@@ -235,6 +241,26 @@ def call_data_loader(python, neo4j_password, schemas, dir):
         return False
 
 
+
+class ProgressPercentage(object):
+    def __init__(self, filename):
+        self._filename = filename
+        self._size = float(os.path.getsize(filename))
+        self._seen_so_far = 0
+        self._lock = threading.Lock()
+    def __call__(self, bytes_amount):
+        # To simplify we'll assume this is hooked up
+        # to a single filename.
+        with self._lock:
+            self._seen_so_far += bytes_amount
+            percentage = (self._seen_so_far / self._size) * 100
+            sys.stdout.write(
+                "\r%s  %s / %s  (%.2f%%)" % (
+                    self._filename, self._seen_so_far, self._size,
+                    percentage))
+            sys.stdout.flush()
+
+
 # File loader will try to upload all files from given directory into S3
 
 def main():
@@ -245,6 +271,7 @@ def main():
     parser.add_argument('-isf', '--input-s3-folder', help='S3 folder for files')
     parser.add_argument('-osb', '--output-s3-bucket', help='s3 bucket for manifest')
     parser.add_argument('-osf', '--output-s3-folder', help='s3 folder for manifest')
+    parser.add_argument('-osn', '--output-file-name', help='Output manifest name')
     parser.add_argument('-s', '--schema', help='Schema files', action='append')
     parser.add_argument('-f', '--max-violations', help='Max violations to display', nargs='?', type=int, default=0)
     parser.add_argument('-md5', '--max-block-for-md5', help='Max Blocks for MD5 ', nargs='?', type=int, default=65536)
@@ -333,8 +360,16 @@ def main():
             log.error('Upload file(s) to S3 bucket "{}" failed!'.format(args.input_s3_bucket))
             sys.exit(1)
 
+        output_file_name=""
+        timestr = time.strftime("%Y%m%d-%H%M%S")
+        if not args.output_file_name:
+
+            output_file_name = timestr + ".txt"
+        else:
+            output_file_name = args.output_file_name + timestr + ".txt"
+
         if not export_result(args.manifest, output_bucket, args.output_s3_bucket, args.output_s3_folder, args.dir,
-                             args.input_s3_bucket, args.input_s3_folder):
+                             args.input_s3_bucket, args.input_s3_folder,output_file_name):
             log.error('Upload file(s) to S3 bucket "{}" failed!'.format(args.output_s3_bucket))
             sys.exit(1)
 
