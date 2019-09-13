@@ -190,7 +190,7 @@ class DataLoader:
             line_num = 1
             validation_failed = False
             violations = 0
-            IDs = set()
+            IDs = {}
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 line_num += 1
@@ -199,9 +199,10 @@ class DataLoader:
                 if node_id:
                     if node_id in IDs:
                         validation_failed = True
-                        self.log.error('Invalid data at line {}: {}: {} duplicate in file: {}'.format(line_num, id_field, node_id, file_name))
+                        self.log.error('Invalid data at line {}: duplicate {}: {}, found in line: {}'.format(line_num, id_field, node_id, ', '.join(IDs[node_id])))
+                        IDs[node_id].append(str(line_num))
                     else:
-                        IDs.add(node_id)
+                        IDs[node_id] = [str(line_num)]
 
                 validate_result = self.schema.validate_node(obj[NODE_TYPE], obj)
                 if not validate_result['result']:
