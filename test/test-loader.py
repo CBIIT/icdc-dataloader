@@ -53,7 +53,7 @@ class TestLoader(unittest.TestCase):
             self.log.info('{} nodes deleted!'.format(result.summary().counters.nodes_deleted))
             self.log.info('{} relationships deleted!'.format(result.summary().counters.relationships_deleted))
         loader = DataLoader(self.driver, self.schema, self.file_list)
-        load_result = loader.load(True, 1)
+        load_result = loader.load(True, False, 1)
         self.assertIsInstance(load_result, dict, msg='Load data failed!')
         self.assertEqual(1428, load_result[NODES_CREATED])
         self.assertEqual(1569, load_result[RELATIONSHIP_CREATED])

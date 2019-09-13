@@ -51,7 +51,7 @@ class DataLoader:
         self.schema = schema
         self.file_list = file_list
 
-    def load(self, cheat_mode, max_violations):
+    def load(self, cheat_mode, dry_run, max_violations):
         start = timer()
         if not cheat_mode:
             validation_failed = False
@@ -63,6 +63,12 @@ class DataLoader:
                 return False
         else:
             self.log.info('Cheat mode enabled, all validations skipped!')
+
+        if dry_run:
+            end = timer()
+            self.log.info('Dry run mode, no nodes or relationships loaded.')  # Time in seconds, e.g. 5.38091952400282
+            self.log.info('Running time: {:.2f} seconds'.format(end - start))  # Time in seconds, e.g. 5.38091952400282
+            return True
 
         self.nodes_created = 0
         self.relationships_created = 0
