@@ -184,9 +184,19 @@ class DataLoader:
             line_num = 1
             validation_failed = False
             violations = 0
+            IDs = set()
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 line_num += 1
+                id_field = self.get_id_field(obj)
+                node_id = self.get_id(obj)
+                if node_id:
+                    if node_id in IDs:
+                        validation_failed = True
+                        self.log.error('Invalid data at line {}: {}: {} duplicate in file: {}'.format(line_num, id_field, node_id, file_name))
+                    else:
+                        IDs.add(node_id)
+
                 validate_result = self.schema.validate_node(obj[NODE_TYPE], obj)
                 if not validate_result['result']:
                     for msg in validate_result['messages']:
