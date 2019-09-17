@@ -473,6 +473,8 @@ class DataLoader:
                     else:
                         self.log.error('Line: {}: Create (:visit)-[:of_cycle]->(:cycle) relationship failed!'.format(line_num))
                         return False
+            self.log.warning('Line: {}: Date: {} does not belong to any cycles, connected to case {} directly!'.format(
+                    line_num, visit_date, case_id))
             return self.connect_visit_to_case(session, line_num, visit_id, case_id)
         else:
             self.log.error('Line: {}: No cycles found for case: {}'.format(line_num, case_id))
