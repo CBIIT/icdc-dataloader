@@ -76,6 +76,7 @@ type case {
   cycles: [cycle] @relation(name:"of_case", direction:IN)
   follow_ups: [follow_up] @relation(name:"of_case", direction:IN)
   samples: [sample] @relation(name:"of_case", direction:IN)
+  visits: [visit] @relation(name:"of_case", direction:IN)
   adverse_event: adverse_event @relation(name:"had_adverse_event", direction:OUT)
   off_study: off_study @relation(name:"went_off_study", direction:OUT)
   off_treatment: off_treatment @relation(name:"went_off_treatment", direction:OUT)
@@ -356,6 +357,7 @@ type study_site {
 type visit {
   visit_date: String
   visit_number: String
+  case: case @relation(name:"of_case", direction:OUT)
   cycle: cycle @relation(name:"of_cycle", direction:OUT)
   agent_administrations: [agent_administration] @relation(name:"on_visit", direction:IN)
   samples: [sample] @relation(name:"on_visit", direction:IN)
