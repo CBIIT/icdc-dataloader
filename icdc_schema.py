@@ -23,6 +23,7 @@ UNITS = 'units'
 REQUIRED = 'Req'
 NODE_TYPE = 'type'
 ENUM = 'enum'
+DEFAULT_VALUE = 'default_value'
 
 class ICDC_Schema:
     def __init__(self, files):
@@ -185,12 +186,15 @@ class ICDC_Schema:
                 prop_desc = prop[PROP_TYPE]
                 if isinstance(prop_desc, dict):
                     if UNITS in prop_desc:
-                        unit_prop_name = self.get_unit_property_name(name)
-                        results[unit_prop_name] =  {PROP_TYPE: DEFAULT_TYPE}
-                        org_prop_name = self.get_original_value_property_name(name)
-                        org_unit_prop_name = self.get_unit_property_name(org_prop_name)
-                        results[org_prop_name] = prop_type
-                        results[org_unit_prop_name] = {PROP_TYPE: DEFAULT_TYPE}
+                        units = prop_desc[UNITS]
+                        if units:
+                            enum = set(units)
+                            unit_prop_name = self.get_unit_property_name(name)
+                            results[unit_prop_name] =  {PROP_TYPE: DEFAULT_TYPE, ENUM: enum, DEFAULT_VALUE: units[0]}
+                            org_prop_name = self.get_original_value_property_name(name)
+                            org_unit_prop_name = self.get_unit_property_name(org_prop_name)
+                            results[org_prop_name] = prop_type
+                            results[org_unit_prop_name] = {PROP_TYPE: DEFAULT_TYPE, ENUM: enum, DEFAULT_VALUE: units[0]}
         return results
 
     @staticmethod
