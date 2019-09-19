@@ -1,5 +1,8 @@
 type adverse_event {
-  ae_dose: String
+  ae_dose: Float
+  ae_dose_unit: String
+  ae_dose_original: Float
+  ae_dose_original_unit: String
   ae_agent_name: String
   day_in_cycle: Int
   date_resolved: String
@@ -38,17 +41,29 @@ type agent_administration {
   medication_lot_number: String
   medication_vial_id: String
   medication_actual_units_of_measure: String
-  medication_duration: String
+  medication_duration: Float
+  medication_duration_unit: String
+  medication_duration_original: Float
+  medication_duration_original_unit: String
   medication_units_of_measure: String
-  medication_actual_dose: String
+  medication_actual_dose: Float
+  medication_actual_dose_unit: String
+  medication_actual_dose_original: Float
+  medication_actual_dose_original_unit: String
   phase: String
   start_time: String
   stop_time: String
-  dose_level: String
+  dose_level: Float
+  dose_level_unit: String
+  dose_level_original: Float
+  dose_level_original_unit: String
   dose_units_of_measure: String
   date_of_missed_dose: String
   medication_missed_dose: String
-  missed_dose_amount: String
+  missed_dose_amount: Float
+  missed_dose_amount_unit: String
+  missed_dose_amount_original: Float
+  missed_dose_amount_original_unit: String
   missed_dose_units_of_measure: String
   medication_course_number: String
   comment: String
@@ -84,7 +99,10 @@ type case {
 
 type cohort {
   cohort_description: String
-  cohort_dose: String
+  cohort_dose: Float
+  cohort_dose_unit: String
+  cohort_dose_original: Float
+  cohort_dose_original_unit: String
   cases: [case] @relation(name:"member_of", direction:IN)
   study_arm: study_arm @relation(name:"member_of", direction:OUT)
   study: study @relation(name:"member_of", direction:OUT)
@@ -101,6 +119,9 @@ type cycle {
 type demographic {
   breed: String
   patient_age_at_enrollment: Float
+  patient_age_at_enrollment_unit: String
+  patient_age_at_enrollment_original: Float
+  patient_age_at_enrollment_original_unit: String
   date_of_birth: String
   sex: String
   weight: String
@@ -259,7 +280,10 @@ type prior_therapy {
   date_of_last_dose: String
   agent_name: String
   dose_schedule: String
-  total_dose: String
+  total_dose: Float
+  total_dose_unit: String
+  total_dose_original: Float
+  total_dose_original_unit: String
   agent_units_of_measure: String
   best_response: String
   nonresponse_therapy_type: String
@@ -303,15 +327,33 @@ type sample {
   date_of_sample_collection: String
   necropsy_sample: Boolean
   length_of_tumor: Float
+  length_of_tumor_unit: String
+  length_of_tumor_original: Float
+  length_of_tumor_original_unit: String
   width_of_tumor: Float
+  width_of_tumor_unit: String
+  width_of_tumor_original: Float
+  width_of_tumor_original_unit: String
   analysis_area: Float
+  analysis_area_unit: String
+  analysis_area_original: Float
+  analysis_area_original_unit: String
   analysis_area_percentage_tumor: Float
   analysis_area_percentage_stroma: Float
   analysis_area_percentage_glass: Float
   analysis_area_percentage_pigmented_tumor: Float
   total_tissue_area: Float
+  total_tissue_area_unit: String
+  total_tissue_area_original: Float
+  total_tissue_area_original_unit: String
   tumor_tissue_area: Float
+  tumor_tissue_area_unit: String
+  tumor_tissue_area_original: Float
+  tumor_tissue_area_original_unit: String
   non_tumor_tissue_area: Float
+  non_tumor_tissue_area_unit: String
+  non_tumor_tissue_area_original: Float
+  non_tumor_tissue_area_original_unit: String
   percentage_tumor: Float
   percentage_stroma: Float
   comment: String
@@ -372,14 +414,35 @@ type visit {
 
 type vital_signs {
   date_of_vital_signs: String
-  body_temperature: String
-  pulse: String
-  respiration_rate: String
+  body_temperature: Float
+  body_temperature_unit: String
+  body_temperature_original: Float
+  body_temperature_original_unit: String
+  pulse: Int
+  pulse_unit: String
+  pulse_original: Int
+  pulse_original_unit: String
+  respiration_rate: Int
+  respiration_rate_unit: String
+  respiration_rate_original: Int
+  respiration_rate_original_unit: String
   respiration_pattern: String
-  systolic_bp: String
-  pulse_ox: String
-  patient_weight: String
-  body_surface_area: String
+  systolic_bp: Int
+  systolic_bp_unit: String
+  systolic_bp_original: Int
+  systolic_bp_original_unit: String
+  pulse_ox: Float
+  pulse_ox_unit: String
+  pulse_ox_original: Float
+  pulse_ox_original_unit: String
+  patient_weight: Float
+  patient_weight_unit: String
+  patient_weight_original: Float
+  patient_weight_original_unit: String
+  body_surface_area: Float
+  body_surface_area_unit: String
+  body_surface_area_original: Float
+  body_surface_area_original_unit: String
   modified_ecog: String
   ecg: Boolean
   assessment_timepoint: String
