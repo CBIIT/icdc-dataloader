@@ -178,6 +178,32 @@ class ICDC_Schema:
 
         return result
 
+    def get_prop(self, node_name, name):
+        if node_name in self.nodes:
+            node = self.nodes[node_name]
+            if name in node[PROPERTIES]:
+                return node[PROPERTIES][name]
+        return None
+
+    def get_default_value(self, node_name, name):
+        prop = self.get_prop(node_name, name)
+        if prop:
+            return prop.get(DEFAULT_VALUE, None)
+
+    def get_default_unit(self, node_name, name):
+        unit_prop_name = self.get_unit_property_name(name)
+        return self.get_default_value(node_name, unit_prop_name)
+
+
+    def get_valid_values(self, node_name, name):
+        prop = self.get_prop(node_name, name)
+        if prop:
+            return prop.get(ENUM, None)
+
+    def get_valid_units(self, node_name, name):
+        unit_prop_name = self.get_unit_property_name(name)
+        return self.get_valid_values(unit_prop_name)
+
     def process_value_unit_type(self, name, prop_type):
         results = {}
         if name in self.org_schema[PROP_DEFINITIONS]:
