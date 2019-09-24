@@ -31,6 +31,22 @@ type GenderCaseCount {
   cases: Int
 }
 
+
+type DiseaseSiteCaseCount {
+  disease_site: String
+  cases: Int
+}
+
+type NeuteredStatusCaseCount {
+  neutered_status: String
+  cases: Int
+}
+
+type StageOfDiseaseCaseCount{
+  stage_of_disease :String
+  cases :Int
+}
+
 type StudyOfProgram {
   program_id: String
   clinical_study_id: String
@@ -54,6 +70,22 @@ type CaseOverview {
   sex: String
   neutered_status: String
 }
+
+
+type FilesOfCase{
+  parent:String
+  file_name: String
+  file_type: String
+  file_description: String
+  file_format: String
+  file_size: Float
+  file_md5: String
+  file_status: String
+  uuid: String
+  file_locations: String
+}
+
+
 
 type QueryType {
   numberOfStudies: Int @cypher(statement: "MATCH (n:study) RETURN  count (n)")
@@ -83,4 +115,10 @@ type QueryType {
   aliguotCountOfProgram(program_id: String!): Int @cypher(statement: "MATCH (a:aliquot)-[*]->(:program {program_acronym: $program_id}) return count(a)")
   studyCountOfProgram(program_id: String!): Int @cypher(statement: "MATCH (s:study)-[*]->(:program {program_acronym: $program_id}) return count(s)")
   caseCountOfProgram(program_id: String!): Int @cypher(statement: "MATCH (c:case)-[*]->(:program {program_acronym: $program_id}) return count(c)")
+  caseCountByDiseaseSite: [DiseaseSiteCaseCount] @cypher(statement: "MATCH (d:diagnosis)-[:of_case]->(c:case) RETURN d.primary_disease_site AS disease_site, count(c) AS cases ORDER BY d.primary_disease_site")
+  fileOfStudy(study_code: String!): [file] @cypher(statement: "MATCH (f:file)-[*]->(:study {clinical_study_designation: $study_code}) return  f")
+  filesOfCase(case_id: String!): [FilesOfCase] @cypher(statement: "MATCH (f:file)-[*]->(c:case{case_id: $case_id}) WITH f MATCH (f)-->(parent) return f.file_status as file_status,f.file_name as file_name ,f.file_type as file_type,f.file_description as file_description,f.file_format as file_format,f.file_size as file_size,f.file_md5 as file_md5,f.uuid as uuid,f.file_locations as file_location, head(labels(parent)) as parent")
+  caseCountByNeuteredStatus :[NeuteredStatusCaseCount] @cypher(statement: " MATCH (c:case)<--(d:demographic) return d.demographic AS neutered_status, count(c) AS cases ")
+  caseCountByStageOfDisease: [StageOfDiseaseCaseCount] @cypher(statement: "MATCH (d:diagnosis)-[:of_case]->(c:case) RETURN d.stage_of_disease AS stage_of_disease, count(c) AS cases ORDER BY d.stage_of_disease")
+  caseCountOfStudy(study_code: String!): Int @cypher(statement: "MATCH (c:case)-[*]->(:study {clinical_study_designation: $study_code}) return count(c)")
 }
