@@ -45,6 +45,7 @@ class TestLoader(unittest.TestCase):
             "data/NCATS/NCATS01-study.txt",
             "data/NCATS/NCATS01-tumor_samples.txt"
         ]
+        self.loader = DataLoader(self.driver, self.schema, self.file_list)
 
     def test_remove_traling_slash(self):
         self.assertEqual('abc', removeTrailingSlash('abc/'))
@@ -60,21 +61,61 @@ class TestLoader(unittest.TestCase):
         self.assertRaises(Exception, DataLoader, self.driver, None, None)
         self.assertRaises(Exception, DataLoader, self.driver, self.schema , None)
         self.assertRaises(Exception, DataLoader, self.driver, self.schema , ['a', 'b'])
-        loader = DataLoader(self.driver, self.schema, self.file_list)
-        self.assertIsInstance(loader, DataLoader)
+        self.assertIsInstance(self.loader, DataLoader)
 
     def test_validate_parents_exist_in_file(self):
-        loader = DataLoader(self.driver, self.schema, self.file_list)
         # result = loader.validate_parents_exit_in_file('data/Pathology-Report-Mapping-File.txt', 100)
-        result = loader.validate_cases_exist_in_file('data/pathology-reports-failure.txt', 100)
+        result = self.loader.validate_cases_exist_in_file('data/pathology-reports-failure.txt', 100)
         self.assertFalse(result)
-        result = loader.validate_cases_exist_in_file('data/pathology-reports-success.txt', 100)
+        result = self.loader.validate_cases_exist_in_file('data/pathology-reports-success.txt', 100)
         self.assertTrue(result)
 
     def test_duplicated_ids(self):
-        loader = DataLoader(self.driver, self.schema, self.file_list)
-        self.assertTrue(loader.validate_file('data/NCATS/NCATS01-case.txt', 10))
-        self.assertFalse(loader.validate_file('data/NCATS01-case-dup.txt', 10))
+        self.assertTrue(self.loader.validate_file('data/NCATS/NCATS01-case.txt', 10))
+        self.assertFalse(self.loader.validate_file('data/NCATS01-case-dup.txt', 10))
+
+    def test_get_value_string(self):
+        # Test String type
+        self.assertEqual(self.loader.get_value_string('adverse_event', 'adverse_event_description', ''), '""')
+        self.assertEqual(self.loader.get_value_string('adverse_event', 'adverse_event_description', None), '"null"')
+        self.assertEqual(self.loader.get_value_string('adverse_event', 'adverse_event_description', []), '"null"')
+        self.assertEqual(self.loader.get_value_string('adverse_event', 'adverse_event_description', [0]), '"null"')
+        self.assertEqual(self.loader.get_value_string('adverse_event', 'adverse_event_description', ['0']), '"null"')
+        self.assertEqual(self.loader.get_value_string('adverse_event', 'adverse_event_description', {}), '"null"')
+        self.assertEqual(self.loader.get_value_string('adverse_event', 'adverse_event_description', {'a': 'b'}), '"null"')
+        self.assertEqual(self.loader.get_value_string('adverse_event', 'adverse_event_description', 'abc'), '"abc"')
+
+        # Test Boolean type
+        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', ''), '""')
+        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', None), '""')
+        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', []), '""')
+        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', {}), '""')
+        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'other value'), '""')
+        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'yes'), 'True')
+        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'Yes'), 'True')
+        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'YeS'), 'True')
+        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'true'), 'True')
+        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'True'), 'True')
+        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'TruE'), 'True')
+        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'false'), 'False')
+        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'False'), 'False')
+        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'fAlsE'), 'False')
+        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'no'), 'False')
+        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'No'), 'False')
+        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'NO'), 'False')
+
+        # Test Integer value
+        self.assertEqual(self.loader.get_value_string('physical_exam', 'day_in_cycle', ''), '""')
+        self.assertEqual(self.loader.get_value_string('physical_exam', 'day_in_cycle', None), '""')
+        self.assertEqual(self.loader.get_value_string('physical_exam', 'day_in_cycle', '3'), 3)
+        self.assertIsNone(self.loader.get_value_string('physical_exam', 'day_in_cycle', 'not a number'))
+
+        # Test Float value
+        self.assertEqual(self.loader.get_value_string('prior_therapy', 'total_dose', ''), '""')
+        self.assertEqual(self.loader.get_value_string('prior_therapy', 'total_dose', None), '""')
+        self.assertEqual(self.loader.get_value_string('prior_therapy', 'total_dose', '3'), 3.0)
+        self.assertEqual(self.loader.get_value_string('prior_therapy', 'total_dose', '3.0'), 3.0)
+        self.assertIsNone(self.loader.get_value_string('prior_therapy', 'total_dose', 'not a number'))
 
 
 if __name__ == '__main__':

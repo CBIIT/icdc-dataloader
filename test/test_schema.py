@@ -29,6 +29,16 @@ class TestSchema(unittest.TestCase):
         self.assertEqual('mg/kg', self.schema.get_default_unit('adverse_event', 'ae_dose'))
         self.assertEqual('days', self.schema.get_default_unit('agent_administration', 'medication_duration'))
 
+    def test_extra_propties(self):
+        self.assertEqual(0, len(self.schema.get_extra_props('node_does_not_exit', 'unit_does_not_exist', 0)))
+        self.assertEqual(0, len(self.schema.get_extra_props('adverse_event', 'unit_does_not_exist', 0)))
+        self.assertEqual(0, len(self.schema.get_extra_props('cycle', 'cycle_number', 0)))
+        extra_props = self.schema.get_extra_props('adverse_event', 'ae_dose', 5)
+        self.assertEqual(3, len(extra_props))
+        self.assertEqual(5, extra_props['ae_dose_original'])
+        self.assertEqual('mg/kg', extra_props['ae_dose_original_unit'])
+        self.assertEqual('mg/kg', extra_props['ae_dose_unit'])
+
 
 if __name__ == '__main__':
     unittest.main()
