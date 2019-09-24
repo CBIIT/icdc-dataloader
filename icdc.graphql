@@ -489,6 +489,10 @@ type NeuteredStatusCaseCount {
   cases: Int
 }
 
+type StageOfDiseaseCaseCount{
+  stage_of_disease :String
+  cases :Int
+}
 
 type StudyOfProgram {
   program_id: String
@@ -568,6 +572,7 @@ type QueryType {
 
  filesOfCase(case_id: String!): [FilesOfCase] @cypher(statement: "MATCH (f:file)-[*]->(c:case{case_id: $case_id}) WITH f MATCH (f)-->(parent) return f.file_status as file_status,f.file_name as file_name ,f.file_type as file_type,f.file_description as file_description,f.file_format as file_format,f.file_size as file_size,f.file_md5 as file_md5,f.uuid as uuid,f.file_locations as file_location, head(labels(parent)) as parent")
  
- 
-caseCountByNeuteredStatus :[NeuteredStatusCaseCount] @cypher(statement: " MATCH (c:case)<--(d:demographic) return d.demographic AS neutered_status, count(c) AS cases ")
+  caseCountByNeuteredStatus :[NeuteredStatusCaseCount] @cypher(statement: " MATCH (c:case)<--(d:demographic) return d.demographic AS neutered_status, count(c) AS cases ")
+
+  caseCountByStageOfDisease: [StageOfDiseaseCaseCount] @cypher(statement: "MATCH (d:diagnosis)-[:of_case]->(c:case) RETURN d.stage_of_disease AS stage_of_disease, count(c) AS cases ORDER BY d.stage_of_disease")
 }
