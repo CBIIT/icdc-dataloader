@@ -196,10 +196,10 @@ PropDefinitions:
     Type: string
   cohort_dose:
     Desc: intended or protocol dose
-    Type:
-      units:
-        - mg/kg
-      value_type: number
+    Type: string
+#      units:
+#        - mg/kg
+#      value_type: number
 # cycle props
   cycle_number:
     Src: COURSE INIT/CINIT/1
@@ -228,15 +228,21 @@ PropDefinitions:
     Type: TBD
   patient_age_at_enrollment:
     Src: ENROLLMENT/ENROLL/1
-    Type: number
+    Type:
+      units:
+        - years
+      value_type: number
   sex:
     Desc: gender, needs enum
     Src: ENROLLMENT/ENROLL/1
     Type:
-    - M
-    - F
+      - M
+      - F
   weight:
-    Desc: the subject's weight at the time the subject was enrolled and/or biospecimens were acquired, at least in the case of studies that are not longitudinal in nature
+    Desc: |
+      the subject's weight at the time the subject was enrolled and/or
+      biospecimens were acquired, at least in the case of studies that
+      are not longitudinal in nature
     Src: '?'
     Type: TBD
 # diagnosis props
@@ -724,7 +730,10 @@ PropDefinitions:
   analysis_area:
     Desc: for the NCATS study, total area of slide subject to analysis
     Src: '?'
-    Type: number
+    Type:
+      units:
+        - mm2
+      value_type: number
   analysis_area_percentage_glass:
     Desc: for the NCATS study, percentage of the analysis area represnted by glass
     Src: '?'
@@ -758,7 +767,10 @@ PropDefinitions:
   length_of_tumor:
     Desc: length of the tumor from which a tumor sample was derived
     Src: '?'
-    Type: number
+    Type:
+      units:
+        - mm
+      value_type: number
   necropsy_sample:
     Desc: indicator as to whether the sample was acquired as a result of a necropsy examination
     Src: '?'
@@ -766,7 +778,10 @@ PropDefinitions:
   non_tumor_tissue_area:
     Desc: for the NCATS study, area within analyzed tissue area represented by non-tumor tissue
     Src: '?'
-    Type: number
+    Type:
+      units:
+        - mm2
+      value_type: number
   percentage_stroma:
     Desc: percentage of total tissue area represented by stromal tissue
     Src: '?'
@@ -790,15 +805,24 @@ PropDefinitions:
   total_tissue_area:
     Desc: for the NCATS study, area within the slide's analysis area represented by tissue
     Src: '?'
-    Type: number
+    Type:
+      units:
+        - mm2
+      value_type: number
   tumor_tissue_area:
     Desc: for the NCATS study, area within analyzed tissue area represented by tumor tissue
     Src: '?'
-    Type: number
+    Type:
+      units:
+        - mm2
+      value_type: number
   width_of_tumor:
     Desc: width of the tumor from which a tumor sample was derived
     Src: '?'
-    Type: number
+    Type:
+      units:
+        - mm
+      value_type: number
 # study props
   clinical_study_description:
     Desc: short summary of what the study/trial was intended to determine and how it was conducted
