@@ -23,6 +23,7 @@ UNITS = 'units'
 REQUIRED = 'Req'
 NODE_TYPE = 'type'
 ENUM = 'enum'
+DEFAULT_VALUE = 'default_value'
 
 class ICDC_Schema:
     def __init__(self, files):
@@ -78,6 +79,9 @@ class ICDC_Schema:
             for prop in desc[PROPERTIES]:
                 prop_type = self.get_type(prop)
                 props[prop] = prop_type
+                value_unit_props = self.process_value_unit_type(prop, prop_type)
+                if value_unit_props:
+                    props.update(value_unit_props)
                 if self.is_required_prop(prop):
                     required.add(prop)
 
@@ -160,7 +164,7 @@ class ICDC_Schema:
                 if isinstance(prop_desc, str):
                     result[PROP_TYPE] = self.map_type(prop_desc)
                 elif isinstance(prop_desc, dict):
-                    if VALUE_TYPE in prop_desc and UNITS not in prop_desc:
+                    if VALUE_TYPE in prop_desc:
                         result[PROP_TYPE] = self.map_type(prop_desc[VALUE_TYPE])
                 elif isinstance(prop_desc, list):
                     enum = set()
@@ -174,6 +178,58 @@ class ICDC_Schema:
 
         return result
 
+    def get_prop(self, node_name, name):
+        if node_name in self.nodes:
+            node = self.nodes[node_name]
+            if name in node[PROPERTIES]:
+                return node[PROPERTIES][name]
+        return None
+
+    def get_default_value(self, node_name, name):
+        prop = self.get_prop(node_name, name)
+        if prop:
+            return prop.get(DEFAULT_VALUE, None)
+
+    def get_default_unit(self, node_name, name):
+        unit_prop_name = self.get_unit_property_name(name)
+        return self.get_default_value(node_name, unit_prop_name)
+
+
+    def get_valid_values(self, node_name, name):
+        prop = self.get_prop(node_name, name)
+        if prop:
+            return prop.get(ENUM, None)
+
+    def get_valid_units(self, node_name, name):
+        unit_prop_name = self.get_unit_property_name(name)
+        return self.get_valid_values(unit_prop_name)
+
+    def process_value_unit_type(self, name, prop_type):
+        results = {}
+        if name in self.org_schema[PROP_DEFINITIONS]:
+            prop = self.org_schema[PROP_DEFINITIONS][name]
+            if PROP_TYPE in prop:
+                prop_desc = prop[PROP_TYPE]
+                if isinstance(prop_desc, dict):
+                    if UNITS in prop_desc:
+                        units = prop_desc[UNITS]
+                        if units:
+                            enum = set(units)
+                            unit_prop_name = self.get_unit_property_name(name)
+                            results[unit_prop_name] =  {PROP_TYPE: DEFAULT_TYPE, ENUM: enum, DEFAULT_VALUE: units[0]}
+                            org_prop_name = self.get_original_value_property_name(name)
+                            org_unit_prop_name = self.get_unit_property_name(org_prop_name)
+                            results[org_prop_name] = prop_type
+                            results[org_unit_prop_name] = {PROP_TYPE: DEFAULT_TYPE, ENUM: enum, DEFAULT_VALUE: units[0]}
+        return results
+
+    @staticmethod
+    def get_unit_property_name(name):
+        return name + '_unit'
+
+    @staticmethod
+    def get_original_value_property_name(name):
+        return name + '_original'
 
     def validate_node(self, model_type, obj):
         if not model_type or model_type not in self.nodes:

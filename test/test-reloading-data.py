@@ -46,35 +46,17 @@ class TestLoader(unittest.TestCase):
             "data/NCATS/NCATS01-tumor_samples.txt"
         ]
 
-    def test_remove_traling_slash(self):
-        self.assertEqual('abc', removeTrailingSlash('abc/'))
-        self.assertEqual('abc', removeTrailingSlash('abc'))
-        self.assertEqual('abc', removeTrailingSlash('abc//'))
-        self.assertEqual('bolt://12.34.56.78', removeTrailingSlash('bolt://12.34.56.78'))
-        self.assertEqual('bolt://12.34.56.78', removeTrailingSlash('bolt://12.34.56.78/'))
-        self.assertEqual('bolt://12.34.56.78', removeTrailingSlash('bolt://12.34.56.78//'))
-        self.assertEqual('bolt://12.34.56.78', removeTrailingSlash('bolt://12.34.56.78////'))
-
-    def test_loader_construction(self):
-        self.assertRaises(Exception, DataLoader, None, None, None)
-        self.assertRaises(Exception, DataLoader, self.driver, None, None)
-        self.assertRaises(Exception, DataLoader, self.driver, self.schema , None)
-        self.assertRaises(Exception, DataLoader, self.driver, self.schema , ['a', 'b'])
+    def test_load(self):
+        with self.driver.session() as session:
+            cleanup_db = 'MATCH (n) DETACH DELETE n'
+            result = session.run(cleanup_db)
+            self.log.info('{} nodes deleted!'.format(result.summary().counters.nodes_deleted))
+            self.log.info('{} relationships deleted!'.format(result.summary().counters.relationships_deleted))
         loader = DataLoader(self.driver, self.schema, self.file_list)
-        self.assertIsInstance(loader, DataLoader)
-
-    def test_validate_parents_exist_in_file(self):
-        loader = DataLoader(self.driver, self.schema, self.file_list)
-        # result = loader.validate_parents_exit_in_file('data/Pathology-Report-Mapping-File.txt', 100)
-        result = loader.validate_cases_exist_in_file('data/pathology-reports-failure.txt', 100)
-        self.assertFalse(result)
-        result = loader.validate_cases_exist_in_file('data/pathology-reports-success.txt', 100)
-        self.assertTrue(result)
-
-    def test_duplicated_ids(self):
-        loader = DataLoader(self.driver, self.schema, self.file_list)
-        self.assertTrue(loader.validate_file('data/NCATS/NCATS01-case.txt', 10))
-        self.assertFalse(loader.validate_file('data/NCATS01-case-dup.txt', 10))
+        load_result = loader.load(True, False, 1)
+        self.assertIsInstance(load_result, dict, msg='Load data failed!')
+        self.assertEqual(1428, load_result[NODES_CREATED])
+        self.assertEqual(1569, load_result[RELATIONSHIP_CREATED])
 
 
 if __name__ == '__main__':

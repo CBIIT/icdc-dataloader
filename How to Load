@@ -1,0 +1,86 @@
+Instructions on how to set up the ICDC data loader on a Windows Computer
+
+1.	Install python
+a.	https://www.python.org/downloads/windows/
+b.	Install Windows x86-64 executable installer for windows machines
+2.	In the command line type “python”	
+a.	You will see the “<<<<<” prompt if it installed correctly
+3.	Type “quit()” to exit python
+4.	Go to https://neo4j.com/download/ to download Neo4j Desktop
+5.	Download a copy of the data loader from https://github.com/CBIIT/icdc-dataloader 
+6.	Unzip files into a folder/location
+7.	In the command line type “cd “<path where python is loaded>” it might be “C:\Users\<your_user_name>\AppData\Local\Programs\Python\Python37”
+8.	In the command line type "Scripts\pip.exe install neo4j"
+9.	In the command line type "Scripts\pip.exe install pyyaml"
+10.	In the command line type “Scripts\pip.exe install boto3”
+11.	Open Neo4j desktop
+12.	Create local graph (only needs to be once)
+13.	Set a password to it and make sure you remember it
+
+Locations on Shared Drive
+Z:\CBIIT\NCICB\Claire and Kevin data loader\icdc-dataloader-master contains the dataloader
+Z:\CBIIT\NCICB\Claire and Kevin ICDC contains the data files to be loaded
+
+
+
+
+
+
+
+Running the loader on remote Windows server
+
+1-	Login to ncias-d2235-c.nci.nih.gov with your NIH credentials 
+2-	Open Neo4J Desktop
+3-	Create a local graph on Neo4J and make sure you remember the password, or use one you already have
+a.	Creating a graph only needs to be once but you can create multiple graphs if needed
+b.	Most likely only one graph is needed, and you will re-use this graph for ICDC loading
+c.	For example, my graph for ICDC is called “ICDC”
+4-	Start the graph
+5-	Open Command Prompt
+6-	It will default to the H:\, change it to Z:\ by entering “Z:” then press enter
+7-	Type cd Z:\CBIIT\NCICB\Claire and Kevin data loader\icdc-dataloader-master click enter
+a.	This is the location of the data loader on the shared drive
+8-	Type python loader.py -p password -s test/data/icdc-model.yml -s test/data/icdc-model-props.yml "Z:\CBIIT\NCICB\Claire and Kevin ICDC" and hit enter
+a.	“password” is the password to my local graph on the Neo4j desktop, you should use your password specified in step 3
+b.	"Z:\CBIIT\NCICB\Claire and Kevin ICDC" is where the loading files I want to load live
+
+
+Running the loader on your personal desktop (having everything you need installed)
+
+1-	Open Neo4J Desktop
+2-	Create a local graph on Neo4J and make sure you remember the password, or use one you already have
+a.	Creating a graph only needs to be once but you can create multiple graphs if needed
+b.	Most likely only one graph is needed, and you will re-use this graph for ICDC loading
+c.	For example, my graph for ICDC is called “ICDC”
+3-	Start the graph
+4-	Open Command Prompt
+5-	It will default to the H:\, change it to C:\ by entering “C:” then press enter (or open the drive name your loader is in)
+6-	Type cd (location of your data loader) and hit enter
+a.	This is the location of the data loader on the shared drive
+b.	In my case it’s cd C:\Users\burnskd\Desktop\data loader\icdc-dataloader-master
+7-	Type C:\Users\burnskd\AppData\Local\Programs\Python\Python37\python loader.py -p password -s test\data\icdc-model.yml -s test\data\icdc-model-props.yml “Z:\CBIIT\NCICB\Claire and Kevin ICDC" and hit enter
+a.	“C:\Users\burnskd\AppData\Local\Programs\Python\Python37\” is the location of python on your local machine
+b.	“password” is the password to my local Neo4j graph, you should use the password specified in step 2
+c.	“Z:\CBIIT\NCICB\Claire and Kevin ICDC” is where the loading files live
+
+
+Wiping the data you just loaded, or the database in general (local database)
+
+1-	Open Neo4j Desktop
+2-	Start the graph you loaded the data onto
+3-	Click “Manage” on that graph
+4-	Click “Open Browser”
+5-	Enter query MATCH (n) detach delete n then press enter
+
+
+Count number of cases (or other type of nodes)
+
+1-	Do 1-4 from above
+2-	Enter query MATCH (n:case) return count (n) then press enter
+
+Accessing the DEV database through Neo4j desktop
+
+1-	Open Neo4j desktop
+2-	Connect to a remote graph
+3-	URL = http://ncias-d2224-c.nci.nih.gov:7474/browser/
+4-	See Ming for account info to connect
