@@ -443,6 +443,13 @@ type CaseOverview {
   neutered_status: String
 }
 
+type DiseaseSiteCaseCount {
+  disease_site: String
+  cases: Int
+}
+
+
+
 type QueryType {
   numberOfStudies: Int @cypher(statement: "MATCH (n:study) RETURN  count (n)")
   numberOfCases: Int @cypher(statement: "MATCH (n:case) RETURN  count (n)")
@@ -473,4 +480,5 @@ type QueryType {
   aliguotCountOfProgram(program_id: String!): Int @cypher(statement: "MATCH (a:aliquot)-[*]->(:program {program_id: $program_id}) return count(a)")
   studyCountOfProgram(program_id: String!): Int @cypher(statement: "MATCH (s:study)-[*]->(:program {program_id: $program_id}) return count(s)")
   caseCountOfProgram(program_id: String!): Int @cypher(statement: "MATCH (c:case)-[*]->(:program {program_id: $program_id}) return count(c)")
+  caseCountByDiseaseSite: [DiseaseSiteCaseCount] @cypher(statement: "MATCH (d:diagnosis)-[:of_case]->(c:case) RETURN d.primary_disease_site AS disease_site, count(c) AS cases ORDER BY d.primary_disease_site")
 }
