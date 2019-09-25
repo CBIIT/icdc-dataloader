@@ -99,10 +99,7 @@ type case {
 
 type cohort {
   cohort_description: String
-  cohort_dose: Float
-  cohort_dose_unit: String
-  cohort_dose_original: Float
-  cohort_dose_original_unit: String
+  cohort_dose: String
   cases: [case] @relation(name:"member_of", direction:IN)
   study_arm: study_arm @relation(name:"member_of", direction:OUT)
   study: study @relation(name:"member_of", direction:OUT)
