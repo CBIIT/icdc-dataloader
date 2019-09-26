@@ -76,13 +76,13 @@ class TestLoader(unittest.TestCase):
 
     def test_get_value_string(self):
         # Test String type
+        self.assertIsNone(self.loader.get_value_string('adverse_event', 'adverse_event_description', None))
+        self.assertIsNone(self.loader.get_value_string('adverse_event', 'adverse_event_description', []))
+        self.assertIsNone(self.loader.get_value_string('adverse_event', 'adverse_event_description', [0]))
+        self.assertIsNone(self.loader.get_value_string('adverse_event', 'adverse_event_description', ['0']))
+        self.assertIsNone(self.loader.get_value_string('adverse_event', 'adverse_event_description', {}))
+        self.assertIsNone(self.loader.get_value_string('adverse_event', 'adverse_event_description', {'a': 'b'}))
         self.assertEqual(self.loader.get_value_string('adverse_event', 'adverse_event_description', ''), '""')
-        self.assertEqual(self.loader.get_value_string('adverse_event', 'adverse_event_description', None), '"null"')
-        self.assertEqual(self.loader.get_value_string('adverse_event', 'adverse_event_description', []), '"null"')
-        self.assertEqual(self.loader.get_value_string('adverse_event', 'adverse_event_description', [0]), '"null"')
-        self.assertEqual(self.loader.get_value_string('adverse_event', 'adverse_event_description', ['0']), '"null"')
-        self.assertEqual(self.loader.get_value_string('adverse_event', 'adverse_event_description', {}), '"null"')
-        self.assertEqual(self.loader.get_value_string('adverse_event', 'adverse_event_description', {'a': 'b'}), '"null"')
         self.assertEqual(self.loader.get_value_string('adverse_event', 'adverse_event_description', 'abc'), '"abc"')
 
         # Test Boolean type
@@ -105,17 +105,17 @@ class TestLoader(unittest.TestCase):
         self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'NO'), 'False')
 
         # Test Integer value
-        self.assertEqual(self.loader.get_value_string('physical_exam', 'day_in_cycle', ''), '""')
-        self.assertEqual(self.loader.get_value_string('physical_exam', 'day_in_cycle', None), '""')
-        self.assertEqual(self.loader.get_value_string('physical_exam', 'day_in_cycle', '3'), 3)
+        self.assertIsNone(self.loader.get_value_string('physical_exam', 'day_in_cycle', ''))
+        self.assertIsNone(self.loader.get_value_string('physical_exam', 'day_in_cycle', None))
         self.assertIsNone(self.loader.get_value_string('physical_exam', 'day_in_cycle', 'not a number'))
+        self.assertEqual(self.loader.get_value_string('physical_exam', 'day_in_cycle', '3'), 3)
 
         # Test Float value
-        self.assertEqual(self.loader.get_value_string('prior_therapy', 'total_dose', ''), '""')
-        self.assertEqual(self.loader.get_value_string('prior_therapy', 'total_dose', None), '""')
+        self.assertIsNone(self.loader.get_value_string('prior_therapy', 'total_dose', ''))
+        self.assertIsNone(self.loader.get_value_string('prior_therapy', 'total_dose', None))
+        self.assertIsNone(self.loader.get_value_string('prior_therapy', 'total_dose', 'not a number'))
         self.assertEqual(self.loader.get_value_string('prior_therapy', 'total_dose', '3'), 3.0)
         self.assertEqual(self.loader.get_value_string('prior_therapy', 'total_dose', '3.0'), 3.0)
-        self.assertIsNone(self.loader.get_value_string('prior_therapy', 'total_dose', 'not a number'))
 
 
 if __name__ == '__main__':
