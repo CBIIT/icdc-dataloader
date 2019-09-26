@@ -253,11 +253,21 @@ class DataLoader:
                                 key, node_type, parent, combined))
                             field_name = combined
 
-                    value_string = self.get_value_string(field_name, value)
+                    value_string = self.get_value_string(node_type, field_name, value)
                     if node_id:
-                        prop_statement += ', n.{} = {}'.format(field_name, value_string)
+                        if value_string is not None:
+                            prop_statement += ', n.{} = {}'.format(field_name, value_string)
+                        for extra_prop_name, extra_value in self.schema.get_extra_props(node_type, key, value).items():
+                            extra_value_string = self.get_value_string(node_type, extra_prop_name, extra_value)
+                            if extra_value_string is not None:
+                                prop_statement += ', n.{} = {}'.format(extra_prop_name, extra_value_string)
                     else:
-                        prop_statement.append('{}: {}'.format(field_name, value_string))
+                        if value_string is not None:
+                            prop_statement.append('{}: {}'.format(field_name, value_string))
+                        for extra_prop_name, extra_value in self.schema.get_extra_props(node_type, key, value).items():
+                            extra_value_string = self.get_value_string(node_type, extra_prop_name, extra_value)
+                            if extra_value_string is not None:
+                                prop_statement.append('{}: {}'.format(extra_prop_name, extra_value_string))
 
                 if node_id:
                     statement += 'MERGE (n:{} {{{}: "{}"}})'.format(node_type, id_field, node_id)
@@ -273,25 +283,48 @@ class DataLoader:
                 self.nodes_stat[node_type] = self.nodes_stat.get(node_type, 0) + count
             self.log.info('{} (:{}) node(s) loaded'.format(nodes_created, node_type))
 
-    def get_value_string(self, key, value):
-        key_type = self.schema.get_type(key)
-        if key_type[PROP_TYPE] == 'String':
-            value_string = '"{}"'.format(value)
-        elif key_type[PROP_TYPE] == 'Boolean':
-            cleaned_value = None
-            if re.search(r'yes|true', value, re.IGNORECASE):
-                cleaned_value = True
-            elif re.search(r'no|false', value, re.IGNORECASE):
-                cleaned_value = False
+
+    def get_value_string(self, node_type, key, value):
+        key_type = self.schema.get_prop_type(node_type, key)
+        if key_type == 'String':
+            if isinstance(value, str):
+                value_string = '"{}"'.format(value)
             else:
-                self.log.debug('Unsupported Boolean value: "{}"'.format(value))
-                cleaned_value = None
+                value_string = None
+        elif key_type == 'Boolean':
+            cleaned_value = None
+            if isinstance(value, str):
+                if re.search(r'yes|true', value, re.IGNORECASE):
+                    cleaned_value = True
+                elif re.search(r'no|false', value, re.IGNORECASE):
+                    cleaned_value = False
+                else:
+                    self.log.debug('Unsupported Boolean value: "{}"'.format(value))
+                    cleaned_value = None
             if cleaned_value != None:
                 value_string = '{}'.format(cleaned_value)
             else:
                 value_string = '""'
+        elif key_type == 'Int':
+            try:
+                if value is None:
+                    value_string = None
+                else:
+                    value_string = int(value)
+            except:
+                value_string = None
+        elif key_type == 'Float':
+            try:
+                if value is None:
+                    value_string = None
+                else:
+                    value_string = float(value)
+            except:
+                value_string = None
+        # Other types
         else:
-            value_string = value if value else 0
+            self.log.warning('Value type: "{}" is not supported!'.format(key_type))
+            value_string = value
         return value_string
 
     def node_exists(self, session, label, prop, value):
@@ -389,8 +422,10 @@ class DataLoader:
 
                 else:
                     field_name = key
-                criteria.append(
-                    '{}: {}'.format(field_name, self.get_value_string(field_name, value)))
+                value_string = self.get_value_string(node_type, field_name, value)
+                if value_string is not None:
+                    criteria.append(
+                        '{}: {}'.format(field_name, value_string))
             criteria_statement = ', '.join(criteria)
 
         return criteria_statement

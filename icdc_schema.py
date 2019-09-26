@@ -24,6 +24,7 @@ REQUIRED = 'Req'
 NODE_TYPE = 'type'
 ENUM = 'enum'
 DEFAULT_VALUE = 'default_value'
+HAS_UNIT = 'has_unit'
 
 class ICDC_Schema:
     def __init__(self, files):
@@ -155,6 +156,13 @@ class ICDC_Schema:
             result = prop.get(REQUIRED, False)
         return result
 
+    def get_prop_type(self, node_type, prop):
+        if node_type in  self.nodes:
+            node = self.nodes[node_type]
+            if prop in node[PROPERTIES]:
+                return node[PROPERTIES][prop][PROP_TYPE]
+        return DEFAULT_TYPE
+
     def get_type(self, name):
         result = { PROP_TYPE: DEFAULT_TYPE }
         if name in self.org_schema[PROP_DEFINITIONS]:
@@ -166,6 +174,8 @@ class ICDC_Schema:
                 elif isinstance(prop_desc, dict):
                     if VALUE_TYPE in prop_desc:
                         result[PROP_TYPE] = self.map_type(prop_desc[VALUE_TYPE])
+                        if UNITS in prop_desc:
+                            result[HAS_UNIT] = True
                 elif isinstance(prop_desc, list):
                     enum = set()
                     for t in prop_desc:
@@ -203,6 +213,18 @@ class ICDC_Schema:
     def get_valid_units(self, node_name, name):
         unit_prop_name = self.get_unit_property_name(name)
         return self.get_valid_values(unit_prop_name)
+
+    def get_extra_props(self, node_name, name, value):
+        results = {}
+        prop = self.get_prop(node_name, name)
+        if prop and HAS_UNIT in prop and prop[HAS_UNIT]:
+            # For MVP use default unit for all values
+            results[self.get_unit_property_name(name)] = self.get_default_unit(node_name, name)
+            org_prop_name = self.get_original_value_property_name(name)
+            # For MVP use value is same as original value
+            results[org_prop_name] = value
+            results[self.get_unit_property_name(org_prop_name)] = self.get_default_unit(node_name, name)
+        return results
 
     def process_value_unit_type(self, name, prop_type):
         results = {}
