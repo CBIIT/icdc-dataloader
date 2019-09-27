@@ -17,7 +17,7 @@ from boto3.s3.transfer import TransferConfig
 # MANIFEST FIELDS Based on data model uc-cdis manifest setting
 # https://github.com/uc-cdis/indexd_utils/blob/master/manifest.tsv
 # https://github.com/CBIIT/icdc-model-tool/blob/master/model-desc/icdc-model.yml and
-MANIFEST_FIELDS = ["uuid", "file_size", "file_md5", "file_status", "file_locations", "file_format", "acl"]
+MANIFEST_FIELDS = ["uuid", "file_size", "md5sum", "file_status", "file_locations", "file_format", "acl"]
 log = get_logger('S3 Loader')
 PSWD_ENV = 'NEO_PASSWORD'
 BLOCKSIZE = 65536
@@ -104,7 +104,7 @@ def export_result(manifest, bucket, bucket_name, folder_name, directory, input_s
                     while len(buf) > 0:
                         hasher.update(buf)
                         buf = afile.read(BLOCKSIZE)
-                record["file_md5"] = hasher.hexdigest()
+                record["md5sum"] = hasher.hexdigest()
                 record["file_status"] = "uploaded"
                 record["acl"] = "open"
                 data_matrix.append(record)

@@ -1,4 +1,4 @@
-type	diagnosis.diagnosis_id	file_type	file_description	file_name	uuid	file_size	file_md5	file_status	file_locations	file_format	acl
+type	diagnosis.diagnosis_id	file_type	file_description	file_name	uuid	file_size	md5sum	file_status	file_locations	file_format	acl
 file	NCATS01CCB010015	Pathology Report	This is a pathology report in pdf fromat	CCB010015.pdf	d45e6a55-0001-5e48-8e69-b16bd1889f3f	49150	71867e79975424c7937b4a23780dc93e4fc68da1b850e5f23946b5cdd2020cfb	uploaded	s3://icdc-file-loader/Pathology-Report-Mapping-File/CCB010015.pdf	pdf	open
 file	NCATS01CCB010031	Pathology Report		CCB010031.pdf	cbe01d16-0d68-5938-a512-c1ae6bfcba5e	37150	4e0868cb1bd68511e27d72284b0e87850026949cfc69603ff812062ed5b4d89f	uploaded	s3://icdc-file-loader/Pathology-Report-Mapping-File/CCB010031.pdf	pdf	open
 file	NCATS01CCB010045	Pathology Report		CCB010045.pdf	0f3073f8-5f62-5e3a-bc6d-7333f5af6399	46352	3e5f7897562b2b4ebb34b826339146576c6d66674ef03923b62930ef9d1667c4	uploaded	s3://icdc-file-loader/Pathology-Report-Mapping-File/CCB010045.pdf	pdf	open
