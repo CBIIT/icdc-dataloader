@@ -122,7 +122,7 @@ def export_result(manifest, bucket, bucket_name, folder_name, directory, input_s
 
         write_tsv_file(output_file, data_matrix, fieldnames)
         log.info('Upload the manifest info into S3 .')
-        if upload_file(bucket_name, join(folder_name, output_file_name), output_file):
+        if upload_file(bucket_name, folder_name+"/"+output_file_name, output_file):
             return True
         else:
             return False
@@ -232,7 +232,7 @@ def call_data_loader(python, neo4j_password, schemas, dir,loader):
         schema_cmd.append(schema)
     cmd = [python, loader, "-c", "-p", neo4j_password] + schema_cmd
     cmd += [dir]
-    process_status = subprocess.run(cmd, check=True)
+    process_status = subprocess.run(cmd, shell=True)
     if process_status.returncode == 0:
         log.info('Finish load file into neo4j database.')
         return True
