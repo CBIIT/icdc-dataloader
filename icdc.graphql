@@ -529,7 +529,7 @@ type FilesOfCase{
   file_description: String
   file_format: String
   file_size: Float
-  file_md5: String
+  md5sum: String
   file_status: String
   uuid: String
   file_locations: String
@@ -568,7 +568,7 @@ type QueryType {
   caseCountOfProgram(program_id: String!): Int @cypher(statement: "MATCH (c:case)-[*]->(:program {program_acronym: $program_id}) return count(DISTINCT(c))")
   caseCountByDiseaseSite: [DiseaseSiteCaseCount] @cypher(statement: "MATCH (d:diagnosis)-[:of_case]->(c:case) RETURN d.primary_disease_site AS disease_site, count(c) AS cases ORDER BY d.primary_disease_site")
   filesOfStudy(study_code: String!): [file] @cypher(statement: "MATCH (f:file)-[*]->(:study {clinical_study_designation: $study_code}) return DISTINCT(f)")
-  filesOfCase(case_id: String!): [FilesOfCase] @cypher(statement: "MATCH (f:file)-[*]->(c:case{case_id: $case_id}) WITH distinct(f) as f MATCH (f)-->(parent) return f.file_status as file_status,f.file_name as file_name ,f.file_type as file_type,f.file_description as file_description,f.file_format as file_format,f.file_size as file_size,f.file_md5 as file_md5,f.uuid as uuid,f.file_locations as file_location, head(labels(parent)) as parent")
+  filesOfCase(case_id: String!): [FilesOfCase] @cypher(statement: "MATCH (f:file)-[*]->(c:case{case_id: $case_id}) WITH distinct(f) as f MATCH (f)-->(parent) return f.file_status as file_status,f.file_name as file_name ,f.file_type as file_type,f.file_description as file_description,f.file_format as file_format,f.file_size as file_size,f.md5sum as md5sum,f.uuid as uuid,f.file_locations as file_locations, head(labels(parent)) as parent")
   caseCountByNeuteredStatus :[NeuteredStatusCaseCount] @cypher(statement: " MATCH (c:case)<--(d:demographic) return d.neutered_indicator AS neutered_status, count(c) AS cases ")
   caseCountByStageOfDisease: [StageOfDiseaseCaseCount] @cypher(statement: "MATCH (d:diagnosis)-[:of_case]->(c:case) RETURN d.stage_of_disease AS stage_of_disease, count(c) AS cases ORDER BY d.stage_of_disease")
   caseCountOfStudy(study_code: String!): Int @cypher(statement: "MATCH (c:case)-[*]->(:study {clinical_study_designation: $study_code}) return count(distinct(c))")
