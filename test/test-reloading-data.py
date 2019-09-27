@@ -34,7 +34,8 @@ class TestLoader(unittest.TestCase):
             "data/COTC007B/COTC_program.txt",
             "data/NCATS/NCATS01-arm.txt",
             "data/NCATS/NCATS01-blood_samples.txt",
-            "data/NCATS/NCATS01-pathology-reports-20190910-170434.txt",
+            "data/NCATS/NCATS-Pothology-Report-20190912-104934.txt",
+            "data/NCATS/NCATS-Sequence-File-20190912-103744.txt",
             "data/NCATS/NCATS01-case.txt",
             "data/NCATS/NCATS01-program.txt",
             "data/NCATS/NCATS01-cohort.txt",
@@ -55,8 +56,8 @@ class TestLoader(unittest.TestCase):
         loader = DataLoader(self.driver, self.schema, self.file_list)
         load_result = loader.load(True, False, 1)
         self.assertIsInstance(load_result, dict, msg='Load data failed!')
-        self.assertEqual(1428, load_result[NODES_CREATED])
-        self.assertEqual(1569, load_result[RELATIONSHIP_CREATED])
+        self.assertEqual(1458, load_result[NODES_CREATED])
+        self.assertEqual(1599, load_result[RELATIONSHIP_CREATED])
 
 
 if __name__ == '__main__':
