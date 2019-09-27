@@ -40,7 +40,7 @@ def upload_files_based_on_manifest(bucket, s3_folder, directory, bucket_name, ma
         for record in tsv_reader:
             file_name = record["file_name"]
             if file_name not in file_uploded:
-                if upload_file(bucket_name, join(s3_folder, file_name), join(directory, file_name)):
+                if upload_file(bucket_name, s3_folder+"/"+file_name, join(directory, file_name)):
                     number_of_files_uploaded += 1
                     number_of_files_need_to_upload += 1
                     bits_uploaded += os.stat(join(directory, file_name)).st_size
@@ -95,7 +95,7 @@ def export_result(manifest, bucket, bucket_name, folder_name, directory, input_s
                     fieldnames += MANIFEST_FIELDS
                 f = join(directory, record["file_name"])
                 record["file_size"] = os.stat(f).st_size
-                record["file_locations"] = join("s3://", input_s3_bucket, input_s3_folder, record["file_name"])
+                record["file_locations"] = "s3://"+input_s3_bucket+"/"+input_s3_folder+"/"+record["file_name"]
                 record["file_format"] = (os.path.splitext(f)[1]).split('.')[1].lower()
                 record["uuid"] = get_uuid_for_node("file",record["file_locations"])
                 hasher = hashlib.sha256()
@@ -225,12 +225,12 @@ def validate_input(args, loader):
         return True
 
 
-def call_data_loader(python, neo4j_password, schemas, dir):
+def call_data_loader(python, neo4j_password, schemas, dir,loader):
     schema_cmd = []
     for schema in schemas:
         schema_cmd.append("-s")
         schema_cmd.append(schema)
-    cmd = [python, "loader.py", "-c", "-p", neo4j_password] + schema_cmd
+    cmd = [python, loader, "-c", "-p", neo4j_password] + schema_cmd
     cmd += [dir]
     process_status = subprocess.run(cmd, check=True)
     if process_status.returncode == 0:
@@ -279,6 +279,7 @@ def main():
     parser.add_argument('-u', '--user', help='Neo4j user')
     parser.add_argument('-p', '--password', help='Neo4j password')
     parser.add_argument('-python', '--python', help='python version', default="python")
+    parser.add_argument('-loader', '--loader', help='where we can find data loader')
     parser.add_argument('-manual', '--manual_load_data_into_db', help='True for Manual load data into db',
                         default="False")
 
@@ -308,6 +309,10 @@ def main():
         flag_are_args_completed = False
 
     if (not args.output_s3_folder):
+        log.error('the following arguments are required: -osf')
+        flag_are_args_completed = False
+
+    if (not args.loader):
         log.error('the following arguments are required: -osf')
         flag_are_args_completed = False
 
@@ -375,7 +380,7 @@ def main():
 
         # call data loader
         if args.manual_load_data_into_db.lower() == "false":
-            if not call_data_loader(args.python, NEO4J_PASSWORD, args.schema, join(args.dir, args.output_s3_folder)):
+            if not call_data_loader(args.python, NEO4J_PASSWORD, args.schema, args.dir+"/"+args.output_s3_folder,args.loader):
                 log.error('Load file(s) into database failed!')
                 sys.exit(1)
         else:
