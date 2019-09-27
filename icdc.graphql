@@ -481,6 +481,12 @@ type GenderCaseCount {
   cases: Int
 }
 
+
+type DiseaseSiteCaseCount {
+  disease_site: String
+  cases: Int
+}
+
 type NeuteredStatusCaseCount {
   neutered_status: String
   cases: Int
@@ -515,10 +521,6 @@ type CaseOverview {
   neutered_status: String
 }
 
-type DiseaseSiteCaseCount {
-  disease_site: String
-  cases: Int
-}
 
 type FilesOfCase{
   parent:String
@@ -532,6 +534,8 @@ type FilesOfCase{
   uuid: String
   file_locations: String
 }
+
+
 
 type QueryType {
   numberOfStudies: Int @cypher(statement: "MATCH (n:study) RETURN  count (n)")
@@ -551,11 +555,9 @@ type QueryType {
   caseCountByBreed: [BreedCaseCount] @cypher(statement: "MATCH (c:case)<-[:of_case]-(d:demographic) RETURN d.breed AS breed, count(c) AS cases")
   casesByStudyAndBreeds(study_name: String!, breeds: [String]!, disease_terms: [String]!): [CaseDetail] @cypher(statement: "MATCH (s:study)<-[:member_of]-(a:study_arm)<-[:member_of]-(c:cohort)<-[:member_of]-(case:case)<-[:of_case]-(d:demographic), (case)<-[:of_case]-(diag:diagnosis) WHERE s.clinical_study_name = $study_name and d.breed IN $breeds and diag.disease_term IN $disease_terms RETURN case.patient_id AS patient_id, d.breed AS breed, d.patient_age_at_enrollment AS patient_age_at_enrollment, d.sex AS sex, diag.disease_term AS disease_term, diag.stage_of_disease AS stage_of_disease")
   caseOverview(study_codes: [String] = [], breeds: [String] = [], diagnoses: [String] = [], sexes: [String] = []): [CaseOverview] @cypher(statement: "MATCH (s:study) WITH COLLECT(DISTINCT(s.clinical_study_designation)) AS all_studies MATCH (d:demographic) WITH COLLECT(DISTINCT(d.breed)) AS all_breeds, COLLECT(DISTINCT(d.sex)) AS all_sexes, all_studies AS all_studies MATCH (d:diagnosis) WITH COLLECT(DISTINCT(d.disease_term)) AS all_diseases, all_breeds AS all_breeds, all_sexes AS all_sexes, all_studies AS all_studies MATCH (s:study)<-[*]-(c:case)<--(demo:demographic), (c)<--(diag:diagnosis) WHERE s.clinical_study_designation IN CASE $study_codes WHEN [] THEN all_studies ELSE $study_codes END AND demo.breed IN CASE $breeds WHEN [] THEN all_breeds ELSE $breeds END AND diag.disease_term IN CASE $diagnoses WHEN [] THEN all_diseases ELSE $diagnoses END AND demo.sex IN CASE $sexes WHEN [] THEN all_sexes ELSE $sexes END WITH DISTINCT c AS c, s AS s, demo AS demo, diag AS diag RETURN c.case_id AS case_id, s.clinical_study_designation AS study_code, s.clinical_study_type AS study_type, demo.breed AS breed, diag.disease_term AS diagnosis, diag.stage_of_disease AS stage_of_disease, demo.patient_age_at_enrollment AS age, demo.sex AS sex, demo.neutered_indicator AS neutered_status")
-
-  caseCountOfStudy(study_code: String!): Int @cypher(statement: "MATCH (c:case)-[*]->(:study {clinical_study_designation: $study_code}) return count(distinct(c))")
-  sampleCountOfStudy(study_code: String!): Int @cypher(statement: "MATCH (s:sample)-[*]->(:study {clinical_study_designation: $study_code}) return count(s)")
-
+  sampleCountOfStudy(study_code: String!): Int @cypher(statement: "MATCH (s:sample)-[*]->(:study {clinical_study_designation: $study_code}) return count(DISTINCT(s))")
   fileCountOfStudy(study_code: String!): Int @cypher(statement: "MATCH (f:file)-[*]->(:study {clinical_study_designation: $study_code}) return count(distinct(f))")
+
   aliguotCountOfStudy(study_code: String!): Int @cypher(statement: "MATCH (a:aliquot)-[*]->(:study {clinical_study_designation: $study_code}) return count(a)")
   fileCountOfCase(case_id: String!): Int @cypher(statement: "MATCH (f:file)-[*]->(c:case {case_id: $case_id}) return count(f)")
   aliquotCountOfCase(case_id: String!): Int @cypher(statement: "MATCH (a:aliquot)-[*]->(c:case {case_id: $case_id}) return count(a)")
@@ -564,17 +566,12 @@ type QueryType {
   aliguotCountOfProgram(program_id: String!): Int @cypher(statement: "MATCH (a:aliquot)-[*]->(:program {program_acronym: $program_id}) return count(a)")
   studyCountOfProgram(program_id: String!): Int @cypher(statement: "MATCH (s:study)-[*]->(:program {program_acronym: $program_id}) return count(s)")
   caseCountOfProgram(program_id: String!): Int @cypher(statement: "MATCH (c:case)-[*]->(:program {program_acronym: $program_id}) return count(c)")
-  
- filesOfStudy(study_code: String!): [file] @cypher(statement: "MATCH (f:file)-[*]->(:study {clinical_study_designation: $study_code}) return  f")
- caseCountByDiseaseSite: [DiseaseSiteCaseCount] @cypher(statement: "MATCH (d:diagnosis)-[:of_case]->(c:case) RETURN d.primary_disease_site AS disease_site, count(c) AS cases ORDER BY d.primary_disease_site")
-
- filesOfCase(case_id: String!): [FilesOfCase] @cypher(statement: "MATCH (f:file)-[*]->(c:case{case_id: $case_id}) WITH distinct(f) as f MATCH (f)-->(parent) return f.file_status as file_status,f.file_name as file_name ,f.file_type as file_type,f.file_description as file_description,f.file_format as file_format,f.file_size as file_size,f.file_md5 as file_md5,f.uuid as uuid,f.file_locations as file_location, head(labels(parent)) as parent")
- 
-  caseCountByNeuteredStatus :[NeuteredStatusCaseCount] @cypher(statement: " MATCH (c:case)<--(d:demographic) return d.neutered_indicator AS neutered_status, count(c) AS cases")
-
+  caseCountByDiseaseSite: [DiseaseSiteCaseCount] @cypher(statement: "MATCH (d:diagnosis)-[:of_case]->(c:case) RETURN d.primary_disease_site AS disease_site, count(c) AS cases ORDER BY d.primary_disease_site")
+  filesOfStudy(study_code: String!): [file] @cypher(statement: "MATCH (f:file)-[*]->(:study {clinical_study_designation: $study_code}) return  f")
+  filesOfCase(case_id: String!): [FilesOfCase] @cypher(statement: "MATCH (f:file)-[*]->(c:case{case_id: $case_id}) WITH distinct(f) as f MATCH (f)-->(parent) return f.file_status as file_status,f.file_name as file_name ,f.file_type as file_type,f.file_description as file_description,f.file_format as file_format,f.file_size as file_size,f.file_md5 as file_md5,f.uuid as uuid,f.file_locations as file_location, head(labels(parent)) as parent")
+  caseCountByNeuteredStatus :[NeuteredStatusCaseCount] @cypher(statement: " MATCH (c:case)<--(d:demographic) return d.neutered_indicator AS neutered_status, count(c) AS cases ")
   caseCountByStageOfDisease: [StageOfDiseaseCaseCount] @cypher(statement: "MATCH (d:diagnosis)-[:of_case]->(c:case) RETURN d.stage_of_disease AS stage_of_disease, count(c) AS cases ORDER BY d.stage_of_disease")
-
+  caseCountOfStudy(study_code: String!): Int @cypher(statement: "MATCH (c:case)-[*]->(:study {clinical_study_designation: $study_code}) return count(distinct(c))")
   sampleCountOfCase(case_id: String!): Int @cypher(statement: "MATCH (c:case {case_id: $case_id})<-[*]-(s:sample) RETURN count(distinct(s))")
-
 
 }
