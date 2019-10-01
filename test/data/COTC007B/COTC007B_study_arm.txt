@@ -1,4 +1,4 @@
-type	study.clinical_study_designation	study_arm_id	ctep_treatment_assignment_code
+type	study.clinical_study_designation	arm	ctep_treatment_assignment_code
 study_arm	COTC007B	NSC 743400	123
 study_arm	COTC007B	NSC 706744	456
 study_arm	COTC007B	NSC 725776	789

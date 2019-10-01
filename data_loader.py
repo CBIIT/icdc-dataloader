@@ -104,6 +104,8 @@ class DataLoader:
                 return 'clinical_study_designation'
             if node_type == 'program':
                 return 'program_acronym'
+            if node_type == 'study_arm':
+                return 'arm'
             else:
                 return node_type + '_id'
         else:

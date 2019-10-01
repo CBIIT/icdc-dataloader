@@ -1,4 +1,4 @@
-type	study_arm.study_arm_id	cohort_id	cohort_description	cohort_dose
+type	study_arm.arm	cohort_id	cohort_description	cohort_dose
 cohort	NSC 743400	NSC 743400 8mg/m2/day	NSC 743400; 8mg/m2/day	8mg/m2/day
 cohort	NSC 743400	NSC 743400 16mg/m2/day	NSC 743400; 16mg/m2/day	16mg/m2/day
 cohort	NSC 743400	NSC 743400 24mg/m2/day	NSC 743400; 24mg/m2/day	24mg/m2/day
