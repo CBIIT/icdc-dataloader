@@ -1,0 +1,134 @@
+How to run the file loader (Windows Version) 
+
+System Requirement : 
+-Neo4j database 
+-Python3 and PIP 
+-AWS CLI --  Amazon Web Services Command Line Interface 
+
+Step Up environment (one-time thing)
+
+Step1 : Install AWS Command Line Interface (AWS CLI) using pip (Require Python) [1] 
+1-	You should already have pip installed on your machine from the dataloader. If you don’t then please see instructions on how to run the dataloader
+2-	Find the location where pip is installed on your machine
+a.	The location on my machine is “C:\Users\burnskd\AppData\Local\Programs\Python\Python37\Scripts”
+b.	Open command line
+c.	Type C: then enter to go to your C drive
+d.	Type cd (then your location of pip) “C:\Users\burnskd\AppData\Local\Programs\Python\Python37\Scripts” then enter 
+e.	Type “pip3 install --user --upgrade awscli”[2]
+
+* Sometimes you can use pip instead of using pip3. It depends on what pip script in your machine. In the following pic, we have pip.exe and pip3.exe. Either pip or pip3 work for us. But if you only have pip.exe, then pip3 is not the option for you, you have to use pip install --user --upgrade awscli 
+
+ 
+
+Step2 : Setting a Path to Include the AWS CLI
+1-	Find the location of where AWS installed on your machine
+a.	The location on my machine is “C:\Users\burnskd\AppData\Roaming\Python\Python37\Scripts”
+b.	On your machine, go to “My Computer,” or “This PC” and right click on it
+c.	Select “Properties”
+d.	Select “Advanced System Settings”
+i.	Most likely you will need an AA account to access this
+e.	After logging in, select “Environment Variables”
+f.	Under “System Variables” find “Path” and select “Edit”
+g.	Add a new path where your AWS was installed 
+i.	My new path was “C:\Users\burnskd\AppData\Roaming\Python\Python37\Scripts”
+h.	If you have Windows 7, you will have to add a new path by separating your other paths with ; but make sure you have no spaces
+i.	Save/amend the changes 
+j.	Open a new CMD window and type aws --version  to test if configuration is correct or not.  Correct response shows below. 
+ 
+
+
+Step3 : Configure AWS [3]
+1-	Open Command Line
+2-	Go to your C drive
+3-	Type “aws configure” and hit enter
+4-	It will ask for four things:
+a.	AWS Access Key ID
+b.	AWS Secret Access Key
+c.	Default region name
+d.	Default output format
+5-	Get the info for step 4 from Yizhen, or who else is authorized to have it and give it out
+
+
+
+
+Prepare for File loader
+
+Get Files 
+
+Downloading Files from BOX
+1-	Make sure you have access to BOX where these files are stored, if not, I would ask Matt or someone on the team for access
+2-	Go to https://nih.app.box.com and find where the files are located
+a.	In this case they are located at https://nih.app.box.com/folder/78712937239
+3-	Download the zipped files 
+a.	In this case it’s “pathology_files_picked_zip”
+4-	Unzip the files on your local machine
+5-	Find the location of the zipped files (files folder location)
+a.	On my machine it’s “C:\Users\burnskd\Downloads\pathology_files_picked.zip\pathology_files_picked”
+
+Get Manifest 
+
+Download the files-specific Manifest from BOX
+1-	Go to https://nih.app.box.com and find where the manifest is located
+a.	In this case it’s at https://nih.app.box.com/folder/79314344877
+2-	Download the input template
+a.	In this case it’s called file_loader_input_template.txt
+3-	Find the location of that file on your machine
+a.	On my machine it’s “C:\Users\burnskd\Downloads\ file_loader_input_template.txt”
+
+Determine which AWS bucket to put the uploaded files
+
+Setting up S3
+1-	Login to AWS (ask Amit if you need an account)
+a.	URL is https://leidosbiomed.signin.aws.amazon.com/console
+2-	Click on S3
+a.	You will then see all the S3 buckets listed
+3-	Find the S3 bucket you want to use (load the files into) or create a new one if you need to
+a.	There is a “create bucket” option at the top of the page
+b.	In this case, we used the bucket “claire-file-loader”
+
+Get the file_loader script
+
+The S3 loader
+-	You should already have this. This is on Ming’s GIT repo 
+o	https://github.com/CBIIT/icdc-dataloader
+-	This repository should have been downloaded when you installed everything you need for the data loader
+-	For the file loader, you will need to know the location of this download on your machine, specifically the “S3_loader.py” file
+o	On my machine it’s “C:\Users\burnskd\Desktop\data_loader\icdc-dataloader-master\s3_loader.py”
+
+Fire the file loader
+
+Preparing your file loading command statement 
+
+You now have all the info you need to run the statement for the file loader. Below is how the statement is constructed (in order)
+
+-	[python PYTHON] [s3 loader.py S3 LOADER] [-t manifest Location] [-d files folder location ] [-isb INPUT_S3_BUCKET] [-isf INPUT_S3_FOLDER] [-osb OUTPUT_S3_BUCKET] [-osf OUTPUT_S3_FOLDER] [-osn OUTPUT FILE NAME] [-i Neo4j url like bolt://12.34.56.78:7687] [-u neo4j user name] [-p ne04j password] [-s Data loader SCHEMA] [-md5 [MAX_BLOCK_FOR_MD5] [-f [MAX_VIOLATIONS] [-manual false] [-python PYTHON] [-loader LOADER.PY]
+
+python = Location of python
+S3 Loader = Location of S3 loader 
+-t = Manifest location you downloaded from BOX
+-d = Files folder location that you unzipped from BOX
+-isb = The name of the s3 bucket you created or are using in BOX 
+-isf = Folder you create within the input bucket to store the input files
+-osb = Name of the s3 bucket you are creating or using (normally same as isb)
+-osf = Folder you create within the bucket to store the output files
+-osn = Name of output file (test)
+-i = bolt://localhost:7687 (your bolt port number for neo4j desktop)
+-u= neo4j  (neo4j username) ALWAYS neo4j
+-p = Your specific local graph password that you start for this
+-s = The data model yml files (icdc-model and icdc-model-props yml files) 
+-md5 = 65536 
+-f = 0
+-manual = true or false, depending on if you want to manually or automatically load the data into your local neo4j database.
+
+
+
+-	Example of running this on my machine (manual = true)
+C:\Users\burnskd\AppData\Local\Programs\Python\Python37\python C:\Users\burnskd\Desktop\data_loader\icdc-dataloader-master\s3_loader.py -t C:\Users\burnskd\Downloads\file_loader_input_template.txt -d C:\Users\burnskd\Downloads\pathology_files_picked\pathology_files_picked -isb claire-file-loader -isf test -osb claire-file-loader -osf output -i bolt://localhost:7687 -u neo4j -p kevinburns -s C:\Users\burnskd\Desktop\data_loader\icdc-dataloader-master\test\data\icdc-model.yml -s C:\Users\burnskd\Desktop\data_loader\icdc-dataloader-master\test\data\icdc-model-props.yml -md5 65536 -f 0 -manual true -python C:\Users\burnskd\AppData\Local\Programs\Python\Python37\python -loader C:\Users\burnskd\Desktop\data_loader\icdc-dataloader-master\loader.py
+
+
+
+
+Reference:
+[1] Python : python.org 
+[2] Install AWS :https://docs.aws.amazon.com/cli/latest/userguide/install-windows.html#awscli-install-windows-pip 
+[3] Configure AWS :https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html#cli-quick-configuration 
