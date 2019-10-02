@@ -16,9 +16,6 @@ FINAL_PREFIX = 'Final'
 log = get_logger('Raw File Processor')
 s3_client = boto3.client('s3')
 
-def get_final_file_name(dir, name):
-    return '{}/{}'.format(dir, name)
-
 
 def download_extract_file(bucket, key, download_path, extract_path):
     """
@@ -50,7 +47,7 @@ def upload_files(bucket, upload_path, src_folder):
     for file in file_list:
         if os.path.isfile(file):
             log.info('Uploading file: {}'.format(file))
-            file_name = get_final_file_name(upload_path, os.path.basename(file))
+            file_name = os.path.join(upload_path, os.path.basename(file))
             s3_client.upload_file(file, '{}resized'.format(bucket), file_name)
         else:
             log.info('{} is not a file, and won\'t be uploaded to S3'.format(file))
