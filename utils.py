@@ -4,6 +4,8 @@ import uuid
 
 LOG_LEVEL = 'DL_LOG_LEVEL'
 ICDC_DOMAIN = 'caninecommons.cancer.gov'
+QUEUE_NAME = os.environ.get('QUEUE_NAME', 'icdc-file-loader.fifo')
+
 
 def get_logger(name):
     formatter = logging.Formatter('%(asctime)s %(levelname)s: (%(name)s) - %(message)s')

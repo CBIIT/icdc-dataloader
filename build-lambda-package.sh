@@ -5,5 +5,6 @@ rm -rf dist
 mkdir dist
 cp utils.py dist/
 cp raw_file_processor.py dist/
+cp sqs.py dist/
 cd dist
 zip -r file_loader_lambda.zip .
