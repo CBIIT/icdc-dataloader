@@ -20,5 +20,4 @@ class TestLambda(unittest.TestCase):
 
     def test_lambda(self):
         processor = FileProcessor('')
-
-        self.assertIsNone(processor.handler(self.event))
+        self.assertTrue(processor.handler(self.event))

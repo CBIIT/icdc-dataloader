@@ -20,6 +20,7 @@ import io
 import argparse
 from sqs import *
 import re
+import shutil
 
 RAW_PREFIX = 'RAW'
 FINAL_PREFIX = 'Final'
@@ -58,20 +59,9 @@ class FileProcessor:
         try:
             ext = key.split('.')[-1]
             if ext:
-                if ext == 'zip':
-                    self.log.info('Streaming zip file: {}'.format(key))
-                    files = []
-                    stream = io.BytesIO(self.s3_client.get_object(Bucket=bucket, Key=key)['Body'].read())
-                    with zipfile.ZipFile(stream, 'r') as zip_ref:
-                        self.log.info('Extracting zip file: {}'.format(key))
-                        # for item in zip_ref:
-                        #     if not item.name.startswith('.'):
-                        #         fileobj = zip_ref.extractfile(item)
-                        #         s3_client.put_object(Bucket=bucket, Key=self.join_path(final_path, item.name), Body=fileobj)
-                    return files
-                elif ext == 'tar':
+                if ext == 'tar':
                     self.log.info('Streaming tar file: {}'.format(key))
-                    files = []
+                    files = {}
                     obj = self.s3_client.get_object(Bucket=bucket, Key=key)
                     stream = io.BufferedReader(obj['Body']._raw_stream)
                     with tarfile.open(None, 'r|*', stream) as tar_ref:
@@ -79,18 +69,16 @@ class FileProcessor:
                         for item in tar_ref:
                             file_name = item.name
                             file_path = self.join_path(final_path, file_name)
-                            if not file_name.startswith('.'):
+                            if item.isfile() and '/' not in file_name:
                                 self.log.info('Extracting {} to {}'.format(file_name, file_path))
                                 tar_ref.extract(item, local_folder)
-                                s3_obj = self.s3_client.put_object(Bucket=bucket, Key=file_path, Body=stream)
-                                if file_name.endswith('.txt'):
-                                    stream.seek()
-
-                                files.append({"file_name": file_name, "file_path": file_path, "md5sum": s3_obj['ETag']})
+                                local_file = os.path.join(local_folder, file_name)
+                                with open(local_file, 'rb') as lf:
+                                    s3_obj = self.s3_client.put_object(Bucket=bucket, Key=file_path, Body=lf)
+                                    files[file_name] = {FILE_NAME: file_name, FILE_LOC: self.get_s3_location(bucket, final_path, file_name), FILE_SIZE: os.stat( local_file).st_size, MD5: s3_obj['ETag'].replace('"', '')}
+                                if not file_name.endswith('.txt'):
+                                    os.remove(local_file)
                     return files
-                elif ext == 'gz':
-                    self.log.warning('{} file is not supported!'.format(ext))
-                    return False
                 else:
                     self.log.warning('{} file is not supported!'.format(ext))
                     return False
@@ -133,31 +121,22 @@ class FileProcessor:
     def get_s3_location(bucket, folder, key):
         return "s3://{}/{}/{}".format(bucket, folder, key)
 
-    def populate_record(self, record, data_folder, bucket, s3_folder):
-        file_name = record[FILE_NAME]
-        data_file = self.join_path(data_folder, file_name)
-        record[FILE_SIZE] = os.stat(data_file).st_size
-        record[FILE_LOC] = self.get_s3_location(bucket, s3_folder, file_name)
-        record[FILE_FORMAT] = (os.path.splitext(data_file)[1]).split('.')[1].lower()
+    def populate_record(self, record, file_info):
+        file_name = file_info[FILE_NAME]
+        record[FILE_SIZE] = file_info[FILE_SIZE]
+        record[FILE_LOC] = file_info[FILE_LOC]
+        record[MD5] = file_info[MD5]
+        record[FILE_FORMAT] = (os.path.splitext(file_name)[1]).split('.')[1].lower()
         record[UUID] = get_uuid_for_node("file", record[FILE_LOC])
-        hasher = hashlib.md5()
-        with open(data_file, 'rb') as afile:
-            buf = afile.read(BLOCK_SIZE)
-            while len(buf) > 0:
-                hasher.update(buf)
-                buf = afile.read(BLOCK_SIZE)
-        record[MD5] = hasher.hexdigest()
         record[FILE_STAT] = DEFAULT_STAT
         record[ACL] = DEFAULT_ACL
-
         return record
 
     # check the field file_name/case id in the manifest which should not be null/empty
     # check files included in the manifest exist or not
-    def populate_manifest(self, manifest, data_folder, bucket, s3_folder):
+    def populate_manifest(self, manifest, extracted_files):
         self.log.info('Validating manifest: {}'.format(manifest))
         succeeded = True
-        final_files = []
         # check manifest
         if not os.path.isfile(manifest):
             self.log.error('Manifest: "{}" does not exists !'.format(manifest))
@@ -179,14 +158,12 @@ class FileProcessor:
                             line_count += 1
                             file_name = record.get(FILE_NAME, None)
                             if file_name:
-                                file_path = self.join_path(data_folder, file_name)
-                                if not os.path.isfile(file_path):
-                                    self.log.error('Invalid data at line {} : File "{}" doesn\'t exist!'.format(line_count, file_path))
+                                if not file_name in extracted_files:
+                                    self.log.error('Invalid data at line {} : File "{}" doesn\'t exist!'.format(line_count, file_name))
                                     succeeded = False
                                 else:
                                     # Populate fields in record
-                                    self.populate_record(record, data_folder, bucket, s3_folder)
-                                    final_files.append(file_path)
+                                    self.populate_record(record, extracted_files[file_name])
                             else:
                                 self.log.error('Invalid data at line {} : Empty file name'.format(line_count))
                                 succeeded = False
@@ -205,23 +182,21 @@ class FileProcessor:
             os.rename(temp_file, manifest)
         else:
             os.remove(temp_file)
-        return final_files if succeeded else succeeded
+        return succeeded
 
 
 
     # Find and process manifest files, return list of updated manifest files and a list of files that included in manifest files
-    def process_manifest(self, data_folder, bucket, s3_folder) -> [str]:
-        results = {MANIFESTS: [], FILES: []}
+    def process_manifest(self, data_folder, extracted_files) -> [str]:
+        results = []
         file_list = glob.glob('{}/*.txt'.format(data_folder))
         try:
             for manifest in file_list:
-                final_files = self.populate_manifest(manifest, data_folder, bucket, s3_folder)
-                if not final_files:
+                if not self.populate_manifest(manifest, extracted_files):
                     self.log.warning('Populate manifest file "{}" failed!'.format(manifest))
                     continue
                 else:
-                    results[MANIFESTS].append(manifest)
-                    results[FILES] += final_files
+                    results.append(manifest)
                     self.log.info('Populated manifest file "{}"!'.format(manifest))
 
         except Exception as e:
@@ -243,6 +218,7 @@ class FileProcessor:
     def handler(self, event):
         try:
             for record in event['Records']:
+                temp_folder = 'temp/{}'.format(uuid.uuid4())
                 bucket = record['s3']['bucket']['name']
                 key = unquote_plus(record['s3']['object']['key'])
                 # Assume raw files will be in a sub-folder inside '/RAW'
@@ -251,15 +227,17 @@ class FileProcessor:
                     return False
                 final_path = os.path.dirname(key).replace(RAW_PREFIX, FINAL_PREFIX)
                 org_file_name = os.path.basename(key)
-                file_list = self.extract_file(bucket, key, final_path)
+                file_list = self.extract_file(bucket, key, final_path, temp_folder)
                 if not file_list:
-                    self.log.error('Download RAW file "{}" failed'.format(org_file_name))
+                    self.log.error('Extract RAW file "{}" failed'.format(org_file_name))
                     return False
-                manifest_results = self.process_manifest(get_true_data_folder(extracted_path), bucket, final_path)
-                if not manifest_results[MANIFESTS]:
+                manifests = self.process_manifest(temp_folder, file_list)
+                if not manifests:
                     self.log.error('Process manifest failed!')
                     return False
+                self.upload_files(bucket, final_path, manifests)
                 # Todo: call data loader
+                shutil.rmtree(temp_folder)
             return True
 
         except Exception as e:
@@ -291,20 +269,7 @@ class FileProcessor:
                         extender.stop()
                         del(extender)
 
-def main():
-    parser = argparse.ArgumentParser(description='Process incoming S3 files and call data loader to load into Neo4j')
-    parser.add_argument('-q', '--queue', help='SQS queue name')
-    parser.add_argument('-i', '--uri', help='Neo4j uri like bolt://12.34.56.78:7687')
-    parser.add_argument('-u', '--user', help='Neo4j user')
-    parser.add_argument('-p', '--password', help='Neo4j password')
-    parser.add_argument('-s', '--schema', help='Schema files', action='append')
-    parser.add_argument('-c', '--cheat-mode', help='Skip validations, aka. Cheat Mode', action='store_true')
-    parser.add_argument('-d', '--dry-run', help='Validations only, skip loading', action='store_true')
-    parser.add_argument('-m', '--max-violations', help='Max violations to display', nargs='?', type=int, default=10)
-    parser.add_argument('-b', '--bucket', help='S3 bucket name')
-    parser.add_argument('-f', '--s3-folder', help='S3 folder')
-    # parser.add_argument('dir', help='Data directory')
-    args = parser.parse_args()
+def main(args):
     log = get_logger('Raw file processor - main')
 
     if not args.queue:
@@ -321,4 +286,17 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='Process incoming S3 files and call data loader to load into Neo4j')
+    parser.add_argument('-q', '--queue', help='SQS queue name')
+    parser.add_argument('-i', '--uri', help='Neo4j uri like bolt://12.34.56.78:7687')
+    parser.add_argument('-u', '--user', help='Neo4j user')
+    parser.add_argument('-p', '--password', help='Neo4j password')
+    parser.add_argument('-s', '--schema', help='Schema files', action='append')
+    parser.add_argument('-c', '--cheat-mode', help='Skip validations, aka. Cheat Mode', action='store_true')
+    parser.add_argument('-d', '--dry-run', help='Validations only, skip loading', action='store_true')
+    parser.add_argument('-m', '--max-violations', help='Max violations to display', nargs='?', type=int, default=10)
+    parser.add_argument('-b', '--bucket', help='S3 bucket name')
+    parser.add_argument('-f', '--s3-folder', help='S3 folder')
+    # parser.add_argument('dir', help='Data directory')
+    args = parser.parse_args()
+    main(args)
