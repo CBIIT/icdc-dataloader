@@ -6,4 +6,3 @@ Pentaho-scripts/
 __pycache__/
 *.pyc
 cmd.txt
-dist/

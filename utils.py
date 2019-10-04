@@ -4,7 +4,8 @@ import uuid
 
 LOG_LEVEL = 'DL_LOG_LEVEL'
 ICDC_DOMAIN = 'caninecommons.cancer.gov'
-QUEUE_NAME = os.environ.get('QUEUE_NAME', 'icdc-file-loader.fifo')
+QUEUE_LONG_PULL_TIME = 20
+VISIBILITY_TIMEOUT = 30
 
 
 def get_logger(name):

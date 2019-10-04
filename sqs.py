@@ -28,16 +28,14 @@ class Queue:
 
 # Automatically extend visibility timeout every timeOutValue // 2 seconds
 class VisibilityExtender:
-    def __init__(self, msg, jobName, jobId, timeOutValue, log):
+    def __init__(self, msg, timeOutValue):
         self._timeOutValue = timeOutValue if timeOutValue > 2 else 2
         self._currentTimeOut = self._timeOutValue
         self._interval = int(timeOutValue // 2) if timeOutValue > 2 else 1
         self._msg = msg
-        self.jobName = jobName
-        self.jobId = jobId
         self._timer = None
         self.is_running = False
-        self.log = log
+        self.log = get_logger('Visibility Extender')
         self.start()
 
     def _run(self):
@@ -46,7 +44,7 @@ class VisibilityExtender:
                 self.is_running = False
                 self.start()
                 self._currentTimeOut += self._interval
-                self.log.info('Processing job name: "{}", id: {} ...'.format(self.jobName, self.jobId))
+                self.log.info('Processing job ...')
                 self._msg.change_visibility(VisibilityTimeout = self._currentTimeOut)
         except Exception as e:
             self.log.exception(e)
