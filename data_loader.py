@@ -156,6 +156,7 @@ class DataLoader:
 
     # Validate all parents exist in a data (TSV/TXT) file
     def validate_parents_exist_in_file(self, file_name, max_violations):
+        validation_failed = True
         with self.driver.session() as session:
             with open(file_name) as in_file:
                 self.log.info('Validating relationships in file "{}" ...'.format(file_name))
@@ -182,7 +183,7 @@ class DataLoader:
                                 violations += 1
                                 if violations >= max_violations:
                                     return False
-                return not validation_failed
+        return not validation_failed
 
     # Validate file
     def validate_file(self, file_name, max_violations):
