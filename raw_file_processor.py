@@ -21,6 +21,9 @@ import argparse
 from sqs import *
 import re
 import shutil
+from data_loader import DataLoader
+import neo4j
+from icdc_schema import ICDC_Schema
 
 RAW_PREFIX = 'RAW'
 FINAL_PREFIX = 'Final'
@@ -43,10 +46,16 @@ FILES = 'files'
 RECORDS = 'Records'
 
 class FileProcessor:
-    def __init__(self, queue_name):
+    def __init__(self, queue_name, driver, schema):
         self.log = get_logger('File Processor')
         self.queue_name = queue_name
         self.s3_client = boto3.client('s3')
+        if not isinstance(driver, neo4j.Driver):
+            raise Exception('Neo4j driver is invalid!')
+        self.driver = driver
+        if not isinstance(schema, ICDC_Schema):
+            raise Exception('Scheme is invalid!')
+        self.schema = schema
 
     @staticmethod
     def join_path(folder, file):
@@ -59,6 +68,30 @@ class FileProcessor:
         try:
             ext = key.split('.')[-1]
             if ext:
+                if ext == 'zip':
+                    local_zip_file = os.path.join(local_folder, os.path.basename(key))
+                    files = {}
+                    self.log.info('downloading zip file: {}'.format(key))
+                    self.s3_client.download_file(bucket, key, local_zip_file)
+                    with zipfile.ZipFile(local_zip_file, "r") as zip_ref:
+                        self.log.info('Extracting zip file: {}'.format(key))
+                        for item in zip_ref.infolist():
+                            file_name = item.filename
+                            file_path = self.join_path(final_path, file_name)
+                            if not item.is_dir() and '/' not in file_name:
+                                self.log.info('Extracting {} to {}'.format(file_name, file_path))
+                                zip_ref.extract(item, local_folder)
+                                local_file = os.path.join(local_folder, file_name)
+                                with open(local_file, 'rb') as lf:
+                                    s3_obj = self.s3_client.put_object(Bucket=bucket, Key=file_path, Body=lf)
+                                    files[file_name] = {FILE_NAME: file_name,
+                                                        FILE_LOC: self.get_s3_location(bucket, final_path, file_name),
+                                                        FILE_SIZE: os.stat(local_file).st_size,
+                                                        MD5: s3_obj['ETag'].replace('"', '')}
+                                if not file_name.endswith('.txt'):
+                                    os.remove(local_file)
+                    return files
+
                 if ext == 'tar':
                     self.log.info('Streaming tar file: {}'.format(key))
                     files = {}
@@ -219,6 +252,7 @@ class FileProcessor:
         try:
             for record in event['Records']:
                 temp_folder = 'temp/{}'.format(uuid.uuid4())
+                os.makedirs(temp_folder)
                 bucket = record['s3']['bucket']['name']
                 key = unquote_plus(record['s3']['object']['key'])
                 # Assume raw files will be in a sub-folder inside '/RAW'
@@ -236,6 +270,7 @@ class FileProcessor:
                     self.log.error('Process manifest failed!')
                     return False
                 self.upload_files(bucket, final_path, manifests)
+                self.load_manifests(manifests)
                 # Todo: call data loader
                 shutil.rmtree(temp_folder)
             return True
@@ -269,6 +304,20 @@ class FileProcessor:
                         extender.stop()
                         del(extender)
 
+    def load_manifests(self, manifests):
+        self.loader = DataLoader(self.driver, self.schema, manifests)
+        if isinstance(self.loader, DataLoader):
+            for file in manifests:
+                if not self.loader.validate_parents_exist_in_file(file, 1):
+                    self.log.error('Validate parents in {} failed, abort loading!'.format(file))
+                    return False
+            self.loader.load(False, False, 1)
+        else:
+            self.log.error('Can\'t load manifest, because data loader is not valid!')
+
+
+
+
 def main(args):
     log = get_logger('Raw file processor - main')
 
@@ -276,13 +325,46 @@ def main(args):
         log.error('Please specify queue name with -q/--queue argument')
         sys.exit(1)
 
+    uri = args.uri if args.uri else "bolt://localhost:7687"
+    uri = removeTrailingSlash(uri)
+
+    password = args.password
+    if not password:
+        if PSWD_ENV not in os.environ:
+            log.error(
+                'Password not specified! Please specify password with -p or --password argument, or set {} env var'.format( PSWD_ENV))
+            sys.exit(1)
+        else:
+            password = os.environ[PSWD_ENV]
+    user = args.user if args.user else 'neo4j'
+
+    if not args.schema:
+        log.error('Please specify schema file(s) with -s or --schema argument')
+        sys.exit(1)
+
+    for schema_file in args.schema:
+        if not os.path.isfile(schema_file):
+            log.error('{} is not a file'.format(schema_file))
+            sys.exit(1)
+
+    driver = None
     try:
-        processor = FileProcessor(args.queue)
+        schema = ICDC_Schema(args.schema)
+        driver = neo4j.GraphDatabase.driver(uri, auth=(user, password))
+        processor = FileProcessor(args.queue, driver, schema)
         processor.listen()
+
+    except neo4j.ServiceUnavailable as err:
+        log.exception(err)
+        log.critical("Can't connect to Neo4j server at: \"{}\"".format(uri))
 
     except KeyboardInterrupt:
         log.info("\nBye!")
         sys.exit()
+
+    finally:
+        if driver:
+            driver.close()
 
 
 if __name__ == '__main__':
@@ -297,6 +379,5 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--max-violations', help='Max violations to display', nargs='?', type=int, default=10)
     parser.add_argument('-b', '--bucket', help='S3 bucket name')
     parser.add_argument('-f', '--s3-folder', help='S3 folder')
-    # parser.add_argument('dir', help='Data directory')
     args = parser.parse_args()
     main(args)

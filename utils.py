@@ -6,6 +6,7 @@ LOG_LEVEL = 'DL_LOG_LEVEL'
 ICDC_DOMAIN = 'caninecommons.cancer.gov'
 QUEUE_LONG_PULL_TIME = 20
 VISIBILITY_TIMEOUT = 30
+PSWD_ENV = 'NEO_PASSWORD'
 
 
 def get_logger(name):
@@ -35,3 +36,10 @@ def get_uuid_for_node(node_type, signature):
     node_uuid = uuid.uuid5(type_uuid, signature)
     log.debug('Node UUID: {}'.format(node_uuid))
     return node_uuid
+
+
+def removeTrailingSlash(uri):
+    if uri.endswith('/'):
+        return re.sub('/+$', '', uri)
+    else:
+        return uri

@@ -9,14 +9,6 @@ from utils import *
 from data_loader import DataLoader
 from s3 import *
 
-PSWD_ENV = 'NEO_PASSWORD'
-
-
-def removeTrailingSlash(uri):
-    if uri.endswith('/'):
-        return re.sub('/+$', '', uri)
-    else:
-        return uri
 
 # Data loader will try to load all TSV(.TXT) files from given directory into Neo4j
 # optional arguments includes:
