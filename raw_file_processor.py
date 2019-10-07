@@ -25,6 +25,7 @@ import shutil
 from data_loader import DataLoader
 import neo4j
 from icdc_schema import ICDC_Schema
+from timeit import default_timer as timer
 
 RAW_PREFIX = 'RAW'
 FINAL_PREFIX = 'Final'
@@ -290,6 +291,7 @@ class FileProcessor:
         return result
 
     def handler(self, event):
+        start = timer()
         succeeded = True
         try:
             for record in event['Records']:
@@ -307,7 +309,7 @@ class FileProcessor:
                 file_list = self.extract_file(bucket, key, final_path, temp_folder)
                 if not file_list:
                     self.log.error('Extract RAW file "{}" failed'.format(org_file_name))
-                    self.send_failure_email('Extract RAW file "{}" failed')
+                    self.send_failure_email('Extract RAW file "{}" failed'.format(org_file_name))
                     shutil.rmtree(temp_folder)
                     succeeded = False
                     continue
@@ -332,6 +334,9 @@ class FileProcessor:
             self.log.exception(e)
             self.send_failure_email(e)
             return False
+        finally:
+            end = timer()
+            self.log.info('Running time: {:.2f} seconds'.format(end - start))  # Time in seconds, e.g. 5.38091952400282
 
     def send_success_email(self, file_name, final_path, file_list, manifests, loading_result):
         content = 'S3 file processing succeeded!<br>\n'
