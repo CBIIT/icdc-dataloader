@@ -18,8 +18,6 @@ PARENT_TYPE = 'parent_type'
 PARENT_ID_FIELD = 'parent_id_field'
 PARENT_ID = 'parent_id'
 RELATIONSHIP_NAME = 'name'
-NODES_CREATED = 'nodes_created'
-RELATIONSHIP_CREATED = 'relationship_created'
 START_DATE = 'date_of_cycle_start'
 END_DATE = 'date_of_cycle_end'
 DATE_FORMAT = '%Y%m%d'
@@ -68,7 +66,7 @@ class DataLoader:
             end = timer()
             self.log.info('Dry run mode, no nodes or relationships loaded.')  # Time in seconds, e.g. 5.38091952400282
             self.log.info('Running time: {:.2f} seconds'.format(end - start))  # Time in seconds, e.g. 5.38091952400282
-            return True
+            return {NODES_CREATED: 0, RELATIONSHIP_CREATED: 0}
 
         self.nodes_created = 0
         self.relationships_created = 0

@@ -7,3 +7,4 @@ __pycache__/
 *.pyc
 cmd.txt
 test/temp
+config.ini

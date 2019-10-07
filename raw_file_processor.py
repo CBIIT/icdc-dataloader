@@ -3,6 +3,7 @@
 # It will listen on SQS for incoming messages sent by S3, to process new files
 
 import boto3
+from botocore.exceptions import ClientError
 import uuid
 import re
 from urllib.parse import unquote_plus
@@ -46,7 +47,7 @@ FILES = 'files'
 RECORDS = 'Records'
 
 class FileProcessor:
-    def __init__(self, queue_name, driver, schema):
+    def __init__(self, queue_name, driver, schema, manifest_bucket, manifest_folder, dry_run=False):
         self.log = get_logger('File Processor')
         self.queue_name = queue_name
         self.s3_client = boto3.client('s3')
@@ -56,12 +57,63 @@ class FileProcessor:
         if not isinstance(schema, ICDC_Schema):
             raise Exception('Scheme is invalid!')
         self.schema = schema
+        if not manifest_bucket:
+            raise Exception('Manifest bucket is invalid!')
+        self.manifest_bucket = manifest_bucket
+        if not manifest_folder:
+            raise Exception('Manifest folder is invalid')
+        self.manifest_folder = manifest_folder
+        self.dry_run = dry_run
 
     @staticmethod
-    def join_path(folder, file):
-        clean_folder = re.sub(r'/+$', '', folder)
-        clean_file = re.sub(r'^/+', '', file)
-        return '{}/{}'.format(clean_folder, clean_file)
+    def join_path(*args):
+        if len(args) == 0:
+            return ''
+
+        result = ''
+        for index in range(0, len(args)):
+            part = re.sub(r'/+$', '', args[index])
+            if index != 0:
+                part = re.sub(r'^/+', '', part)
+            if result:
+                result = '{}/{}'.format(result, part)
+            else:
+                result = part
+        return result
+
+    def get_md5(self, file_name):
+        hash = hashlib.md5()
+        with open(file_name, 'rb') as afile:
+            buf = afile.read(BLOCK_SIZE)
+            while len(buf) > 0:
+                hash.update(buf)
+                buf = afile.read(BLOCK_SIZE)
+        return hash.hexdigest()
+
+    def upload_extracted_file(self, file_name, local_folder, bucket, final_path, files):
+        local_file = os.path.join(local_folder, file_name)
+        s3_file_path = self.join_path(final_path, file_name)
+        md5 = self.get_md5(local_file)
+        try:
+            self.s3_client.head_object(Bucket=bucket, Key=s3_file_path, IfMatch=md5)
+            self.log.info('Skipped file {} - Same file already exists on S3'.format(s3_file_path))
+            files[file_name] = {FILE_NAME: file_name,
+                                FILE_LOC: self.get_s3_location(bucket, final_path, file_name),
+                                FILE_SIZE: os.stat(local_file).st_size,
+                                MD5: md5}
+        except ClientError as e:
+            if e.response['Error']['Code'] in ['404', '412']:
+                with open(local_file, 'rb') as lf:
+                    s3_obj = self.s3_client.put_object(Bucket=bucket, Key=s3_file_path, Body=lf)
+                    files[file_name] = {FILE_NAME: file_name,
+                                        FILE_LOC: self.get_s3_location(bucket, final_path, file_name),
+                                        FILE_SIZE: os.stat(local_file).st_size,
+                                        MD5: s3_obj['ETag'].replace('"', '')}
+            else:
+                self.log.error('Unknown S3 client error!')
+                self.log.exception(e)
+        if not file_name.endswith('.txt'):
+            os.remove(local_file)
 
     # Download and extract files, return list of files with final location and md5
     def extract_file(self, bucket, key, final_path, local_folder):
@@ -81,15 +133,7 @@ class FileProcessor:
                             if not item.is_dir() and '/' not in file_name:
                                 self.log.info('Extracting {} to {}'.format(file_name, file_path))
                                 zip_ref.extract(item, local_folder)
-                                local_file = os.path.join(local_folder, file_name)
-                                with open(local_file, 'rb') as lf:
-                                    s3_obj = self.s3_client.put_object(Bucket=bucket, Key=file_path, Body=lf)
-                                    files[file_name] = {FILE_NAME: file_name,
-                                                        FILE_LOC: self.get_s3_location(bucket, final_path, file_name),
-                                                        FILE_SIZE: os.stat(local_file).st_size,
-                                                        MD5: s3_obj['ETag'].replace('"', '')}
-                                if not file_name.endswith('.txt'):
-                                    os.remove(local_file)
+                                self.upload_extracted_file(file_name, local_folder, bucket, final_path, files)
                     return files
 
                 if ext == 'tar':
@@ -105,12 +149,7 @@ class FileProcessor:
                             if item.isfile() and '/' not in file_name:
                                 self.log.info('Extracting {} to {}'.format(file_name, file_path))
                                 tar_ref.extract(item, local_folder)
-                                local_file = os.path.join(local_folder, file_name)
-                                with open(local_file, 'rb') as lf:
-                                    s3_obj = self.s3_client.put_object(Bucket=bucket, Key=file_path, Body=lf)
-                                    files[file_name] = {FILE_NAME: file_name, FILE_LOC: self.get_s3_location(bucket, final_path, file_name), FILE_SIZE: os.stat( local_file).st_size, MD5: s3_obj['ETag'].replace('"', '')}
-                                if not file_name.endswith('.txt'):
-                                    os.remove(local_file)
+                                self.upload_extracted_file(file_name, local_folder, bucket, final_path, files)
                     return files
                 else:
                     self.log.warning('{} file is not supported!'.format(ext))
@@ -121,13 +160,13 @@ class FileProcessor:
             self.log.exception(e)
             return False
 
-    def upload_files(self, bucket, upload_path, file_list):
+    def upload_manifests(self, folder, file_list):
         try:
             for file in file_list:
                 if os.path.isfile(file):
-                    self.log.info('Uploading file: {}'.format(file))
-                    file_name = self.join_path(upload_path, os.path.basename(file))
-                    self.s3_client.upload_file(file, bucket, file_name)
+                    self.log.info('Uploading manifest: {}'.format(file))
+                    file_name = self.join_path(self.manifest_folder, folder, os.path.basename(file))
+                    self.s3_client.upload_file(file, self.manifest_bucket, file_name)
                 else:
                     self.log.info('{} is not a file, and won\'t be uploaded to S3'.format(file))
             return True
@@ -176,7 +215,6 @@ class FileProcessor:
             succeeded = False
         else:
             try:
-                self.log.info('Processing fields in manifest.')
                 # check fields in the manifest, if missing fields stops
                 with open(manifest) as inf:
                     temp_file = manifest + '_populated'
@@ -223,6 +261,9 @@ class FileProcessor:
     def process_manifest(self, data_folder, extracted_files) -> [str]:
         results = []
         file_list = glob.glob('{}/*.txt'.format(data_folder))
+        if not file_list:
+            self.log.error('No manifest (TSV/TXT) files found!')
+            return results
         try:
             for manifest in file_list:
                 if not self.populate_manifest(manifest, extracted_files):
@@ -249,35 +290,71 @@ class FileProcessor:
         return result
 
     def handler(self, event):
+        succeeded = True
         try:
             for record in event['Records']:
-                temp_folder = 'temp/{}'.format(uuid.uuid4())
+                temp_folder = os.path.join(TEMP_FOLDER, str(uuid.uuid4()))
                 os.makedirs(temp_folder)
                 bucket = record['s3']['bucket']['name']
                 key = unquote_plus(record['s3']['object']['key'])
                 # Assume raw files will be in a sub-folder inside '/RAW'
                 if not key.startswith(RAW_PREFIX):
                     self.log.error('File is not in {} folder'.format(RAW_PREFIX))
-                    return False
+                    shutil.rmtree(temp_folder)
+                    succeeded = False
                 final_path = os.path.dirname(key).replace(RAW_PREFIX, FINAL_PREFIX)
                 org_file_name = os.path.basename(key)
                 file_list = self.extract_file(bucket, key, final_path, temp_folder)
                 if not file_list:
                     self.log.error('Extract RAW file "{}" failed'.format(org_file_name))
-                    return False
+                    self.send_failure_email('Extract RAW file "{}" failed')
+                    shutil.rmtree(temp_folder)
+                    succeeded = False
+                    continue
                 manifests = self.process_manifest(temp_folder, file_list)
                 if not manifests:
                     self.log.error('Process manifest failed!')
-                    return False
-                self.upload_files(bucket, final_path, manifests)
-                self.load_manifests(manifests)
-                # Todo: call data loader
+                    self.send_failure_email('Process manifest failed!')
+                    shutil.rmtree(temp_folder)
+                    continue
+                manifest_folder = os.path.dirname(key).replace(RAW_PREFIX, '')
+                self.upload_manifests(manifest_folder, manifests)
+                loading_result = self.load_manifests(manifests)
                 shutil.rmtree(temp_folder)
-            return True
+                if loading_result:
+                    self.send_success_email(key, final_path, file_list, [os.path.basename(x) for x in manifests], loading_result)
+                else:
+                    self.log.error('Loading manifests failed!')
+                    self.send_failure_email('Loading manifests failed!')
+            return succeeded
 
         except Exception as e:
             self.log.exception(e)
+            self.send_failure_email(e)
             return False
+
+    def send_success_email(self, file_name, final_path, file_list, manifests, loading_result):
+        content = 'S3 file processing succeeded!<br>\n'
+        content += 'File processed: {}<br>\n'.format(file_name)
+        content += 'Files extracted and uploaded to {}:<br>\n'.format(final_path)
+        content += '<br>\n'.join(file_list) + '<br>\n'
+        content += '=' * 70 + '<br>\n'
+        content += 'Manifests processed:<br>\n'
+        content += '<br>\n'.join(manifests) + '<br>\n'
+        if loading_result:
+            content += '=' * 70 + '<br>\n'
+            content += 'File nodes created: {}<br>\n'.format(loading_result[NODES_CREATED])
+            content += 'Relationships created: {}<br>\n'.format(loading_result[RELATIONSHIP_CREATED])
+
+        self.log.info('Sending success email...')
+        send_mail('S3 File Processing Succeeded!', content)
+        self.log.info('Success email sent')
+
+    def send_failure_email(self, message):
+        content = str(message)
+        self.log.info('Sending failure email...')
+        send_mail('S3 File Processing FAILED!', content)
+        self.log.info('Failure email sent')
 
     def listen(self):
         self.queue = Queue(self.queue_name)
@@ -294,26 +371,34 @@ class FileProcessor:
 
                         if self.handler(data):
                             msg.delete()
+                            extender.stop()
+                            extender = None
                             self.log.info('Finish processing job!')
 
                 except Exception as e:
                     self.log.exception(e)
+                    self.send_failure_email('S3 File Processing FAILED!\n' + str(e))
 
                 finally:
                     if extender:
                         extender.stop()
-                        del(extender)
+                        extender = None
 
     def load_manifests(self, manifests):
-        self.loader = DataLoader(self.driver, self.schema, manifests)
-        if isinstance(self.loader, DataLoader):
-            for file in manifests:
-                if not self.loader.validate_parents_exist_in_file(file, 1):
-                    self.log.error('Validate parents in {} failed, abort loading!'.format(file))
-                    return False
-            self.loader.load(False, False, 1)
-        else:
-            self.log.error('Can\'t load manifest, because data loader is not valid!')
+        try:
+            self.loader = DataLoader(self.driver, self.schema, manifests)
+            if isinstance(self.loader, DataLoader):
+                for file in manifests:
+                    if not self.loader.validate_cases_exist_in_file(file, 1):
+                        self.log.error('Validate parents in {} failed, abort loading!'.format(file))
+                        return False
+                return self.loader.load(False, self.dry_run, 1)
+            else:
+                self.log.error('Can\'t load manifest, because data loader is not valid!')
+                return False
+        except Exception as e:
+            self.log.exception(e)
+            return False
 
 
 
@@ -347,11 +432,19 @@ def main(args):
             log.error('{} is not a file'.format(schema_file))
             sys.exit(1)
 
+    if not args.bucket:
+        log.error('Please specify output S3 bucket for final manifest(s) using -b/--bucket argument')
+        sys.exit(1)
+
+    if not args.s3_folder:
+        log.error('Please specify output S3 folder for final manifest(s) using -f/--s3-folder argument')
+        sys.exit(1)
+
     driver = None
     try:
         schema = ICDC_Schema(args.schema)
         driver = neo4j.GraphDatabase.driver(uri, auth=(user, password))
-        processor = FileProcessor(args.queue, driver, schema)
+        processor = FileProcessor(args.queue, driver, schema, args.bucket, args.s3_folder, args.dry_run)
         processor.listen()
 
     except neo4j.ServiceUnavailable as err:
@@ -374,10 +467,9 @@ if __name__ == '__main__':
     parser.add_argument('-u', '--user', help='Neo4j user')
     parser.add_argument('-p', '--password', help='Neo4j password')
     parser.add_argument('-s', '--schema', help='Schema files', action='append')
-    parser.add_argument('-c', '--cheat-mode', help='Skip validations, aka. Cheat Mode', action='store_true')
     parser.add_argument('-d', '--dry-run', help='Validations only, skip loading', action='store_true')
     parser.add_argument('-m', '--max-violations', help='Max violations to display', nargs='?', type=int, default=10)
-    parser.add_argument('-b', '--bucket', help='S3 bucket name')
-    parser.add_argument('-f', '--s3-folder', help='S3 folder')
+    parser.add_argument('-b', '--bucket', help='Output (manifest) S3 bucket name')
+    parser.add_argument('-f', '--s3-folder', help='Output (manifest) S3 folder')
     args = parser.parse_args()
     main(args)
