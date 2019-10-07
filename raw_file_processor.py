@@ -291,54 +291,55 @@ class FileProcessor:
         return result
 
     def handler(self, event):
-        start = timer()
         succeeded = True
-        try:
-            for record in event['Records']:
-                temp_folder = os.path.join(TEMP_FOLDER, str(uuid.uuid4()))
+        for record in event['Records']:
+            start = timer()
+            end = start
+            temp_folder = os.path.join(TEMP_FOLDER, str(uuid.uuid4()))
+            try:
                 os.makedirs(temp_folder)
                 bucket = record['s3']['bucket']['name']
                 key = unquote_plus(record['s3']['object']['key'])
                 # Assume raw files will be in a sub-folder inside '/RAW'
                 if not key.startswith(RAW_PREFIX):
                     self.log.error('File is not in {} folder'.format(RAW_PREFIX))
-                    shutil.rmtree(temp_folder)
                     succeeded = False
+                    continue
                 final_path = os.path.dirname(key).replace(RAW_PREFIX, FINAL_PREFIX)
                 org_file_name = os.path.basename(key)
                 file_list = self.extract_file(bucket, key, final_path, temp_folder)
                 if not file_list:
-                    self.log.error('Extract RAW file "{}" failed'.format(org_file_name))
-                    self.send_failure_email('Extract RAW file "{}" failed'.format(org_file_name))
-                    shutil.rmtree(temp_folder)
+                    self.log.error('Extract RAW file "{}" failed'.format(key))
+                    self.send_failure_email('Extract RAW file "{}" failed'.format(key))
                     succeeded = False
                     continue
                 manifests = self.process_manifest(temp_folder, file_list)
                 if not manifests:
                     self.log.error('Process manifest failed!')
                     self.send_failure_email('Process manifest failed!')
-                    shutil.rmtree(temp_folder)
                     continue
                 manifest_folder = os.path.dirname(key).replace(RAW_PREFIX, '')
                 self.upload_manifests(manifest_folder, manifests)
                 loading_result = self.load_manifests(manifests)
-                shutil.rmtree(temp_folder)
+                end = timer()
                 if loading_result:
-                    self.send_success_email(key, final_path, file_list, [os.path.basename(x) for x in manifests], loading_result)
+                    self.send_success_email(key, final_path, file_list, [os.path.basename(x) for x in manifests], loading_result, end - start)
                 else:
-                    self.log.error('Loading manifests failed!')
-                    self.send_failure_email('Loading manifests failed!')
-            return succeeded
+                    self.log.error('Load manifests failed!')
+                    self.send_failure_email('Load manifests failed!')
+            except Exception as e:
+                end = timer()
+                self.log.exception(e)
+                self.send_failure_email(e)
+                return False
 
-        except Exception as e:
-            self.log.exception(e)
-            self.send_failure_email(e)
-            return False
-        finally:
-            end = timer()
-            self.log.info('Running time: {:.2f} seconds'.format(end - start))  # Time in seconds, e.g. 5.38091952400282
+            finally:
+                shutil.rmtree(temp_folder)
+                self.log.info('Running time: {:.2f} seconds'.format(end - start))  # Time in seconds, e.g. 5.38091952400282
+        return succeeded
 
-    def send_success_email(self, file_name, final_path, file_list, manifests, loading_result):
+
+    def send_success_email(self, file_name, final_path, file_list, manifests, loading_result, running_time):
         content = 'S3 file processing succeeded!<br>\n'
         content += 'File processed: {}<br>\n'.format(file_name)
         content += 'Files extracted and uploaded to {}:<br>\n'.format(final_path)
@@ -350,6 +351,7 @@ class FileProcessor:
             content += '=' * 70 + '<br>\n'
             content += 'File nodes created: {}<br>\n'.format(loading_result[NODES_CREATED])
             content += 'Relationships created: {}<br>\n'.format(loading_result[RELATIONSHIP_CREATED])
+        content += 'Running time: {:.2f} seconds<br>\n'.format(running_time)
 
         self.log.info('Sending success email...')
         send_mail('S3 File Processing Succeeded!', content)
