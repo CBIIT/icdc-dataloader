@@ -3,7 +3,7 @@
 import os
 import csv
 import re
-from neo4j import  Driver, Session
+from neo4j import  Driver, Session, Transaction
 from utils import *
 from timeit import default_timer as timer
 from icdc_schema import ICDC_Schema
@@ -73,10 +73,12 @@ class DataLoader:
         self.nodes_stat = {}
         self.relationships_stat = {}
         with self.driver.session() as session:
+            tx = session.begin_transaction()
             for txt in self.file_list:
-                self.load_nodes(session, txt)
+                self.load_nodes(tx, txt)
             for txt in self.file_list:
-                self.load_relationships(session, txt)
+                self.load_relationships(tx, txt)
+            tx.commit()
         end = timer()
 
         # Print statistics
@@ -441,7 +443,7 @@ class DataLoader:
         if not src:
             self.log.error("Line: {}: Can't create (:{}) node for empty object".format(line_num, VISIT_NODE))
             return False
-        if not session or not isinstance(session, Session):
+        if not session or (not isinstance(session, Session) and not isinstance(session, Transaction)):
             self.log.error("Neo4j session is not valid!")
             return False
         date_map = {
