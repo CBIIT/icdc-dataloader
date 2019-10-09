@@ -44,7 +44,7 @@ class VisibilityExtender:
                 self.is_running = False
                 self.start()
                 self._currentTimeOut += self._interval
-                self.log.info('Processing job ...')
+                self.log.info('Processing job ..., visibility timeout = {}s'.format(self._currentTimeOut))
                 self._msg.change_visibility(VisibilityTimeout = self._currentTimeOut)
         except Exception as e:
             self.log.exception(e)
@@ -59,3 +59,6 @@ class VisibilityExtender:
     def stop(self):
         self._timer.cancel()
         self.is_running = False
+
+    def __del__(self):
+        self.stop()
