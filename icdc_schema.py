@@ -210,7 +210,7 @@ class ICDC_Schema:
         if prop:
             return prop.get(ENUM, None)
 
-    def get_valid_units(self, node_name, name):
+    def get_valid_units(self, name):
         unit_prop_name = self.get_unit_property_name(name)
         return self.get_valid_values(unit_prop_name)
 

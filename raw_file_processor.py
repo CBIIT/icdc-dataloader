@@ -5,9 +5,7 @@
 import boto3
 from botocore.exceptions import ClientError
 import uuid
-import re
 from urllib.parse import unquote_plus
-import logging
 import zipfile
 import tarfile
 import glob
@@ -75,8 +73,8 @@ class FileProcessor:
             return ''
 
         result = ''
-        for index in range(0, len(args)):
-            part = re.sub(r'/+$', '', args[index])
+        for index, arg in enumerate(args):
+            part = re.sub(r'/+$', '', arg)
             if index != 0:
                 part = re.sub(r'^/+', '', part)
             if result:
@@ -85,14 +83,15 @@ class FileProcessor:
                 result = part
         return result
 
-    def get_md5(self, file_name):
-        hash = hashlib.md5()
+    @staticmethod
+    def get_md5(file_name):
+        md5 = hashlib.md5()
         with open(file_name, 'rb') as afile:
             buf = afile.read(BLOCK_SIZE)
             while len(buf) > 0:
-                hash.update(buf)
+                md5.update(buf)
                 buf = afile.read(BLOCK_SIZE)
-        return hash.hexdigest()
+        return md5.hexdigest()
 
     def upload_extracted_file(self, file_name, local_folder, bucket, final_path, files):
         local_file = os.path.join(local_folder, file_name)
@@ -209,6 +208,7 @@ class FileProcessor:
     def get_s3_location(bucket, folder, key):
         return "s3://{}/{}/{}".format(bucket, folder, key)
 
+    @staticmethod
     def populate_record(self, record, file_info):
         file_name = file_info[FILE_NAME]
         record[FILE_SIZE] = file_info[FILE_SIZE]
@@ -294,16 +294,6 @@ class FileProcessor:
 
         return results
 
-    # Get possible one level folder inside tar/zip file
-    def get_true_data_folder(self, folder):
-        folder = folder.replace(r'/$', '')
-        first_level_file_list = glob.glob('{}/*'.format(folder))
-        result = folder
-        if len(first_level_file_list) == 1:
-            inside_folder = first_level_file_list[0]
-            if os.path.isdir(inside_folder):
-                result = inside_folder
-        return result
 
     def is_file(self, bucket, key):
         try:

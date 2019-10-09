@@ -322,7 +322,7 @@ class DataLoader:
                     value_string = None
                 else:
                     value_string = float(value)
-            except:
+            except Exception:
                 value_string = None
         # Other types
         else:

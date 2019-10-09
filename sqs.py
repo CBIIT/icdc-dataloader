@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import boto3
 import json
-from pprint import pprint
 from threading import Timer
 
 from utils import *
@@ -12,10 +11,10 @@ class Queue:
         self.sqs = boto3.resource('sqs')
         self.queue = self.sqs.get_queue_by_name(QueueName=queue_name)
 
-    def sendMsgToQueue(self, msg, id):
+    def sendMsgToQueue(self, msg, msg_id):
         response = self.queue.send_message(MessageBody=json.dumps(msg),
-                                           MessageGroupId=id,
-                                           MessageDeduplicationId=id)
+                                           MessageGroupId=msg_id,
+                                           MessageDeduplicationId=msg_id)
         self.log.debug(response.get('MessageId'))
 
     def receiveMsgs(self, visibilityTimeOut):

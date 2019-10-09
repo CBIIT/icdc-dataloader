@@ -65,7 +65,7 @@ def send_mail(subject, contents, attachments=None):
         message['To'] = ADMIN_EMAILS
 
         # set text for message
-        contents = contents if type(contents) is str else contents.encode('utf-8')
+        contents = contents if isinstance(contents, str) else contents.encode('utf-8')
         message.attach(MIMEText(contents, 'html', 'utf-8'))
 
         # add attachments to message

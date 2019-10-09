@@ -2,7 +2,6 @@
 import os, sys
 import glob
 import argparse
-import re
 from neo4j import GraphDatabase, ServiceUnavailable
 from icdc_schema import ICDC_Schema
 from utils import *
