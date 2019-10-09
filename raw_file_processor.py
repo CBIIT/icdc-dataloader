@@ -46,6 +46,9 @@ DEFAULT_ACL = 'open'
 MANIFESTS = 'manifests'
 FILES = 'files'
 RECORDS = 'Records'
+END_NORMALLY = 'end_normally'
+MESSAGE = 'message'
+FILES = 'files'
 
 class FileProcessor:
     def __init__(self, queue_name, driver, schema, manifest_bucket, manifest_folder, dry_run=False):
@@ -118,9 +121,11 @@ class FileProcessor:
 
     # Download and extract files, return list of files with final location and md5
     def extract_file(self, bucket, key, final_path, local_folder):
+        result = {END_NORMALLY: True}
         try:
-            ext = key.split('.')[-1]
-            if ext:
+            parts = key.split('.')
+            ext = parts[-1]
+            if len(parts) > 1:
                 if ext == 'zip':
                     local_zip_file = os.path.join(local_folder, os.path.basename(key))
                     files = {}
@@ -135,7 +140,8 @@ class FileProcessor:
                                 self.log.info('Extracting {} to {}'.format(file_name, file_path))
                                 zip_ref.extract(item, local_folder)
                                 self.upload_extracted_file(file_name, local_folder, bucket, final_path, files)
-                    return files
+                    result[FILES] = files
+                    return result
 
                 if ext == 'tar':
                     self.log.info('Streaming tar file: {}'.format(key))
@@ -151,15 +157,24 @@ class FileProcessor:
                                 self.log.info('Extracting {} to {}'.format(file_name, file_path))
                                 tar_ref.extract(item, local_folder)
                                 self.upload_extracted_file(file_name, local_folder, bucket, final_path, files)
-                    return files
+                    result[FILES] = files
+                    return result
                 else:
-                    self.log.warning('{} file is not supported!'.format(ext))
-                    return False
+                    msg = '{} file is not supported!'.format(ext)
+                    self.log.warning(msg)
+                    result[MESSAGE] = msg
+                    return result
             else:
-                return False
+                msg = '{} file is not supported!'.format(ext)
+                self.log.warning(msg)
+                result[MESSAGE] = msg
+                return result
+
         except Exception as e:
             self.log.exception(e)
-            return False
+            result[END_NORMALLY] = False
+            result[MESSAGE] = str(e)
+            return result
 
     def upload_manifests(self, folder, file_list):
         try:
@@ -290,6 +305,26 @@ class FileProcessor:
                 result = inside_folder
         return result
 
+    def is_file(self, bucket, key):
+        try:
+            self.s3_client.head_object(Bucket=bucket, Key=key)
+            self.log.info('Skipped file {} - Same file already exists on S3'.format(s3_file_path))
+            files[file_name] = {FILE_NAME: file_name,
+                                FILE_LOC: self.get_s3_location(bucket, final_path, file_name),
+                                FILE_SIZE: os.stat(local_file).st_size,
+                                MD5: md5}
+        except ClientError as e:
+            if e.response['Error']['Code'] in ['404', '412']:
+                with open(local_file, 'rb') as lf:
+                    s3_obj = self.s3_client.put_object(Bucket=bucket, Key=s3_file_path, Body=lf)
+                    files[file_name] = {FILE_NAME: file_name,
+                                        FILE_LOC: self.get_s3_location(bucket, final_path, file_name),
+                                        FILE_SIZE: os.stat(local_file).st_size,
+                                        MD5: s3_obj['ETag'].replace('"', '')}
+            else:
+                self.log.error('Unknown S3 client error!')
+                self.log.exception(e)
+
     def handler(self, event):
         succeeded = True
         for record in event['Records']:
@@ -300,33 +335,41 @@ class FileProcessor:
                 os.makedirs(temp_folder)
                 bucket = record['s3']['bucket']['name']
                 key = unquote_plus(record['s3']['object']['key'])
+                size = int(record['s3']['object']['size'])
                 # Assume raw files will be in a sub-folder inside '/RAW'
                 if not key.startswith(RAW_PREFIX):
-                    self.log.error('File is not in {} folder'.format(RAW_PREFIX))
-                    succeeded = False
+                    self.log.warning('File is not in {} folder'.format(RAW_PREFIX))
                     continue
+
+                if size == 0:
+                    self.log.warning('{} is not a file'.format(key))
+                    continue
+
                 final_path = os.path.dirname(key).replace(RAW_PREFIX, FINAL_PREFIX)
-                org_file_name = os.path.basename(key)
-                file_list = self.extract_file(bucket, key, final_path, temp_folder)
-                if not file_list:
-                    self.log.error('Extract RAW file "{}" failed'.format(key))
-                    self.send_failure_email('Extract RAW file "{}" failed'.format(key))
+                extract_result = self.extract_file(bucket, key, final_path, temp_folder)
+                file_list = extract_result.get(FILES, {})
+                if not extract_result[END_NORMALLY]:
+                    msg = 'Extract RAW file "{}" failed'.format(key)
+                    self.log.error(msg)
+                    self.send_failure_email(msg)
                     succeeded = False
                     continue
-                manifests = self.process_manifest(temp_folder, file_list)
-                if not manifests:
-                    self.log.error('Process manifest failed!')
-                    self.send_failure_email('Process manifest failed!')
-                    continue
-                manifest_folder = os.path.dirname(key).replace(RAW_PREFIX, '')
-                self.upload_manifests(manifest_folder, manifests)
-                loading_result = self.load_manifests(manifests)
-                end = timer()
-                if loading_result:
-                    self.send_success_email(key, final_path, file_list, [os.path.basename(x) for x in manifests], loading_result, end - start)
-                else:
-                    self.log.error('Load manifests failed!')
-                    self.send_failure_email('Load manifests failed!')
+                if file_list:
+                    manifests = self.process_manifest(temp_folder, file_list)
+                    if not manifests:
+                        self.log.error('Process manifest failed!')
+                        self.send_failure_email('Process manifest failed!')
+                        continue
+                    manifest_folder = os.path.dirname(key).replace(RAW_PREFIX, '')
+                    self.upload_manifests(manifest_folder, manifests)
+                    loading_result = self.load_manifests(manifests)
+                    end = timer()
+                    if loading_result:
+                        self.send_success_email(key, final_path, file_list, [os.path.basename(x) for x in manifests], loading_result, end - start)
+                    else:
+                        self.log.error('Load manifests failed!')
+                        self.send_failure_email('Load manifests failed!')
+                # Todo: do I need to do something here
             except Exception as e:
                 end = timer()
                 self.log.exception(e)
@@ -335,6 +378,7 @@ class FileProcessor:
 
             finally:
                 shutil.rmtree(temp_folder)
+                end = timer()
                 self.log.info('Running time: {:.2f} seconds'.format(end - start))  # Time in seconds, e.g. 5.38091952400282
         return succeeded
 
@@ -377,10 +421,12 @@ class FileProcessor:
                         self.log.info('Start processing job ...')
 
                         if self.handler(data):
-                            msg.delete()
-                            extender.stop()
-                            extender = None
                             self.log.info('Finish processing job!')
+                            msg.delete()
+                        else:
+                            self.log.info('Processing job failed!')
+                        extender.stop()
+                        extender = None
 
                 except Exception as e:
                     self.log.exception(e)
