@@ -29,6 +29,8 @@ CASE_ID = 'case_id'
 PREDATE = 7
 FOREVER = '99991231'
 INFERRED = 'inferred'
+CREATED = 'created'
+UPDATED = 'updated'
 
 
 
@@ -274,10 +276,12 @@ class DataLoader:
 
                 if node_id:
                     statement += 'MERGE (n:{} {{{}: "{}"}})'.format(node_type, id_field, node_id)
-                    statement += ' ON CREATE ' + prop_statement
-                    statement += ' ON MATCH ' + prop_statement
+                    statement += ' ON CREATE ' + prop_statement + ' ,n.{} = datetime()'.format(CREATED)
+                    statement += ' ON MATCH ' + prop_statement + ' ,n.{} = datetime()'.format(UPDATED)
                 else:
                     statement += 'MERGE (n:{} {{ {} }})'.format(node_type, ', '.join(prop_statement))
+                    statement += ' ON CREATE SET n.{} = datetime()'.format(CREATED)
+                    statement += ' ON MATCH SET n.{} = datetime()'.format(UPDATED)
 
                 result = session.run(statement)
                 count = result.summary().counters.nodes_created
@@ -381,7 +385,9 @@ class DataLoader:
                     parent_node = relationship[PARENT_TYPE]
                     statement = 'MATCH (m:{} {{{}: "{}"}}) '.format(parent_node, relationship[PARENT_ID_FIELD], relationship[PARENT_ID])
                     statement += 'MATCH (n:{} {{ {} }}) '.format(node_type, criteria_statement)
-                    statement += 'MERGE (n)-[:{}]->(m);'.format(relationship_name)
+                    statement += 'MERGE (n)-[r:{}]->(m)'.format(relationship_name)
+                    statement += ' ON CREATE SET r.{} = datetime()'.format(CREATED)
+                    statement += ' ON MATCH SET r.{} = datetime()'.format(UPDATED)
 
                     result = session.run(statement)
                     count = result.summary().counters.relationships_created
@@ -463,6 +469,9 @@ class DataLoader:
             self.log.error('Line: {}: Given object doesn\'t have a "{}" field!'.format(line_num, NODE_TYPE))
             return False
         statement = 'MERGE (v:{} {{ {}: "{}", {}: "{}", {}: true }})'.format(VISIT_NODE, VISIT_ID, node_id, VISIT_DATE, date, INFERRED)
+        statement += ' ON CREATE SET v.{} = datetime()'.format(CREATED)
+        statement += ' ON MATCH SET v.{} = datetime()'.format(UPDATED)
+
         result = session.run(statement)
         if result:
             count = result.summary().counters.nodes_created
@@ -501,7 +510,10 @@ class DataLoader:
                     if date < first_date and date >= pre_date:
                         self.log.info('Line: {}: Date: {} is before first cycle, but within {} days before first cycle started: {}, connected to first cycle'.format(line_num, visit_date, PREDATE, first_date.strftime(DATE_FORMAT)))
                     cycle_id = cycle.id
-                    connect_stmt = 'MATCH (v:{} {{{}: "{}"}}) MATCH (c:{}) WHERE id(c) = {} MERGE (v)-[:{} {{ {}: true }}]->(c)'.format(VISIT_NODE, VISIT_ID, visit_id, CYCLE_NODE, cycle_id, relationship_name, INFERRED)
+                    connect_stmt = 'MATCH (v:{} {{{}: "{}"}}) MATCH (c:{}) WHERE id(c) = {} MERGE (v)-[r:{} {{ {}: true }}]->(c)'.format(VISIT_NODE, VISIT_ID, visit_id, CYCLE_NODE, cycle_id, relationship_name, INFERRED)
+                    connect_stmt += ' ON CREATE SET r.{} = datetime()'.format(CREATED)
+                    connect_stmt += ' ON MATCH SET r.{} = datetime()'.format(UPDATED)
+
                     cnt_result = session.run(connect_stmt)
                     relationship_created = cnt_result.summary().counters.relationships_created
                     if relationship_created > 0:
@@ -523,7 +535,10 @@ class DataLoader:
         if not relationship_name:
             return False
         cnt_statement = 'MATCH (c:case {{ case_id: "{}"}}) MATCH (v:visit {{ {}: "{}" }}) '.format(case_id, VISIT_ID, visit_id)
-        cnt_statement += 'MERGE (c)<-[:{} {{ {}: true }}]-(v)'.format(relationship_name, INFERRED)
+        cnt_statement += 'MERGE (c)<-[r:{} {{ {}: true }}]-(v)'.format(relationship_name, INFERRED)
+        cnt_statement += ' ON CREATE SET r.{} = datetime()'.format(CREATED)
+        cnt_statement += ' ON MATCH SET r.{} = datetime()'.format(UPDATED)
+
         result = session.run(cnt_statement)
         relationship_created = result.summary().counters.relationships_created
         if relationship_created > 0:
