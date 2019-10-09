@@ -209,7 +209,7 @@ class FileProcessor:
         return "s3://{}/{}/{}".format(bucket, folder, key)
 
     @staticmethod
-    def populate_record(self, record, file_info):
+    def populate_record(record, file_info):
         file_name = file_info[FILE_NAME]
         record[FILE_SIZE] = file_info[FILE_SIZE]
         record[FILE_LOC] = file_info[FILE_LOC]
