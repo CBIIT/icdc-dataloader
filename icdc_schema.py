@@ -277,7 +277,7 @@ class ICDC_Schema:
         for key, value in obj.items():
             if key == NODE_TYPE:
                 continue
-            elif re.match(r'\w+\.\w+', key):
+            elif is_parent_pointer(key):
                 continue
             elif key not in properties:
                 self.log.debug('Property "{}" is not in data model!'.format(key))

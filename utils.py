@@ -43,6 +43,8 @@ def removeTrailingSlash(uri):
     else:
         return uri
 
+def is_parent_pointer(field_name) -> bool:
+    return re.fullmatch(r'\w+\.\w+', field_name) != None
 
 def send_mail(subject, contents, attachments=None):
     """Sends an email to the provided recipient

@@ -172,7 +172,7 @@ class DataLoader:
                     line_num += 1
                     # Validate parent exist
                     for key, value in obj.items():
-                        if re.match(r'\w+\.\w+', key):
+                        if is_parent_pointer(key):
                             other_node, other_id = key.split('.')
                             relationship_name = self.schema.get_relationship(node_type, other_node)
                             if not relationship_name:
@@ -246,7 +246,7 @@ class DataLoader:
                         continue
 
                     field_name = key
-                    if re.match(r'\w+\.\w+', key):
+                    if is_parent_pointer(key):
                         header = key.split('.')
                         if len(header) > 2:
                             self.log.warning('Column header "{}" has multiple periods!'.format(key))
@@ -360,7 +360,7 @@ class DataLoader:
 
                 # Find all relationships in incoming data, and create them one by one
                 for key, value in obj.items():
-                    if re.match(r'\w+\.\w+', key):
+                    if is_parent_pointer(key):
                         other_node, other_id = key.split('.')
                         relationship_name = self.schema.get_relationship(node_type, other_node)
                         if not relationship_name:
@@ -416,7 +416,8 @@ class DataLoader:
                     continue
                 if key == id_field:
                     continue
-                if re.match(r'\w+\.\w+', key):
+
+                if is_parent_pointer(key):
                     # Add parent id to search conditions
                     header = key.split('.')
                     if len(header) > 2:
