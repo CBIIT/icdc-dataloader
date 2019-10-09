@@ -314,7 +314,7 @@ class DataLoader:
                     value_string = None
                 else:
                     value_string = int(value)
-            except:
+            except Exception:
                 value_string = None
         elif key_type == 'Float':
             try:
