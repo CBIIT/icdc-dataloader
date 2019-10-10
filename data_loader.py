@@ -108,6 +108,8 @@ class DataLoader:
                 return 'program_acronym'
             if node_type == 'study_arm':
                 return 'arm'
+            if node_type == 'file':
+                return 'uuid'
             else:
                 return node_type + '_id'
         else:
