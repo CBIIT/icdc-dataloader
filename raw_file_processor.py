@@ -31,6 +31,7 @@ ICDC_FILE_UPLOADED = 'ICDC-file-uploaded'
 FILE_NAME = 'file_name'
 CASE_ID = 'case_id'
 MD5 = 'md5sum'
+SHA512 = 'sha512'
 FILE_SIZE = "file_size"
 FILE_LOC = 'file_location'
 FILE_FORMAT = 'file_format'
@@ -84,26 +85,35 @@ class FileProcessor:
         return result
 
     @staticmethod
-    def get_md5(file_name):
-        md5 = hashlib.md5()
+    def _get_hash(file_name, hash_func):
         with open(file_name, 'rb') as afile:
             buf = afile.read(BLOCK_SIZE)
             while len(buf) > 0:
-                md5.update(buf)
+                hash_func.update(buf)
                 buf = afile.read(BLOCK_SIZE)
-        return md5.hexdigest()
+        return hash_func.hexdigest()
+
+    def get_md5(self, file_name):
+        hash_func = hashlib.md5()
+        return self._get_hash(file_name, hash_func)
+
+    def get_sha512(self, file_name):
+        hash_func = hashlib.sha512()
+        return self._get_hash(file_name, hash_func)
 
     def upload_extracted_file(self, file_name, local_folder, bucket, final_path, files):
         local_file = os.path.join(local_folder, file_name)
         s3_file_path = self.join_path(final_path, file_name)
         md5 = self.get_md5(local_file)
+        sha512 = self.get_sha512(local_file)
         try:
             self.s3_client.head_object(Bucket=bucket, Key=s3_file_path, IfMatch=md5)
             self.log.info('Skipped file {} - Same file already exists on S3'.format(s3_file_path))
             files[file_name] = {FILE_NAME: file_name,
                                 FILE_LOC: self.get_s3_location(bucket, final_path, file_name),
                                 FILE_SIZE: os.stat(local_file).st_size,
-                                MD5: md5}
+                                MD5: md5,
+                                SHA512: sha512}
         except ClientError as e:
             if e.response['Error']['Code'] in ['404', '412']:
                 with open(local_file, 'rb') as lf:
@@ -111,7 +121,8 @@ class FileProcessor:
                     files[file_name] = {FILE_NAME: file_name,
                                         FILE_LOC: self.get_s3_location(bucket, final_path, file_name),
                                         FILE_SIZE: os.stat(local_file).st_size,
-                                        MD5: s3_obj['ETag'].replace('"', '')}
+                                        MD5: s3_obj['ETag'].replace('"', ''),
+                                        SHA512: sha512}
             else:
                 self.log.error('Unknown S3 client error!')
                 self.log.exception(e)
@@ -215,7 +226,7 @@ class FileProcessor:
         record[FILE_LOC] = file_info[FILE_LOC]
         record[MD5] = file_info[MD5]
         record[FILE_FORMAT] = (os.path.splitext(file_name)[1]).split('.')[1].lower()
-        record[UUID] = get_uuid_for_node("file", record[FILE_LOC])
+        record[UUID] = get_uuid_for_node("file", file_info[SHA512])
         record[FILE_STAT] = DEFAULT_STAT
         record[ACL] = DEFAULT_ACL
         return record
@@ -432,7 +443,7 @@ class FileProcessor:
             self.loader = DataLoader(self.driver, self.schema, manifests)
             if isinstance(self.loader, DataLoader):
                 for file in manifests:
-                    if not self.loader.validate_cases_exist_in_file(file, 1):
+                    if not self.loader.validate_cases_exist_in_file(file, 1) or not self.loader.validate_parents_exist_in_file(file, 1):
                         self.log.error('Validate parents in {} failed, abort loading!'.format(file))
                         return False
                 return self.loader.load(False, self.dry_run, 1)
