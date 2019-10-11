@@ -3,6 +3,7 @@ import yaml
 import sys
 from utils import *
 import re
+from datetime import datetime
 
 NODES = 'Nodes'
 RELATIONSHIPS = 'Relationships'
@@ -318,6 +319,22 @@ class ICDC_Schema:
                     return False
                 if not value in model_type[ENUM]:
                     return False
+        elif model_type[PROP_TYPE] == 'Date':
+            if not isinstance(value, str):
+                return False
+            try:
+                if value.strip() != '':
+                    _ = datetime.strptime(value, DATE_FORMAT)
+            except ValueError:
+                return False
+        elif model_type[PROP_TYPE] == 'DateTime':
+            if not isinstance(value, str):
+                return False
+            try:
+                if value.strip() != '':
+                    _ = datetime.strptime(value, DATE_FORMAT)
+            except ValueError:
+                return False
         return True
 
     # Find relationship type from src to dest
@@ -355,7 +372,8 @@ class ICDC_Schema:
             'boolean': 'Boolean',
             'array': 'Array',
             'object': 'Object',
-            'datetime': 'String',
+            'datetime': 'DateTime',
+            'date': 'Date',
             'TBD': 'String'
         }
         result = DEFAULT_TYPE

@@ -23,7 +23,10 @@ if __name__ == '__main__':
             print(typeLine)
             print(typeLine, file=graphql_file)
             for prop, propType in props.items():
-                propLine = '  {}: {}'.format(prop, propType[PROP_TYPE])
+                prop_type = propType[PROP_TYPE]
+                if prop_type == 'DateTime' or prop_type == 'Date':
+                    prop_type = 'String'
+                propLine = '  {}: {}'.format(prop, prop_type)
                 print(propLine)
                 print(propLine, file=graphql_file)
             typeEnd = '}\n'

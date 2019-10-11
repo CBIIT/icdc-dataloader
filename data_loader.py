@@ -295,7 +295,7 @@ class DataLoader:
 
     def get_value_string(self, node_type, key, value):
         key_type = self.schema.get_prop_type(node_type, key)
-        if key_type == 'String':
+        if key_type == 'String' or key_type == 'Date' or key_type == 'DateTime':
             if isinstance(value, str):
                 value_string = '"{}"'.format(value)
             else:
