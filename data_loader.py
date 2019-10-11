@@ -35,27 +35,33 @@ UPDATED = 'updated'
 
 
 class DataLoader:
-    def __init__(self, driver, schema, file_list):
+    def __init__(self, driver, schema):
         if not driver or not isinstance(driver, Driver):
             raise Exception('Invalid Neo4j driver object')
         elif not schema or not isinstance(schema, ICDC_Schema):
             raise Exception('Invalid ICDC_Schema object')
-        elif not file_list:
-            raise Exception('Invalid file list')
-        elif file_list:
-            for data_file in file_list:
-                if not os.path.isfile(data_file):
-                    raise Exception('File "{}" doesn\'t exist'.format(data_file))
         self.log = get_logger('Data Loader')
         self.driver = driver
         self.schema = schema
-        self.file_list = file_list
 
-    def load(self, cheat_mode, dry_run, max_violations):
+    def check_files(self, file_list):
+        if not file_list:
+            self.log.error('Invalid file list')
+            return False
+        elif file_list:
+            for data_file in file_list:
+                if not os.path.isfile(data_file):
+                    self.log.error('File "{}" doesn\'t exist'.format(data_file))
+                    return False
+            return True
+
+    def load(self, file_list, cheat_mode, dry_run, max_violations):
+        if not self.check_files(file_list):
+            return False
         start = timer()
         if not cheat_mode:
             validation_failed = False
-            for txt in self.file_list:
+            for txt in file_list:
                 if not self.validate_file(txt, max_violations) :
                     self.log.error('Validating file "{}" failed!'.format(txt))
                     validation_failed = True
@@ -76,9 +82,9 @@ class DataLoader:
         self.relationships_stat = {}
         with self.driver.session() as session:
             tx = session.begin_transaction()
-            for txt in self.file_list:
+            for txt in file_list:
                 self.load_nodes(tx, txt)
-            for txt in self.file_list:
+            for txt in file_list:
                 self.load_relationships(tx, txt)
             tx.commit()
         end = timer()

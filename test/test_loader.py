@@ -15,38 +15,7 @@ class TestLoader(unittest.TestCase):
         self.data_folder = 'data/COTC007B'
         self.schema = ICDC_Schema(['data/icdc-model.yml', 'data/icdc-model-props.yml'])
         self.log = get_logger('Test Loader')
-        self.file_list = [
-            "data/COTC007B/COTC007B-0206-0208-disease_extent.txt",
-            "data/COTC007B/COTC007B-0206-0208-physical_exam.txt",
-            "data/COTC007B/COTC007B-0206-0208-vital_signs.txt",
-            "data/COTC007B/COTC007B-0402-disease_extent.txt",
-            "data/COTC007B/COTC007B-0402-physical_exam.txt",
-            "data/COTC007B/COTC007B-0402-vital_signs.txt",
-            "data/COTC007B/COTC007B-cycle.txt",
-            "data/COTC007B/COTC007B_case.txt",
-            "data/COTC007B/COTC007B_cohort.txt",
-            "data/COTC007B/COTC007B_demographic.txt",
-            "data/COTC007B/COTC007B_diagnosis.txt",
-            "data/COTC007B/COTC007B_enrollment.txt",
-            "data/COTC007B/COTC007B_prior_surgery.txt",
-            "data/COTC007B/COTC007B_study.txt",
-            "data/COTC007B/COTC007B_study_arm.txt",
-            "data/COTC007B/COTC_program.txt",
-            "data/NCATS/NCATS01-arm.txt",
-            "data/NCATS/NCATS01-blood_samples.txt",
-            "data/NCATS/NCATS-Pothology-Report-20190912-104934.txt",
-            "data/NCATS/NCATS-Sequence-File-20190912-103744.txt",
-            "data/NCATS/NCATS01-case.txt",
-            "data/NCATS/NCATS01-program.txt",
-            "data/NCATS/NCATS01-cohort.txt",
-            "data/NCATS/NCATS01-demographic.txt",
-            "data/NCATS/NCATS01-diagnosis.txt",
-            "data/NCATS/NCATS01-enrollment.txt",
-            "data/NCATS/NCATS01-normal_samples.txt",
-            "data/NCATS/NCATS01-study.txt",
-            "data/NCATS/NCATS01-tumor_samples.txt"
-        ]
-        self.loader = DataLoader(self.driver, self.schema, self.file_list)
+        self.loader = DataLoader(self.driver, self.schema)
 
     def test_remove_traling_slash(self):
         self.assertEqual('abc', removeTrailingSlash('abc/'))

@@ -440,13 +440,13 @@ class FileProcessor:
 
     def load_manifests(self, manifests):
         try:
-            self.loader = DataLoader(self.driver, self.schema, manifests)
+            self.loader = DataLoader(self.driver, self.schema)
             if isinstance(self.loader, DataLoader):
                 for file in manifests:
                     if not self.loader.validate_cases_exist_in_file(file, 1) or not self.loader.validate_parents_exist_in_file(file, 1):
                         self.log.error('Validate parents in {} failed, abort loading!'.format(file))
                         return False
-                return self.loader.load(False, self.dry_run, 1)
+                return self.loader.load(manifests, False, self.dry_run, 1)
             else:
                 self.log.error('Can\'t load manifest, because data loader is not valid!')
                 return False
