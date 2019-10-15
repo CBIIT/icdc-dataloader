@@ -112,4 +112,5 @@ NODES_CREATED = 'nodes_created'
 RELATIONSHIP_CREATED = 'relationship_created'
 BLOCK_SIZE = 65536
 TEMP_FOLDER = config.get('main', 'temp_folder')
+DATE_FORMAT = '%Y%m%d'
 

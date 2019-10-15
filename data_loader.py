@@ -20,7 +20,6 @@ PARENT_ID = 'parent_id'
 RELATIONSHIP_NAME = 'name'
 START_DATE = 'date_of_cycle_start'
 END_DATE = 'date_of_cycle_end'
-DATE_FORMAT = '%Y%m%d'
 OF_CYCLE = 'of_cycle'
 CYCLE_NODE = 'cycle'
 excluded_fields = {NODE_TYPE}

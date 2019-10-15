@@ -81,8 +81,8 @@ def main():
         if file_list:
             schema = ICDC_Schema(args.schema)
             driver = GraphDatabase.driver(uri, auth=(user, password))
-            loader = DataLoader(driver, schema, file_list)
-            loader.load(args.cheat_mode, args.dry_run, args.max_violations)
+            loader = DataLoader(driver, schema)
+            loader.load(file_list, args.cheat_mode, args.dry_run, args.max_violations)
 
             driver.close()
         else:
