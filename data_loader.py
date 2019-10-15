@@ -112,16 +112,10 @@ class DataLoader:
             self.log.error('get_id_field: there is no "{}" field in node, can\'t retrieve id!'.format(NODE_TYPE))
             return None
         node_type = obj[NODE_TYPE]
+        id_fields = PROPS['id_fields']
         if node_type:
-            # TODO: put it somewhere in model to avoid hard coded special case for study
-            if node_type == 'study':
-                return 'clinical_study_designation'
-            if node_type == 'program':
-                return 'program_acronym'
-            if node_type == 'study_arm':
-                return 'arm'
-            if node_type == 'file':
-                return 'uuid'
+            if node_type in id_fields:
+                return id_fields[node_type]
             else:
                 return node_type + '_id'
         else:
@@ -377,7 +371,7 @@ class DataLoader:
                                 'Line: {}: Couldn\'t create {} node automatically!'.format(line_num, VISIT_NODE))
                     else:
                         self.log.warning(
-                            'Parent node (:{} {{{}: "{}"}} not found in DB!'.format(other_node, other_id,
+                            'Line: {}: Parent node (:{} {{{}: "{}"}} not found in DB!'.format(line_num, other_node, other_id,
                                                                                                    value))
                 else:
                     relationships.append({PARENT_TYPE: other_node, PARENT_ID_FIELD: other_id, PARENT_ID: value,
@@ -397,14 +391,14 @@ class DataLoader:
                 obj = self.cleanup_node(org_obj)
                 node_type = obj[NODE_TYPE]
                 # criteria_statement is used to find current node
-                criteria_statement = self.getSearchCriteriaForNode(obj)
+                criteria_statement = self.get_search_criteria_for_node(obj)
                 results = self.collect_relationships(obj, session, True, line_num)
                 relationships = results[RELATIONSHIPS]
                 visits_created += results[VISITS_CREATED]
                 provided_parents = results[PROVIDED_PARENTS]
                 if provided_parents > 0:
                     if len(relationships) == 0:
-                        raise Exception('No parents found, abort loading!')
+                        raise Exception('Line: {}: No parents found, abort loading!'.format(line_num))
 
                     for relationship in relationships:
                         relationship_name = relationship[RELATIONSHIP_NAME]
@@ -429,7 +423,7 @@ class DataLoader:
 
         return True
 
-    def getSearchCriteriaForNode(self, node):
+    def get_search_criteria_for_node(self, node):
         id_field = self.get_id_field(node)
         node_id = self.get_id(node)
         node_type = node[NODE_TYPE]
@@ -479,11 +473,7 @@ class DataLoader:
         if not session or (not isinstance(session, Session) and not isinstance(session, Transaction)):
             self.log.error("Neo4j session is not valid!")
             return False
-        date_map = {
-            'vital_signs': 'date_of_vital_signs',
-            'physical_exam': 'date_of_examination',
-            'disease_extent': 'date_of_evaluation'
-        }
+        date_map = PROPS['visit_date_in_nodes']
         if not NODE_TYPE in src:
             self.log.error('Line: {}: Given object doesn\'t have a "{}" field!'.format(line_num, NODE_TYPE))
             return False

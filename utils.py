@@ -7,6 +7,7 @@ from email.mime.text import MIMEText
 import smtplib
 import re
 from configparser import ConfigParser
+import yaml
 
 def get_logger(name):
     formatter = logging.Formatter('%(asctime)s %(levelname)s: (%(name)s) - %(message)s')
@@ -90,7 +91,7 @@ def send_mail(subject, contents, attachments=None):
             server.quit()
 
 config = ConfigParser()
-CONFIG_FILE_ENV_VAR = 'ICDC_FILE_LOADER_CONFIG'
+CONFIG_FILE_ENV_VAR = 'ICDC_DATA_LOADER_CONFIG'
 config_file = os.environ.get(CONFIG_FILE_ENV_VAR, 'config.ini')
 if config_file and os.path.isfile(config_file):
     config.read(config_file)
@@ -98,6 +99,16 @@ else:
     util_log = get_logger('Utils')
     util_log.error('Can\'t find configuration file! Make a copy of config.sample.ini to config.ini'
                    + ' or specify config file in Environment variable {}'.format(CONFIG_FILE_ENV_VAR))
+    sys.exit(1)
+
+PROP_FILE_ENV_VAR = 'ICDC_DATA_LOADER_PROP'
+property_file = os.environ.get(PROP_FILE_ENV_VAR, 'props.yml')
+if property_file and os.path.isfile(property_file):
+    with open(property_file) as prop_file:
+        PROPS = yaml.safe_load(prop_file)['Properties']
+else:
+    util_log = get_logger('Utils')
+    util_log.error('Can\'t find property file! Get a copy of prop.yml or specify property file in Environment variable {}'.format(PROP_FILE_ENV_VAR))
     sys.exit(1)
 
 LOG_LEVEL = os.environ.get('DL_LOG_LEVEL', config.get('log', 'log_level'))

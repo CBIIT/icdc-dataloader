@@ -365,17 +365,7 @@ class ICDC_Schema:
 
     # Get type info from description
     def map_type(self, type_name):
-        mapping = {
-            'string': 'String',
-            'number': 'Float',
-            'integer': 'Int',
-            'boolean': 'Boolean',
-            'array': 'Array',
-            'object': 'Object',
-            'datetime': 'DateTime',
-            'date': 'Date',
-            'TBD': 'String'
-        }
+        mapping = PROPS['type_mapping']
         result = DEFAULT_TYPE
 
         if type_name in mapping:
@@ -386,37 +376,7 @@ class ICDC_Schema:
         return result
 
     def plural(self, word):
-        plurals = {
-            'program': 'programs',
-            'study': 'studies',
-            'study_site': 'study_sites',
-            'study_arm': 'study_arms',
-            'agent': 'agents',
-            'cohort': 'cohorts',
-            'case': 'cases',
-            'demographic': 'demographics',
-            'cycle': 'cycles',
-            'visit': 'visits',
-            'principal_investigator': 'principal_investigators',
-            'diagnosis': 'diagnoses',
-            'enrollment': 'enrollments',
-            'prior_therapy': 'prior_therapies',
-            'prior_surgery': 'prior_surgeries',
-            'agent_administration': 'agent_administrations',
-            'sample': 'samples',
-            'evaluation': 'evaluations',
-            'assay': 'assays',
-            'file': 'files',
-            'image': 'images',
-            'physical_exam': 'physical_exams',
-            'vital_signs': 'vital_signs',
-            'lab_exam': 'lab_exams',
-            'adverse_event': 'adverse_events',
-            'disease_extent': 'disease_extents',
-            'follow_up': 'follow_ups',
-            'off_study': 'off_studies',
-            'off_treatment': 'off_treatments'
-        }
+        plurals = PROPS['plurals']
         if word in plurals:
             return plurals[word]
         else:
