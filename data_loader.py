@@ -30,7 +30,9 @@ FOREVER = '99991231'
 INFERRED = 'inferred'
 CREATED = 'created'
 UPDATED = 'updated'
-
+RELATIONSHIPS = 'relationships'
+VISITS_CREATED = 'visits_created'
+PROVIDED_PARENTS = 'provided_parents'
 
 
 class DataLoader:
@@ -81,11 +83,16 @@ class DataLoader:
         self.relationships_stat = {}
         with self.driver.session() as session:
             tx = session.begin_transaction()
-            for txt in file_list:
-                self.load_nodes(tx, txt)
-            for txt in file_list:
-                self.load_relationships(tx, txt)
-            tx.commit()
+            try:
+                for txt in file_list:
+                    self.load_nodes(tx, txt)
+                for txt in file_list:
+                    self.load_relationships(tx, txt)
+                tx.commit()
+            except Exception as e:
+                tx.rollback()
+                self.log.exception(e)
+                return False
         end = timer()
 
         # Print statistics
@@ -174,24 +181,21 @@ class DataLoader:
                 validation_failed = False
                 violations = 0
                 for org_obj in reader:
-                    obj = self.cleanup_node(org_obj)
-                    node_type = obj[NODE_TYPE]
                     line_num += 1
-                    # Validate parent exist
-                    for key, value in obj.items():
-                        if is_parent_pointer(key):
-                            other_node, other_id = key.split('.')
-                            relationship_name = self.schema.get_relationship(node_type, other_node)
-                            if not relationship_name:
-                                self.log.error('Relationship not found!')
+                    obj = self.cleanup_node(org_obj)
+                    results = self.collect_relationships(obj, session, False, line_num)
+                    relationships = results[RELATIONSHIPS]
+                    provided_parents = results[PROVIDED_PARENTS]
+                    if provided_parents > 0:
+                        if len(relationships) == 0:
+                            self.log.error('Invalid data at line {}: No parents found!'.format(line_num))
+                            validation_failed = True
+                            violations += 1
+                            if violations >= max_violations:
                                 return False
-                            # Todo: create a session
-                            if not self.node_exists(session, other_node, other_id, value):
-                                self.log.error('Invalid data at line {}: Parent (:{} {{ {}: "{}" }}) doesn\'t exist!'.format(line_num, other_node, other_id, value))
-                                validation_failed = True
-                                violations += 1
-                                if violations >= max_violations:
-                                    return False
+                    else:
+                        self.log.info('Line: {} - No parents found'.format(line_num))
+
         return not validation_failed
 
     # Validate file
@@ -349,6 +353,37 @@ class DataLoader:
             self.log.warning('More than one nodes found! ')
         return count >= 1
 
+    def collect_relationships(self, obj, session, create_visit, line_num) -> dict:
+        node_type = obj[NODE_TYPE]
+        relationships = []
+        visits_created = 0
+        provided_parents = 0
+        for key, value in obj.items():
+            if is_parent_pointer(key):
+                provided_parents += 1
+                other_node, other_id = key.split('.')
+                relationship_name = self.schema.get_relationship(node_type, other_node)
+                if not relationship_name:
+                    self.log.error('Line: {}: Relationship not found!'.format(line_num))
+                    raise Exception('Undefined relationship, abort loading!')
+                if not self.node_exists(session, other_node, other_id, value):
+                    if other_node == 'visit' and create_visit:
+                        if self.create_visit(session, line_num, other_node, value, obj):
+                            visits_created += 1
+                            relationships.append({PARENT_TYPE: other_node, PARENT_ID_FIELD: other_id, PARENT_ID: value,
+                                                  RELATIONSHIP_NAME: relationship_name})
+                        else:
+                            self.log.error(
+                                'Line: {}: Couldn\'t create {} node automatically!'.format(line_num, VISIT_NODE))
+                    else:
+                        self.log.warning(
+                            'Parent node (:{} {{{}: "{}"}} not found in DB!'.format(other_node, other_id,
+                                                                                                   value))
+                else:
+                    relationships.append({PARENT_TYPE: other_node, PARENT_ID_FIELD: other_id, PARENT_ID: value,
+                                          RELATIONSHIP_NAME: relationship_name})
+        return {RELATIONSHIPS: relationships, VISITS_CREATED: visits_created, PROVIDED_PARENTS: provided_parents}
+
     def load_relationships(self, session, file_name):
         self.log.info('Loading relationships from file: {}'.format(file_name))
 
@@ -363,45 +398,29 @@ class DataLoader:
                 node_type = obj[NODE_TYPE]
                 # criteria_statement is used to find current node
                 criteria_statement = self.getSearchCriteriaForNode(obj)
-                relationships = []
+                results = self.collect_relationships(obj, session, True, line_num)
+                relationships = results[RELATIONSHIPS]
+                visits_created += results[VISITS_CREATED]
+                provided_parents = results[PROVIDED_PARENTS]
+                if provided_parents > 0:
+                    if len(relationships) == 0:
+                        raise Exception('No parents found, abort loading!')
 
-                # Find all relationships in incoming data, and create them one by one
-                for key, value in obj.items():
-                    if is_parent_pointer(key):
-                        other_node, other_id = key.split('.')
-                        relationship_name = self.schema.get_relationship(node_type, other_node)
-                        if not relationship_name:
-                            self.log.error('Line: {}: Relationship not found!'.format(line_num))
-                            return False
-                        if not self.node_exists(session, other_node, other_id, value):
-                            if other_node == 'visit':
-                                if self.create_visit(session, line_num, other_node, value, obj):
-                                    visits_created += 1
-                                    relationships.append( {PARENT_TYPE: other_node, PARENT_ID_FIELD: other_id, PARENT_ID: value, RELATIONSHIP_NAME: relationship_name})
-                                else:
-                                    self.log.error('Line: {}: Couldn\'t create {} node automatically!'.format(line_num, VISIT_NODE))
-                            else:
-                                self.log.warning(
-                                    'Node (:{} {{{}: "{}"}} not found in DB!'.format(other_node, other_id, value))
-                        else:
-                            relationships.append({PARENT_TYPE: other_node, PARENT_ID_FIELD: other_id, PARENT_ID: value, RELATIONSHIP_NAME: relationship_name})
+                    for relationship in relationships:
+                        relationship_name = relationship[RELATIONSHIP_NAME]
+                        parent_node = relationship[PARENT_TYPE]
+                        statement = 'MATCH (m:{} {{{}: "{}"}}) '.format(parent_node, relationship[PARENT_ID_FIELD], relationship[PARENT_ID])
+                        statement += 'MATCH (n:{} {{ {} }}) '.format(node_type, criteria_statement)
+                        statement += 'MERGE (n)-[r:{}]->(m)'.format(relationship_name)
+                        statement += ' ON CREATE SET r.{} = datetime()'.format(CREATED)
+                        statement += ' ON MATCH SET r.{} = datetime()'.format(UPDATED)
 
-
-                for relationship in relationships:
-                    relationship_name = relationship[RELATIONSHIP_NAME]
-                    parent_node = relationship[PARENT_TYPE]
-                    statement = 'MATCH (m:{} {{{}: "{}"}}) '.format(parent_node, relationship[PARENT_ID_FIELD], relationship[PARENT_ID])
-                    statement += 'MATCH (n:{} {{ {} }}) '.format(node_type, criteria_statement)
-                    statement += 'MERGE (n)-[r:{}]->(m)'.format(relationship_name)
-                    statement += ' ON CREATE SET r.{} = datetime()'.format(CREATED)
-                    statement += ' ON MATCH SET r.{} = datetime()'.format(UPDATED)
-
-                    result = session.run(statement)
-                    count = result.summary().counters.relationships_created
-                    self.relationships_created += count
-                    relationship_pattern = '(:{})->[:{}]->(:{})'.format(node_type, relationship_name, parent_node)
-                    relationships_created[relationship_pattern] = relationships_created.get(relationship_pattern, 0) + count
-                    self.relationships_stat[relationship_name] = self.relationships_stat.get(relationship_name, 0) + count
+                        result = session.run(statement)
+                        count = result.summary().counters.relationships_created
+                        self.relationships_created += count
+                        relationship_pattern = '(:{})->[:{}]->(:{})'.format(node_type, relationship_name, parent_node)
+                        relationships_created[relationship_pattern] = relationships_created.get(relationship_pattern, 0) + count
+                        self.relationships_stat[relationship_name] = self.relationships_stat.get(relationship_name, 0) + count
 
             for rel, count in relationships_created.items():
                 self.log.info('{} {} relationship(s) loaded'.format(count, rel))

@@ -443,7 +443,7 @@ class FileProcessor:
             self.loader = DataLoader(self.driver, self.schema)
             if isinstance(self.loader, DataLoader):
                 for file in manifests:
-                    if not self.loader.validate_cases_exist_in_file(file, 1) or not self.loader.validate_parents_exist_in_file(file, 1):
+                    if not self.loader.validate_parents_exist_in_file(file, 1):
                         self.log.error('Validate parents in {} failed, abort loading!'.format(file))
                         return False
                 return self.loader.load(manifests, False, self.dry_run, 1)
