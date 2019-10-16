@@ -53,7 +53,7 @@ type StudyTypeCaseCount {
 }
 
 type AgeCaseCount {
-  age: Int
+  age: Float
   cases: Int
 }
 
