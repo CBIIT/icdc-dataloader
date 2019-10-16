@@ -387,6 +387,8 @@ Relationships:
         Dst: study
       - Src: principal_investigator
         Dst: study
+      - Src: file
+        Dst: study
     Props: null
   of_agent:
     Mul: many_to_one

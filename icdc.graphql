@@ -188,6 +188,7 @@ type file {
   file_status: String
   uuid: String
   file_locations: String
+  studies: [study] @relation(name:"of_study", direction:OUT)
   sample: sample @relation(name:"of_sample", direction:OUT)
   assay: assay @relation(name:"of_assay", direction:OUT)
   diagnosis: diagnosis @relation(name:"from_diagnosis", direction:OUT)
@@ -376,6 +377,7 @@ type study {
   cohorts: [cohort] @relation(name:"member_of", direction:IN)
   study_sites: [study_site] @relation(name:"of_study", direction:IN)
   principal_investigators: [principal_investigator] @relation(name:"of_study", direction:IN)
+  files: [file] @relation(name:"of_study", direction:IN)
 }
 
 type study_arm {
