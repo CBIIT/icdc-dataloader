@@ -305,26 +305,6 @@ class FileProcessor:
         return results
 
 
-    def is_file(self, bucket, key):
-        try:
-            self.s3_client.head_object(Bucket=bucket, Key=key)
-            self.log.info('Skipped file {} - Same file already exists on S3'.format(s3_file_path))
-            files[file_name] = {FILE_NAME: file_name,
-                                FILE_LOC: self.get_s3_location(bucket, final_path, file_name),
-                                FILE_SIZE: os.stat(local_file).st_size,
-                                MD5: md5}
-        except ClientError as e:
-            if e.response['Error']['Code'] in ['404', '412']:
-                with open(local_file, 'rb') as lf:
-                    s3_obj = self.s3_client.put_object(Bucket=bucket, Key=s3_file_path, Body=lf)
-                    files[file_name] = {FILE_NAME: file_name,
-                                        FILE_LOC: self.get_s3_location(bucket, final_path, file_name),
-                                        FILE_SIZE: os.stat(local_file).st_size,
-                                        MD5: s3_obj['ETag'].replace('"', '')}
-            else:
-                self.log.error('Unknown S3 client error!')
-                self.log.exception(e)
-
     def handler(self, event):
         succeeded = True
         for record in event['Records']:
