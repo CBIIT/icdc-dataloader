@@ -47,7 +47,6 @@ FILES = 'files'
 RECORDS = 'Records'
 END_NORMALLY = 'end_normally'
 MESSAGE = 'message'
-FILES = 'files'
 
 class FileProcessor:
     def __init__(self, queue_name, driver, schema, manifest_bucket, manifest_folder, dry_run=False):
