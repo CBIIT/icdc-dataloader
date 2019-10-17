@@ -30,7 +30,7 @@ FINAL_PREFIX = 'Final'
 ICDC_FILE_UPLOADED = 'ICDC-file-uploaded'
 FILE_NAME = 'file_name'
 CASE_ID = 'case_id'
-MD5 = 'md5sum'
+MD5_SUM = 'md5sum'
 SHA512 = 'sha512'
 FILE_SIZE = "file_size"
 FILE_LOC = 'file_location'
@@ -38,15 +38,21 @@ FILE_FORMAT = 'file_format'
 UUID = 'uuid'
 FILE_STAT = 'file_status'
 ACL = 'acl'
-MANIFEST_FIELDS = [UUID, FILE_SIZE, MD5, FILE_STAT, FILE_LOC, FILE_FORMAT, ACL]
+DATA_FIELDS = [UUID, FILE_SIZE, MD5_SUM, FILE_STAT, FILE_LOC, FILE_FORMAT, ACL]
 BLOCK_SIZE = 65536
 DEFAULT_STAT = 'uploaded'
-DEFAULT_ACL = 'open'
+DEFAULT_ACL = "['Open']"
 MANIFESTS = 'manifests'
 FILES = 'files'
 RECORDS = 'Records'
 END_NORMALLY = 'end_normally'
 MESSAGE = 'message'
+GUID = 'GUID'
+MD5 = 'md5'
+SIZE = 'size'
+URL = 'url'
+MANIFEST_FIELDS = [GUID, MD5, SIZE, ACL, URL]
+
 
 class FileProcessor:
     def __init__(self, queue_name, driver, schema, manifest_bucket, manifest_folder, dry_run=False):
@@ -111,7 +117,7 @@ class FileProcessor:
             files[file_name] = {FILE_NAME: file_name,
                                 FILE_LOC: self.get_s3_location(bucket, final_path, file_name),
                                 FILE_SIZE: os.stat(local_file).st_size,
-                                MD5: md5,
+                                MD5_SUM: md5,
                                 SHA512: sha512}
         except ClientError as e:
             if e.response['Error']['Code'] in ['404', '412']:
@@ -120,7 +126,7 @@ class FileProcessor:
                     files[file_name] = {FILE_NAME: file_name,
                                         FILE_LOC: self.get_s3_location(bucket, final_path, file_name),
                                         FILE_SIZE: os.stat(local_file).st_size,
-                                        MD5: s3_obj['ETag'].replace('"', ''),
+                                        MD5_SUM: s3_obj['ETag'].replace('"', ''),
                                         SHA512: sha512}
             else:
                 self.log.error('Unknown S3 client error!')
@@ -189,11 +195,11 @@ class FileProcessor:
         try:
             for file in file_list:
                 if os.path.isfile(file):
-                    self.log.info('Uploading manifest: {}'.format(file))
+                    self.log.info('Uploading manifest: {} to s3://{}'.format(file, self.manifest_bucket))
                     file_name = self.join_path(self.manifest_folder, folder, os.path.basename(file))
                     self.s3_client.upload_file(file, self.manifest_bucket, file_name)
                 else:
-                    self.log.info('{} is not a file, and won\'t be uploaded to S3'.format(file))
+                    self.log.warning('{} is not a file, and won\'t be uploaded to S3'.format(file))
             return True
         except Exception as e:
             self.log.exception(e)
@@ -219,11 +225,20 @@ class FileProcessor:
         return "s3://{}/{}/{}".format(bucket, folder, key)
 
     @staticmethod
+    def populate_indexd_record(record, file_info):
+        record[GUID] = get_uuid_for_node("file", file_info[SHA512])
+        record[MD5] = file_info[MD5_SUM]
+        record[SIZE] = file_info[FILE_SIZE]
+        record[ACL] = DEFAULT_ACL
+        record[URL] = file_info[FILE_LOC]
+        return record
+
+    @staticmethod
     def populate_record(record, file_info):
         file_name = file_info[FILE_NAME]
         record[FILE_SIZE] = file_info[FILE_SIZE]
         record[FILE_LOC] = file_info[FILE_LOC]
-        record[MD5] = file_info[MD5]
+        record[MD5_SUM] = file_info[MD5_SUM]
         record[FILE_FORMAT] = (os.path.splitext(file_name)[1]).split('.')[1].lower()
         record[UUID] = get_uuid_for_node("file", file_info[SHA512])
         record[FILE_STAT] = DEFAULT_STAT
@@ -232,7 +247,7 @@ class FileProcessor:
 
     # check the field file_name/case id in the manifest which should not be null/empty
     # check files included in the manifest exist or not
-    def populate_manifest(self, manifest, extracted_files):
+    def populate_manifest(self, manifest, indexd_file, extracted_files):
         self.log.info('Validating manifest: {}'.format(manifest))
         succeeded = True
         # check manifest
@@ -244,32 +259,38 @@ class FileProcessor:
                 # check fields in the manifest, if missing fields stops
                 with open(manifest) as inf:
                     temp_file = manifest + '_populated'
-                    with open(temp_file, 'w') as outf:
-                        tsv_reader = csv.DictReader(inf, delimiter='\t')
-                        fieldnames = tsv_reader.fieldnames
-                        fieldnames += MANIFEST_FIELDS
-                        tsv_writer = csv.DictWriter(outf, delimiter='\t', fieldnames=fieldnames)
-                        tsv_writer.writeheader()
-                        line_count = 1
-                        for record in tsv_reader:
-                            line_count += 1
-                            file_name = record.get(FILE_NAME, None)
-                            if file_name:
-                                if not file_name in extracted_files:
-                                    self.log.error('Invalid data at line {} : File "{}" doesn\'t exist!'.format(line_count, file_name))
-                                    succeeded = False
+                    with open(indexd_file, 'w') as indexd_f:
+                        manifest_writer = csv.DictWriter(indexd_f, delimiter='\t', fieldnames=MANIFEST_FIELDS)
+                        manifest_writer.writeheader()
+                        with open(temp_file, 'w') as outf:
+                            tsv_reader = csv.DictReader(inf, delimiter='\t')
+                            fieldnames = tsv_reader.fieldnames
+                            fieldnames += DATA_FIELDS
+                            tsv_writer = csv.DictWriter(outf, delimiter='\t', fieldnames=fieldnames)
+                            tsv_writer.writeheader()
+                            line_count = 1
+                            for record in tsv_reader:
+                                manifest_record = {}
+                                line_count += 1
+                                file_name = record.get(FILE_NAME, None)
+                                if file_name:
+                                    if not file_name in extracted_files:
+                                        self.log.error('Invalid data at line {} : File "{}" doesn\'t exist!'.format(line_count, file_name))
+                                        succeeded = False
+                                    else:
+                                        # Populate fields in record
+                                        self.populate_record(record, extracted_files[file_name])
+                                        self.populate_indexd_record(manifest_record, extracted_files[file_name])
                                 else:
-                                    # Populate fields in record
-                                    self.populate_record(record, extracted_files[file_name])
-                            else:
-                                self.log.error('Invalid data at line {} : Empty file name'.format(line_count))
-                                succeeded = False
+                                    self.log.error('Invalid data at line {} : Empty file name'.format(line_count))
+                                    succeeded = False
 
-                            case_id = record.get(CASE_ID, None)
-                            if not case_id:
-                                self.log.error('Invalid data at line {} : Empty case_id'.format(line_count))
-                                succeeded = False
-                            tsv_writer.writerow(record)
+                                case_id = record.get(CASE_ID, None)
+                                if not case_id:
+                                    self.log.error('Invalid data at line {} : Empty case_id'.format(line_count))
+                                    succeeded = False
+                                tsv_writer.writerow(record)
+                                manifest_writer.writerow(manifest_record)
             except Exception as e:
                 self.log.exception(e)
                 succeeded = False
@@ -281,22 +302,30 @@ class FileProcessor:
             os.remove(temp_file)
         return succeeded
 
-
+    @staticmethod
+    def get_indexd_manifest_name(file_name):
+        folder = os.path.dirname(file_name)
+        base_name = os.path.basename(file_name)
+        name, ext = os.path.splitext(base_name)
+        new_name = '{}_indexd.{}'.format(name, ext)
+        return os.path.join(folder, new_name)
 
     # Find and process manifest files, return list of updated manifest files and a list of files that included in manifest files
     def process_manifest(self, data_folder, extracted_files) -> [str]:
-        results = []
+        results = ([], [])
         file_list = glob.glob('{}/*.txt'.format(data_folder))
         if not file_list:
             self.log.error('No manifest (TSV/TXT) files found!')
             return results
         try:
             for manifest in file_list:
-                if not self.populate_manifest(manifest, extracted_files):
+                indexd_manifest = self.get_indexd_manifest_name(manifest)
+                if not self.populate_manifest(manifest, indexd_manifest, extracted_files):
                     self.log.warning('Populate manifest file "{}" failed!'.format(manifest))
                     continue
                 else:
-                    results.append(manifest)
+                    results[0].append(manifest)
+                    results[1].append(indexd_manifest)
                     self.log.info('Populated manifest file "{}"!'.format(manifest))
 
         except Exception as e:
@@ -335,13 +364,13 @@ class FileProcessor:
                     succeeded = False
                     continue
                 if file_list:
-                    manifests = self.process_manifest(temp_folder, file_list)
+                    manifests, indexd_manifests = self.process_manifest(temp_folder, file_list)
                     if not manifests:
                         self.log.error('Process manifest failed!')
                         self.send_failure_email('Process manifest failed!')
                         continue
                     manifest_folder = os.path.dirname(key).replace(RAW_PREFIX, '')
-                    self.upload_manifests(manifest_folder, manifests)
+                    self.upload_manifests(manifest_folder, manifests + indexd_manifests)
                     loading_result = self.load_manifests(manifests)
                     end = timer()
                     if loading_result:
@@ -349,7 +378,6 @@ class FileProcessor:
                     else:
                         self.log.error('Load manifests failed!')
                         self.send_failure_email('Load manifests failed!')
-                # Todo: do I need to do something here
             except Exception as e:
                 end = timer()
                 self.log.exception(e)
