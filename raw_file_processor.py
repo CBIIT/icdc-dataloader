@@ -162,7 +162,7 @@ class FileProcessor:
                     self.log.info('Streaming tar file: {}'.format(key))
                     files = {}
                     obj = self.s3_client.get_object(Bucket=bucket, Key=key)
-                    stream = io.BufferedReader(obj['Body']._raw_stream)
+                    stream = obj['Body']._raw_stream
                     with tarfile.open(None, 'r|*', stream) as tar_ref:
                         self.log.info('Extracting tar file: {}'.format(key))
                         for item in tar_ref:
