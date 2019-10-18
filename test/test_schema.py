@@ -13,7 +13,7 @@ class TestSchema(unittest.TestCase):
         schema = ICDC_Schema(['data/icdc-model.yml', 'data/icdc-model-props.yml'])
         self.assertIsInstance(schema, ICDC_Schema)
         self.assertEqual(28, schema.node_count())
-        self.assertEqual(42, schema.relationship_count())
+        self.assertEqual(43, schema.relationship_count())
 
     def test_default_value(self):
         self.assertIsNone(self.schema.get_default_value('node_does_not_exit', 'unit_does_not_exist'))
