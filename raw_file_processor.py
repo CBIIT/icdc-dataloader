@@ -247,7 +247,7 @@ class FileProcessor:
 
     # check the field file_name/case id in the manifest which should not be null/empty
     # check files included in the manifest exist or not
-    def populate_manifest(self, manifest, indexd_file, extracted_files):
+    def populate_manifest(self, manifest, neo4j_file, indexd_file, extracted_files):
         self.log.info('Validating manifest: {}'.format(manifest))
         succeeded = True
         # check manifest
@@ -258,11 +258,10 @@ class FileProcessor:
             try:
                 # check fields in the manifest, if missing fields stops
                 with open(manifest) as inf:
-                    temp_file = manifest + '_populated'
                     with open(indexd_file, 'w') as indexd_f:
                         manifest_writer = csv.DictWriter(indexd_f, delimiter='\t', fieldnames=MANIFEST_FIELDS)
                         manifest_writer.writeheader()
-                        with open(temp_file, 'w') as outf:
+                        with open(neo4j_file, 'w') as outf:
                             tsv_reader = csv.DictReader(inf, delimiter='\t')
                             fieldnames = tsv_reader.fieldnames
                             fieldnames += DATA_FIELDS
@@ -297,9 +296,9 @@ class FileProcessor:
 
         if succeeded:
             os.remove(manifest)
-            os.rename(temp_file, manifest)
         else:
-            os.remove(temp_file)
+            os.remove(neo4j_file)
+            os.remove(indexd_file)
         return succeeded
 
     @staticmethod
@@ -307,7 +306,15 @@ class FileProcessor:
         folder = os.path.dirname(file_name)
         base_name = os.path.basename(file_name)
         name, ext = os.path.splitext(base_name)
-        new_name = '{}_indexd.{}'.format(name, ext)
+        new_name = '{}_indexd{}'.format(name, ext)
+        return os.path.join(folder, new_name)
+
+    @staticmethod
+    def get_neo4j_manifest_name(file_name):
+        folder = os.path.dirname(file_name)
+        base_name = os.path.basename(file_name)
+        name, ext = os.path.splitext(base_name)
+        new_name = '{}_neo4j{}'.format(name, ext)
         return os.path.join(folder, new_name)
 
     # Find and process manifest files, return list of updated manifest files and a list of files that included in manifest files
@@ -320,11 +327,12 @@ class FileProcessor:
         try:
             for manifest in file_list:
                 indexd_manifest = self.get_indexd_manifest_name(manifest)
-                if not self.populate_manifest(manifest, indexd_manifest, extracted_files):
+                neo4j_manifest = self.get_neo4j_manifest_name(manifest)
+                if not self.populate_manifest(manifest, neo4j_manifest, indexd_manifest, extracted_files):
                     self.log.warning('Populate manifest file "{}" failed!'.format(manifest))
                     continue
                 else:
-                    results[0].append(manifest)
+                    results[0].append(neo4j_manifest)
                     results[1].append(indexd_manifest)
                     self.log.info('Populated manifest file "{}"!'.format(manifest))
 
