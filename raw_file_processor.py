@@ -258,10 +258,10 @@ class FileProcessor:
             try:
                 # check fields in the manifest, if missing fields stops
                 with open(manifest) as inf:
-                    with open(indexd_file, 'w') as indexd_f:
+                    with open(indexd_file, 'w', newline='\n') as indexd_f:
                         manifest_writer = csv.DictWriter(indexd_f, delimiter='\t', fieldnames=MANIFEST_FIELDS)
                         manifest_writer.writeheader()
-                        with open(neo4j_file, 'w') as outf:
+                        with open(neo4j_file, 'w', newline='\n') as outf:
                             tsv_reader = csv.DictReader(inf, delimiter='\t')
                             fieldnames = tsv_reader.fieldnames
                             fieldnames += DATA_FIELDS
