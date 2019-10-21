@@ -126,5 +126,9 @@ NODES_CREATED = 'nodes_created'
 RELATIONSHIP_CREATED = 'relationship_created'
 BLOCK_SIZE = 65536
 TEMP_FOLDER = config.get('main', 'temp_folder')
+INDEXD_GUID_PREFIX = config.get('indexd', 'GUID_prefix')
+INDEXD_MANIFEST_EXT = config.get('indexd', 'ext')
+if not INDEXD_MANIFEST_EXT.startswith('.'):
+    INDEXD_MANIFEST_EXT = '.' + INDEXD_MANIFEST_EXT
 DATE_FORMAT = '%Y%m%d'
 

@@ -226,7 +226,7 @@ class FileProcessor:
 
     @staticmethod
     def populate_indexd_record(record, file_info):
-        record[GUID] = get_uuid_for_node("file", file_info[SHA512])
+        record[GUID] = '{}{}'.format(INDEXD_GUID_PREFIX, get_uuid_for_node("file", file_info[SHA512]))
         record[MD5] = file_info[MD5_SUM]
         record[SIZE] = file_info[FILE_SIZE]
         record[ACL] = DEFAULT_ACL
@@ -306,7 +306,7 @@ class FileProcessor:
         folder = os.path.dirname(file_name)
         base_name = os.path.basename(file_name)
         name, ext = os.path.splitext(base_name)
-        new_name = '{}_indexd{}'.format(name, ext)
+        new_name = '{}_indexd{}'.format(name, INDEXD_MANIFEST_EXT)
         return os.path.join(folder, new_name)
 
     @staticmethod
