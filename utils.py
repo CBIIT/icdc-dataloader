@@ -103,11 +103,14 @@ else:
 
 PROP_FILE_ENV_VAR = 'ICDC_DATA_LOADER_PROP'
 property_file = os.environ.get(PROP_FILE_ENV_VAR, 'props.yml')
+util_log = get_logger('Utils')
 if property_file and os.path.isfile(property_file):
     with open(property_file) as prop_file:
         PROPS = yaml.safe_load(prop_file)['Properties']
+        if not PROPS:
+            util_log.error('Can\'t read property file!')
+            sys.exit(1)
 else:
-    util_log = get_logger('Utils')
     util_log.error('Can\'t find property file! Get a copy of prop.yml or specify property file in Environment variable {}'.format(PROP_FILE_ENV_VAR))
     sys.exit(1)
 
