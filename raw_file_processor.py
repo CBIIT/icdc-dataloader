@@ -15,7 +15,6 @@ from sqs import Queue
 import json
 import csv
 import hashlib
-import io
 import argparse
 from sqs import *
 import re
@@ -305,7 +304,7 @@ class FileProcessor:
     def get_indexd_manifest_name(file_name):
         folder = os.path.dirname(file_name)
         base_name = os.path.basename(file_name)
-        name, ext = os.path.splitext(base_name)
+        name, _ = os.path.splitext(base_name)
         new_name = '{}_indexd{}'.format(name, INDEXD_MANIFEST_EXT)
         return os.path.join(folder, new_name)
 
