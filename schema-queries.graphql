@@ -114,6 +114,9 @@ type FilesOfCase{
 
 
 type QueryType {
+  "Version"
+  schemaVersion: String @cypher(statement: "RETURN '0.1.0'")
+  
   "Simple count"
   numberOfStudies: Int @cypher(statement: "MATCH (n:study) RETURN  count (n)")
   numberOfCases: Int @cypher(statement: "MATCH (n:case) RETURN  count (n)")
