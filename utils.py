@@ -8,6 +8,8 @@ import smtplib
 import re
 from configparser import ConfigParser
 import yaml
+import subprocess
+from urllib.parse import urlparse
 
 def get_logger(name):
     formatter = logging.Formatter('%(asctime)s %(levelname)s: (%(name)s) - %(message)s')
@@ -90,6 +92,25 @@ def send_mail(subject, contents, attachments=None):
         if server and getattr(server, 'quit'):
             server.quit()
 
+
+def backup_neo4j(backup_dir, name, address, log):
+    try:
+        cmd = ['neo4j-admin',
+               'backup',
+               '--backup-dir={}'.format(backup_dir),
+               '--name={}'.format(name),
+               '--from={}'.format(address)
+               ]
+        subprocess.call(cmd)
+        return True
+    except Exception as e:
+        log.exception(e)
+        return False
+
+def get_host(uri):
+    parts = urlparse(uri)
+    return parts.hostname
+
 def check_schema_files(schemas, log):
     if not schemas:
         log.error('Please specify schema file(s) with -s or --schema argument')
@@ -137,9 +158,14 @@ NODES_CREATED = 'nodes_created'
 RELATIONSHIP_CREATED = 'relationship_created'
 BLOCK_SIZE = 65536
 TEMP_FOLDER = config.get('main', 'temp_folder')
+BACKUP_FOLDER = config.get('main', 'backup_folder')
 INDEXD_GUID_PREFIX = config.get('indexd', 'GUID_prefix')
 INDEXD_MANIFEST_EXT = config.get('indexd', 'ext')
 if not INDEXD_MANIFEST_EXT.startswith('.'):
     INDEXD_MANIFEST_EXT = '.' + INDEXD_MANIFEST_EXT
+os.makedirs(BACKUP_FOLDER, exist_ok=True)
+if not os.path.isdir(BACKUP_FOLDER):
+    util_log.error('{} is not a folder!'.format(BACKUP_FOLDER))
+    sys.exit(1)
 DATE_FORMAT = '%Y%m%d'
 

@@ -7,6 +7,7 @@ from icdc_schema import ICDC_Schema
 from utils import *
 from data_loader import DataLoader
 from s3 import *
+import datetime
 
 
 # Data loader will try to load all TSV(.TXT) files from given directory into Neo4j
@@ -73,12 +74,18 @@ def main():
     try:
         file_list = glob.glob('{}/*.txt'.format(directory))
         if file_list:
+            backup_name = datetime.date.today().strftime(DATE_FORMAT)
+            host = get_host(uri)
+            if not backup_neo4j(BACKUP_FOLDER, backup_name, host, log):
+                log.error('Backup Neo4j failed, abort loading!')
+                sys.exit(1)
             schema = ICDC_Schema(args.schema)
             driver = GraphDatabase.driver(uri, auth=(user, password))
             loader = DataLoader(driver, schema)
             loader.load(file_list, args.cheat_mode, args.dry_run, args.max_violations)
 
             driver.close()
+            log.info('To restore ')
         else:
             log.info('No files to load.')
 

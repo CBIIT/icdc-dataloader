@@ -8,3 +8,4 @@ __pycache__/
 cmd.txt
 test/temp
 config.ini
+backup/
