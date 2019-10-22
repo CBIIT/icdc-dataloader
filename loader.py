@@ -74,7 +74,7 @@ def main():
     try:
         file_list = glob.glob('{}/*.txt'.format(directory))
         if file_list:
-            backup_name = datetime.date.today().strftime(DATE_FORMAT)
+            backup_name = datetime.datetime.today().strftime(DATETIME_FORMAT)
             host = get_host(uri)
             if not backup_neo4j(BACKUP_FOLDER, backup_name, host, log):
                 log.error('Backup Neo4j failed, abort loading!')
@@ -85,7 +85,8 @@ def main():
             loader.load(file_list, args.cheat_mode, args.dry_run, args.max_violations)
 
             driver.close()
-            log.info('To restore ')
+            log.info('To restore DB from backup (to remove any changes caused by current data loading, run following command:')
+            log.info('neo4j stop; neo4j-admin restore --from={}/{} --force; neo4j start'.format(BACKUP_FOLDER, backup_name))
         else:
             log.info('No files to load.')
 

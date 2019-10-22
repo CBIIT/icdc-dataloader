@@ -168,4 +168,5 @@ if not os.path.isdir(BACKUP_FOLDER):
     util_log.error('{} is not a folder!'.format(BACKUP_FOLDER))
     sys.exit(1)
 DATE_FORMAT = '%Y%m%d'
+DATETIME_FORMAT = '%Y%m%d-%H%M%S'
 
