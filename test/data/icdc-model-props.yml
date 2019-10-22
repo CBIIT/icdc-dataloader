@@ -532,7 +532,7 @@ PropDefinitions:
 # physical_exam props
   assessment_timepoint:
     Src: PHYSICAL_EXAM/PE/1
-    Type: string
+    Type: integer
   body_system:
     Desc: Body system examined; up to 12 in a visit
     Src: PHYSICAL_EXAM/PE/1
@@ -888,7 +888,7 @@ PropDefinitions:
 # vital_signs props
   assessment_timepoint:
     Src: PHYSICAL_EXAM/PE/1
-    Type: string
+    Type: integer
   body_surface_area:
     Desc: Called "bsa" in form
     Src: PHYSICAL_EXAM/PE/1
