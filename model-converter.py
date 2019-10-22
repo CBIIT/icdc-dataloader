@@ -7,13 +7,22 @@ from icdc_schema import *
 
 
 if __name__ == '__main__':
+    log = get_logger('Model Converter')
     parser = argparse.ArgumentParser(description='Convert ICDC YAML schema to GraphQL schema')
-    parser.add_argument('schema', help='Input YAML Schema file name')
-    parser.add_argument('props', help='Input YAML Property file name')
+    parser.add_argument('-s', '--schema', help='Schema files', action='append')
+    parser.add_argument('query_file', help='Custom query file', type=argparse.FileType('r'))
+
     parser.add_argument('graphql', help='Output GraphQL schema file name')
     args = parser.parse_args()
 
-    schema = ICDC_Schema((args.schema, args.props))
+    if not check_schema_files(args.schema, log):
+        sys.exit(1)
+
+    schema = ICDC_Schema(args.schema)
+
+    if not args.query_file:
+        log.error('Read custom query file "{}" failed!'.format(args.query_file))
+        sys.exit(1)
 
     with open(args.graphql, 'w') as graphql_file:
         # Output Types
@@ -34,8 +43,7 @@ if __name__ == '__main__':
             print(typeEnd, file=graphql_file)
 
         # Copy custom queries
-        with open(CUSTOM_QUERY_FILE) as query_file:
-            for line in query_file:
-                print(line, end='', file=graphql_file)
+        for line in args.query_file:
+            print(line, end='', file=graphql_file)
 
     print('Types: {}, Relationships: {}'.format(schema.node_count(), schema.relationship_count()))

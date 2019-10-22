@@ -67,14 +67,8 @@ def main():
             password = os.environ[PSWD_ENV]
     user = args.user if args.user else 'neo4j'
 
-    if not args.schema:
-        log.error('Please specify schema file(s) with -s or --schema argument')
+    if not check_schema_files(args.schema):
         sys.exit(1)
-
-    for schema_file in args.schema:
-        if not os.path.isfile(schema_file):
-            log.error('{} is not a file'.format(schema_file))
-            sys.exit(1)
 
     try:
         file_list = glob.glob('{}/*.txt'.format(directory))

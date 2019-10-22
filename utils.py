@@ -90,6 +90,17 @@ def send_mail(subject, contents, attachments=None):
         if server and getattr(server, 'quit'):
             server.quit()
 
+def check_schema_files(schemas, log):
+    if not schemas:
+        log.error('Please specify schema file(s) with -s or --schema argument')
+        return False
+
+    for schema_file in schemas:
+        if not os.path.isfile(schema_file):
+            log.error('{} is not a file'.format(schema_file))
+            return False
+    return True
+
 config = ConfigParser()
 CONFIG_FILE_ENV_VAR = 'ICDC_DATA_LOADER_CONFIG'
 config_file = os.environ.get(CONFIG_FILE_ENV_VAR, 'config.ini')
