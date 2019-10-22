@@ -67,7 +67,7 @@ def main():
             password = os.environ[PSWD_ENV]
     user = args.user if args.user else 'neo4j'
 
-    if not check_schema_files(args.schema):
+    if not check_schema_files(args.schema, log):
         sys.exit(1)
 
     try:
