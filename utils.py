@@ -95,13 +95,29 @@ def send_mail(subject, contents, attachments=None):
 
 def backup_neo4j(backup_dir, name, address, log):
     try:
-        cmd = ['neo4j-admin',
-               'backup',
-               '--backup-dir={}'.format(backup_dir),
-               '--name={}'.format(name),
-               '--from={}'.format(address)
+        cmds = [
+                  [
+                      'mkdir',
+                      '-p',
+                      backup_dir
+                  ],
+                  [
+                      'neo4j-admin',
+                      'backup',
+                      '--backup-dir={}'.format(backup_dir),
+                      '--name={}'.format(name),
+                      # '--from={}'.format(address)
+                  ]
                ]
-        subprocess.call(cmd)
+        if address in ['localhost', '127.0.0.1']:
+            for cmd in cmds:
+                log.info(cmd)
+                subprocess.call(cmd)
+        else:
+            for cmd in cmds:
+                remote_cmd = ['ssh', address] + cmd
+                log.info(' '.join(remote_cmd))
+                subprocess.call(remote_cmd)
         return True
     except Exception as e:
         log.exception(e)
