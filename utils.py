@@ -95,7 +95,8 @@ def send_mail(subject, contents, attachments=None):
 
 def backup_neo4j(backup_dir, name, address, log):
     try:
-        restore_cmd = 'To restore DB from backup (to remove any changes caused by current data loading, run following command:\n'
+        restore_cmd = 'To restore DB from backup (to remove any changes caused by current data loading, run following commands:\n'
+        restore_cmd += '#' * 160 + '\n'
         neo4j_cmd = 'neo4j-admin restore --from={}/{} --force'.format(BACKUP_FOLDER, name)
         cmds = [
                   [
@@ -111,16 +112,18 @@ def backup_neo4j(backup_dir, name, address, log):
                   ]
                ]
         if address in ['localhost', '127.0.0.1']:
-            restore_cmd += '          $ neo4j stop; {}; neo4j start'.format(neo4j_cmd)
+            restore_cmd += '\t$ neo4j stop && {} && neo4j start\n'.format(neo4j_cmd)
             for cmd in cmds:
                 log.info(cmd)
                 subprocess.call(cmd)
         else:
-            restore_cmd += '          $ ssh -t {0} "sudo systemctl stop neo4j; {1}; sudo systemctl start neo4j"'.format(address, neo4j_cmd)
+            second_cmd = 'sudo systemctl stop neo4j && {} && sudo systemctl start neo4j && exit'.format(neo4j_cmd)
+            restore_cmd += '\t$ echo "{}" | ssh -t {} sudo su - neo4j\n'.format(second_cmd, address)
             for cmd in cmds:
                 remote_cmd = ['ssh', address] + cmd
                 log.info(' '.join(remote_cmd))
                 subprocess.call(remote_cmd)
+        restore_cmd += '#' * 160
         return restore_cmd
     except Exception as e:
         log.exception(e)
