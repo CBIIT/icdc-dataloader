@@ -76,7 +76,8 @@ def main():
         if file_list:
             backup_name = datetime.datetime.today().strftime(DATETIME_FORMAT)
             host = get_host(uri)
-            if not backup_neo4j(BACKUP_FOLDER, backup_name, host, log):
+            restore_cmd = backup_neo4j(BACKUP_FOLDER, backup_name, host, log)
+            if not restore_cmd:
                 log.error('Backup Neo4j failed, abort loading!')
                 sys.exit(1)
             schema = ICDC_Schema(args.schema)
@@ -85,8 +86,7 @@ def main():
             loader.load(file_list, args.cheat_mode, args.dry_run, args.max_violations)
 
             driver.close()
-            log.info('To restore DB from backup (to remove any changes caused by current data loading, run following command:')
-            log.info('neo4j stop; neo4j-admin restore --from={}/{} --force; neo4j start'.format(BACKUP_FOLDER, backup_name))
+            log.info(restore_cmd)
         else:
             log.info('No files to load.')
 
