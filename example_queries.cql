@@ -110,3 +110,22 @@ RETURN c.case_id AS case_id,
  demo.patient_age_at_enrollment AS age,
  demo.sex AS sex,
  demo.neutered_indicator AS neutered_status
+
+ # Get all files for 7 bridges
+MATCH (f:file)-[*]->(s:study)
+OPTIONAL MATCH (f)-[*]->(c:case)
+OPTIONAL MATCH (c)-->(co:cohort)-->(arm:study_arm)
+OPTIONAL MATCH (demo:demographic)-->(c)
+OPTIONAl MATCH (diag:diagnosis)-->(c)
+OPTIONAL MATCH (f)-[*]->(v:visit)
+OPTIONAL MATCH (f)-->(samp:sample)
+RETURN s.clinical_study_designation AS clinical_study_designation, s.clinical_study_name AS clinical_study_name,
+       arm.arm AS arm,
+       co.cohort_description AS cohort_description, co.cohort_dose AS cohort_dose,
+       c.case_id AS case_id,
+       demo.breed AS breed, demo.weight AS weight, demo.sex AS sex, demo.neutered_indicator AS neutered_indicator, demo.patient_age_at_enrollment AS patient_age_at_enrollment,
+       diag.disease_term AS disease_term, diag.stage_of_disease AS stage_of_disease, diag.primary_disease_site AS primary_disease_site, diag.concurrent_disease AS concurrent_disease, diag.concurrent_disease_type AS concurrent_disease_type,
+       v.visit_date AS visit_date, v.visit_number AS visit_number, v.day_in_cycle AS day_in_cycle,
+       samp.sample_id AS sample_id, samp.sample_type AS sample_type, samp.general_sample_pathology AS general_sample_pathology, samp.specific_sample_pathology AS specific_sample_pathology, samp.sample_site AS sample_site, samp.date_of_sample_collection AS date_of_sample_collection, samp.necropsy_sample AS necropsy_sample, samp.percentage_tumor AS percentage_tumor, samp.percentage_stroma AS percentage_stroma, samp.comment AS comment,
+       f.file_name AS file_name, f.file_type AS file_type, f.file_description AS file_description, f.file_format AS file_format, f.file_size AS file_size, f.md5sum AS md5sum, f.file_locations AS file_locations
+ORDER BY file_type, case_id
