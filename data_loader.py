@@ -17,7 +17,6 @@ PROP_TYPE = 'Type'
 PARENT_TYPE = 'parent_type'
 PARENT_ID_FIELD = 'parent_id_field'
 PARENT_ID = 'parent_id'
-RELATIONSHIP_NAME = 'name'
 START_DATE = 'date_of_cycle_start'
 END_DATE = 'date_of_cycle_end'
 OF_CYCLE = 'of_cycle'
@@ -356,7 +355,9 @@ class DataLoader:
             if is_parent_pointer(key):
                 provided_parents += 1
                 other_node, other_id = key.split('.')
-                relationship_name = self.schema.get_relationship(node_type, other_node)
+                relationship = self.schema.get_relationship(node_type, other_node)
+                relationship_name = relationship[RELATIONSHIP_TYPE]
+                multiplier = relationship[MULTIPLIER]
                 if not relationship_name:
                     self.log.error('Line: {}: Relationship not found!'.format(line_num))
                     raise Exception('Undefined relationship, abort loading!')
@@ -365,7 +366,7 @@ class DataLoader:
                         if self.create_visit(session, line_num, other_node, value, obj):
                             visits_created += 1
                             relationships.append({PARENT_TYPE: other_node, PARENT_ID_FIELD: other_id, PARENT_ID: value,
-                                                  RELATIONSHIP_NAME: relationship_name})
+                                                  RELATIONSHIP_TYPE: relationship_name})
                         else:
                             self.log.error(
                                 'Line: {}: Couldn\'t create {} node automatically!'.format(line_num, VISIT_NODE))
@@ -375,7 +376,7 @@ class DataLoader:
                                                                                                    value))
                 else:
                     relationships.append({PARENT_TYPE: other_node, PARENT_ID_FIELD: other_id, PARENT_ID: value,
-                                          RELATIONSHIP_NAME: relationship_name})
+                                          RELATIONSHIP_TYPE: relationship_name})
         return {RELATIONSHIPS: relationships, VISITS_CREATED: visits_created, PROVIDED_PARENTS: provided_parents}
 
     def load_relationships(self, session, file_name):
@@ -401,7 +402,7 @@ class DataLoader:
                         raise Exception('Line: {}: No parents found, abort loading!'.format(line_num))
 
                     for relationship in relationships:
-                        relationship_name = relationship[RELATIONSHIP_NAME]
+                        relationship_name = relationship[RELATIONSHIP_TYPE]
                         parent_node = relationship[PARENT_TYPE]
                         statement = 'MATCH (m:{} {{{}: "{}"}}) '.format(parent_node, relationship[PARENT_ID_FIELD], relationship[PARENT_ID])
                         statement += 'MATCH (n:{} {{ {} }}) '.format(node_type, criteria_statement)
@@ -508,7 +509,7 @@ class DataLoader:
         if result:
             first_date = None
             pre_date = None
-            relationship_name = self.schema.get_relationship(VISIT_NODE, CYCLE_NODE)
+            relationship_name = self.schema.get_relationship(VISIT_NODE, CYCLE_NODE)[RELATIONSHIP_TYPE]
             if not relationship_name:
                 return False
             for record in result.records():
@@ -548,7 +549,7 @@ class DataLoader:
             return False
 
     def connect_visit_to_case(self, session, line_num, visit_id, case_id):
-        relationship_name = self.schema.get_relationship(VISIT_NODE, CASE_NODE)
+        relationship_name = self.schema.get_relationship(VISIT_NODE, CASE_NODE)[RELATIONSHIP_TYPE]
         if not relationship_name:
             return False
         cnt_statement = 'MATCH (c:case {{ case_id: "{}"}}) MATCH (v:visit {{ {}: "{}" }}) '.format(case_id, VISIT_ID, visit_id)

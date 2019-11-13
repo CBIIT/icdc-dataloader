@@ -191,4 +191,6 @@ if not os.path.isdir(BACKUP_FOLDER):
     sys.exit(1)
 DATE_FORMAT = '%Y%m%d'
 DATETIME_FORMAT = '%Y%m%d-%H%M%S'
+RELATIONSHIP_TYPE = 'relationship_type'
+MULTIPLIER = 'Mul'
 

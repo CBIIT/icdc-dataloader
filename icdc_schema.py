@@ -16,7 +16,6 @@ SRC = 'Src'
 DEST = 'Dst'
 VALUE_TYPE = 'value_type'
 LABEL_NEXT = 'next'
-MULTIPLIER = 'Mul'
 NEXT_RELATIONSHIP = 'next'
 DEFAULT_MULTIPLIER = 'many-to=one'
 UNITS = 'units'
@@ -99,14 +98,14 @@ class ICDC_Schema:
             for  end_points in desc[END_POINTS]:
                 src = end_points[SRC]
                 dest = end_points[DEST]
-                if src not in self.relationships:
-                    self.relationships[src] = {}
-                self.relationships[src][dest] = name
                 if MULTIPLIER in end_points:
                     actual_multiplier = end_points[MULTIPLIER]
                     self.log.debug('End point multiplier: "{}" overriding relationship multiplier: "{}"'.format(actual_multiplier, multiplier))
                 else:
                     actual_multiplier = multiplier
+                if src not in self.relationships:
+                    self.relationships[src] = {}
+                self.relationships[src][dest] = { RELATIONSHIP_TYPE: name, MULTIPLIER: actual_multiplier }
 
                 count += 1
                 if src in self.nodes:
@@ -355,7 +354,7 @@ class ICDC_Schema:
             relationships = self.relationships[src]
             if relationships:
                 for dest, rel in relationships.items():
-                    if rel == name:
+                    if rel[RELATIONSHIP_TYPE] == name:
                         return dest
         else:
             self.log.error('Couldn\'t find any relationship from (:{})'.format(src))
