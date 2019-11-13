@@ -193,4 +193,5 @@ DATE_FORMAT = '%Y%m%d'
 DATETIME_FORMAT = '%Y%m%d-%H%M%S'
 RELATIONSHIP_TYPE = 'relationship_type'
 MULTIPLIER = 'Mul'
-
+DEFAULT_MULTIPLIER = 'many_to_one'
+ONE_TO_ONE = 'one_to_one'

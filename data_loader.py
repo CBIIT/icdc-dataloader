@@ -251,6 +251,7 @@ class DataLoader:
 
                     field_name = key
                     if is_parent_pointer(key):
+                        continue
                         header = key.split('.')
                         if len(header) > 2:
                             self.log.warning('Column header "{}" has multiple periods!'.format(key))
@@ -366,7 +367,7 @@ class DataLoader:
                         if self.create_visit(session, line_num, other_node, value, obj):
                             visits_created += 1
                             relationships.append({PARENT_TYPE: other_node, PARENT_ID_FIELD: other_id, PARENT_ID: value,
-                                                  RELATIONSHIP_TYPE: relationship_name})
+                                                  RELATIONSHIP_TYPE: relationship_name, MULTIPLIER: multiplier})
                         else:
                             self.log.error(
                                 'Line: {}: Couldn\'t create {} node automatically!'.format(line_num, VISIT_NODE))
@@ -375,9 +376,55 @@ class DataLoader:
                             'Line: {}: Parent node (:{} {{{}: "{}"}} not found in DB!'.format(line_num, other_node, other_id,
                                                                                                    value))
                 else:
-                    relationships.append({PARENT_TYPE: other_node, PARENT_ID_FIELD: other_id, PARENT_ID: value,
-                                          RELATIONSHIP_TYPE: relationship_name})
+                    if multiplier == ONE_TO_ONE and self.parent_already_has_child(session, node_type, self.get_search_criteria_for_node(obj), relationship_name, other_node, other_id, value):
+                        self.log.warning('Line: {}: one_to_one relationship failed, parent already has a child!'.format(line_num))
+                    else:
+                        relationships.append({PARENT_TYPE: other_node, PARENT_ID_FIELD: other_id, PARENT_ID: value,
+                                          RELATIONSHIP_TYPE: relationship_name, MULTIPLIER: multiplier})
         return {RELATIONSHIPS: relationships, VISITS_CREATED: visits_created, PROVIDED_PARENTS: provided_parents}
+
+    def parent_already_has_child(self, session, node_type, criteria_statement, relationship_name, parent_type, parent_id_field, parent_id):
+
+        statement = 'MATCH (n:{})-[r:{}]->(m:{} {{ {}: "{}"}}) return n'.format(node_type, relationship_name,
+                                                                       parent_type, parent_id_field, parent_id)
+        result = session.run(statement)
+        if result:
+            child = result.single()
+            if child:
+                find_current_node_statement = 'MATCH (n:{} {{ {} }}) return n'.format(node_type, criteria_statement)
+                current_node_result = session.run(find_current_node_statement)
+                if current_node_result:
+                    current_node = current_node_result.single()
+                    return child[0].id != current_node[0].id
+                else:
+                    self.log.error('Could NOT find current node!')
+
+        return False
+
+
+    def remove_old_relationship(self, session, node_type, criteria_statement, relationship):
+        relationship_name = relationship[RELATIONSHIP_TYPE]
+        parent_type = relationship[PARENT_TYPE]
+        parent_id_field = relationship[PARENT_ID_FIELD]
+
+        base_statement = 'MATCH (n:{} {{ {} }})-[r:{}]->(m:{})'.format(node_type, criteria_statement, relationship_name,
+                                                                   parent_type)
+        statement = base_statement + ' return m.{} AS {}'.format(parent_id_field, PARENT_ID)
+        result = session.run(statement)
+        if result:
+            old_parent = result.single()
+            if old_parent:
+                old_parent_id = old_parent[PARENT_ID]
+                if old_parent_id != relationship[PARENT_ID]:
+                    self.log.warning('Old parent is different from new parent, delete relationship to old parent: (:{} {{ {}: "{}" }})!'.format(parent_type, parent_id_field, old_parent_id))
+                    del_statement = base_statement + ' delete r'
+                    del_result = session.run(del_statement)
+                    if not del_result:
+                        self.log.error('Delete old relationship failed!')
+        else:
+            self.log.error('Remove old relationship failed: Query old relationship failed!')
+
+
 
     def load_relationships(self, session, file_name):
         self.log.info('Loading relationships from file: {}'.format(file_name))
@@ -403,7 +450,12 @@ class DataLoader:
 
                     for relationship in relationships:
                         relationship_name = relationship[RELATIONSHIP_TYPE]
+                        multiplier = relationship[MULTIPLIER]
                         parent_node = relationship[PARENT_TYPE]
+                        if multiplier in [DEFAULT_MULTIPLIER, ONE_TO_ONE]:
+                            self.remove_old_relationship(session, node_type, criteria_statement, relationship)
+                        else:
+                            self.log.info('Multiplier: {}, no action needed!'.format(multiplier))
                         statement = 'MATCH (m:{} {{{}: "{}"}}) '.format(parent_node, relationship[PARENT_ID_FIELD], relationship[PARENT_ID])
                         statement += 'MATCH (n:{} {{ {} }}) '.format(node_type, criteria_statement)
                         statement += 'MERGE (n)-[r:{}]->(m)'.format(relationship_name)
@@ -439,6 +491,7 @@ class DataLoader:
                     continue
 
                 if is_parent_pointer(key):
+                    continue
                     # Add parent id to search conditions
                     header = key.split('.')
                     if len(header) > 2:
