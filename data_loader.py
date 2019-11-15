@@ -252,17 +252,16 @@ class DataLoader:
 
                     field_name = key
                     if is_parent_pointer(key):
-                        continue
-                        # header = key.split('.')
-                        # if len(header) > 2:
-                        #     self.log.warning('Column header "{}" has multiple periods!'.format(key))
-                        # field_name = header[1]
-                        # parent = header[0]
-                        # combined = '{}_{}'.format(parent, field_name)
-                        # if field_name in obj:
-                        #     self.log.warning('"{}" field is in both "{}" and parent "{}", use "{}" instead !'.format(
-                        #         key, node_type, parent, combined))
-                        #     field_name = combined
+                        header = key.split('.')
+                        if len(header) > 2:
+                            self.log.warning('Column header "{}" has multiple periods!'.format(key))
+                        field_name = header[1]
+                        parent = header[0]
+                        combined = '{}_{}'.format(parent, field_name)
+                        if field_name in obj:
+                            self.log.warning('"{}" field is in both "{}" and parent "{}", use "{}" instead !'.format(
+                                key, node_type, parent, combined))
+                            field_name = combined
 
                     value_string = self.get_value_string(node_type, field_name, value)
                     if node_id:
@@ -494,18 +493,17 @@ class DataLoader:
                     continue
 
                 if is_parent_pointer(key):
-                    continue
-                    # Add parent id to search conditions
-                    # header = key.split('.')
-                    # if len(header) > 2:
-                    #     self.log.warning('Column header "{}" has multiple periods!'.format(key))
-                    # field_name = header[1]
-                    # parent = header[0]
-                    # combined = '{}_{}'.format(parent, field_name)
-                    # if field_name in node:
-                    #     self.log.warning('"{}" field is in both "{}" and parent "{}", use "{}" instead !'.format(
-                    #         key, node_type, parent, combined))
-                    #     field_name = combined
+                    #Add parent id to search conditions
+                    header = key.split('.')
+                    if len(header) > 2:
+                        self.log.warning('Column header "{}" has multiple periods!'.format(key))
+                    field_name = header[1]
+                    parent = header[0]
+                    combined = '{}_{}'.format(parent, field_name)
+                    if field_name in node:
+                        self.log.warning('"{}" field is in both "{}" and parent "{}", use "{}" instead !'.format(
+                            key, node_type, parent, combined))
+                        field_name = combined
 
                 else:
                     field_name = key
