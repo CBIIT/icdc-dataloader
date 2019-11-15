@@ -208,7 +208,8 @@ class DataLoader:
                 if node_id:
                     if node_id in IDs:
                         validation_failed = True
-                        self.log.error('Invalid data at line {}: duplicate {}: {}, found in line: {}'.format(line_num, id_field, node_id, ', '.join(IDs[node_id])))
+                        self.log.error('Invalid data at line {}: duplicate {}: {}, found in line: {}'.format(line_num,
+                                                                                                             id_field, node_id, ', '.join(IDs[node_id])))
                         IDs[node_id].append(str(line_num))
                     else:
                         IDs[node_id] = [str(line_num)]
@@ -313,7 +314,7 @@ class DataLoader:
                 else:
                     self.log.debug('Unsupported Boolean value: "{}"'.format(value))
                     cleaned_value = None
-            if cleaned_value != None:
+            if cleaned_value is not None:
                 value_string = '{}'.format(cleaned_value)
             else:
                 value_string = '""'
@@ -376,7 +377,8 @@ class DataLoader:
                             'Line: {}: Parent node (:{} {{{}: "{}"}} not found in DB!'.format(line_num, other_node, other_id,
                                                                                                    value))
                 else:
-                    if multiplier == ONE_TO_ONE and self.parent_already_has_child(session, node_type, self.get_search_criteria_for_node(obj), relationship_name, other_node, other_id, value):
+                    if multiplier == ONE_TO_ONE and self.parent_already_has_child(session, node_type, self.get_search_criteria_for_node(obj),
+                                                                                  relationship_name, other_node, other_id, value):
                         self.log.warning('Line: {}: one_to_one relationship failed, parent already has a child!'.format(line_num))
                     else:
                         relationships.append({PARENT_TYPE: other_node, PARENT_ID_FIELD: other_id, PARENT_ID: value,
@@ -416,7 +418,8 @@ class DataLoader:
             if old_parent:
                 old_parent_id = old_parent[PARENT_ID]
                 if old_parent_id != relationship[PARENT_ID]:
-                    self.log.warning('Old parent is different from new parent, delete relationship to old parent: (:{} {{ {}: "{}" }})!'.format(parent_type, parent_id_field, old_parent_id))
+                    self.log.warning('Old parent is different from new parent, delete relationship to old parent: (:{} {{ {}: "{}" }})!'.format(parent_type,
+                                                                                                                                                parent_id_field, old_parent_id))
                     del_statement = base_statement + ' delete r'
                     del_result = session.run(del_statement)
                     if not del_result:
@@ -528,7 +531,7 @@ class DataLoader:
             self.log.error("Neo4j session is not valid!")
             return False
         date_map = PROPS['visit_date_in_nodes']
-        if not NODE_TYPE in src:
+        if NODE_TYPE not in src:
             self.log.error('Line: {}: Given object doesn\'t have a "{}" field!'.format(line_num, NODE_TYPE))
             return False
         source_type = src[NODE_TYPE]
@@ -579,9 +582,11 @@ class DataLoader:
                     end_date = datetime.strptime(FOREVER, DATE_FORMAT)
                 if (date >= start_date and date <= end_date) or (date < first_date and date >= pre_date):
                     if date < first_date and date >= pre_date:
-                        self.log.info('Line: {}: Date: {} is before first cycle, but within {} days before first cycle started: {}, connected to first cycle'.format(line_num, visit_date, PREDATE, first_date.strftime(DATE_FORMAT)))
+                        self.log.info('Line: {}: Date: {} is before first cycle, but within {} days before first cycle started: {}, connected to first cycle'.format(line_num,
+                                                                                                                                                                     visit_date, PREDATE, first_date.strftime(DATE_FORMAT)))
                     cycle_id = cycle.id
-                    connect_stmt = 'MATCH (v:{} {{{}: "{}"}}) MATCH (c:{}) WHERE id(c) = {} MERGE (v)-[r:{} {{ {}: true }}]->(c)'.format(VISIT_NODE, VISIT_ID, visit_id, CYCLE_NODE, cycle_id, relationship_name, INFERRED)
+                    connect_stmt = 'MATCH (v:{} {{{}: "{}"}}) MATCH (c:{}) WHERE id(c) = {} MERGE (v)-[r:{} {{ {}: true }}]->(c)'.format(VISIT_NODE,
+                                                                                                                                         VISIT_ID, visit_id, CYCLE_NODE, cycle_id, relationship_name, INFERRED)
                     connect_stmt += ' ON CREATE SET r.{} = datetime()'.format(CREATED)
                     connect_stmt += ' ON MATCH SET r.{} = datetime()'.format(UPDATED)
 

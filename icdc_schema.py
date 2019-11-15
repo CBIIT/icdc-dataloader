@@ -302,7 +302,9 @@ class ICDC_Schema:
             except ValueError:
                 return False
         elif model_type[PROP_TYPE] == 'Boolean':
-            if value and not re.match(r'\byes\b|\btrue\b', value, re.IGNORECASE) and not re.match(r'\bno\b|\bfalse\b', value, re.IGNORECASE) and not re.match(r'\bltf\b', value, re.IGNORECASE):
+            if (value and not re.match(r'\byes\b|\btrue\b', value, re.IGNORECASE)
+                    and not re.match(r'\bno\b|\bfalse\b', value, re.IGNORECASE)
+                    and not re.match(r'\bltf\b', value, re.IGNORECASE)):
                 return False
         elif model_type[PROP_TYPE] == 'Array':
             if not isinstance(value, list):
@@ -314,14 +316,14 @@ class ICDC_Schema:
             if  ENUM in model_type:
                 if not isinstance(value, str):
                     return False
-                if not value in model_type[ENUM]:
+                if value not in model_type[ENUM]:
                     return False
         elif model_type[PROP_TYPE] == 'Date':
             if not isinstance(value, str):
                 return False
             try:
                 if value.strip() != '':
-                    _ = datetime.strptime(value, DATE_FORMAT)
+                    datetime.strptime(value, DATE_FORMAT)
             except ValueError:
                 return False
         elif model_type[PROP_TYPE] == 'DateTime':
@@ -329,7 +331,7 @@ class ICDC_Schema:
                 return False
             try:
                 if value.strip() != '':
-                    _ = datetime.strptime(value, DATE_FORMAT)
+                    datetime.strptime(value, DATE_FORMAT)
             except ValueError:
                 return False
         return True

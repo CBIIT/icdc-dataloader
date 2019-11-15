@@ -2,6 +2,7 @@
 import boto3
 import botocore
 from utils import *
+import os
 
 class S3Bucket:
     def __init__(self, bucket):

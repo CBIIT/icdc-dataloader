@@ -272,7 +272,7 @@ class FileProcessor:
                                 line_count += 1
                                 file_name = record.get(FILE_NAME, None)
                                 if file_name:
-                                    if not file_name in extracted_files:
+                                    if file_name not in extracted_files:
                                         self.log.error('Invalid data at line {} : File "{}" doesn\'t exist!'.format(line_count, file_name))
                                         succeeded = False
                                     else:
