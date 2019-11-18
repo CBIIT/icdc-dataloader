@@ -46,6 +46,15 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(self.loader.validate_file('data/NCATS/NCATS-COP01-case.txt', 10))
         self.assertFalse(self.loader.validate_file('data/NCATS01-case-dup.txt', 10))
 
+    def test_get_value_string2(self):
+        self.assertEqual(self.loader.get_value_string2('adverse_event'), '{adverse_event}')
+        self.assertIsNone(self.loader.get_value_string2(None))
+        self.assertIsNone(self.loader.get_value_string2(''))
+        self.assertIsNone(self.loader.get_value_string2({}))
+        self.assertIsNone(self.loader.get_value_string2([]))
+        self.assertIsNone(self.loader.get_value_string2(1.5))
+        self.assertIsNone(self.loader.get_value_string2({'abc': 1}))
+
     def test_get_value_string(self):
         # Test String type
         self.assertIsNone(self.loader.get_value_string('adverse_event', 'adverse_event_description', None))

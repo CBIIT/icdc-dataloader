@@ -240,7 +240,7 @@ class DataLoader:
                 statement = ''
                 # prop_statement set properties of current node
                 if node_id:
-                    prop_statement = 'SET n.{} = "{}"'.format(id_field, node_id)
+                    prop_statement = 'SET n.{} = {{node_id}}'.format(id_field)
                 else:
                     prop_statement = []
 
@@ -280,7 +280,7 @@ class DataLoader:
                                 prop_statement.append('{}: {}'.format(extra_prop_name, extra_value_string))
 
                 if node_id:
-                    statement += 'MERGE (n:{} {{{}: "{}"}})'.format(node_type, id_field, node_id)
+                    statement += 'MERGE (n:{} {{ {}: {{node_id}} }})'.format(node_type, id_field)
                     statement += ' ON CREATE ' + prop_statement + ' ,n.{} = datetime()'.format(CREATED)
                     statement += ' ON MATCH ' + prop_statement + ' ,n.{} = datetime()'.format(UPDATED)
                 else:
@@ -288,13 +288,17 @@ class DataLoader:
                     statement += ' ON CREATE SET n.{} = datetime()'.format(CREATED)
                     statement += ' ON MATCH SET n.{} = datetime()'.format(UPDATED)
 
-                result = session.run(statement)
+                result = session.run(statement, {"node_id": node_id})
                 count = result.summary().counters.nodes_created
                 self.nodes_created += count
                 nodes_created += count
                 self.nodes_stat[node_type] = self.nodes_stat.get(node_type, 0) + count
             self.log.info('{} (:{}) node(s) loaded'.format(nodes_created, node_type))
 
+    def get_value_string2(self, key):
+        if not key or not isinstance(key, str):
+            return None
+        return '{{{}}}'.format(key)
 
     def get_value_string(self, node_type, key, value):
         key_type = self.schema.get_prop_type(node_type, key)
@@ -340,8 +344,8 @@ class DataLoader:
         return value_string
 
     def node_exists(self, session, label, prop, value):
-        statement = 'MATCH (m:{} {{{}: "{}"}}) return m'.format(label, prop, value)
-        result = session.run(statement)
+        statement = 'MATCH (m:{0} {{ {1}: {{{1}}} }}) return m'.format(label, prop)
+        result = session.run(statement, {prop: value})
         count = result.detach()
         if count > 1:
             self.log.warning('More than one nodes found! ')
@@ -386,9 +390,8 @@ class DataLoader:
 
     def parent_already_has_child(self, session, node_type, criteria_statement, relationship_name, parent_type, parent_id_field, parent_id):
 
-        statement = 'MATCH (n:{})-[r:{}]->(m:{} {{ {}: "{}"}}) return n'.format(node_type, relationship_name,
-                                                                       parent_type, parent_id_field, parent_id)
-        result = session.run(statement)
+        statement = 'MATCH (n:{})-[r:{}]->(m:{} {{ {}: {{parent_id}} }}) return n'.format(node_type, relationship_name, parent_type, parent_id_field)
+        result = session.run(statement, {"parent_id": parent_id})
         if result:
             child = result.single()
             if child:
@@ -408,8 +411,7 @@ class DataLoader:
         parent_type = relationship[PARENT_TYPE]
         parent_id_field = relationship[PARENT_ID_FIELD]
 
-        base_statement = 'MATCH (n:{} {{ {} }})-[r:{}]->(m:{})'.format(node_type, criteria_statement, relationship_name,
-                                                                   parent_type)
+        base_statement = 'MATCH (n:{} {{ {} }})-[r:{}]->(m:{})'.format(node_type, criteria_statement, relationship_name, parent_type)
         statement = base_statement + ' return m.{} AS {}'.format(parent_id_field, PARENT_ID)
         result = session.run(statement)
         if result:
@@ -454,17 +456,19 @@ class DataLoader:
                         relationship_name = relationship[RELATIONSHIP_TYPE]
                         multiplier = relationship[MULTIPLIER]
                         parent_node = relationship[PARENT_TYPE]
+                        parent_id_field = relationship[PARENT_ID_FIELD]
+                        parent_id = relationship[PARENT_ID]
                         if multiplier in [DEFAULT_MULTIPLIER, ONE_TO_ONE]:
                             self.remove_old_relationship(session, node_type, criteria_statement, relationship)
                         else:
                             self.log.info('Multiplier: {}, no action needed!'.format(multiplier))
-                        statement = 'MATCH (m:{} {{{}: "{}"}}) '.format(parent_node, relationship[PARENT_ID_FIELD], relationship[PARENT_ID])
+                        statement = 'MATCH (m:{0} {{ {1}: {{{1}}} }}) '.format(parent_node, parent_id_field)
                         statement += 'MATCH (n:{} {{ {} }}) '.format(node_type, criteria_statement)
                         statement += 'MERGE (n)-[r:{}]->(m)'.format(relationship_name)
                         statement += ' ON CREATE SET r.{} = datetime()'.format(CREATED)
                         statement += ' ON MATCH SET r.{} = datetime()'.format(UPDATED)
 
-                        result = session.run(statement)
+                        result = session.run(statement, {parent_id_field: parent_id})
                         count = result.summary().counters.relationships_created
                         self.relationships_created += count
                         relationship_pattern = '(:{})->[:{}]->(:{})'.format(node_type, relationship_name, parent_node)
@@ -540,11 +544,11 @@ class DataLoader:
         if not NODE_TYPE in src:
             self.log.error('Line: {}: Given object doesn\'t have a "{}" field!'.format(line_num, NODE_TYPE))
             return False
-        statement = 'MERGE (v:{} {{ {}: "{}", {}: "{}", {}: true }})'.format(VISIT_NODE, VISIT_ID, node_id, VISIT_DATE, date, INFERRED)
+        statement = 'MERGE (v:{} {{ {}: {{node_id}}, {}: {{date}}, {}: true }})'.format(VISIT_NODE, VISIT_ID, VISIT_DATE, INFERRED)
         statement += ' ON CREATE SET v.{} = datetime()'.format(CREATED)
         statement += ' ON MATCH SET v.{} = datetime()'.format(UPDATED)
 
-        result = session.run(statement)
+        result = session.run(statement, {"node_id": node_id, "date": date})
         if result:
             count = result.summary().counters.nodes_created
             self.nodes_created += count
@@ -558,8 +562,8 @@ class DataLoader:
             return False
 
     def connect_visit_to_cycle(self, session, line_num, visit_id, case_id, visit_date):
-        find_cycles_stmt = 'MATCH (c:cycle) WHERE c.case_id = "{}" RETURN c ORDER BY c.date_of_cycle_start'.format(case_id)
-        result = session.run(find_cycles_stmt)
+        find_cycles_stmt = 'MATCH (c:cycle) WHERE c.case_id = {case_id} RETURN c ORDER BY c.date_of_cycle_start'
+        result = session.run(find_cycles_stmt, {'case_id': case_id})
         if result:
             first_date = None
             pre_date = None
@@ -583,12 +587,11 @@ class DataLoader:
                         self.log.info('Line: {}: Date: {} is before first cycle, but within {} days before first cycle started: {}, connected to first cycle'.format(line_num,
                                                                                                                                                                      visit_date, PREDATE, first_date.strftime(DATE_FORMAT)))
                     cycle_id = cycle.id
-                    connect_stmt = 'MATCH (v:{} {{{}: "{}"}}) MATCH (c:{}) WHERE id(c) = {} MERGE (v)-[r:{} {{ {}: true }}]->(c)'.format(VISIT_NODE,
-                                                                                                                                         VISIT_ID, visit_id, CYCLE_NODE, cycle_id, relationship_name, INFERRED)
+                    connect_stmt = 'MATCH (v:{} {{ {}: {{visit_id}} }}) MATCH (c:{}) WHERE id(c) = {{cycle_id}} MERGE (v)-[r:{} {{ {}: true }}]->(c)'.format(VISIT_NODE, VISIT_ID, CYCLE_NODE, relationship_name, INFERRED)
                     connect_stmt += ' ON CREATE SET r.{} = datetime()'.format(CREATED)
                     connect_stmt += ' ON MATCH SET r.{} = datetime()'.format(UPDATED)
 
-                    cnt_result = session.run(connect_stmt)
+                    cnt_result = session.run(connect_stmt, {'visit_id': visit_id, 'cycle_id': cycle_id})
                     relationship_created = cnt_result.summary().counters.relationships_created
                     if relationship_created > 0:
                         self.relationships_created += relationship_created
@@ -608,12 +611,12 @@ class DataLoader:
         relationship_name = self.schema.get_relationship(VISIT_NODE, CASE_NODE)[RELATIONSHIP_TYPE]
         if not relationship_name:
             return False
-        cnt_statement = 'MATCH (c:case {{ case_id: "{}"}}) MATCH (v:visit {{ {}: "{}" }}) '.format(case_id, VISIT_ID, visit_id)
+        cnt_statement = 'MATCH (c:case {{ case_id: {{case_id}} }}) MATCH (v:visit {{ {}: {{visit_id}} }}) '.format(VISIT_ID)
         cnt_statement += 'MERGE (c)<-[r:{} {{ {}: true }}]-(v)'.format(relationship_name, INFERRED)
         cnt_statement += ' ON CREATE SET r.{} = datetime()'.format(CREATED)
         cnt_statement += ' ON MATCH SET r.{} = datetime()'.format(UPDATED)
 
-        result = session.run(cnt_statement)
+        result = session.run(cnt_statement, {'case_id': case_id, 'visit_id': visit_id})
         relationship_created = result.summary().counters.relationships_created
         if relationship_created > 0:
             self.relationships_created += relationship_created
