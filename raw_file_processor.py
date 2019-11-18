@@ -283,10 +283,6 @@ class FileProcessor:
                                     self.log.error('Invalid data at line {} : Empty file name'.format(line_count))
                                     succeeded = False
 
-                                case_id = record.get(CASE_ID, None)
-                                if not case_id:
-                                    self.log.error('Invalid data at line {} : Empty case_id'.format(line_count))
-                                    succeeded = False
                                 tsv_writer.writerow(record)
                                 manifest_writer.writerow(manifest_record)
             except Exception as e:
