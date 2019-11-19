@@ -189,7 +189,7 @@ os.makedirs(BACKUP_FOLDER, exist_ok=True)
 if not os.path.isdir(BACKUP_FOLDER):
     util_log.error('{} is not a folder!'.format(BACKUP_FOLDER))
     sys.exit(1)
-DATE_FORMAT = '%Y%m%d'
+DATE_FORMAT = '%Y-%m-%d'
 DATETIME_FORMAT = '%Y%m%d-%H%M%S'
 RELATIONSHIP_TYPE = 'relationship_type'
 MULTIPLIER = 'Mul'
