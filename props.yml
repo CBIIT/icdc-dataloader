@@ -47,9 +47,9 @@ Properties:
     study_arm: arm
     cohort: cohort_description
     case: case_id
-    enrollment: enrollment_id
+    #enrollment: enrollment_id
     visit: visit_id
-    diagnosis: diagnosis_id
+    #diagnosis: diagnosis_id
     sample: sample_id
     file: uuid
 

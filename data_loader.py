@@ -106,12 +106,31 @@ class DataLoader:
         return {NODES_CREATED: self.nodes_created, RELATIONSHIP_CREATED: self.relationships_created}
 
 
-    @staticmethod
-    def cleanup_node(node):
+    # Remove extra spaces at begining and end of the keys and values
+    # Add uuid to nodes if one not exists
+    def cleanup_node(self, node):
         obj = {}
         for key, value in node.items():
             obj[key.strip()] = value.strip()
+
+        if UUID not in obj:
+            id_field = self.schema.get_id_field(obj)
+            id = self.schema.get_id(obj)
+            node_type = obj.get(NODE_TYPE)
+            if node_type:
+                if not id:
+                    obj[UUID] = get_uuid_for_node(node_type, self.get_signature(obj))
+                elif id_field != UUID:
+                    obj[UUID] = get_uuid_for_node(node_type, id)
+            else:
+                raise Exception('No "type" property in node')
         return obj
+
+    def get_signature(self, node):
+        result = []
+        for key, value in node.items():
+            result.append('{}: {}'.format(key, value))
+        return '{{ {} }}'.format(', '.join(result))
 
     # Validate all cases exist in a data (TSV/TXT) file
     def validate_cases_exist_in_file(self, file_name, max_violations):
@@ -206,7 +225,9 @@ class DataLoader:
         with open(file_name) as in_file:
             reader = csv.DictReader(in_file, delimiter='\t')
             nodes_created = 0
+            line_num = 1
             for org_obj in reader:
+                line_num += 1
                 obj = self.cleanup_node(org_obj)
                 node_type = obj[NODE_TYPE]
                 node_id = self.schema.get_id(obj)
@@ -217,6 +238,7 @@ class DataLoader:
                 if node_id:
                     prop_statement = 'SET n.{} = {{node_id}}'.format(id_field)
                 else:
+                    raise Exception('Line:{}: No ids found!'.format(line_num))
                     prop_statement = []
 
                 for key, value in obj.items():
@@ -464,34 +486,11 @@ class DataLoader:
         if node_id:
             criteria_statement = '{}: "{}"'.format(id_field, node_id)
         else:
-            criteria = []
-            for key, value in node.items():
-                if key in excluded_fields:
-                    continue
-                if key == id_field:
-                    continue
-
-                if is_parent_pointer(key):
-                    #Add parent id to search conditions
-                    header = key.split('.')
-                    if len(header) > 2:
-                        self.log.warning('Column header "{}" has multiple periods!'.format(key))
-                    field_name = header[1]
-                    parent = header[0]
-                    combined = '{}_{}'.format(parent, field_name)
-                    if field_name in node:
-                        self.log.warning('"{}" field is in both "{}" and parent "{}", use "{}" instead !'.format(
-                            key, node_type, parent, combined))
-                        field_name = combined
-
-                else:
-                    field_name = key
-                value_string = self.get_value_string(node_type, field_name, value)
-                if value_string is not None:
-                    criteria.append(
-                        '{}: {}'.format(field_name, value_string))
-            criteria_statement = ', '.join(criteria)
-
+            self.log.warning('{} field is missing or empty, try to use {} as ID'.format(id_field, UUID))
+            if UUID in node:
+                criteria_statement = '{}: "{}"'.format(UUID, node[UUID])
+            else:
+                raise Exception('Node does NOT have any IDs')
         return criteria_statement
 
     def create_visit(self, session, line_num, node_type, node_id, src):

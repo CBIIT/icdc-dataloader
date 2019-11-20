@@ -37,7 +37,7 @@ def get_uuid_for_node(node_type, signature):
     # log.debug('Type UUID: {}'.format(type_uuid))
     node_uuid = uuid.uuid5(type_uuid, signature)
     log.debug('Node UUID: {}'.format(node_uuid))
-    return node_uuid
+    return str(node_uuid)
 
 
 def removeTrailingSlash(uri):
@@ -195,3 +195,4 @@ RELATIONSHIP_TYPE = 'relationship_type'
 MULTIPLIER = 'Mul'
 DEFAULT_MULTIPLIER = 'many_to_one'
 ONE_TO_ONE = 'one_to_one'
+UUID = 'uuid'

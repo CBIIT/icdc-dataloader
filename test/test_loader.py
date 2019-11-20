@@ -98,6 +98,17 @@ class TestLoader(unittest.TestCase):
         self.assertEqual(self.loader.get_value_string('prior_therapy', 'total_dose', '3'), 3.0)
         self.assertEqual(self.loader.get_value_string('prior_therapy', 'total_dose', '3.0'), 3.0)
 
+    def test_get_signature(self):
+        self.assertEqual(self.loader.get_signature({}), '{  }')
+        self.assertEqual(self.loader.get_signature({'key1': 'value1'}), '{ key1: value1 }')
+        self.assertEqual(self.loader.get_signature({'key1': 'value1', 'key2': 'value2'}), '{ key1: value1, key2: value2 }')
+
+    def test_cleanup_node(self):
+        self.assertRaises(Exception, self.loader.cleanup_node, {})
+        self.assertDictEqual(self.loader.cleanup_node({'type': 'case', 'case_id': '123', ' key1 ': ' value1  '}), {'key1': 'value1', 'type': 'case', 'case_id': '123', 'uuid': 'f0cf40a7-3cdb-51fe-a596-e29e40123f56'})
+        self.assertDictEqual(self.loader.cleanup_node({'type': 'file', 'uuid': '123', ' key1 ': ' value1  '}),
+                             {'key1': 'value1', 'type': 'file', 'uuid': '123'})
+
 
 if __name__ == '__main__':
     unittest.main()

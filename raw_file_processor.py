@@ -34,7 +34,6 @@ SHA512 = 'sha512'
 FILE_SIZE = "file_size"
 FILE_LOC = 'file_locations'
 FILE_FORMAT = 'file_format'
-UUID = 'uuid'
 FILE_STAT = 'file_status'
 ACL = 'acl'
 DATA_FIELDS = [UUID, FILE_SIZE, MD5_SUM, FILE_STAT, FILE_LOC, FILE_FORMAT, ACL]
