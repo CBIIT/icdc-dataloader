@@ -399,6 +399,30 @@ class ICDC_Schema:
         else:
             return None
 
+    # Get node's id field, such as case_id for case node, or clinical_study_designation for study node
+    def get_id_field(self, obj):
+        if NODE_TYPE not in obj:
+            self.log.error('get_id_field: there is no "{}" field in node, can\'t retrieve id!'.format(NODE_TYPE))
+            return None
+        node_type = obj[NODE_TYPE]
+        id_fields = PROPS['id_fields']
+        if node_type:
+            return id_fields.get(node_type, 'uuid')
+        else:
+            self.log.error('get_id_field: "{}" field is empty'.format(NODE_TYPE))
+            return None
+
+    # Find node's id
+    def get_id(self, obj):
+        id_field = self.get_id_field(obj)
+        if not id_field:
+            return None
+        if id_field not in obj:
+            return None
+        else:
+            return obj[id_field]
+
+
 if __name__ == '__main__':
     files = ['/Users/yingm3/work/icdc/code/model-tool/model-desc/icdc-model.yml', '/Users/yingm3/work/icdc/code/model-tool/model-desc/icdc-model-props.yml']
 

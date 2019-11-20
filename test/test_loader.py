@@ -98,9 +98,6 @@ class TestLoader(unittest.TestCase):
         self.assertEqual(self.loader.get_value_string('prior_therapy', 'total_dose', '3'), 3.0)
         self.assertEqual(self.loader.get_value_string('prior_therapy', 'total_dose', '3.0'), 3.0)
 
-    def test_get_id_field(self):
-        self.assertIsNone(self.loader.get_id_field({}))
-
 
 if __name__ == '__main__':
     unittest.main()

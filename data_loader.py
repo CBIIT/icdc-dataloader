@@ -105,31 +105,6 @@ class DataLoader:
         self.log.info('Loading time: {:.2f} seconds'.format(end - start))  # Time in seconds, e.g. 5.38091952400282
         return {NODES_CREATED: self.nodes_created, RELATIONSHIP_CREATED: self.relationships_created}
 
-    # Get node's id field, such as case_id for case node, or clinical_study_designation for study node
-    def get_id_field(self, obj):
-        if NODE_TYPE not in obj:
-            self.log.error('get_id_field: there is no "{}" field in node, can\'t retrieve id!'.format(NODE_TYPE))
-            return None
-        node_type = obj[NODE_TYPE]
-        id_fields = PROPS['id_fields']
-        if node_type:
-            if node_type in id_fields:
-                return id_fields[node_type]
-            else:
-                return node_type + '_id'
-        else:
-            self.log.error('get_id_field: "{}" field is empty'.format(NODE_TYPE))
-            return None
-
-    # Find node's id
-    def get_id(self, obj):
-        id_field = self.get_id_field(obj)
-        if not id_field:
-            return None
-        if id_field not in obj:
-            return None
-        else:
-            return obj[id_field]
 
     @staticmethod
     def cleanup_node(node):
@@ -203,8 +178,8 @@ class DataLoader:
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 line_num += 1
-                id_field = self.get_id_field(obj)
-                node_id = self.get_id(obj)
+                id_field = self.schema.get_id_field(obj)
+                node_id = self.schema.get_id(obj)
                 if node_id:
                     if node_id in IDs:
                         validation_failed = True
@@ -234,8 +209,8 @@ class DataLoader:
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 node_type = obj[NODE_TYPE]
-                node_id = self.get_id(obj)
-                id_field = self.get_id_field(obj)
+                node_id = self.schema.get_id(obj)
+                id_field = self.schema.get_id_field(obj)
                 # statement is used to create current node
                 statement = ''
                 # prop_statement set properties of current node
@@ -483,8 +458,8 @@ class DataLoader:
         return True
 
     def get_search_criteria_for_node(self, node):
-        id_field = self.get_id_field(node)
-        node_id = self.get_id(node)
+        id_field = self.schema.get_id_field(node)
+        node_id = self.schema.get_id(node)
         node_type = node[NODE_TYPE]
         if node_id:
             criteria_statement = '{}: "{}"'.format(id_field, node_id)

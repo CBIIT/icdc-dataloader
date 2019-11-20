@@ -42,11 +42,16 @@ Properties:
     TBD: String
 
   id_fields:
-    study: clinical_study_designation
     program: program_acronym
+    study: clinical_study_designation
     study_arm: arm
-    file: uuid
     cohort: cohort_description
+    case: case_id
+    enrollment: enrollment_id
+    visit: visit_id
+    diagnosis: diagnosis_id
+    sample: sample_id
+    file: uuid
 
   visit_date_in_nodes:
     vital_signs: date_of_vital_signs

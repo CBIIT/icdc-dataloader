@@ -39,6 +39,14 @@ class TestSchema(unittest.TestCase):
         self.assertEqual('mg/kg', extra_props['ae_dose_original_unit'])
         self.assertEqual('mg/kg', extra_props['ae_dose_unit'])
 
+    def test_get_id_field(self):
+        self.assertIsNone(self.schema.get_id_field({}))
+        self.assertEqual(self.schema.get_id_field({'type': 'program'}), 'program_acronym')
+        self.assertEqual(self.schema.get_id_field({'type': 'study'}), 'clinical_study_designation')
+        self.assertEqual(self.schema.get_id_field({'type': 'case'}), 'case_id')
+        self.assertEqual(self.schema.get_id_field({'type': 'file'}), 'uuid')
+        self.assertEqual(self.schema.get_id_field({'type': 'demographic'}), 'uuid')
+
 
 if __name__ == '__main__':
     unittest.main()
