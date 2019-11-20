@@ -37,13 +37,13 @@ class TestLoader(unittest.TestCase):
 
     def test_validate_parents_exist_in_file(self):
         # result = loader.validate_parents_exit_in_file('data/Pathology-Report-Mapping-File.txt', 100)
-        result = self.loader.validate_cases_exist_in_file('data/pathology-reports-failure.txt', 100)
+        result = self.loader.validate_parents_exist_in_file('data/pathology-reports-failure.txt', 100)
         self.assertFalse(result)
-        result = self.loader.validate_cases_exist_in_file('data/pathology-reports-success.txt', 100)
+        result = self.loader.validate_parents_exist_in_file('data/pathology-reports-success.txt', 100)
         self.assertTrue(result)
 
     def test_duplicated_ids(self):
-        self.assertTrue(self.loader.validate_file('data/NCATS/NCATS01-case.txt', 10))
+        self.assertTrue(self.loader.validate_file('data/NCATS/NCATS-COP01-case.txt', 10))
         self.assertFalse(self.loader.validate_file('data/NCATS01-case-dup.txt', 10))
 
     def test_get_value_string(self):
@@ -88,6 +88,9 @@ class TestLoader(unittest.TestCase):
         self.assertIsNone(self.loader.get_value_string('prior_therapy', 'total_dose', 'not a number'))
         self.assertEqual(self.loader.get_value_string('prior_therapy', 'total_dose', '3'), 3.0)
         self.assertEqual(self.loader.get_value_string('prior_therapy', 'total_dose', '3.0'), 3.0)
+
+    def test_get_id_field(self):
+        self.assertIsNone(self.loader.get_id_field({}))
 
 
 if __name__ == '__main__':

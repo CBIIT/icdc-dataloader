@@ -1,0 +1,17 @@
+type	case.case_id	sample_id	sample_type	general_sample_pathology	analysis_area	analysis_area_percentage_tumor	analysis_area_percentage_stroma	analysis_area_percentage_glass	analysis_area_percentage_pigmented_tumor	total_tissue_area	tumor_tissue_area	non_tumor_tissue_area	percentage_tumor	percentage_stroma	comment	necropsy_sample	date_of_sample_collection
+sample	NCATS-COP01CCB010031	CCB010031 0200	tissue	normal												No	2007-10-01
+sample	NCATS-COP01CCB010233	CCB010233 0200	tissue	normal												No	2010-02-11
+sample	NCATS-COP01CCB010378	CCB010378 0200	tissue	normal												No	2012-06-05
+sample	NCATS-COP01CCB020035	CCB020035 0201	tissue	normal												No	2008-06-23
+sample	NCATS-COP01CCB020036	CCB020036 0200	tissue	normal												No	2008-07-01
+sample	NCATS-COP01CCB020054	CCB020054 0201	tissue	normal												No	2008-09-12
+sample	NCATS-COP01CCB030077	CCB030077 0200	tissue	normal												No	2008-05-09
+sample	NCATS-COP01CCB030078	CCB030078 0200	tissue	normal												No	2008-05-09
+sample	NCATS-COP01CCB040184	CCB040184 0201	tissue	normal												Yes	2009-10-06
+sample	NCATS-COP01CCB040254	CCB040254 0200	tissue	normal												Yes	2010-03-01
+sample	NCATS-COP01CCB040382	CCB040382 0200	tissue	normal												No	2011-01-20
+sample	NCATS-COP01CCB050022	CCB050022 0200	tissue	normal												No	2008-08-06
+sample	NCATS-COP01CCB050297	CCB050297 0200	tissue	normal												No	2011-02-17
+sample	NCATS-COP01CCB060034	CCB060034 0200	tissue	normal												No	2009-01-09
+sample	NCATS-COP01CCB060039	CCB060039 0201	tissue	normal												No	2009-02-04
+sample	NCATS-COP01CCB080012	CCB080012 0201	tissue	normal												No	2009-03-06

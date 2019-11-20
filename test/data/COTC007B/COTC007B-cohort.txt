@@ -1,0 +1,19 @@
+type	study_arm.arm	cohort_description	cohort_dose
+cohort	NSC 743400	NSC 743400; 8mg/m2/day	8mg/m2/day
+cohort	NSC 743400	NSC 743400; 16mg/m2/day	16mg/m2/day
+cohort	NSC 743400	NSC 743400; 24mg/m2/day	24mg/m2/day
+cohort	NSC 743400	NSC 743400; 40mg/m2/day	40mg/m2/day
+cohort	NSC 743400	NSC 743400; 50mg/m2/day	50mg/m2/day
+cohort	NSC 706744	NSC 706744; 25mg/m2/day	25mg/m2/day
+cohort	NSC 706744	NSC 706744; 50mg/m2/day	50mg/m2/day
+cohort	NSC 706744	NSC 706744; 75mg/m2/day	75mg/m2/day
+cohort	NSC 706744	NSC 706744; 125mg/m2/day	125mg/m2/day
+cohort	NSC 706744	NSC 706744; 150mg/m2/day	150mg/m2/day
+cohort	NSC 725776	NSC 725776; 3mg/m2/day	3mg/m2/day
+cohort	NSC 725776	NSC 725776; 6mg/m2/day	6mg/m2/day
+cohort	NSC 725776	NSC 725776; 9mg/m2/day	9mg/m2/day
+cohort	NSC 725776	NSC 725776; 15mg/m2/day	15mg/m2/day
+cohort	NSC 725776	NSC 725776; 20mg/m2/day	20mg/m2/day
+cohort	NSC 725776	NSC 725776; 17.5mg/m2	17.5mg/m2
+cohort	NSC 706744	NSC706744; 100mg/m2	100mg/m2
+cohort	NSC 743400	NSC 743400; 65mg/m2/day	65mg/m2/day

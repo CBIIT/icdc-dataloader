@@ -1,0 +1,86 @@
+type	visit.visit_id	case_id	lesion_number	lesion_site	lesion_description	previously_treated	measurable_lesion	target_lesion	previously_irradiated	cycle_number	date_of_evaluation	measured_how	longest_measurement	evaluation_number	evaluation_code	crf_id
+disease_extent	COTC007B051020140327	COTC007B0510	1	Lymph node	left prescapular lymph node		Measurable	No			2014-03-27	PE	0.5	3	Decreasing	R339259501
+disease_extent	COTC007B030120140402	COTC007B0301	1	Lymph node	mandibular lymph node-right		Measurable	No			2014-04-02	PE	1.7	1	Baseline	R339563501
+disease_extent	COTC007B041220140529	COTC007B0412	1	Lymph node	Right axillary LN		Measurable	No			2014-05-29	PE	0	1	Resolved	R343203201
+disease_extent	COTC007B041220140515	COTC007B0412	1	Lymph node	Right axillary LN		Measurable	No			2014-05-15	PE	0	1	Resolved	R343203201
+disease_extent	COTC007B041420150122	COTC007B0414	1	Lymph node	Right popliteal lymph node		Measurable	No			2015-01-22	PE	2	1	Decreasing	R357295801
+disease_extent	COTC007B041520150409	COTC007B0415	1	Lymph node	Right popliteal		Measurable	No			2015-04-09	PE	1.1	1	Decreasing	R362086801
+disease_extent	COTC007B030420150625	COTC007B0304	1	Lymph node	Right popliteal LN		Measurable	No			2015-06-25	PE	2.5	2	Stable	R366677401
+disease_extent	COTC007B090120120802	COTC007B0901	1	Lymph node	Right mandibular		Measurable	No			2012-08-02	PE	36	1	Increasing	R279643801
+disease_extent	COTC007B090120120726	COTC007B0901	1	Lymph node	Right mandibular		Measurable	No			2012-07-26	PE	17	1	Stable	R279643801
+disease_extent	COTC007B050120120621	COTC007B0501	1	Lymph node	Left popliteal		Measurable	No			2012-06-21	PE	1.7	1	Baseline	R269253101
+disease_extent	COTC007B050320120802	COTC007B0503	1	Lymph nodes	left popliteal		Measurable	No			2012-08-02	PE	1.5	3	Decreasing	R280052601
+disease_extent	COTC007B050320120726	COTC007B0503	1	Lymph nodes	left popliteal		Measurable	No			2012-07-26	PE	2.6	1	Baseline	R280052601
+disease_extent	COTC007B060820130516	COTC007B0608	1	Lymph node	right retropharyngeal lymph node		Measurable	No			2013-05-16	PE	56.4	2	NEW	R315537901
+disease_extent	COTC007B041020130807	COTC007B0410	1	Lymph node	Left submandibular LN		Measurable	No			2013-08-07	PE	5.5	1	Baseline	R322787101
+disease_extent	COTC007B050920130821	COTC007B0509	1	Lymph node	Left prescapular lymph node		Measurable	No			2013-08-21	PE	5	1	Baseline	R325376101
+disease_extent	COTC007B160820140220	COTC007B1608	1	Lymph node	Right submandibular		Measurable	No			2014-02-20	PE	2.9			R335726101
+disease_extent	COTC007B051020140310	COTC007B0510	1	Lymph node	left prescapular lymph node		Measurable	No			2014-03-10	PE	4.5	1	Baseline	R339259501
+disease_extent	COTC007B041320140716	COTC007B0413	1	Lymph node	Right popliteal LN		Measurable	No			2014-07-16	PE	2.4	1	Baseline	R346919501
+disease_extent	COTC007B040120120906	COTC007B0401	1	Lymph node	Right submandibular		Measurable	No			2012-09-06	PE	7.4	1	NEW	R292580101
+disease_extent	COTC007B040220121115	COTC007B0402	1	Lymph node	Left submandibular LN		Measurable	No			2012-11-15	PE	2	1	Stable	R299813101
+disease_extent	COTC007B040520130206	COTC007B0405	1	Lymph node	Left submandibular		Measurable	No			2013-02-06	PE	3.5	1	Baseline	R308031701
+disease_extent	COTC007B050420130411	COTC007B0504	1	Lymph node	right inguinal lymph node		Measurable	No			2013-04-11	PE	3.8	4	Increasing	R313122201
+disease_extent	COTC007B160720130619	COTC007B1607	1	Lymph node	right prescapular		Measurable	No			2013-06-19	PE	7.1			R319550201
+disease_extent	COTC007B160820140227	COTC007B1608	1	Lymph node	Right submandibular		Measurable	No			2014-02-27	PE	3.5			R335726101
+disease_extent	COTC007B160820140213	COTC007B1608	1	Lymph node	Right submandibular		Measurable	No			2014-02-13	PE	2.6			R335726101
+disease_extent	COTC007B160820140206	COTC007B1608	1	Lymph node	Right submandibular		Measurable	No			2014-02-06	PE	2.8			R335726101
+disease_extent	COTC007B100320140904	COTC007B1003	1	Lymph node	Left Inguinal		Measurable	No			2014-09-04	PE	6.3	4	Stable	R348534701
+disease_extent	COTC007B021820141120	COTC007B0218	1	Lymph node	Left inguinal		Measurable	No			2014-11-20	PE	2.2	1	Decreasing	R354333001
+disease_extent	COTC007B041520150416	COTC007B0415	1	Lymph node	Right popliteal		Measurable	No			2015-04-16	PE	1	1	Stable	R362086801
+disease_extent	COTC007B051120150709	COTC007B0511	1	Lymph node	right popliteal		Measurable	No			2015-07-09	PE	1.3	3	Increasing	R367148201
+disease_extent	COTC007B051220150708	COTC007B0512	1	Lymph node	Left inguinal lymph node		Measurable	No			2015-07-08	PE	2.4	1	Baseline	R368257201
+disease_extent	COTC007B090120120802	COTC007B0901	1	Lymph node	Right mandibular		Measurable	No			2012-08-02	PE	40	2	Increasing	R279643801
+disease_extent	COTC007B040220121031	COTC007B0402	1	Lymph node	Left submandibular LN		Measurable	No			2012-10-31	PE	6.7	1	Baseline	R299813101
+disease_extent	COTC007B040320130109	COTC007B0403	1	Lymph node	Right Popliteal LN		Measurable	No			2013-01-09	PE	2.7	1	Baseline	R305268601
+disease_extent	COTC007B040520130228	COTC007B0405	1	Lymph node	Left submandibular		Measurable	No			2013-02-28	PE	3.2	1	Stable	R308031701
+disease_extent	COTC007B040520130221	COTC007B0405	1	Lymph node	Left submandibular		Measurable	No			2013-02-21	PE	3.8	1	Decreasing	R308031701
+disease_extent	COTC007B050420130320	COTC007B0504	1	Lymph node	right inguinal lymph node		Measurable	No			2013-03-20	PE	4	1	Baseline	R313122201
+disease_extent	COTC007B050320120731	COTC007B0503	1	Lymph nodes	left popliteal		Measurable	No			2012-07-31	PE	2.2	2	Decreasing	R280052601
+disease_extent	COTC007B040120120920	COTC007B0401	1	Lymph node	Right submandibular		Measurable	No			2012-09-20	PE	6.8	1	Increasing	R292580101
+disease_extent	COTC007B040420130116	COTC007B0404	1	Lymph nodes	Right politeal		Measurable	No			2013-01-16	PE	6.4	1	Baseline	R306109901
+disease_extent	COTC007B050420130404	COTC007B0504	1	Lymph node	right inguinal lymph node		Measurable	No			2013-04-04	PE	2.5	3	Increasing	R313122201
+disease_extent	COTC007B050420130328	COTC007B0504	1	Lymph node	right inguinal lymph node		Measurable	No			2013-03-28	PE	2.3	2	Decreasing	R313122201
+disease_extent	COTC007B040820130403	COTC007B0408	1	Lymph node	Left submandibular LN		Measurable	No			2013-04-03	PE	4.2	1	Baseline	R313127001
+disease_extent	COTC007B050620130516	COTC007B0506	1	Lymph node	right submandibular		Measurable	No			2013-05-16	PE	3.8	3	Increasing	R315665601
+disease_extent	COTC007B050720130523	COTC007B0507	1	Lymph node	right submandibular lymph node		Measurable	No			2013-05-23	PE	5.8	3	Increasing	R316351601
+disease_extent	COTC007B050719230516	COTC007B0507	1	Lymph node	right submandibular lymph node		Measurable	No			1923-05-16	PE	4.8	2	Decreasing	R316351601
+disease_extent	COTC007B050720130508	COTC007B0507	1	Lymph node	right submandibular lymph node		Measurable	No			2013-05-08	PE	5.7	1	Baseline	R316351601
+disease_extent	COTC007B041120131113	COTC007B0411	1	Lymph node	Left mandibular LN		Measurable	No			2013-11-13	PE	5.7	1	Baseline	R331095301
+disease_extent	COTC007B100320140828	COTC007B1003	1	Lymph node	Left Inguinal		Measurable	No			2014-08-28	PE	5	3	Stable	R348534701
+disease_extent	COTC007B041520150423	COTC007B0415	1	Lymph node	Right popliteal		Measurable	No			2015-04-23	PE	1	1	Stable	R362086801
+disease_extent	COTC007B041520150401	COTC007B0415	1	Lymph node	Right popliteal		Measurable	No			2015-04-01	PE	2.6	1	Baseline	R362086801
+disease_extent	COTC007B030420150702	COTC007B0304	1	Lymph node	Right popliteal LN		Measurable	No			2015-07-02	PE	3.5	3	Increasing	R366677401
+disease_extent	COTC007B051120150702	COTC007B0511	1	Lymph node	right popliteal		Measurable	No			2015-07-02	PE	1.1	2	Decreasing	R367148201
+disease_extent	COTC007B051120150724	COTC007B0511	1	Lymph node	right popliteal lymph node		Measurable	No			2015-07-24	PE	1.3	5	Increasing	R368989701
+disease_extent	COTC007B051320150730	COTC007B0513	1	Lymph node	left popliteal		Measurable	No			2015-07-30	PE	0.8	3	Resolved	R369195401
+disease_extent	COTC007B051220150716	COTC007B0512	1	Lymph node	Left inguinal lymph node		Measurable	No			2015-07-16	PE	1.7	2	Decreasing	R368257201
+disease_extent	COTC007B051320150806	COTC007B0513	1	Lymph node	left popliteal		Measurable	No			2015-08-06	PE	2.4	4	Increasing	R369195401
+disease_extent	COTC007B051120150625	COTC007B0511	1	Lymph node	right popliteal		Measurable	No			2015-06-25	PE	2.1	1	Baseline	R367148201
+disease_extent	COTC007B051220150730	COTC007B0512	1	Lymph node	Left inguinal lymph node		Measurable	No			2015-07-30	PE	2.4	4	Increasing	R368257201
+disease_extent	COTC007B090120120726	COTC007B0901	1	Lymph node	Right mandibular		Measurable	No			2012-07-26	PE	17	2	Not Examined	R279643801
+disease_extent	COTC007B090120120719	COTC007B0901	1	Lymph node	Right mandibular		Measurable	No			2012-07-19	PE	15	1	Baseline	R279643801
+disease_extent	COTC007B050120120628	COTC007B0501	1	Lymph node	Left popliteal		Measurable	No			2012-06-28	PE	1.6	1	Stable	R269253101
+disease_extent	COTC007B060120120815	COTC007B0601	1	Lymph node	Popliteal, right		Measurable	No			2012-08-15	PE	24.8	1	Baseline	R285856101
+disease_extent	COTC007B040220121108	COTC007B0402	1	Lymph node	Left submandibular LN		Measurable	No			2012-11-08	PE	2	1	Decreasing	R299813101
+disease_extent	COTC007B040320130109	COTC007B0403	1	Lymph node	Right Popliteal LN		Measurable	No			2013-01-09	PE				R305268601
+disease_extent	COTC007B040420130207	COTC007B0404	1	Lymph nodes	Right politeal		Measurable	No			2013-02-07	PE	2.3	1	Stable	R306109901
+disease_extent	COTC007B040420130124	COTC007B0404	1	Lymph nodes	Right politeal		Measurable	No			2013-01-24	PE	3	1	Decreasing	R306109901
+disease_extent	COTC007B040720130411	COTC007B0407	1	Lymph node	Right popliteal		Measurable	No			2013-04-11	PE	2.6	1	Stable	R312502401
+disease_extent	COTC007B040720130327	COTC007B0407	1	Lymph node	Right popliteal		Measurable	No			2013-03-27	PE	3.7	1	Baseline	R312502401
+disease_extent	COTC007B051020140403	COTC007B0510	1	Lymph node	left prescapular lymph node		Measurable	No			2014-04-03	PE	0.6	4	Increasing	R339259501
+disease_extent	COTC007B160920140507	COTC007B1609	1	Lymph node	Left popliteal		Measurable	No			2014-05-07	PE	5.5			R342617301
+disease_extent	COTC007B041220140521	COTC007B0412	1	Lymph node	Right axillary LN		Measurable	No			2014-05-21	PE	0	1	Resolved	R343203201
+disease_extent	COTC007B041220140507	COTC007B0412	1	Lymph node	Right axillary LN		Measurable	No			2014-05-07	PE	3	1	Baseline	R343203201
+disease_extent	COTC007B100320140813	COTC007B1003	1	Lymph node	Left Inguinal		Measurable	No			2014-08-13	PE	6.2	1	Baseline	R348534701
+disease_extent	COTC007B021820141204	COTC007B0218	1	Lymph node	Left inguinal		Measurable	No			2014-12-04	PE	0.5	1	Resolved	R354333001
+disease_extent	COTC007B021820141112	COTC007B0218	1	Lymph node	Left inguinal		Measurable	No			2014-11-12	PE	3	1	Baseline	R354333001
+disease_extent	COTC007B051120150716	COTC007B0511	1	Lymph node	right popliteal		Measurable	No			2015-07-16	PE	1.1	4	Decreasing	R367148201
+disease_extent	COTC007B051220150723	COTC007B0512	1	Lymph node	Left inguinal lymph node		Measurable	No			2015-07-23	PE	1.5	3	Decreasing	R368257201
+disease_extent	COTC007B051320150715	COTC007B0513	1	Lymph node	left popliteal		Measurable	No			2015-07-15	PE	2.3	1	Baseline	R369195401
+disease_extent	COTC007B060120120823	COTC007B0601	1	Lymph node	Popliteal, right		Measurable	No			2012-08-23	PE	15.8	2		R285856101
+disease_extent	COTC007B040120120913	COTC007B0401	1	Lymph node	Right submandibular		Measurable	No			2012-09-13	PE	8.7	1	Increasing	R292580101
+disease_extent	COTC007B040420130214	COTC007B0404	1	Lymph nodes	Right politeal		Measurable	No			2013-02-14	PE	3.7	1	Increasing	R306109901
+disease_extent	COTC007B040420130131	COTC007B0404	1	Lymph nodes	Right politeal		Measurable	No			2013-01-31	PE	2.6	1	Decreasing	R306109901
+disease_extent	COTC007B040620130314	COTC007B0406	1	Lymph node	Right popliteal LN		Measurable	No			2013-03-14	PE	4.5	1	Baseline	R311044801
+disease_extent	COTC007B040720130404	COTC007B0407	1	Lymph node	Right popliteal		Measurable	No			2013-04-04	PE	2.8	1	Decreasing	R312502401

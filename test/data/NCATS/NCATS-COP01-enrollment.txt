@@ -1,0 +1,61 @@
+type	case.case_id	cohort_description	site_short_name
+enrollment	NCATS-COP01CCB010015	B Cell Lymphoma	Colorado State
+enrollment	NCATS-COP01CCB010031	T Cell Lymphoma	Colorado State
+enrollment	NCATS-COP01CCB010045	T Cell Lymphoma	Colorado State
+enrollment	NCATS-COP01CCB010072	Osteosarcoma	Colorado State
+enrollment	NCATS-COP01CCB010091	Osteosarcoma	Colorado State
+enrollment	NCATS-COP01CCB010093	T Cell Lymphoma	Colorado State
+enrollment	NCATS-COP01CCB010178	B Cell Lymphoma	Colorado State
+enrollment	NCATS-COP01CCB010208	B Cell Lymphoma	Colorado State
+enrollment	NCATS-COP01CCB010233	T Cell Lymphoma	Colorado State
+enrollment	NCATS-COP01CCB010234	B Cell Lymphoma	Colorado State
+enrollment	NCATS-COP01CCB010235	B Cell Lymphoma	Colorado State
+enrollment	NCATS-COP01CCB010243	T Cell Lymphoma	Colorado State
+enrollment	NCATS-COP01CCB010285	Pulmonary Neoplasms	Colorado State
+enrollment	NCATS-COP01CCB010311	B Cell Lymphoma	Colorado State
+enrollment	NCATS-COP01CCB010378	Melanoma	Colorado State
+enrollment	NCATS-COP01CCB020018	Osteosarcoma	OSU
+enrollment	NCATS-COP01CCB020026	Osteosarcoma	OSU
+enrollment	NCATS-COP01CCB020027	Osteosarcoma	OSU
+enrollment	NCATS-COP01CCB020031	B Cell Lymphoma	OSU
+enrollment	NCATS-COP01CCB020035	B Cell Lymphoma	OSU
+enrollment	NCATS-COP01CCB020036	B Cell Lymphoma	OSU
+enrollment	NCATS-COP01CCB020054	B Cell Lymphoma	OSU
+enrollment	NCATS-COP01CCB020128	Melanoma	OSU
+enrollment	NCATS-COP01CCB030001	B Cell Lymphoma	Wisconsin
+enrollment	NCATS-COP01CCB030003	T Cell Lymphoma	Wisconsin
+enrollment	NCATS-COP01CCB030026	T Cell Lymphoma	Wisconsin
+enrollment	NCATS-COP01CCB030035	Osteosarcoma	Wisconsin
+enrollment	NCATS-COP01CCB030064	Osteosarcoma	Wisconsin
+enrollment	NCATS-COP01CCB030077	Osteosarcoma	Wisconsin
+enrollment	NCATS-COP01CCB030078	Osteosarcoma	Wisconsin
+enrollment	NCATS-COP01CCB030156	T Cell Lymphoma	Wisconsin
+enrollment	NCATS-COP01CCB030162	Melanoma	Wisconsin
+enrollment	NCATS-COP01CCB030227	Melanoma	Wisconsin
+enrollment	NCATS-COP01CCB030255	Pulmonary Neoplasms	Wisconsin
+enrollment	NCATS-COP01CCB030258	T Cell Lymphoma	Wisconsin
+enrollment	NCATS-COP01CCB030300	T Cell Lymphoma	Wisconsin
+enrollment	NCATS-COP01CCB040184	T Cell Lymphoma	Tufts
+enrollment	NCATS-COP01CCB040254	Pulmonary Neoplasms	Tufts
+enrollment	NCATS-COP01CCB040382	Pulmonary Neoplasms	Tufts
+enrollment	NCATS-COP01CCB050004	B Cell Lymphoma	Davis
+enrollment	NCATS-COP01CCB050022	Osteosarcoma	Davis
+enrollment	NCATS-COP01CCB050096	Melanoma	Davis
+enrollment	NCATS-COP01CCB050170	Melanoma	Davis
+enrollment	NCATS-COP01CCB050177	Melanoma	Davis
+enrollment	NCATS-COP01CCB050216	Pulmonary Neoplasms	Davis
+enrollment	NCATS-COP01CCB050227	Pulmonary Neoplasms	Davis
+enrollment	NCATS-COP01CCB050297	Pulmonary Neoplasms	Davis
+enrollment	NCATS-COP01CCB050327	Pulmonary Neoplasms	Davis
+enrollment	NCATS-COP01CCB060030	Melanoma	Missouri
+enrollment	NCATS-COP01CCB060034	T Cell Lymphoma	Missouri
+enrollment	NCATS-COP01CCB060039	Melanoma	Missouri
+enrollment	NCATS-COP01CCB060051	Pulmonary Neoplasms	Missouri
+enrollment	NCATS-COP01CCB070003	Osteosarcoma	MSU
+enrollment	NCATS-COP01CCB070007	Pulmonary Neoplasms	MSU
+enrollment	NCATS-COP01CCB070013	Osteosarcoma	MSU
+enrollment	NCATS-COP01CCB070020	Pulmonary Neoplasms	MSU
+enrollment	NCATS-COP01CCB070034	Pulmonary Neoplasms	MSU
+enrollment	NCATS-COP01CCB070102	Melanoma	MSU
+enrollment	NCATS-COP01CCB080012	Melanoma	UT
+enrollment	NCATS-COP01CCB080018	Melanoma	UT

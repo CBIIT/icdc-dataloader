@@ -1,0 +1,61 @@
+type	case.case_id	diagnosis_id	disease_term	pathology_report	follow_up_data	treatment_data	concurrent_disease 	concurrent_disease_type 	histological_grade	primary_disease_site
+diagnosis	NCATS-COP01CCB010015	NCATS-COP01CCB010015	Lymphoma :: Stage 3	yes	yes	yes	No	unknown		Lymph Node, Popliteal
+diagnosis	NCATS-COP01CCB010031	NCATS-COP01CCB010031	Lymphoma :: Stage 3	yes	yes	yes	No	unknown		Lymph Node, Popliteal
+diagnosis	NCATS-COP01CCB010045	NCATS-COP01CCB010045	Lymphoma :: Stage 3	yes	yes	yes	No	unknown		Lymph Node, Popliteal
+diagnosis	NCATS-COP01CCB010072	NCATS-COP01CCB010072	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes-D	yes-D	No	unknown		Humerus
+diagnosis	NCATS-COP01CCB010091	NCATS-COP01CCB010091	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes-D	yes-D	No	unknown		Femur
+diagnosis	NCATS-COP01CCB010093	NCATS-COP01CCB010093	Lymphoma :: Stage 3	yes	yes-M	yes-D	No	unknown		Lymph Node, Popliteal
+diagnosis	NCATS-COP01CCB010178	NCATS-COP01CCB010178	Lymphoma :: Stage 3	yes	yes	yes	No	unknown		Lymph Node, Popliteal
+diagnosis	NCATS-COP01CCB010208	NCATS-COP01CCB010208	Lymphoma :: Stage 3	yes	yes	yes	Yes	unknown		Lymph Node, Popliteal
+diagnosis	NCATS-COP01CCB010233	NCATS-COP01CCB010233	Lymphoma :: Stage 3	yes	yes	yes	No	unknown		Lymph Node, Popliteal
+diagnosis	NCATS-COP01CCB010234	NCATS-COP01CCB010234	Lymphoma :: Stage 3	yes	yes-D	yes	No	unknown		Lymph Node, Popliteal
+diagnosis	NCATS-COP01CCB010235	NCATS-COP01CCB010235	Lymphoma :: Stage 3	yes	yes-D	yes	No	unknown		Lymph Node, Popliteal
+diagnosis	NCATS-COP01CCB010243	NCATS-COP01CCB010243	Lymphoma :: Stage 3	yes	yes	yes	No	unknown		Lymph Node, Popliteal
+diagnosis	NCATS-COP01CCB010285	NCATS-COP01CCB010285	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (metastatic)	yes	yes-D	yes-D	No	unknown		Lung Multiple Sites
+diagnosis	NCATS-COP01CCB010311	NCATS-COP01CCB010311	Lymphoma :: Stage 3	yes	yes	yes	No	unknown	III	Lymph Node, Popliteal
+diagnosis	NCATS-COP01CCB010378	NCATS-COP01CCB010378	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/mandible	yes	Yes	Yes	No	none		Mandible
+diagnosis	NCATS-COP01CCB020018	NCATS-COP01CCB020018	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes-LTF	yes	No			Tibia
+diagnosis	NCATS-COP01CCB020026	NCATS-COP01CCB020026	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes-D	yes-D	No			Femur
+diagnosis	NCATS-COP01CCB020027	NCATS-COP01CCB020027	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes-D	yes-D	No			Tibia
+diagnosis	NCATS-COP01CCB020031	NCATS-COP01CCB020031	Lymphoma :: Stage 4	yes	yes-D	yes	Yes	anorexia;increased WBC and neutrophils,increased liver enzymes;small nodule in left testicle		Lymph Node
+diagnosis	NCATS-COP01CCB020035	NCATS-COP01CCB020035	Lymphoma :: Stage 4	yes	yes-D	yes	No			Lymph Node, Popliteal
+diagnosis	NCATS-COP01CCB020036	NCATS-COP01CCB020036	Lymphoma :: Stage 4	yes	yes-D	yes-D	No			Lymph Node
+diagnosis	NCATS-COP01CCB020054	NCATS-COP01CCB020054	Lymphoma :: Stage 2	yes	yes-D	yes-D	No			Lymph Node
+diagnosis	NCATS-COP01CCB020128	NCATS-COP01CCB020128	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/mandible	yes	Yes	Yes	Yes	Mammary masses;Suspect Left Thalamocortical lesion;Grade III/VI systolic heart murmur;Dental Disease		Mandible
+diagnosis	NCATS-COP01CCB030001	NCATS-COP01CCB030001	Lymphoma :: Stage 3	yes	yes-LTF	yes	No			Lymph Node, Popliteal
+diagnosis	NCATS-COP01CCB030003	NCATS-COP01CCB030003	Lymphoma :: Stage 5	yes	yes	yes	No			Lymph Node, Popliteal
+diagnosis	NCATS-COP01CCB030026	NCATS-COP01CCB030026	Lymphoma :: Stage 4	yes	yes	yes	No			Lymph Node, Popliteal
+diagnosis	NCATS-COP01CCB030035	NCATS-COP01CCB030035	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes-D	yes-D	No			Humerus
+diagnosis	NCATS-COP01CCB030064	NCATS-COP01CCB030064	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes-A 08	yes	No			Radius
+diagnosis	NCATS-COP01CCB030077	NCATS-COP01CCB030077	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes-LTF	yes	No			Humerus
+diagnosis	NCATS-COP01CCB030078	NCATS-COP01CCB030078	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes-D	yes-D	No			Humerus
+diagnosis	NCATS-COP01CCB030156	NCATS-COP01CCB030156	Lymphoma :: Stage 3	yes	yes-LTF	yes	No			Lymph Node
+diagnosis	NCATS-COP01CCB030162	NCATS-COP01CCB030162	Lip and oropharyngeal neoplasms malignant :: Melanoma-lingual	yes	yes-LTF	yes	No			Mouth
+diagnosis	NCATS-COP01CCB030227	NCATS-COP01CCB030227	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/maxilla	yes	yes-LTF	yes	No			Mouth
+diagnosis	NCATS-COP01CCB030255	NCATS-COP01CCB030255	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (single lung lobe)	yes	yes-D	yes-D	Yes	Heart murmur: 2/6 systolic, left apical		Lung, Caudal Right Lobe
+diagnosis	NCATS-COP01CCB030258	NCATS-COP01CCB030258	Lymphoma :: Stage 2	yes	yes	yes	No			Lymph Node
+diagnosis	NCATS-COP01CCB030300	NCATS-COP01CCB030300	Lymphoma :: Stage 3	yes	yes	yes	No			Lymph Node, Popliteal
+diagnosis	NCATS-COP01CCB040184	NCATS-COP01CCB040184	Lymphoma :: Stage 4	Yes	yes	yes	Yes	on prednisone		Lymph Node
+diagnosis	NCATS-COP01CCB040254	NCATS-COP01CCB040254	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (metastatic)	yes	yes-D	yes-D	Yes	Allergies, on prednisone		Lung, Cranial Left Lobe
+diagnosis	NCATS-COP01CCB040382	NCATS-COP01CCB040382	Respiratory tract and pleural neoplasms malignant cell type unspecified NEC :: Other carcinoma	yes	yes	yes	No			Lung, Caudal Aspect Of Left Caudal Lobe
+diagnosis	NCATS-COP01CCB050004	NCATS-COP01CCB050004	Lymphoma :: Stage 3	yes	yes-D	yes-D	No			Lymph Node, Popliteal
+diagnosis	NCATS-COP01CCB050022	NCATS-COP01CCB050022	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes-LTF	yes	No			Humerus
+diagnosis	NCATS-COP01CCB050096	NCATS-COP01CCB050096	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/mandible	yes	Yes-D	no	No			Mouth
+diagnosis	NCATS-COP01CCB050170	NCATS-COP01CCB050170	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/maxilla	yes	LTF	yes	No			Mouth
+diagnosis	NCATS-COP01CCB050177	NCATS-COP01CCB050177	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/maxilla	yes	yes-D	yes	No			Mouth
+diagnosis	NCATS-COP01CCB050216	NCATS-COP01CCB050216	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (single lung lobe)	no	no	no	Yes	Oral Melanoma		Lung, Caudal Aspect Of Left Caudal Lobe
+diagnosis	NCATS-COP01CCB050227	NCATS-COP01CCB050227	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (single lung lobe)	yes	no	no	No			Lung, Caudal Aspect Of Left Caudal Lobe
+diagnosis	NCATS-COP01CCB050297	NCATS-COP01CCB050297	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (single lung lobe)	yes	no	no	No			Lung, Cranial Left Lobe
+diagnosis	NCATS-COP01CCB050327	NCATS-COP01CCB050327	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (single lung lobe)	yes	yes	no	No			Lung, Caudal Right Lobe
+diagnosis	NCATS-COP01CCB060030	NCATS-COP01CCB060030	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/mandible	yes	yes-D	yes	No			Mouth
+diagnosis	NCATS-COP01CCB060034	NCATS-COP01CCB060034	Lymphoma :: Stage 5	yes	yes-LTF	yes	No		IV	Lymph Node
+diagnosis	NCATS-COP01CCB060039	NCATS-COP01CCB060039	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/mandible	yes	yes-D	yes	No			Mouth
+diagnosis	NCATS-COP01CCB060051	NCATS-COP01CCB060051	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (single lung lobe)	yes	yes	yes	Yes	fibrosarcoma		Lung, Cranial Left Lobe
+diagnosis	NCATS-COP01CCB070003	NCATS-COP01CCB070003	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes-D	yes	No			Humerus
+diagnosis	NCATS-COP01CCB070007	NCATS-COP01CCB070007	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (single lung lobe)	yes	no	no	Yes	Cushings		Lung, Cranial Left Lobe
+diagnosis	NCATS-COP01CCB070013	NCATS-COP01CCB070013	Bone sarcomas :: Osteosarcoma (appendicular)	Yes	yes-LTF	yes	No			Radius
+diagnosis	NCATS-COP01CCB070020	NCATS-COP01CCB070020	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (single lung lobe)	yes	LTF	yes	No			Lung, Caudal Right Lobe
+diagnosis	NCATS-COP01CCB070034	NCATS-COP01CCB070034	Malignant neoplasm of the respiratory tract cell type specified :: Lung adenocarcinoma (single lung lobe)	yes	no	no	No			Lung, Caudal Aspect Of Left Caudal Lobe
+diagnosis	NCATS-COP01CCB070102	NCATS-COP01CCB070102	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/mandible	yes	yes-D	yes	No			Mandible
+diagnosis	NCATS-COP01CCB080012	NCATS-COP01CCB080012	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/mandible	yes	Yes-A 09	yes	Yes	osteoarthritis, hip		Mandible
+diagnosis	NCATS-COP01CCB080018	NCATS-COP01CCB080018	Lip and oropharyngeal neoplasms malignant :: Melanoma-mucosa/maxilla	yes	yes-A 09	yes	Yes	lick granuloma that is chronic on right hind leg being treated with Primor		Mouth

@@ -27,7 +27,7 @@
           "arn": "arn:aws:s3:::icdc-ming"
         },
         "object": {
-          "key": "RAW/Test/NCATS/NCATS01/pathology-files/pathology-reports.zip",
+          "key": "RAW/Test/NCATS/NCATS01/pathology-files/pathology-reports-20191119.zip",
           "size": 1024,
           "eTag": "d41d8cd98f00b204e9800998ecf8427e",
           "versionId": "096fKKXTRTtl3on89fVO.nfljtsv6qko"

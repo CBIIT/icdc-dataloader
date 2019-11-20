@@ -1,0 +1,85 @@
+type	case.case_id	breed	date_of_birth	sex	patient_age_at_enrollment
+demographic	COTC007B0201	Samoyed	2004-04-25	Spayed female	8
+demographic	COTC007B0501	Golden Retriever	2008-04-01	Castrated male	4.2
+demographic	COTC007B0901	Gordon Setter	2005-08-01	Spayed female	
+demographic	COTC007B0502	Other	2004-06-28	Male Phenotype	8
+demographic	COTC007B0503	Beagle	2001-01-27	Spayed female	11.5
+demographic	COTC007B0202	Golden Retriever	2002-04-10	Castrated male	10.3
+demographic	COTC007B0601	English Setter	2004-10-31	Castrated male	7.8
+demographic	COTC007B0203	Black and Tan Coonhound	2004-08-08	Castrated male	8
+demographic	COTC007B0204	Australian Shepherd	2002-01-01	Castrated male	10.6
+demographic	COTC007B0902	Mixed Breed	2005-09-27	Castrated male	
+demographic	COTC007B1601	Bullmastiff	2006-09-17	Castrated male	5.9
+demographic	COTC007B0205	Mixed Breed	2003-01-01	Spayed female	9.7
+demographic	COTC007B0401	Mixed Breed	2006-11-01	Castrated male	5.8
+demographic	COTC007B0206	Golden Retriever	2006-10-07	Spayed female	5.9
+demographic	COTC007B0207	Boxer	2002-07-04	Spayed female	10.2
+demographic	COTC007B0208	German Shepherd Dog	2005-06-01	Spayed female	7.3
+demographic	COTC007B1602	Basset Hound	2006-01-10	Female Phenotype	6.7
+demographic	COTC007B0602	Mixed Breed	2004-10-13	Castrated male	8
+demographic	COTC007B0402	Labrador Retriever	2007-03-28	Spayed female	4.6
+demographic	COTC007B0209	Doberman Pinscher	2007-12-01	Castrated male	4.9
+demographic	COTC007B0210	Bullmastiff	2004-01-01	Male Phenotype	8.9
+demographic	COTC007B1603	Boxer	2010-08-05	Castrated male	
+demographic	COTC007B0211	Beagle	2003-03-01	Castrated male	9.9
+demographic	COTC007B0603	Boxer	2008-04-11	Castrated male	4.7
+demographic	COTC007B0403	Bernese Mountain Dog	2006-05-17	Spayed female	1.4
+demographic	COTC007B0604	Rottweiler	2006-08-05	Castrated male	6.4
+demographic	COTC007B1604	Mixed Breed	2007-06-26	Castrated male	
+demographic	COTC007B0404	Golden Retriever	2005-01-01	Castrated male	8
+demographic	COTC007B0405	Mixed Breed	2007-01-01	Castrated male	6.1
+demographic	COTC007B0605	Mixed Breed	2008-08-02	Spayed female	4.5
+demographic	COTC007B0212	Boxer	2003-01-01	Spayed female	10.1
+demographic	COTC007B0406	Mixed Breed	2006-01-15	Spayed female	7.2
+demographic	COTC007B0213	Belgian Malinois	2005-02-22	Male Phenotype	8.1
+demographic	COTC007B0504	Bernese Mountain Dog	2009-11-30	Castrated male	3.3
+demographic	COTC007B0407	Doberman Pinscher	2009-07-04	Male Phenotype	3.7
+demographic	COTC007B0408	Chesapeake Bay Retriever	2008-04-01	Spayed female	5
+demographic	COTC007B0505	Rottweiler	2008-01-31	Castrated male	5.2
+demographic	COTC007B1605	Mixed Breed	2009-04-11	Castrated male	
+demographic	COTC007B0607	Border Collie	2004-12-05	Castrated male	8.4
+demographic	COTC007B0506	Mixed Breed	2008-03-01	Spayed female	-76.8
+demographic	COTC007B0608	Beagle	2009-02-01	Castrated male	4.2
+demographic	COTC007B1606	Golden Retriever	2007-04-09	Spayed female	
+demographic	COTC007B0507	Golden Retriever	2007-02-03	Spayed female	6.2
+demographic	COTC007B0609	Bullmastiff	2009-01-08	Castrated male	4.3
+demographic	COTC007B0508	Bernese Mountain Dog	2006-12-01	Male Phenotype	6.5
+demographic	COTC007B0610	Cavalier King Charles Spaniel	2008-01-05	Castrated male	5.4
+demographic	COTC007B1607	Rottweiler	2009-10-10	Spayed female	
+demographic	COTC007B0611	Flat-Coated Retriever	2009-03-30	Spayed female	4.2
+demographic	COTC007B0214	Golden Retriever	2004-08-01	Castrated male	8.9
+demographic	COTC007B0409	American Staffordshire Terrier	2011-03-10	Castrated male	2.4
+demographic	COTC007B0410	Mixed Breed	2001-01-01	Spayed female	12.6
+demographic	COTC007B0509	Bernese Mountain Dog	2009-07-11	Female Phenotype	4.1
+demographic	COTC007B0411	Mixed Breed	2007-11-01	Spayed female	6
+demographic	COTC007B0612	Mixed Breed	2010-09-11	Castrated male	3.2
+demographic	COTC007B0613	Mixed Breed	2001-01-10	Castrated male	13
+demographic	COTC007B0614	Golden Retriever	2002-07-31	Castrated male	11.5
+demographic	COTC007B1608	Irish Setter	2004-08-17	Spayed female	
+demographic	COTC007B0101	Boxer	2003-10-01	Spayed female	10.1
+demographic	COTC007B0216	Mixed Breed	2009-04-01	Spayed female	
+demographic	COTC007B0510	Beagle	2004-09-04	Castrated male	9.5
+demographic	COTC007B0301	American Staffordshire Terrier	2008-06-01	Spayed female	5.8
+demographic	COTC007B0215	Labrador Retriever	2003-05-01	Spayed female	
+demographic	COTC007B0217	Boxer	2007-07-22	Castrated male	
+demographic	COTC007B1609	Vizsla	2006-07-14	Castrated male	
+demographic	COTC007B0412	American Staffordshire Terrier	2007-01-01	Castrated male	7.3
+demographic	COTC007B1001	Mixed Breed	2007-06-01	Female Phenotype	7
+demographic	COTC007B0615	Irish Wolfhound	2008-03-16	Male Phenotype	6.2
+demographic	COTC007B1002	Border Collie	2011-07-01	Castrated male	3
+demographic	COTC007B0413	Golden Retriever	2003-12-16	Castrated male	10.5
+demographic	COTC007B0302	Mastiff	2009-11-01	Spayed female	4.7
+demographic	COTC007B1003	Rottweiler	2010-01-01	Female Phenotype	4.6
+demographic	COTC007B0303	German Shepherd Dog	2010-04-01	Female Phenotype	4.5
+demographic	COTC007B0218	Golden Retriever	2008-03-05	Castrated male	6.7
+demographic	COTC007B0219	Golden Retriever	2004-01-01	Castrated male	
+demographic	COTC007B0414	Boxer	2007-12-30	Castrated male	7
+demographic	COTC007B0415	Golden Retriever	2010-01-02	Spayed female	5.2
+demographic	COTC007B0616	Basset Hound	2005-08-23	Male Phenotype	9.7
+demographic	COTC007B0220	Mixed Breed	2003-03-01	Castrated male	12.2
+demographic	COTC007B0304	Mixed Breed	2010-09-01	Castrated male	4.8
+demographic	COTC007B0511	Golden Retriever	2003-07-01	Castrated male	12
+demographic	COTC007B0617	                   	2005-06-13	Spayed female	10
+demographic	COTC007B0512	Saint Bernard	2008-06-01	Castrated male	7.1
+demographic	COTC007B0513	Bernese Mountain Dog	2008-06-21	Castrated male	7.1
+demographic	COTC007B0305	Labrador Retriever	2009-01-01	Male Phenotype	6.5

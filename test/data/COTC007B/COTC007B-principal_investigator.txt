@@ -1,0 +1,5 @@
+type	study.clinical_study_designation	pi_first_name	pi_middle_initial	pi_last_name
+principal_investigator	COTC007B	Chand		Khanna
+principal_investigator	COTC007B	Melissa	C.	Paoloni
+principal_investigator	COTC007B	Joseph		Tomaszewski
+principal_investigator	COTC007B	Tiziano		DiPaolo

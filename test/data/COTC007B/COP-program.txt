@@ -1,0 +1,17 @@
+type	program_name	program_acronym	program_short_description	program_full_description	program_external_url	program_sort_order
+program	Comparative Oncology Program	COP	The COP is a core resource for CCR investigators who are interested in the use of comparative cancer models.	"The COP is a core resource for CCR investigators who are interested in the use of comparative cancer models.**
+**
+In 2003, the National Cancer Institute's Center for Cancer Research (CCR) launched the Comparative Oncology Program (COP) to help researchers better understand the biology of cancer and to improve the assessment of novel treatments for humans by treating pet animals-primarily cats and dogs-with naturally occurring cancer, giving these animals the benefit of cutting-edge research and therapeutics. Companion animals will be provided the opportunity to participate in Clinical Trials to evaluate new treatment options for cancer. Results from these trials will support the further development of human clinical trials. In many ways, pet animals will be taking the lead in the fight against cancer.**
+**
+What is Comparative Oncology?**
+Comparative oncology is the study of naturally developing cancers in animals as models for human disease. Spontaneous cancers in dogs and cats are an underused group of naturally occurring malignancies that share many features with human cancers such as osteosarcoma, prostate and breast cancers, non-Hodgkin's lymphoma, melanoma, soft tissue sarcoma, head and neck carcinoma, and virally induced lymphomas.**
+**
+Benefits for Researchers**
+Characterized validated models. The COP complements translational research efforts through the characterization and use of relevant and naturally occurring cancer models that develop in pet animals.**
+**
+Clinical Trials are being designed to include pet animals with naturally occurring cancers that give researchers relevant information on toxicity, response, pharmacokinetics, pharmacodynamics, dose, regimen, schedule, biomarkers, and responding histologies.**
+**
+Benefits for Pets and Pet Owners**
+The COP designs and implements clinical trials in collaboration with academic veterinary institutions across the United States. Pet animals will receive treatment under the care of board-certified veterinary oncologists who share our goal of alleviating the suffering of companion animals with cancer.**
+**
+Information gained by the clinical trials conducted through the Comparative Oncology Trials Consortium will be used to benefit both animals and humans with cancer.**"	https://ccr.cancer.gov/Comparative-Oncology-Program	1

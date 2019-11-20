@@ -1,0 +1,85 @@
+type	case.case_id	date_of_histology_confirmation	date_of_diagnosis	disease_term	histological_grade	histology_cytopathology	primary_disease_site	stage_of_disease
+diagnosis	COTC007B0201	2012-05-01	2012-05-01	Lymphoma		Lymphoma	LYMPH NODE	III
+diagnosis	COTC007B0501	2012-05-18	2012-05-18	Stage 3		lymphosarcoma	LYMPH NODE	IIIA
+diagnosis	COTC007B0901		2012-01-13	Lymphoma		Cytology-Lymphoma	LYMPH NODE	IIIA
+diagnosis	COTC007B0502	2012-06-27	2012-06-27	Stage 3		Large cell lymphoma	LYMPH NODE	IIIA
+diagnosis	COTC007B0503	2012-07-10	2012-07-10	Stage 3		Large cell B-cell lymphoma	LYMPH NODE	IIIA
+diagnosis	COTC007B0202		2012-07-07	Lymphoma		Lymphoma	LYMPH NODE	III
+diagnosis	COTC007B0601	2012-07-31	2012-07-31	Lymphoma		cytology	LYMPH NODE	III
+diagnosis	COTC007B0203	2012-08-07	2012-08-07	Lymphoma		Lymphoma	LYMPH NODE	III
+diagnosis	COTC007B0204	2012-08-16	2012-08-16	Lymphoma	N/A	Lymphoma on Cytopathology	LYMPH NODE	III
+diagnosis	COTC007B0902		2012-06-29	Lymphoma		Cytology-Lymphoma	LYMPH NODE	III
+diagnosis	COTC007B1601		2012-08-17	Stage 3		Cytopathology	LYMPH NODE	IIIA
+diagnosis	COTC007B0205	2012-08-30	2012-08-30	Lymphoma		Probable Lymphoma	LYMPH NODE	III
+diagnosis	COTC007B0401	2012-08-24	2012-08-24	Malignant lymphoma	High	Histology, biopsy of left popliteal LN	LYMPH NODE	IIIA
+diagnosis	COTC007B0206	2012-09-05	2012-09-05	Lymphoma		Lymphoma	LYMPH NODE	III
+diagnosis	COTC007B0207	2012-09-11	2012-09-12	Lymphoma		Lymphoma	LYMPH NODE	III
+diagnosis	COTC007B0208	2012-09-21	2011-01-06	Lymphoma			LYMPH NODE	III
+diagnosis	COTC007B1602			Stage 4		Cytology	LYMPH NODE	IVA
+diagnosis	COTC007B0602	2012-10-10	2012-10-10	Lymphoma	HIGH	HISTOLOGY	LYMPH NODE	III
+diagnosis	COTC007B0402	2011-10-07	2011-10-07	Malignant lymphoma		Cytology = large cell lymphoma	LYMPH NODE	VA
+diagnosis	COTC007B0209		2012-10-30	Stage 3			LYMPH NODE	III
+diagnosis	COTC007B0210		2012-11-28	Stage 3			LYMPH NODE	III
+diagnosis	COTC007B1603		2012-10-30	Stage 3		Cytology performed by rdvm	LYMPH NODE	IIIA
+diagnosis	COTC007B0211	2013-01-28	2013-01-28	Stage 3		cytopathology	LYMPH NODE	III
+diagnosis	COTC007B0603	2012-12-10	2012-12-10	Lymphoma		histology	LYMPH NODE	III
+diagnosis	COTC007B0403	2012-07-17	2012-07-17	Malignant lymphoma		Cytology = B cell lymphoma	LYMPH NODE	VA
+diagnosis	COTC007B0604	2012-12-11	2012-12-11	Lymphoma		intermediate to high grade Lymphoma	LYMPH NODE	IIIB
+diagnosis	COTC007B1604		2012-12-24	Stage 3		Lymphoma	LYMPH NODE	IIIA
+diagnosis	COTC007B0404	2012-12-30	2012-12-30	Malignant lymphoma	high	Cytology	LYMPH NODE	IVB
+diagnosis	COTC007B0405	2013-01-17	2013-01-17	Malignant lymphoma		Cytology	LYMPH NODE	IIIB
+diagnosis	COTC007B0605	2013-02-02	2013-02-02	Stage 5		cytopathology	LYMPH NODE	IVA
+diagnosis	COTC007B0212		2013-02-14	Stage 2			LYMPH NODE	II
+diagnosis	COTC007B0406	2013-03-05	2013-03-05	Stage 3		Large cell lymphoma on cytology	LYMPH NODE	IIIA
+diagnosis	COTC007B0213		2013-03-04	Stage 3		Cytopahtology	LYMPH NODE	III
+diagnosis	COTC007B0504	2013-03-06	2013-03-06	Stage 3		B-cell lymphoma	LYMPH NODE	IIIA
+diagnosis	COTC007B0407	2013-02-20	2013-02-20	Stage 3		Cytology	LYMPH NODE	IIIA
+diagnosis	COTC007B0408	2012-06-18	2012-06-18	Stage 3		CYTOLOGY	LYMPH NODE	IIIA
+diagnosis	COTC007B0505	2012-02-09	2012-02-09	Stage 3		high grade lymphoma	LYMPH NODE	IIIA
+diagnosis	COTC007B1605		2013-03-30	Stage 3		cytopathology	LYMPH NODE	IIIA
+diagnosis	COTC007B0607	2012-11-21	2012-11-15	Stage 3		CYTOLOGY	LYMPH NODE	IIIA
+diagnosis	COTC007B0506	2012-09-05	2012-09-05	Stage 3		large cell lymphoma	LYMPH NODE	IIIA
+diagnosis	COTC007B0608	2013-01-09	2012-12-27	Stage 4		cytology	LYMPH NODE	IVA
+diagnosis	COTC007B1606		2013-03-23	Stage 5		Lymphoma	LYMPH NODE	
+diagnosis	COTC007B0507	2013-04-30	2013-04-27	Stage 4		Lymphoma, large cell, high grade	LYMPH NODE	IVB
+diagnosis	COTC007B0609	2013-05-14	2013-05-14	Stage 3		cytology	LYMPH NODE	IIIA
+diagnosis	COTC007B0508	2013-05-15	2013-05-14	Stage 3		Large cell lymphoma	LYMPH NODE	IIIA
+diagnosis	COTC007B0610	2013-05-28	2013-05-21	Stage 3		cytology	LYMPH NODE	IIIA
+diagnosis	COTC007B1607	2013-06-05	2013-06-05	Stage 5		Large cell lymphoma	LYMPH NODE	IVA
+diagnosis	COTC007B0611	2013-06-19	2013-06-19	Stage 3		Cytopathology	LYMPH NODE	III
+diagnosis	COTC007B0214		2013-06-14	Stage 3		lymphoma	LYMPH NODE	
+diagnosis	COTC007B0409	2013-07-12	2013-07-12	Stage 3		Cytology	LYMPH NODE	IIIA
+diagnosis	COTC007B0410	2013-08-01	2013-08-01	Stage 3		Cytology	LYMPH NODE	
+diagnosis	COTC007B0509	2013-08-09	2013-08-09	Stage 3		multicentric lymphoblastic lymphoma	LYMPH NODE	IIIA
+diagnosis	COTC007B0411	2013-10-30	2013-10-30	Stage 3		Cytology	LYMPH NODE	IIIA
+diagnosis	COTC007B0612	2013-10-24	2013-08-26	Stage 4		both; cytology was 8/26/2013	LYMPH NODE	IVB
+diagnosis	COTC007B0613	2014-01-04	2014-01-04	Stage 3		cytology	LYMPH NODE	IIIA
+diagnosis	COTC007B0614	2014-01-23	2014-01-21	Stage 3		CYTOLOGY	LYMPH NODE	IVA
+diagnosis	COTC007B1608	2014-01-27	2014-01-27	Stage 4		Lymphoma	LYMPH NODE	IVA
+diagnosis	COTC007B0101		2013-11-19	Stage 3		Cytology and Flow Cytometry	LYMPH NODE	IIIA
+diagnosis	COTC007B0216	2014-03-04	2014-03-04	Lymphoma		Lymphoma	LYMPH NODE	V
+diagnosis	COTC007B0510	2014-03-10	2014-02-28	Stage 3		Large cell lymphoma	LYMPH NODE	IIIA
+diagnosis	COTC007B0301		2014-03-21	Lymphomatoid granulomatosis		Cytology of right prescapular LN	LYMPH NODE	IIIA
+diagnosis	COTC007B0215		2014-03-27	Lymphoma		Lymphoma	LYMPH NODE	IIIA
+diagnosis	COTC007B0217	2014-04-16	2014-04-16	Lymphoma		T-cell Lymphoma	LYMPH NODE	III
+diagnosis	COTC007B1609		2014-04-22	Stage 3		Cytology by rdvm revealed lymphoma	LYMPH NODE	IIIA
+diagnosis	COTC007B0412	2014-03-31	2014-03-31	Malignant lymphoma		Cytology	LYMPH NODE	
+diagnosis	COTC007B1001	2014-05-07	2014-04-30	Stage 4		High Grade	LYMPH NODE	IV
+diagnosis	COTC007B0615	2014-02-14	2014-02-14	Stage 3		cytology and immunophenotyping	LYMPH NODE	IIIA
+diagnosis	COTC007B1002	2013-04-12	2013-04-11	Stage 4		High Grade	LYMPH NODE	IV
+diagnosis	COTC007B0413	2014-06-03	2014-06-03			Cytology	LYMPH NODE	
+diagnosis	COTC007B0302	2014-07-25	2014-07-25	Lymphomatoid granulomatosis		lymphoma diagnosed on cytology	LYMPH NODE	IIIA
+diagnosis	COTC007B1003	2014-05-05	2014-05-05	Stage 5	High Grade	B-cell Lymphoma	LYMPH NODE	IV
+diagnosis	COTC007B0303	2014-10-09	2014-10-09	Lymphomatoid granulomatosis		Lymphoma	LYMPH NODE	IIIA
+diagnosis	COTC007B0218		2014-03-20	Stage 3		Lymphoma	LYMPH NODE	III
+diagnosis	COTC007B0219		2014-11-09	Lymphoma			LYMPH NODE	IIIA
+diagnosis	COTC007B0414	2014-12-26	2014-12-26	Stage 3	high	Cytology	LYMPH NODE	IIIA
+diagnosis	COTC007B0415	2015-03-18	2015-03-18	Stage 3		Cytology	LYMPH NODE	IIIA
+diagnosis	COTC007B0616	2015-03-30	2015-03-19	Stage 5		cytology	LYMPH NODE	IVA
+diagnosis	COTC007B0220	2014-07-30	2014-07-30	Multicentric lymphoma		Lymphoblastic lymphoma	LYMPH NODE	IIIA
+diagnosis	COTC007B0304		2015-06-09	Lymphomatoid granulomatosis			LYMPH NODE	
+diagnosis	COTC007B0511	2014-10-23	2014-10-23	Stage 5		Intermediate to large cell lymphoma	LYMPH NODE	VB
+diagnosis	COTC007B0617	2015-06-05	2015-07-05	Stage 3		LYMPHOMA	LYMPH NODE	III
+diagnosis	COTC007B0512	2015-06-19	2015-06-19	Stage 5		lymphoma	LYMPH NODE	VA
+diagnosis	COTC007B0513	2015-06-25	2015-06-25	Stage 3		medium to large cell lymphoma	LYMPH NODE	IIIA
+diagnosis	COTC007B0305	2015-07-06	2015-07-06	Lymphomatoid granulomatosis	High grade	Lymphoma	LYMPH NODE	

@@ -1,0 +1,6 @@
+type	study.clinical_study_designation	cohort_description	cohort_dose
+cohort	NCATS-COP01	B Cell Lymphoma	
+cohort	NCATS-COP01	T Cell Lymphoma	
+cohort	NCATS-COP01	Osteosarcoma	
+cohort	NCATS-COP01	Pulmonary Neoplasms	
+cohort	NCATS-COP01	Melanoma	

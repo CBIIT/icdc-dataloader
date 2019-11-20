@@ -1,0 +1,61 @@
+type	case.case_id	patient_age_at_enrollment 	breed	sex	neutered_indicator 	weight
+demographic	NCATS-COP01CCB010015	12	Other	Male	Yes	38
+demographic	NCATS-COP01CCB010031	8	Other	Male	Yes	31
+demographic	NCATS-COP01CCB010045	5	Beagle	Female	Yes	12
+demographic	NCATS-COP01CCB010072	10	Akita	Female	Yes	31.8
+demographic	NCATS-COP01CCB010091	9	Labrador Retriever	Female	Yes	28
+demographic	NCATS-COP01CCB010093	7	Mixed Breed	Male	Yes	49.8
+demographic	NCATS-COP01CCB010178	7	Staffordshire Bull Terrier	Male	Yes	37.2
+demographic	NCATS-COP01CCB010208	3	Vizsla	Female	Yes	22.4
+demographic	NCATS-COP01CCB010233	6	Golden Retriever	Male	Yes	38
+demographic	NCATS-COP01CCB010234	7	Mixed Breed	Male	Yes	30
+demographic	NCATS-COP01CCB010235	8	Mixed Breed	Female	Yes	35.5
+demographic	NCATS-COP01CCB010243	7	Golden Retriever	Female	Yes	25
+demographic	NCATS-COP01CCB010285	10	Doberman Pinscher	Female	Yes	28
+demographic	NCATS-COP01CCB010311	10	Mixed Breed	Female	Yes	22.3
+demographic	NCATS-COP01CCB010378	12	Mixed Breed	Female	Yes	27.5
+demographic	NCATS-COP01CCB020018	12	Mixed Breed	Male	Yes	18.8
+demographic	NCATS-COP01CCB020026	7	Greyhound	Male	Yes	37.5
+demographic	NCATS-COP01CCB020027	7	German Shepherd Dog	Female	Yes	35
+demographic	NCATS-COP01CCB020031	8	Bernese Mountain Dog	Male	No	44.8
+demographic	NCATS-COP01CCB020035	9	Labrador Retriever	Female	Yes	32
+demographic	NCATS-COP01CCB020036	10	Black and Tan Coonhound	Female	Yes	34.1
+demographic	NCATS-COP01CCB020054	7	Labrador Retriever	Male	Yes	37.1
+demographic	NCATS-COP01CCB020128	10	Miniature Schnauzer	Female	Yes	4
+demographic	NCATS-COP01CCB030001	5	Labrador Retriever	Female	Yes	36
+demographic	NCATS-COP01CCB030003	6	Golden Retriever	Male	Yes	39
+demographic	NCATS-COP01CCB030026	9	Golden Retriever	Male	Yes	42
+demographic	NCATS-COP01CCB030035	8	Saint Bernard	Female	Yes	62
+demographic	NCATS-COP01CCB030064	8	Labrador Retriever	Female	Yes	30
+demographic	NCATS-COP01CCB030077	10	Golden Retriever	Male	Yes	33
+demographic	NCATS-COP01CCB030078	9	Golden Retriever	Male	Yes	37
+demographic	NCATS-COP01CCB030156	4	Golden Retriever	Male	Yes	40
+demographic	NCATS-COP01CCB030162	12	Mixed Breed	Female	Yes	30
+demographic	NCATS-COP01CCB030227	13	Golden Retriever	Male	Yes	37
+demographic	NCATS-COP01CCB030255	7	Mixed Breed	Female	Yes	13
+demographic	NCATS-COP01CCB030258	9	Golden Retriever	Male	Yes	32.6
+demographic	NCATS-COP01CCB030300	9	Golden Retriever	Male	Yes	33.8
+demographic	NCATS-COP01CCB040184	4	Boxer	Male	Yes	39.1
+demographic	NCATS-COP01CCB040254	13	American Staffordshire Terrier	Female	Yes	27.3
+demographic	NCATS-COP01CCB040382	10	Gordon Setter	Female	Yes	32
+demographic	NCATS-COP01CCB050004	13	Bouvier des Flandres	Female	Yes	29.4
+demographic	NCATS-COP01CCB050022	10	Greyhound	Male	Yes	29.4
+demographic	NCATS-COP01CCB050096	8	Labrador Retriever	Male	Yes	35.8
+demographic	NCATS-COP01CCB050170	10	German Shepherd Dog	Male	Yes	46.1
+demographic	NCATS-COP01CCB050177	13	Rottweiler	Female	Yes	31.6
+demographic	NCATS-COP01CCB050216	13	Mixed Breed	Male	Yes	23.7
+demographic	NCATS-COP01CCB050227	11	Labrador Retriever	Female	Yes	36.5
+demographic	NCATS-COP01CCB050297	10	Australian Shepherd	Female	Yes	21.5
+demographic	NCATS-COP01CCB050327	8	Doberman Pinscher	Male	Yes	43
+demographic	NCATS-COP01CCB060030	12	Giant Schnauzer	Female	Yes	31.2
+demographic	NCATS-COP01CCB060034	4	Boxer	Female	Yes	29
+demographic	NCATS-COP01CCB060039	10	Cocker Spaniel	Male	Yes	15
+demographic	NCATS-COP01CCB060051	13	Weimaraner	Female	Yes	28
+demographic	NCATS-COP01CCB070003	12	German Shorthaired Pointer	Female	Yes	35.2
+demographic	NCATS-COP01CCB070007	6	West Highland White Terrier	Male	Yes	7.3
+demographic	NCATS-COP01CCB070013	11	Rottweiler	Male	Yes	35
+demographic	NCATS-COP01CCB070020	13	Golden Retriever	Female	Yes	34
+demographic	NCATS-COP01CCB070034	9	Saint Bernard	Female	Yes	63.9
+demographic	NCATS-COP01CCB070102	12	Mixed Breed	Female	Yes	3.9
+demographic	NCATS-COP01CCB080012	9	Chinese Shar-Pei	Female	Yes	20.5
+demographic	NCATS-COP01CCB080018	9	Doberman Pinscher	Female	Yes	43.2

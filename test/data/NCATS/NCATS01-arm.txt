@@ -1,2 +1,0 @@
-type	study.clinical_study_designation	arm	ctep_treatment_assignment_code
-study_arm	NCATS01	transcriptomics and proteomics analysis 1	123-A

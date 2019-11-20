@@ -1,0 +1,29 @@
+type	enrollment.enrollment_id	date_of_surgery	anatomical_site_of_surgery	procedure	surgical_finding	residual_disease	therapeutic_indicator
+prior_surgery	COTC007B0217	2013	Leg	Amputation of 5th digit on RH	Osteomyelitis	no	Yes
+prior_surgery	COTC007B0219	20141114	Lymph node	biopsy	b cell lymphoma		No
+prior_surgery	COTC007B0301	20130514	Carpus	MCT removal	MCT	yes	Yes
+prior_surgery	COTC007B0401	20120822	Lymph node	LN excision	Lymphoma		No
+prior_surgery	COTC007B0402	20111024	Lymph node	LN excision	B-cell lymphoma		No
+prior_surgery	COTC007B0503	20010801	Vulva	OHE + vulvoplasty	Procedure went well	none	Yes
+prior_surgery	COTC007B0503	20020222	Clitoris	Cliterectomy	Procedure went well	none	Yes
+prior_surgery	COTC007B0601	20060801	Testicle	castration			No
+prior_surgery	COTC007B0602	20041001	Scrotum	Neuter			No
+prior_surgery	COTC007B0603			neuter			No
+prior_surgery	COTC007B0603			lasix			Yes
+prior_surgery	COTC007B0605	20080801	Abdomen	spay			No
+prior_surgery	COTC007B0607	2005	Testicle	neuter			No
+prior_surgery	COTC007B0608		Testicle	neuter			
+prior_surgery	COTC007B0609	20090601	Testicle	neuter			No
+prior_surgery	COTC007B0609	20090601	Umbilical Cord	umbilical hernia			No
+prior_surgery	COTC007B0609	20090601	Stomach	gastropexy			No
+prior_surgery	COTC007B0609	20120901	Eye	entropian			No
+prior_surgery	COTC007B0610	20080601	Testicle	neuter			No
+prior_surgery	COTC007B0611	20110919	Lumbar Spine	Myxocarcoma removal	Incompletely excised myxosarcoma grade 1	yes	Yes
+prior_surgery	COTC007B0611	20130101	Uterus	SPAY	N/A	N/A	No
+prior_surgery	COTC007B0612	2010	Testicle	castration			No
+prior_surgery	COTC007B0613	20010601	Testicle	neuter			No
+prior_surgery	COTC007B0614	2002	Testicle	NEUTER			No
+prior_surgery	COTC007B0617	200606	Abdomen	spay		n/a	Yes
+prior_surgery	COTC007B0902	20110831	Head/Neck	BX	Lipoma	yes	No
+prior_surgery	COTC007B1001	20140507	Lymph node	LN Removal	DLBCL		No
+prior_surgery	COTC007B1607	20130605	Lymph node	lymph node biopsy	lymphoma	yes	No

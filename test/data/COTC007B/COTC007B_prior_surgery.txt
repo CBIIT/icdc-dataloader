@@ -1,2 +1,0 @@
-type	enrollment.enrollment_id	date_of_surgery	anatomical_site_of_surgery	procedure	surgical_finding	residual_disease	therapeutic_indicator
-prior_surgery	COTC007B0402	20111024	Lymph node	LN excision	B-cell lymphoma		No
