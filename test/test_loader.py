@@ -46,68 +46,63 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(self.loader.validate_file('data/NCATS/NCATS-COP01-case.txt', 10))
         self.assertFalse(self.loader.validate_file('data/NCATS01-case-dup.txt', 10))
 
-    def test_get_value_string2(self):
-        self.assertEqual(self.loader.get_value_string2('adverse_event'), '{adverse_event}')
-        self.assertIsNone(self.loader.get_value_string2(None))
-        self.assertIsNone(self.loader.get_value_string2(''))
-        self.assertIsNone(self.loader.get_value_string2({}))
-        self.assertIsNone(self.loader.get_value_string2([]))
-        self.assertIsNone(self.loader.get_value_string2(1.5))
-        self.assertIsNone(self.loader.get_value_string2({'abc': 1}))
-
-    def test_get_value_string(self):
-        # Test String type
-        self.assertIsNone(self.loader.get_value_string('adverse_event', 'adverse_event_description', None))
-        self.assertIsNone(self.loader.get_value_string('adverse_event', 'adverse_event_description', []))
-        self.assertIsNone(self.loader.get_value_string('adverse_event', 'adverse_event_description', [0]))
-        self.assertIsNone(self.loader.get_value_string('adverse_event', 'adverse_event_description', ['0']))
-        self.assertIsNone(self.loader.get_value_string('adverse_event', 'adverse_event_description', {}))
-        self.assertIsNone(self.loader.get_value_string('adverse_event', 'adverse_event_description', {'a': 'b'}))
-        self.assertEqual(self.loader.get_value_string('adverse_event', 'adverse_event_description', ''), '""')
-        self.assertEqual(self.loader.get_value_string('adverse_event', 'adverse_event_description', 'abc'), '"abc"')
-
-        # Test Boolean type
-        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', ''), '""')
-        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', None), '""')
-        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', []), '""')
-        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', {}), '""')
-        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'other value'), '""')
-        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'yes'), 'True')
-        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'Yes'), 'True')
-        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'YeS'), 'True')
-        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'true'), 'True')
-        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'True'), 'True')
-        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'TruE'), 'True')
-        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'false'), 'False')
-        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'False'), 'False')
-        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'fAlsE'), 'False')
-        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'no'), 'False')
-        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'No'), 'False')
-        self.assertEqual(self.loader.get_value_string('diagnosis', 'concurrent_disease', 'NO'), 'False')
-
-        # Test Integer value
-        self.assertIsNone(self.loader.get_value_string('physical_exam', 'day_in_cycle', ''))
-        self.assertIsNone(self.loader.get_value_string('physical_exam', 'day_in_cycle', None))
-        self.assertIsNone(self.loader.get_value_string('physical_exam', 'day_in_cycle', 'not a number'))
-        self.assertEqual(self.loader.get_value_string('physical_exam', 'day_in_cycle', '3'), 3)
-
-        # Test Float value
-        self.assertIsNone(self.loader.get_value_string('prior_therapy', 'total_dose', ''))
-        self.assertIsNone(self.loader.get_value_string('prior_therapy', 'total_dose', None))
-        self.assertIsNone(self.loader.get_value_string('prior_therapy', 'total_dose', 'not a number'))
-        self.assertEqual(self.loader.get_value_string('prior_therapy', 'total_dose', '3'), 3.0)
-        self.assertEqual(self.loader.get_value_string('prior_therapy', 'total_dose', '3.0'), 3.0)
-
     def test_get_signature(self):
         self.assertEqual(self.loader.get_signature({}), '{  }')
         self.assertEqual(self.loader.get_signature({'key1': 'value1'}), '{ key1: value1 }')
         self.assertEqual(self.loader.get_signature({'key1': 'value1', 'key2': 'value2'}), '{ key1: value1, key2: value2 }')
 
     def test_cleanup_node(self):
-        self.assertRaises(Exception, self.loader.cleanup_node, {})
-        self.assertDictEqual(self.loader.cleanup_node({'type': 'case', 'case_id': '123', ' key1 ': ' value1  '}), {'key1': 'value1', 'type': 'case', 'case_id': '123', 'uuid': 'f0cf40a7-3cdb-51fe-a596-e29e40123f56'})
-        self.assertDictEqual(self.loader.cleanup_node({'type': 'file', 'uuid': '123', ' key1 ': ' value1  '}),
+        #Test UUIDs
+        self.assertRaises(Exception, self.loader.prepare_node, {})
+        self.assertDictEqual(self.loader.prepare_node({'type': 'case', 'case_id': '123', ' key1 ': ' value1  '}), {'key1': 'value1', 'type': 'case', 'case_id': '123', 'uuid': 'f0cf40a7-3cdb-51fe-a596-e29e40123f56'})
+        self.assertDictEqual(self.loader.prepare_node({'type': 'file', 'uuid': '123', ' key1 ': ' value1  '}),
                              {'key1': 'value1', 'type': 'file', 'uuid': '123'})
+
+        # Test parent ids
+        obj = self.loader.prepare_node({'type': 'case', 'cohort.cohort_id': 'abc132'})
+        self.assertEqual(obj['cohort_id'], 'abc132')
+        obj = self.loader.prepare_node({'type': 'case', 'cohort.cohort_id': 'abc132', 'cohort_id': 'def333'})
+        self.assertEqual(obj['cohort_id'], 'def333')
+        self.assertEqual(obj['cohort_cohort_id'], 'abc132')
+        self.assertEqual(len(obj[UUID]), 36)
+
+        # Test Boolean values
+        obj = self.loader.prepare_node({'type': 'vital_signs', 'ecg': 'abc132'})
+        self.assertIsNone(obj['ecg'])
+        obj = self.loader.prepare_node({'type': 'vital_signs', 'ecg': 'yes'})
+        self.assertEqual(obj['ecg'], True)
+        obj = self.loader.prepare_node({'type': 'vital_signs', 'ecg': 'YeS'})
+        self.assertEqual(obj['ecg'], True)
+        obj = self.loader.prepare_node({'type': 'vital_signs', 'ecg': 'YeS13'})
+        self.assertEqual(obj['ecg'], True)
+
+        obj = self.loader.prepare_node({'type': 'vital_signs', 'ecg': 'no'})
+        self.assertEqual(obj['ecg'], False)
+        obj = self.loader.prepare_node({'type': 'vital_signs', 'ecg': 'No'})
+        self.assertEqual(obj['ecg'], False)
+        obj = self.loader.prepare_node({'type': 'vital_signs', 'ecg': ' No33 '})
+        self.assertEqual(obj['ecg'], False)
+        obj = self.loader.prepare_node({'type': 'vital_signs', 'ecg': ' Normal '})
+        self.assertEqual(obj['ecg'], False)
+
+        # Test Int values
+        obj = self.loader.prepare_node({'type': 'physical_exam', 'day_in_cycle': ' Normal '})
+        self.assertEqual(obj['day_in_cycle'], None)
+        obj = self.loader.prepare_node({'type': 'physical_exam', 'day_in_cycle': ' 13 '})
+        self.assertEqual(obj['day_in_cycle'], 13)
+        self.assertNotEqual(obj['day_in_cycle'], '13')
+        obj = self.loader.prepare_node({'type': 'physical_exam', 'day_in_cycle': ' 12 Normal '})
+        self.assertEqual(obj['day_in_cycle'], None)
+
+        #Test Float values
+        obj = self.loader.prepare_node({'type': 'file', 'file_size': ' Normal '})
+        self.assertEqual(obj['file_size'], None)
+        obj = self.loader.prepare_node({'type': 'file', 'file_size': ' 1.5 Normal '})
+        self.assertEqual(obj['file_size'], None)
+        obj = self.loader.prepare_node({'type': 'file', 'file_size': ' 1.5 '})
+        self.assertEqual(obj['file_size'], 1.5)
+        obj = self.loader.prepare_node({'type': 'file', 'file_size': ' 15 '})
+        self.assertEqual(obj['file_size'], 15)
 
 
 if __name__ == '__main__':

@@ -107,11 +107,50 @@ class DataLoader:
 
 
     # Remove extra spaces at begining and end of the keys and values
+    # Cleanup values for Boolean, Int and Float types
     # Add uuid to nodes if one not exists
-    def cleanup_node(self, node):
+    # Add parent id(s)
+    # Add extra properties for "value with unit" properties
+    def prepare_node(self, node):
         obj = {}
+        # Strip all extra spaces in keys and values
         for key, value in node.items():
             obj[key.strip()] = value.strip()
+
+        node_type = obj.get(NODE_TYPE, None)
+        # Cleanup values for Boolean, Int and Float types
+        if node_type:
+            for key, value in obj.items():
+                key_type = self.schema.get_prop_type(node_type, key)
+                if key_type == 'Boolean':
+                    cleaned_value = None
+                    if isinstance(value, str):
+                        if re.search(r'yes|true', value, re.IGNORECASE):
+                            cleaned_value = True
+                        elif re.search(r'no|false', value, re.IGNORECASE):
+                            cleaned_value = False
+                        else:
+                            self.log.debug('Unsupported Boolean value: "{}"'.format(value))
+                            cleaned_value = None
+                    obj[key] = cleaned_value
+                elif key_type == 'Int':
+                    try:
+                        if value is None:
+                            cleaned_value = None
+                        else:
+                            cleaned_value = int(value)
+                    except Exception:
+                        cleaned_value = None
+                    obj[key] = cleaned_value
+                elif key_type == 'Float':
+                    try:
+                        if value is None:
+                            cleaned_value = None
+                        else:
+                            cleaned_value = float(value)
+                    except Exception:
+                        cleaned_value = None
+                    obj[key] = cleaned_value
 
         if UUID not in obj:
             id_field = self.schema.get_id_field(obj)
@@ -124,7 +163,28 @@ class DataLoader:
                     obj[UUID] = get_uuid_for_node(node_type, id)
             else:
                 raise Exception('No "type" property in node')
-        return obj
+
+        obj2 = {}
+        for key, value in obj.items():
+            obj2[key] = value
+            # Add parent id field(s) into node
+            if is_parent_pointer(key):
+                header = key.split('.')
+                if len(header) > 2:
+                    self.log.warning('Column header "{}" has multiple periods!'.format(key))
+                field_name = header[1]
+                parent = header[0]
+                combined = '{}_{}'.format(parent, field_name)
+                if field_name in obj:
+                    self.log.warning('"{}" field is in both current node and parent "{}", use {} instead !'.format(key, parent, combined))
+                    field_name = combined
+                # Add an value for parent id
+                obj2[field_name] = value
+            # Add extra properties if any
+            for extra_prop_name, extra_value in self.schema.get_extra_props(node_type, key, value).items():
+                obj2[extra_prop_name] = extra_value
+
+        return obj2
 
     def get_signature(self, node):
         result = []
@@ -142,7 +202,7 @@ class DataLoader:
                 validation_failed = False
                 violations = 0
                 for org_obj in reader:
-                    obj = self.cleanup_node(org_obj)
+                    obj = self.prepare_node(org_obj)
                     line_num += 1
                     # Validate parent exist
                     if CASE_ID in obj:
@@ -169,7 +229,7 @@ class DataLoader:
                 violations = 0
                 for org_obj in reader:
                     line_num += 1
-                    obj = self.cleanup_node(org_obj)
+                    obj = self.prepare_node(org_obj)
                     results = self.collect_relationships(obj, session, False, line_num)
                     relationships = results[RELATIONSHIPS]
                     provided_parents = results[PROVIDED_PARENTS]
@@ -195,7 +255,7 @@ class DataLoader:
             violations = 0
             IDs = {}
             for org_obj in reader:
-                obj = self.cleanup_node(org_obj)
+                obj = self.prepare_node(org_obj)
                 line_num += 1
                 id_field = self.schema.get_id_field(obj)
                 node_id = self.schema.get_id(obj)
@@ -228,117 +288,38 @@ class DataLoader:
             line_num = 1
             for org_obj in reader:
                 line_num += 1
-                obj = self.cleanup_node(org_obj)
+                obj = self.prepare_node(org_obj)
                 node_type = obj[NODE_TYPE]
                 node_id = self.schema.get_id(obj)
+                if not node_id:
+                    raise Exception('Line:{}: No ids found!'.format(line_num))
                 id_field = self.schema.get_id_field(obj)
                 # statement is used to create current node
                 statement = ''
                 # prop_statement set properties of current node
-                if node_id:
-                    prop_statement = 'SET n.{} = {{node_id}}'.format(id_field)
-                else:
-                    raise Exception('Line:{}: No ids found!'.format(line_num))
-                    prop_statement = []
+                prop_statement = 'SET n.{0} = {{{0}}}'.format(id_field)
 
                 for key, value in obj.items():
                     if key in excluded_fields:
                         continue
                     elif key == id_field:
                         continue
+                    elif is_parent_pointer(key):
+                        continue
 
-                    field_name = key
-                    if is_parent_pointer(key):
-                        header = key.split('.')
-                        if len(header) > 2:
-                            self.log.warning('Column header "{}" has multiple periods!'.format(key))
-                        field_name = header[1]
-                        parent = header[0]
-                        combined = '{}_{}'.format(parent, field_name)
-                        if field_name in obj:
-                            self.log.warning('"{}" field is in both "{}" and parent "{}", use "{}" instead !'.format(
-                                key, node_type, parent, combined))
-                            field_name = combined
+                    prop_statement += ', n.{0} = {{{0}}}'.format(key)
 
-                    value_string = self.get_value_string(node_type, field_name, value)
-                    if node_id:
-                        if value_string is not None:
-                            prop_statement += ', n.{} = {}'.format(field_name, value_string)
-                        for extra_prop_name, extra_value in self.schema.get_extra_props(node_type, key, value).items():
-                            extra_value_string = self.get_value_string(node_type, extra_prop_name, extra_value)
-                            if extra_value_string is not None:
-                                prop_statement += ', n.{} = {}'.format(extra_prop_name, extra_value_string)
-                    else:
-                        if value_string is not None:
-                            prop_statement.append('{}: {}'.format(field_name, value_string))
-                        for extra_prop_name, extra_value in self.schema.get_extra_props(node_type, key, value).items():
-                            extra_value_string = self.get_value_string(node_type, extra_prop_name, extra_value)
-                            if extra_value_string is not None:
-                                prop_statement.append('{}: {}'.format(extra_prop_name, extra_value_string))
+                statement += 'MERGE (n:{0} {{ {1}: {{{1}}} }})'.format(node_type, id_field)
+                statement += ' ON CREATE ' + prop_statement + ' ,n.{} = datetime()'.format(CREATED)
+                statement += ' ON MATCH ' + prop_statement + ' ,n.{} = datetime()'.format(UPDATED)
 
-                if node_id:
-                    statement += 'MERGE (n:{} {{ {}: {{node_id}} }})'.format(node_type, id_field)
-                    statement += ' ON CREATE ' + prop_statement + ' ,n.{} = datetime()'.format(CREATED)
-                    statement += ' ON MATCH ' + prop_statement + ' ,n.{} = datetime()'.format(UPDATED)
-                else:
-                    statement += 'MERGE (n:{} {{ {} }})'.format(node_type, ', '.join(prop_statement))
-                    statement += ' ON CREATE SET n.{} = datetime()'.format(CREATED)
-                    statement += ' ON MATCH SET n.{} = datetime()'.format(UPDATED)
-
-                result = session.run(statement, {"node_id": node_id})
+                result = session.run(statement, obj)
                 count = result.summary().counters.nodes_created
                 self.nodes_created += count
                 nodes_created += count
                 self.nodes_stat[node_type] = self.nodes_stat.get(node_type, 0) + count
             self.log.info('{} (:{}) node(s) loaded'.format(nodes_created, node_type))
 
-    def get_value_string2(self, key):
-        if not key or not isinstance(key, str):
-            return None
-        return '{{{}}}'.format(key)
-
-    def get_value_string(self, node_type, key, value):
-        key_type = self.schema.get_prop_type(node_type, key)
-        if key_type == 'String' or key_type == 'Date' or key_type == 'DateTime':
-            if isinstance(value, str):
-                value_string = '"{}"'.format(value)
-            else:
-                value_string = None
-        elif key_type == 'Boolean':
-            cleaned_value = None
-            if isinstance(value, str):
-                if re.search(r'yes|true', value, re.IGNORECASE):
-                    cleaned_value = True
-                elif re.search(r'no|false', value, re.IGNORECASE):
-                    cleaned_value = False
-                else:
-                    self.log.debug('Unsupported Boolean value: "{}"'.format(value))
-                    cleaned_value = None
-            if cleaned_value is not None:
-                value_string = '{}'.format(cleaned_value)
-            else:
-                value_string = '""'
-        elif key_type == 'Int':
-            try:
-                if value is None:
-                    value_string = None
-                else:
-                    value_string = int(value)
-            except Exception:
-                value_string = None
-        elif key_type == 'Float':
-            try:
-                if value is None:
-                    value_string = None
-                else:
-                    value_string = float(value)
-            except Exception:
-                value_string = None
-        # Other types
-        else:
-            self.log.warning('Value type: "{}" is not supported!'.format(key_type))
-            value_string = value
-        return value_string
 
     def node_exists(self, session, label, prop, value):
         statement = 'MATCH (m:{0} {{ {1}: {{{1}}} }}) return m'.format(label, prop)
@@ -437,7 +418,7 @@ class DataLoader:
             line_num = 1
             for org_obj in reader:
                 line_num += 1
-                obj = self.cleanup_node(org_obj)
+                obj = self.prepare_node(org_obj)
                 node_type = obj[NODE_TYPE]
                 # criteria_statement is used to find current node
                 criteria_statement = self.get_search_criteria_for_node(obj)
