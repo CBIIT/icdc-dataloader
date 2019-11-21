@@ -358,23 +358,21 @@ class DataLoader:
                             'Line: {}: Parent node (:{} {{{}: "{}"}} not found in DB!'.format(line_num, other_node, other_id,
                                                                                                    value))
                 else:
-                    if multiplier == ONE_TO_ONE and self.parent_already_has_child(session, node_type, self.get_search_criteria_for_node(obj),
-                                                                                  relationship_name, other_node, other_id, value):
+                    if multiplier == ONE_TO_ONE and self.parent_already_has_child(session, node_type, obj, relationship_name, other_node, other_id, value):
                         self.log.warning('Line: {}: one_to_one relationship failed, parent already has a child!'.format(line_num))
                     else:
                         relationships.append({PARENT_TYPE: other_node, PARENT_ID_FIELD: other_id, PARENT_ID: value,
                                           RELATIONSHIP_TYPE: relationship_name, MULTIPLIER: multiplier})
         return {RELATIONSHIPS: relationships, VISITS_CREATED: visits_created, PROVIDED_PARENTS: provided_parents}
 
-    def parent_already_has_child(self, session, node_type, criteria_statement, relationship_name, parent_type, parent_id_field, parent_id):
-
+    def parent_already_has_child(self, session, node_type, node, relationship_name, parent_type, parent_id_field, parent_id):
         statement = 'MATCH (n:{})-[r:{}]->(m:{} {{ {}: {{parent_id}} }}) return n'.format(node_type, relationship_name, parent_type, parent_id_field)
         result = session.run(statement, {"parent_id": parent_id})
         if result:
             child = result.single()
             if child:
-                find_current_node_statement = 'MATCH (n:{} {{ {} }}) return n'.format(node_type, criteria_statement)
-                current_node_result = session.run(find_current_node_statement)
+                find_current_node_statement = 'MATCH (n:{0} {{ {1}: {{{1}}} }}) return n'.format(node_type, self.schema.get_id_field(node))
+                current_node_result = session.run(find_current_node_statement, node)
                 if current_node_result:
                     current_node = current_node_result.single()
                     return child[0].id != current_node[0].id
@@ -384,14 +382,14 @@ class DataLoader:
         return False
 
 
-    def remove_old_relationship(self, session, node_type, criteria_statement, relationship):
+    def remove_old_relationship(self, session, node_type, node, relationship):
         relationship_name = relationship[RELATIONSHIP_TYPE]
         parent_type = relationship[PARENT_TYPE]
         parent_id_field = relationship[PARENT_ID_FIELD]
 
-        base_statement = 'MATCH (n:{} {{ {} }})-[r:{}]->(m:{})'.format(node_type, criteria_statement, relationship_name, parent_type)
+        base_statement = 'MATCH (n:{0} {{ {1}: {{{1}}} }})-[r:{2}]->(m:{3})'.format(node_type, self.schema.get_id_field(node), relationship_name, parent_type)
         statement = base_statement + ' return m.{} AS {}'.format(parent_id_field, PARENT_ID)
-        result = session.run(statement)
+        result = session.run(statement, node)
         if result:
             old_parent = result.single()
             if old_parent:
@@ -400,7 +398,7 @@ class DataLoader:
                     self.log.warning('Old parent is different from new parent, delete relationship to old parent: (:{} {{ {}: "{}" }})!'.format(parent_type,
                                                                                                                                                 parent_id_field, old_parent_id))
                     del_statement = base_statement + ' delete r'
-                    del_result = session.run(del_statement)
+                    del_result = session.run(del_statement, node)
                     if not del_result:
                         self.log.error('Delete old relationship failed!')
         else:
@@ -420,8 +418,6 @@ class DataLoader:
                 line_num += 1
                 obj = self.prepare_node(org_obj)
                 node_type = obj[NODE_TYPE]
-                # criteria_statement is used to find current node
-                criteria_statement = self.get_search_criteria_for_node(obj)
                 results = self.collect_relationships(obj, session, True, line_num)
                 relationships = results[RELATIONSHIPS]
                 visits_created += results[VISITS_CREATED]
@@ -435,18 +431,17 @@ class DataLoader:
                         multiplier = relationship[MULTIPLIER]
                         parent_node = relationship[PARENT_TYPE]
                         parent_id_field = relationship[PARENT_ID_FIELD]
-                        parent_id = relationship[PARENT_ID]
                         if multiplier in [DEFAULT_MULTIPLIER, ONE_TO_ONE]:
-                            self.remove_old_relationship(session, node_type, criteria_statement, relationship)
+                            self.remove_old_relationship(session, node_type, obj, relationship)
                         else:
                             self.log.info('Multiplier: {}, no action needed!'.format(multiplier))
                         statement = 'MATCH (m:{0} {{ {1}: {{{1}}} }}) '.format(parent_node, parent_id_field)
-                        statement += 'MATCH (n:{} {{ {} }}) '.format(node_type, criteria_statement)
+                        statement += 'MATCH (n:{0} {{ {1}: {{{1}}} }}) '.format(node_type, self.schema.get_id_field(obj))
                         statement += 'MERGE (n)-[r:{}]->(m)'.format(relationship_name)
                         statement += ' ON CREATE SET r.{} = datetime()'.format(CREATED)
                         statement += ' ON MATCH SET r.{} = datetime()'.format(UPDATED)
 
-                        result = session.run(statement, {parent_id_field: parent_id})
+                        result = session.run(statement, obj)
                         count = result.summary().counters.relationships_created
                         self.relationships_created += count
                         relationship_pattern = '(:{})->[:{}]->(:{})'.format(node_type, relationship_name, parent_node)
@@ -459,20 +454,6 @@ class DataLoader:
                 self.log.info('{} (:{}) node(s) loaded'.format(visits_created, VISIT_NODE))
 
         return True
-
-    def get_search_criteria_for_node(self, node):
-        id_field = self.schema.get_id_field(node)
-        node_id = self.schema.get_id(node)
-        node_type = node[NODE_TYPE]
-        if node_id:
-            criteria_statement = '{}: "{}"'.format(id_field, node_id)
-        else:
-            self.log.warning('{} field is missing or empty, try to use {} as ID'.format(id_field, UUID))
-            if UUID in node:
-                criteria_statement = '{}: "{}"'.format(UUID, node[UUID])
-            else:
-                raise Exception('Node does NOT have any IDs')
-        return criteria_statement
 
     def create_visit(self, session, line_num, node_type, node_id, src):
         if node_type != VISIT_NODE:
