@@ -21,6 +21,7 @@ def main():
     parser.add_argument('-s', '--schema', help='Schema files', action='append')
     parser.add_argument('-c', '--cheat-mode', help='Skip validations, aka. Cheat Mode', action='store_true')
     parser.add_argument('-d', '--dry-run', help='Validations only, skip loading', action='store_true')
+    parser.add_argument('--no-backup', help='Skip backup step', action='store_true')
     parser.add_argument('-m', '--max-violations', help='Max violations to display', nargs='?', type=int, default=10)
     parser.add_argument('-b', '--bucket', help='S3 bucket name')
     parser.add_argument('-f', '--s3-folder', help='S3 folder')
@@ -76,10 +77,12 @@ def main():
         if file_list:
             backup_name = datetime.datetime.today().strftime(DATETIME_FORMAT)
             host = get_host(uri)
-            restore_cmd = backup_neo4j(BACKUP_FOLDER, backup_name, host, log)
-            if not restore_cmd:
-                log.error('Backup Neo4j failed, abort loading!')
-                sys.exit(1)
+            restore_cmd = ''
+            if not args.no_backup and not args.dry_run:
+                restore_cmd = backup_neo4j(BACKUP_FOLDER, backup_name, host, log)
+                if not restore_cmd:
+                    log.error('Backup Neo4j failed, abort loading!')
+                    sys.exit(1)
             schema = ICDC_Schema(args.schema)
             driver = GraphDatabase.driver(uri, auth=(user, password))
             loader = DataLoader(driver, schema)
