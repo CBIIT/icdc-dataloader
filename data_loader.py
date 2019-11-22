@@ -4,7 +4,8 @@ import os
 import csv
 import re
 from neo4j import  Driver, Session, Transaction
-from utils import DATE_FORMAT, get_logger, NODES_CREATED, RELATIONSHIP_CREATED, UUID, get_uuid_for_node, is_parent_pointer, RELATIONSHIP_TYPE, MULTIPLIER, ONE_TO_ONE, DEFAULT_MULTIPLIER, PROPS
+from utils import DATE_FORMAT, get_logger, NODES_CREATED, RELATIONSHIP_CREATED, UUID, get_uuid_for_node, \
+                  is_parent_pointer, RELATIONSHIP_TYPE, MULTIPLIER, ONE_TO_ONE, DEFAULT_MULTIPLIER, PROPS
 from timeit import default_timer as timer
 from icdc_schema import ICDC_Schema
 from datetime import datetime, timedelta
@@ -157,13 +158,13 @@ class DataLoader:
 
         if UUID not in obj:
             id_field = self.schema.get_id_field(obj)
-            id = self.schema.get_id(obj)
+            id_value = self.schema.get_id(obj)
             node_type = obj.get(NODE_TYPE)
             if node_type:
-                if not id:
+                if not id_value:
                     obj[UUID] = get_uuid_for_node(node_type, self.get_signature(obj))
                 elif id_field != UUID:
-                    obj[UUID] = get_uuid_for_node(node_type, id)
+                    obj[UUID] = get_uuid_for_node(node_type, id_value)
             else:
                 raise Exception('No "type" property in node')
 
@@ -189,7 +190,8 @@ class DataLoader:
 
         return obj2
 
-    def get_signature(self, node):
+    @staticmethod
+    def get_signature(node):
         result = []
         for key, value in node.items():
             result.append('{}: {}'.format(key, value))
@@ -302,7 +304,7 @@ class DataLoader:
                 # prop_statement set properties of current node
                 prop_statement = 'SET n.{0} = {{{0}}}'.format(id_field)
 
-                for key, value in obj.items():
+                for key in obj.keys():
                     if key in excluded_fields:
                         continue
                     elif key == id_field:
@@ -480,7 +482,7 @@ class DataLoader:
         if not date:
             self.log.error('Line: {}: Visit date is empty!'.format(line_num))
             return False
-        if not NODE_TYPE in src:
+        if NODE_TYPE not in src:
             self.log.error('Line: {}: Given object doesn\'t have a "{}" field!'.format(line_num, NODE_TYPE))
             return False
         statement = 'MERGE (v:{} {{ {}: {{node_id}}, {}: {{date}}, {}: true }})'.format(VISIT_NODE, VISIT_ID, VISIT_DATE, INFERRED)
