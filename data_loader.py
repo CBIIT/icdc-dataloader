@@ -105,6 +105,12 @@ class DataLoader:
         self.log.info('Loading time: {:.2f} seconds'.format(end - start))  # Time in seconds, e.g. 5.38091952400282
         return {NODES_CREATED: self.nodes_created, RELATIONSHIP_CREATED: self.relationships_created}
 
+    @staticmethod
+    def cleanup_node(node):
+        obj = {}
+        for key, value in node.items():
+            obj[key.strip()] = value.strip()
+        return obj
 
     # Remove extra spaces at begining and end of the keys and values
     # Cleanup values for Boolean, Int and Float types
@@ -112,10 +118,7 @@ class DataLoader:
     # Add parent id(s)
     # Add extra properties for "value with unit" properties
     def prepare_node(self, node):
-        obj = {}
-        # Strip all extra spaces in keys and values
-        for key, value in node.items():
-            obj[key.strip()] = value.strip()
+        obj = self.cleanup_node(node)
 
         node_type = obj.get(NODE_TYPE, None)
         # Cleanup values for Boolean, Int and Float types
@@ -255,7 +258,7 @@ class DataLoader:
             violations = 0
             IDs = {}
             for org_obj in reader:
-                obj = self.prepare_node(org_obj)
+                obj = self.cleanup_node(org_obj)
                 line_num += 1
                 id_field = self.schema.get_id_field(obj)
                 node_id = self.schema.get_id(obj)
