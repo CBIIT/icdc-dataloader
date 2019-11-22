@@ -109,6 +109,7 @@ class DataLoader:
         self.log.info('Loading time: {:.2f} seconds'.format(end - start))  # Time in seconds, e.g. 5.38091952400282
         return {NODES_CREATED: self.nodes_created, RELATIONSHIP_CREATED: self.relationships_created}
 
+    # Remove extra spaces at begining and end of the keys and values
     @staticmethod
     def cleanup_node(node):
         obj = {}
@@ -116,7 +117,6 @@ class DataLoader:
             obj[key.strip()] = value.strip()
         return obj
 
-    # Remove extra spaces at begining and end of the keys and values
     # Cleanup values for Boolean, Int and Float types
     # Add uuid to nodes if one not exists
     # Add parent id(s)
