@@ -1,9 +1,9 @@
 import unittest
 import os
-from utils import *
+from utils import get_logger, removeTrailingSlash, UUID
 from loader import *
-from data_loader import *
-from icdc_schema import *
+from data_loader import DataLoader
+from icdc_schema import ICDC_Schema
 from neo4j import GraphDatabase
 
 

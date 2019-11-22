@@ -7,7 +7,7 @@ from icdc_schema import ICDC_Schema
 
 
 class TestLambda(unittest.TestCase):
-    def setUp(self) -> None:
+    def setUp(self):
         with open('data/lambda/event1.json') as inf:
             self.event = json.load(inf)
         uri = 'bolt://localhost:7687'

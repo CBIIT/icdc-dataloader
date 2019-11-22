@@ -4,9 +4,9 @@ import glob
 import argparse
 from neo4j import GraphDatabase, ServiceUnavailable
 from icdc_schema import ICDC_Schema
-from utils import *
+from utils import get_logger, removeTrailingSlash, PSWD_ENV, check_schema_files, DATETIME_FORMAT, get_host, backup_neo4j, BACKUP_FOLDER
 from data_loader import DataLoader
-from s3 import *
+from s3 import S3Bucket
 import datetime
 
 

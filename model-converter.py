@@ -3,7 +3,9 @@
 # Convert JSON scheme (from ICDC model-tool) to GraphQL schema
 
 import argparse
-from icdc_schema import *
+import sys
+from icdc_schema import ICDC_Schema, PROP_TYPE
+from utils import check_schema_files, get_logger
 
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
 import os
 import yaml
 import sys
-from utils import *
+from utils import get_logger, MULTIPLIER, DEFAULT_MULTIPLIER, RELATIONSHIP_TYPE, is_parent_pointer, DATE_FORMAT, PROPS
 import re
 from datetime import datetime
 
@@ -298,7 +298,7 @@ class ICDC_Schema:
         elif model_type[PROP_TYPE] == 'Int':
             try:
                 if value:
-                    _ = int(value)
+                    int(value)
             except ValueError:
                 return False
         elif model_type[PROP_TYPE] == 'Boolean':

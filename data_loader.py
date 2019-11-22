@@ -329,7 +329,7 @@ class DataLoader:
             self.log.warning('More than one nodes found! ')
         return count >= 1
 
-    def collect_relationships(self, obj, session, create_visit, line_num) -> dict:
+    def collect_relationships(self, obj, session, create_visit, line_num):
         node_type = obj[NODE_TYPE]
         relationships = []
         visits_created = 0
@@ -395,8 +395,8 @@ class DataLoader:
             if old_parent:
                 old_parent_id = old_parent[PARENT_ID]
                 if old_parent_id != relationship[PARENT_ID]:
-                    self.log.warning('Old parent is different from new parent, delete relationship to old parent: (:{} {{ {}: "{}" }})!'.format(parent_type,
-                                                                                                                                                parent_id_field, old_parent_id))
+                    self.log.warning('Old parent is different from new parent, delete relationship to old parent:'
+                                     + ' (:{} {{ {}: "{}" }})!'.format(parent_type, parent_id_field, old_parent_id))
                     del_statement = base_statement + ' delete r'
                     del_result = session.run(del_statement, node)
                     if not del_result:
@@ -520,10 +520,12 @@ class DataLoader:
                     end_date = datetime.strptime(FOREVER, DATE_FORMAT)
                 if (date >= start_date and date <= end_date) or (date < first_date and date >= pre_date):
                     if date < first_date and date >= pre_date:
-                        self.log.info('Line: {}: Date: {} is before first cycle, but within {} days before first cycle started: {}, connected to first cycle'.format(line_num,
-                                                                                                                                                                     visit_date, PREDATE, first_date.strftime(DATE_FORMAT)))
+                        self.log.info('Line: {}: Date: {} is before first cycle, but within {}'.format(line_num, visit_date, PREDATE)
+                                    + ' days before first cycle started: {}, connected to first cycle'.format(first_date.strftime(DATE_FORMAT)))
                     cycle_id = cycle.id
-                    connect_stmt = 'MATCH (v:{} {{ {}: {{visit_id}} }}) MATCH (c:{}) WHERE id(c) = {{cycle_id}} MERGE (v)-[r:{} {{ {}: true }}]->(c)'.format(VISIT_NODE, VISIT_ID, CYCLE_NODE, relationship_name, INFERRED)
+                    connect_stmt = 'MATCH (v:{} {{ {}: {{visit_id}} }}) '.format(VISIT_NODE, VISIT_ID)
+                    connect_stmt += 'MATCH (c:{}) WHERE id(c) = {{cycle_id}} '.format(CYCLE_NODE)
+                    connect_stmt += 'MERGE (v)-[r:{} {{ {}: true }}]->(c)'.format(relationship_name, INFERRED)
                     connect_stmt += ' ON CREATE SET r.{} = datetime()'.format(CREATED)
                     connect_stmt += ' ON MATCH SET r.{} = datetime()'.format(UPDATED)
 

@@ -312,7 +312,7 @@ class FileProcessor:
         return os.path.join(folder, new_name)
 
     # Find and process manifest files, return list of updated manifest files and a list of files that included in manifest files
-    def process_manifest(self, data_folder, extracted_files) -> [str]:
+    def process_manifest(self, data_folder, extracted_files):
         results = ([], [])
         file_list = glob.glob('{}/*.txt'.format(data_folder))
         if not file_list:

@@ -3,7 +3,7 @@ import boto3
 import json
 from threading import Timer
 
-from utils import *
+from utils import get_logger, QUEUE_LONG_PULL_TIME
 
 class Queue:
     def __init__(self, queue_name):
