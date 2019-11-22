@@ -455,7 +455,7 @@ class FileProcessor:
                     if not self.loader.validate_parents_exist_in_file(file, 1):
                         self.log.error('Validate parents in {} failed, abort loading!'.format(file))
                         return False
-                return self.loader.load(manifests, False, self.dry_run, 1)
+                return self.loader.load(manifests, False, self.dry_run, False, 1)
             else:
                 self.log.error('Can\'t load manifest, because data loader is not valid!')
                 return False

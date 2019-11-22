@@ -21,6 +21,7 @@ def main():
     parser.add_argument('-s', '--schema', help='Schema files', action='append')
     parser.add_argument('-c', '--cheat-mode', help='Skip validations, aka. Cheat Mode', action='store_true')
     parser.add_argument('-d', '--dry-run', help='Validations only, skip loading', action='store_true')
+    parser.add_argument('--wipe-db', help='Wipe out database before loading, you\'ll lose all data!', action='store_true')
     parser.add_argument('--no-backup', help='Skip backup step', action='store_true')
     parser.add_argument('-m', '--max-violations', help='Max violations to display', nargs='?', type=int, default=10)
     parser.add_argument('-b', '--bucket', help='S3 bucket name')
@@ -84,11 +85,18 @@ def main():
                     log.error('Backup Neo4j failed, abort loading!')
                     sys.exit(1)
             schema = ICDC_Schema(args.schema)
-            driver = GraphDatabase.driver(uri, auth=(user, password))
+            driver = None
+            if not args.dry_run:
+                driver = GraphDatabase.driver(uri, auth=(user, password))
             loader = DataLoader(driver, schema)
-            loader.load(file_list, args.cheat_mode, args.dry_run, args.max_violations)
+            if args.wipe_db:
+                if not confirm_wipe_db():
+                    sys.exit()
 
-            driver.close()
+            loader.load(file_list, args.cheat_mode, args.dry_run, args.wipe_db, args.max_violations)
+
+            if driver:
+                driver.close()
             if restore_cmd:
                 log.info(restore_cmd)
         else:
@@ -97,6 +105,12 @@ def main():
     except ServiceUnavailable as err:
         log.exception(err)
         log.critical("Can't connect to Neo4j server at: \"{}\"".format(uri))
+
+def confirm_wipe_db():
+    print('Wipe out entire Neo4j database before loading?')
+    confirm = input('Type "yes" and press enter to proceed (You\'ll LOSE ALL DATA!!!), press enter to cancel:')
+    confirm = confirm.strip().lower()
+    return confirm == 'yes'
 
 if __name__ == '__main__':
     main()

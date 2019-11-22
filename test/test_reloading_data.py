@@ -52,14 +52,9 @@ class TestLoader(unittest.TestCase):
             "data/NCATS/NCATS-COP01_study_file.txt"
         ]
 
-    def test_load(self):
-        with self.driver.session() as session:
-            cleanup_db = 'MATCH (n) DETACH DELETE n'
-            result = session.run(cleanup_db)
-            self.log.info('{} nodes deleted!'.format(result.summary().counters.nodes_deleted))
-            self.log.info('{} relationships deleted!'.format(result.summary().counters.relationships_deleted))
+    def test_reload(self):
         loader = DataLoader(self.driver, self.schema)
-        load_result = loader.load(self.file_list, True, False, 1)
+        load_result = loader.load(self.file_list, True, False, True, 1)
         self.assertIsInstance(load_result, dict, msg='Load data failed!')
         self.assertEqual(1832, load_result[NODES_CREATED])
         self.assertEqual(1974, load_result[RELATIONSHIP_CREATED])

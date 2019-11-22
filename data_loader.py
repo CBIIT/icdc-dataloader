@@ -37,9 +37,7 @@ PROVIDED_PARENTS = 'provided_parents'
 
 class DataLoader:
     def __init__(self, driver, schema):
-        if not driver or not isinstance(driver, Driver):
-            raise Exception('Invalid Neo4j driver object')
-        elif not schema or not isinstance(schema, ICDC_Schema):
+        if not schema or not isinstance(schema, ICDC_Schema):
             raise Exception('Invalid ICDC_Schema object')
         self.log = get_logger('Data Loader')
         self.driver = driver
@@ -56,7 +54,7 @@ class DataLoader:
                     return False
             return True
 
-    def load(self, file_list, cheat_mode, dry_run, max_violations):
+    def load(self, file_list, cheat_mode, dry_run, wipe_db, max_violations):
         if not self.check_files(file_list):
             return False
         start = timer()
@@ -81,9 +79,14 @@ class DataLoader:
         self.relationships_created = 0
         self.nodes_stat = {}
         self.relationships_stat = {}
+        if not self.driver or not isinstance(self.driver, Driver):
+            self.log.error('Invalid Neo4j Python Driver!')
+            return False
         with self.driver.session() as session:
             tx = session.begin_transaction()
             try:
+                if wipe_db:
+                    self.wipe_db(tx)
                 for txt in file_list:
                     self.load_nodes(tx, txt)
                 for txt in file_list:
@@ -199,6 +202,9 @@ class DataLoader:
 
     # Validate all cases exist in a data (TSV/TXT) file
     def validate_cases_exist_in_file(self, file_name, max_violations):
+        if not self.driver or not isinstance(self.driver, Driver):
+            self.log.error('Invalid Neo4j Python Driver!')
+            return False
         with self.driver.session() as session:
             with open(file_name) as in_file:
                 self.log.info('Validating relationships in file "{}" ...'.format(file_name))
@@ -225,6 +231,9 @@ class DataLoader:
     # Validate all parents exist in a data (TSV/TXT) file
     def validate_parents_exist_in_file(self, file_name, max_violations):
         validation_failed = True
+        if not self.driver or not isinstance(self.driver, Driver):
+            self.log.error('Invalid Neo4j Python Driver!')
+            return False
         with self.driver.session() as session:
             with open(file_name) as in_file:
                 self.log.info('Validating relationships in file "{}" ...'.format(file_name))
@@ -569,4 +578,10 @@ class DataLoader:
             self.log.error('Line: {}: Create (:{})-[:{}]->(:{}) relationship failed!'.format(line_num, VISIT_NODE, relationship_name, CASE_NODE))
             return False
 
+    def wipe_db(self, session):
+        cleanup_db = 'MATCH (n) DETACH DELETE n'
+
+        result = session.run(cleanup_db)
+        self.log.info('{} nodes deleted!'.format(result.summary().counters.nodes_deleted))
+        self.log.info('{} relationships deleted!'.format(result.summary().counters.relationships_deleted))
 
