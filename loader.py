@@ -89,7 +89,8 @@ def main():
             loader.load(file_list, args.cheat_mode, args.dry_run, args.max_violations)
 
             driver.close()
-            log.info(restore_cmd)
+            if restore_cmd:
+                log.info(restore_cmd)
         else:
             log.info('No files to load.')
 
