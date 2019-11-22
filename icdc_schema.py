@@ -292,7 +292,7 @@ class ICDC_Schema:
         if model_type[PROP_TYPE] == 'Float':
             try:
                 if value:
-                    _ = float(value)
+                    float(value)
             except ValueError:
                 return False
         elif model_type[PROP_TYPE] == 'Int':

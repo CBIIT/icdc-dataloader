@@ -1,7 +1,6 @@
 import unittest
 import os
 from utils import get_logger, removeTrailingSlash, UUID
-from loader import *
 from data_loader import DataLoader
 from icdc_schema import ICDC_Schema
 from neo4j import GraphDatabase
@@ -54,7 +53,8 @@ class TestLoader(unittest.TestCase):
     def test_cleanup_node(self):
         #Test UUIDs
         self.assertRaises(Exception, self.loader.prepare_node, {})
-        self.assertDictEqual(self.loader.prepare_node({'type': 'case', 'case_id': '123', ' key1 ': ' value1  '}), {'key1': 'value1', 'type': 'case', 'case_id': '123', 'uuid': 'f0cf40a7-3cdb-51fe-a596-e29e40123f56'})
+        self.assertDictEqual(self.loader.prepare_node({'type': 'case', 'case_id': '123', ' key1 ': ' value1  '}),
+                             {'key1': 'value1', 'type': 'case', 'case_id': '123', 'uuid': 'f0cf40a7-3cdb-51fe-a596-e29e40123f56'})
         self.assertDictEqual(self.loader.prepare_node({'type': 'file', 'uuid': '123', ' key1 ': ' value1  '}),
                              {'key1': 'value1', 'type': 'file', 'uuid': '123'})
 

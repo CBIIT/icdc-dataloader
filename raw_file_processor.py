@@ -10,7 +10,7 @@ import zipfile
 import tarfile
 import glob
 import os, sys
-from utils import *
+from utils import UUID, INDEXD_GUID_PREFIX, get_uuid_for_node, INDEXD_MANIFEST_EXT, NODES_CREATED, RELATIONSHIP_CREATED, TEMP_FOLDER, send_mail, VISIBILITY_TIMEOUT, removeTrailingSlash, PSWD_ENV
 from sqs import Queue
 import json
 import csv

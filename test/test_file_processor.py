@@ -1,8 +1,8 @@
 import unittest
-from utils import *
 import json
+import os
 from neo4j import GraphDatabase
-from raw_file_processor import *
+from raw_file_processor import FileProcessor
 from icdc_schema import ICDC_Schema
 
 
