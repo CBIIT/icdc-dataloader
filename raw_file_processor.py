@@ -11,7 +11,7 @@ import tarfile
 import glob
 import os, sys
 from utils import UUID, INDEXD_GUID_PREFIX, get_uuid_for_node, INDEXD_MANIFEST_EXT, NODES_CREATED, RELATIONSHIP_CREATED,\
-                  TEMP_FOLDER, send_mail, VISIBILITY_TIMEOUT, removeTrailingSlash, PSWD_ENV, get_logger
+                  TEMP_FOLDER, send_mail, VISIBILITY_TIMEOUT, removeTrailingSlash, PSWD_ENV, get_logger, UPSERT_MODE
 from sqs import Queue, VisibilityExtender
 import json
 import csv
@@ -455,7 +455,7 @@ class FileProcessor:
                     if not self.loader.validate_parents_exist_in_file(file, 1):
                         self.log.error('Validate parents in {} failed, abort loading!'.format(file))
                         return False
-                return self.loader.load(manifests, False, self.dry_run, False, 1)
+                return self.loader.load(manifests, False, self.dry_run, UPSERT_MODE, False, 1)
             else:
                 self.log.error('Can\'t load manifest, because data loader is not valid!')
                 return False
