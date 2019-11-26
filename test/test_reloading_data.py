@@ -52,9 +52,16 @@ class TestLoader(unittest.TestCase):
             "data/NCATS/NCATS-COP01_study_file.txt"
         ]
 
-    def test_reload(self):
+    # def test_reload_with_new(self):
+    #     loader = DataLoader(self.driver, self.schema)
+    #     load_result = loader.load(self.file_list, True, False, 'new', True, 1)
+    #     self.assertIsInstance(load_result, dict, msg='Load data failed!')
+    #     self.assertEqual(1832, load_result[NODES_CREATED])
+    #     self.assertEqual(1974, load_result[RELATIONSHIP_CREATED])
+
+    def test_reload_upsert(self):
         loader = DataLoader(self.driver, self.schema)
-        load_result = loader.load(self.file_list, True, False, True, 1)
+        load_result = loader.load(self.file_list, True, False, 'upsert', True, 1)
         self.assertIsInstance(load_result, dict, msg='Load data failed!')
         self.assertEqual(1832, load_result[NODES_CREATED])
         self.assertEqual(1974, load_result[RELATIONSHIP_CREATED])

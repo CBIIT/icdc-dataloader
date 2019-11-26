@@ -5,7 +5,9 @@ import csv
 import re
 from neo4j import  Driver, Session, Transaction
 from utils import DATE_FORMAT, get_logger, NODES_CREATED, RELATIONSHIP_CREATED, UUID, get_uuid_for_node, \
-                  is_parent_pointer, RELATIONSHIP_TYPE, MULTIPLIER, ONE_TO_ONE, DEFAULT_MULTIPLIER, PROPS
+    is_parent_pointer, RELATIONSHIP_TYPE, MULTIPLIER, ONE_TO_ONE, DEFAULT_MULTIPLIER, PROPS, UPSERT_MODE, \
+    NEW_MODE, DELETE_MODE
+
 from timeit import default_timer as timer
 from icdc_schema import ICDC_Schema
 from datetime import datetime, timedelta
@@ -54,20 +56,24 @@ class DataLoader:
                     return False
             return True
 
-    def load(self, file_list, cheat_mode, dry_run, wipe_db, max_violations):
-        if not self.check_files(file_list):
-            return False
-        start = timer()
+    def validate_files(self, cheat_mode, file_list, max_violations):
         if not cheat_mode:
             validation_failed = False
             for txt in file_list:
-                if not self.validate_file(txt, max_violations) :
+                if not self.validate_file(txt, max_violations):
                     self.log.error('Validating file "{}" failed!'.format(txt))
                     validation_failed = True
-            if validation_failed:
-                return False
+            return not validation_failed
         else:
             self.log.info('Cheat mode enabled, all validations skipped!')
+            return True
+
+    def load(self, file_list, cheat_mode, dry_run, loading_mode, wipe_db, max_violations):
+        if not self.check_files(file_list):
+            return False
+        start = timer()
+        if not self.validate_files(cheat_mode, file_list, max_violations):
+            return False
 
         if dry_run:
             end = timer()
@@ -77,8 +83,12 @@ class DataLoader:
 
         self.nodes_created = 0
         self.relationships_created = 0
+        self.nodes_deleted = 0
+        self.relationships_deleted = 0
         self.nodes_stat = {}
         self.relationships_stat = {}
+        self.nodes_deleted_stat = {}
+        self.relationships_deleted_stat = {}
         if not self.driver or not isinstance(self.driver, Driver):
             self.log.error('Invalid Neo4j Python Driver!')
             return False
@@ -87,10 +97,12 @@ class DataLoader:
             try:
                 if wipe_db:
                     self.wipe_db(tx)
+
                 for txt in file_list:
-                    self.load_nodes(tx, txt)
-                for txt in file_list:
-                    self.load_relationships(tx, txt)
+                    self.load_nodes(tx, txt, loading_mode)
+                if loading_mode != DELETE_MODE:
+                    for txt in file_list:
+                        self.load_relationships(tx, txt, loading_mode)
                 tx.commit()
             except Exception as e:
                 tx.rollback()
@@ -108,6 +120,8 @@ class DataLoader:
         self.log.info('{} nodes and {} relationships loaded!'.format(self.nodes_created, self.relationships_created))
         self.log.info('Loading time: {:.2f} seconds'.format(end - start))  # Time in seconds, e.g. 5.38091952400282
         return {NODES_CREATED: self.nodes_created, RELATIONSHIP_CREATED: self.relationships_created}
+
+
 
     # Remove extra spaces at begining and end of the keys and values
     @staticmethod
@@ -292,8 +306,47 @@ class DataLoader:
                         return False
             return not validation_failed
 
+    def get_new_statement(self, node_type, obj):
+        # statement is used to create current node
+        prop_stmts = []
+
+        for key in obj.keys():
+            if key in excluded_fields:
+                continue
+            elif is_parent_pointer(key):
+                continue
+
+            prop_stmts.append('{0}: {{{0}}}'.format(key))
+
+        statement = 'CREATE (:{0} {{ {1} }})'.format(node_type, ' ,'.join(prop_stmts))
+        return statement
+
+    def get_upsert_statement(self, node_type, id_field, obj):
+        # statement is used to create current node
+        statement = ''
+        prop_stmts = []
+
+        for key in obj.keys():
+            if key in excluded_fields:
+                continue
+            elif key == id_field:
+                continue
+            elif is_parent_pointer(key):
+                continue
+
+            prop_stmts.append('n.{0} = {{{0}}}'.format(key))
+
+        statement += 'MERGE (n:{0} {{ {1}: {{{1}}} }})'.format(node_type, id_field)
+        statement += ' ON CREATE ' + 'SET n.{} = datetime(), '.format(CREATED) + ' ,'.join(prop_stmts)
+        statement += ' ON MATCH ' + 'SET n.{} = datetime(), '.format(UPDATED) + ' ,'.join(prop_stmts)
+        return statement
+
+    # Delete a node and children with no other parents recursively
+    def delete_node(self):
+        pass
+
     # load file
-    def load_nodes(self, session, file_name):
+    def load_nodes(self, session, file_name, loading_mode):
         self.log.info('Loading nodes from file: {}'.format(file_name))
 
         with open(file_name) as in_file:
@@ -308,24 +361,14 @@ class DataLoader:
                 if not node_id:
                     raise Exception('Line:{}: No ids found!'.format(line_num))
                 id_field = self.schema.get_id_field(obj)
-                # statement is used to create current node
-                statement = ''
-                # prop_statement set properties of current node
-                prop_statement = 'SET n.{0} = {{{0}}}'.format(id_field)
-
-                for key in obj.keys():
-                    if key in excluded_fields:
-                        continue
-                    elif key == id_field:
-                        continue
-                    elif is_parent_pointer(key):
-                        continue
-
-                    prop_statement += ', n.{0} = {{{0}}}'.format(key)
-
-                statement += 'MERGE (n:{0} {{ {1}: {{{1}}} }})'.format(node_type, id_field)
-                statement += ' ON CREATE ' + prop_statement + ' ,n.{} = datetime()'.format(CREATED)
-                statement += ' ON MATCH ' + prop_statement + ' ,n.{} = datetime()'.format(UPDATED)
+                if loading_mode == UPSERT_MODE:
+                    statement = self.get_upsert_statement(node_type, id_field, obj)
+                elif loading_mode == NEW_MODE:
+                    if self.node_exists(session, node_type, id_field, node_id):
+                        self.log.error('Node (:{} {{ {}: {} }}) exists! Abort loading!'.format(node_type, id_field, node_id))
+                        return False
+                    else:
+                        statement = self.get_new_statement(node_type, obj)
 
                 result = session.run(statement, obj)
                 count = result.summary().counters.nodes_created
@@ -420,7 +463,7 @@ class DataLoader:
 
 
 
-    def load_relationships(self, session, file_name):
+    def load_relationships(self, session, file_name, loading_mode):
         self.log.info('Loading relationships from file: {}'.format(file_name))
 
         with open(file_name) as in_file:
@@ -585,4 +628,5 @@ class DataLoader:
         result = session.run(cleanup_db)
         self.log.info('{} nodes deleted!'.format(result.summary().counters.nodes_deleted))
         self.log.info('{} relationships deleted!'.format(result.summary().counters.relationships_deleted))
+
 

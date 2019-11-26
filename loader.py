@@ -4,7 +4,8 @@ import glob
 import argparse
 from neo4j import GraphDatabase, ServiceUnavailable
 from icdc_schema import ICDC_Schema
-from utils import get_logger, removeTrailingSlash, PSWD_ENV, check_schema_files, DATETIME_FORMAT, get_host, backup_neo4j, BACKUP_FOLDER
+from utils import get_logger, removeTrailingSlash, PSWD_ENV, check_schema_files, DATETIME_FORMAT, get_host, \
+    backup_neo4j, BACKUP_FOLDER, UPSERT_MODE, NEW_MODE, DELETE_MODE
 from data_loader import DataLoader
 from s3 import S3Bucket
 import datetime
@@ -23,9 +24,10 @@ def main():
     parser.add_argument('-d', '--dry-run', help='Validations only, skip loading', action='store_true')
     parser.add_argument('--wipe-db', help='Wipe out database before loading, you\'ll lose all data!', action='store_true')
     parser.add_argument('--no-backup', help='Skip backup step', action='store_true')
-    parser.add_argument('-m', '--max-violations', help='Max violations to display', nargs='?', type=int, default=10)
+    parser.add_argument('--max-violations', help='Max violations to display', nargs='?', type=int, default=10)
     parser.add_argument('-b', '--bucket', help='S3 bucket name')
     parser.add_argument('-f', '--s3-folder', help='S3 folder')
+    parser.add_argument('-m', '--mode', help='Loading mode', choices=[UPSERT_MODE, NEW_MODE, DELETE_MODE], default=UPSERT_MODE)
     parser.add_argument('dir', help='Data directory')
 
     args = parser.parse_args()
@@ -93,7 +95,7 @@ def main():
                 if not confirm_wipe_db():
                     sys.exit()
 
-            loader.load(file_list, args.cheat_mode, args.dry_run, args.wipe_db, args.max_violations)
+            loader.load(file_list, args.cheat_mode, args.dry_run, args.mode, args.wipe_db, args.max_violations)
 
             if driver:
                 driver.close()
