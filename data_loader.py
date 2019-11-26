@@ -365,8 +365,7 @@ class DataLoader:
                     statement = self.get_upsert_statement(node_type, id_field, obj)
                 elif loading_mode == NEW_MODE:
                     if self.node_exists(session, node_type, id_field, node_id):
-                        self.log.error('Node (:{} {{ {}: {} }}) exists! Abort loading!'.format(node_type, id_field, node_id))
-                        return False
+                        raise Exception('Line: {}: Node (:{} {{ {}: {} }}) exists! Abort loading!'.format(line_num, node_type, id_field, node_id))
                     else:
                         statement = self.get_new_statement(node_type, obj)
 
