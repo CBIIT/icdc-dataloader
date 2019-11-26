@@ -368,6 +368,8 @@ class DataLoader:
                         raise Exception('Line: {}: Node (:{} {{ {}: {} }}) exists! Abort loading!'.format(line_num, node_type, id_field, node_id))
                     else:
                         statement = self.get_new_statement(node_type, obj)
+                else:
+                    raise Exception('Wrong loading_mode: {}'.format(loading_mode))
 
                 result = session.run(statement, obj)
                 count = result.summary().counters.nodes_created
@@ -415,7 +417,7 @@ class DataLoader:
                                                                                                    value))
                 else:
                     if multiplier == ONE_TO_ONE and self.parent_already_has_child(session, node_type, obj, relationship_name, other_node, other_id, value):
-                        self.log.warning('Line: {}: one_to_one relationship failed, parent already has a child!'.format(line_num))
+                        self.log.error('Line: {}: one_to_one relationship failed, parent already has a child!'.format(line_num))
                     else:
                         relationships.append({PARENT_TYPE: other_node, PARENT_ID_FIELD: other_id, PARENT_ID: value,
                                           RELATIONSHIP_TYPE: relationship_name, MULTIPLIER: multiplier})
@@ -437,30 +439,41 @@ class DataLoader:
 
         return False
 
-
-    def remove_old_relationship(self, session, node_type, node, relationship):
+    # Check if a relationship of same type exists, if so, return a statement which can delete it, otherwise return False
+    def has_existing_relationship(self, session, node_type, node, relationship, count_same_parent=False):
         relationship_name = relationship[RELATIONSHIP_TYPE]
         parent_type = relationship[PARENT_TYPE]
         parent_id_field = relationship[PARENT_ID_FIELD]
 
-        base_statement = 'MATCH (n:{0} {{ {1}: {{{1}}} }})-[r:{2}]->(m:{3})'.format(node_type, self.schema.get_id_field(node), relationship_name, parent_type)
+        base_statement = 'MATCH (n:{0} {{ {1}: {{{1}}} }})-[r:{2}]->(m:{3})'.format(node_type,
+                                                                                    self.schema.get_id_field(node),
+                                                                                    relationship_name, parent_type)
         statement = base_statement + ' return m.{} AS {}'.format(parent_id_field, PARENT_ID)
         result = session.run(statement, node)
         if result:
             old_parent = result.single()
             if old_parent:
-                old_parent_id = old_parent[PARENT_ID]
-                if old_parent_id != relationship[PARENT_ID]:
-                    self.log.warning('Old parent is different from new parent, delete relationship to old parent:'
-                                     + ' (:{} {{ {}: "{}" }})!'.format(parent_type, parent_id_field, old_parent_id))
+                if count_same_parent:
                     del_statement = base_statement + ' delete r'
-                    del_result = session.run(del_statement, node)
-                    if not del_result:
-                        self.log.error('Delete old relationship failed!')
+                    return del_statement
+                else:
+                    old_parent_id = old_parent[PARENT_ID]
+                    if old_parent_id != relationship[PARENT_ID]:
+                        self.log.warning('Old parent is different from new parent, delete relationship to old parent:'
+                                         + ' (:{} {{ {}: "{}" }})!'.format(parent_type, parent_id_field, old_parent_id))
+                        del_statement = base_statement + ' delete r'
+                        return del_statement
         else:
             self.log.error('Remove old relationship failed: Query old relationship failed!')
 
+        return False
 
+    def remove_old_relationship(self, session, node_type, node, relationship):
+        del_statement = self.has_existing_relationship(session, node_type, node, relationship)
+        if del_statement:
+            del_result = session.run(del_statement, node)
+            if not del_result:
+                self.log.error('Delete old relationship failed!')
 
     def load_relationships(self, session, file_name, loading_mode):
         self.log.info('Loading relationships from file: {}'.format(file_name))
@@ -488,7 +501,13 @@ class DataLoader:
                         parent_node = relationship[PARENT_TYPE]
                         parent_id_field = relationship[PARENT_ID_FIELD]
                         if multiplier in [DEFAULT_MULTIPLIER, ONE_TO_ONE]:
-                            self.remove_old_relationship(session, node_type, obj, relationship)
+                            if loading_mode == UPSERT_MODE:
+                                self.remove_old_relationship(session, node_type, obj, relationship)
+                            elif loading_mode == NEW_MODE:
+                                if self.has_existing_relationship(session, node_type, obj, relationship):
+                                    raise Exception('Line: {}: Relationship already exists, abort loading!')
+                            else:
+                                raise Exception('Wrong loading_mode: {}'.format(loading_mode))
                         else:
                             self.log.info('Multiplier: {}, no action needed!'.format(multiplier))
                         statement = 'MATCH (m:{0} {{ {1}: {{{1}}} }}) '.format(parent_node, parent_id_field)
