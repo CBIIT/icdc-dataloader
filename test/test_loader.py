@@ -42,7 +42,7 @@ class TestLoader(unittest.TestCase):
         self.assertTrue(result)
 
     def test_duplicated_ids(self):
-        self.assertTrue(self.loader.validate_file('data/NCATS/NCATS-COP01-case.txt', 10))
+        self.assertTrue(self.loader.validate_file('data/Dataset/NCATS-COP01-case.txt', 10))
         self.assertFalse(self.loader.validate_file('data/NCATS01-case-dup.txt', 10))
 
     def test_get_signature(self):
