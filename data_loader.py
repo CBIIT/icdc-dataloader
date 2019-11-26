@@ -504,8 +504,8 @@ class DataLoader:
                             if loading_mode == UPSERT_MODE:
                                 self.remove_old_relationship(session, node_type, obj, relationship)
                             elif loading_mode == NEW_MODE:
-                                if self.has_existing_relationship(session, node_type, obj, relationship):
-                                    raise Exception('Line: {}: Relationship already exists, abort loading!')
+                                if self.has_existing_relationship(session, node_type, obj, relationship, True):
+                                    raise Exception('Line: {}: Relationship already exists, abort loading!'.format(line_num))
                             else:
                                 raise Exception('Wrong loading_mode: {}'.format(loading_mode))
                         else:
