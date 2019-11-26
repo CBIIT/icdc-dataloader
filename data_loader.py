@@ -494,11 +494,12 @@ class DataLoader:
         if NODE_TYPE not in src:
             self.log.error('Line: {}: Given object doesn\'t have a "{}" field!'.format(line_num, NODE_TYPE))
             return False
-        statement = 'MERGE (v:{} {{ {}: {{node_id}}, {}: {{date}}, {}: true }})'.format(VISIT_NODE, VISIT_ID, VISIT_DATE, INFERRED)
+        statement = 'MERGE (v:{} {{ {}: {{node_id}}, {}: {{date}}, {}: true, {}: {{{}}} }})'.format(
+            VISIT_NODE, VISIT_ID, VISIT_DATE, INFERRED, UUID, UUID)
         statement += ' ON CREATE SET v.{} = datetime()'.format(CREATED)
         statement += ' ON MATCH SET v.{} = datetime()'.format(UPDATED)
 
-        result = session.run(statement, {"node_id": node_id, "date": date})
+        result = session.run(statement, {"node_id": node_id, "date": date, UUID: get_uuid_for_node(VISIT_NODE, node_id)})
         if result:
             count = result.summary().counters.nodes_created
             self.nodes_created += count
