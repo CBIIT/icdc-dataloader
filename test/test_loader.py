@@ -1,9 +1,10 @@
 import unittest
 import os
-from utils import get_logger, removeTrailingSlash, UUID
+from utils import get_logger, removeTrailingSlash, UUID, NODES_CREATED, RELATIONSHIP_CREATED
 from data_loader import DataLoader
 from icdc_schema import ICDC_Schema
 from neo4j import GraphDatabase
+
 
 
 class TestLoader(unittest.TestCase):
@@ -17,6 +18,13 @@ class TestLoader(unittest.TestCase):
         self.schema = ICDC_Schema(['data/icdc-model.yml', 'data/icdc-model-props.yml'])
         self.log = get_logger('Test Loader')
         self.loader = DataLoader(self.driver, self.schema)
+        self.file_list = [
+            "data/Dataset/COP-program.txt",
+            "data/Dataset/NCATS-COP01-case.txt",
+            "data/Dataset/NCATS-COP01-diagnosis.txt",
+            "data/Dataset/NCATS-COP01_cohort_file.txt",
+            "data/Dataset/NCATS-COP01_study_file.txt"
+        ]
 
     def test_remove_traling_slash(self):
         self.assertEqual('abc', removeTrailingSlash('abc/'))
@@ -35,7 +43,8 @@ class TestLoader(unittest.TestCase):
         self.assertIsInstance(self.loader, DataLoader)
 
     def test_validate_parents_exist_in_file(self):
-        # result = loader.validate_parents_exit_in_file('data/Pathology-Report-Mapping-File.txt', 100)
+        load_result = self.loader.load(self.file_list, True, False, 'upsert', False, 1)
+        self.assertIsInstance(load_result, dict, msg='Load data failed!')
         result = self.loader.validate_parents_exist_in_file('data/pathology-reports-failure.txt', 100)
         self.assertFalse(result)
         result = self.loader.validate_parents_exist_in_file('data/pathology-reports-success.txt', 100)

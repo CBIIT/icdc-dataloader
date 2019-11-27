@@ -1,12 +1,12 @@
 import unittest
-from utils import get_logger, NODES_CREATED, RELATIONSHIP_CREATED
+from utils import get_logger, NODES_CREATED, RELATIONSHIP_CREATED, NODES_DELETED, RELATIONSHIP_DELETED
 from data_loader import DataLoader
 from icdc_schema import ICDC_Schema
 import os
 from neo4j import GraphDatabase
 
 
-class TestLoader(unittest.TestCase):
+class TestLoaderReload(unittest.TestCase):
     def setUp(self):
         uri = 'bolt://localhost:7687'
         user = 'neo4j'
@@ -16,6 +16,7 @@ class TestLoader(unittest.TestCase):
         self.data_folder = 'data/COTC007B'
         self.schema = ICDC_Schema(['data/icdc-model.yml', 'data/icdc-model-props.yml'])
         self.log = get_logger('Test Loader')
+        self.loader = DataLoader(self.driver, self.schema)
         self.file_list = [
             "data/Dataset/COP-program.txt",
             "data/Dataset/COTC007B-case.txt",
@@ -87,23 +88,49 @@ class TestLoader(unittest.TestCase):
             "data/Dataset/NCATS-COP01_study_file.txt"
         ]
 
-    def test_load_detect_duplicate(self):
-        loader = DataLoader(self.driver, self.schema)
-        self.assertRaises(Exception, loader.load(["data/COTC007B/COTC007B-vital_signs.txt"], True, False, 'new', True, 1))
 
-    def test_reload_with_new(self):
-        loader = DataLoader(self.driver, self.schema)
-        load_result = loader.load(self.file_list_unique, True, False, 'new', True, 1)
+    def test_load_detect_duplicate(self):
+        self.assertRaises(Exception, self.loader.load(["data/COTC007B/COTC007B-vital_signs.txt"], True, False, 'new', True, 1))
+
+
+    def test_reload_with_new_and_delete_cohorts(self):
+        load_result = self.loader.load(self.file_list_unique, True, False, 'new', True, 1)
         self.assertIsInstance(load_result, dict, msg='Load data failed!')
         self.assertEqual(1832, load_result[NODES_CREATED])
         self.assertEqual(1974, load_result[RELATIONSHIP_CREATED])
+        result = self.loader.load(['data/Dataset/COTC007B-cohort.txt'], True, False, 'delete', False, 1)
+        self.assertEqual(result[NODES_DELETED], 18)
+        self.assertEqual(result[RELATIONSHIP_DELETED], 101)
+
+    def test_reload_with_new_and_delete_study(self):
+        load_result = self.loader.load(self.file_list_unique, True, False, 'new', True, 1)
+        self.assertIsInstance(load_result, dict, msg='Load data failed!')
+        self.assertEqual(1832, load_result[NODES_CREATED])
+        self.assertEqual(1974, load_result[RELATIONSHIP_CREATED])
+        result = self.loader.load(['data/Dataset/COTC007B-study.txt'], True, False, 'delete', False, 1)
+        self.assertEqual(result[NODES_DELETED], 1118)
+        self.assertEqual(result[RELATIONSHIP_DELETED], 1201)
+
+        result = self.loader.load(['data/Dataset/NCATS-COP01_study_file.txt'], True, False, 'delete', False, 1)
+        self.assertEqual(result[NODES_DELETED], 713)
+        self.assertEqual(result[RELATIONSHIP_DELETED], 773)
+
+    def test_reload_with_new_and_delete_program(self):
+        load_result = self.loader.load(self.file_list_unique, True, False, 'new', True, 1)
+        self.assertIsInstance(load_result, dict, msg='Load data failed!')
+        self.assertEqual(1832, load_result[NODES_CREATED])
+        self.assertEqual(1974, load_result[RELATIONSHIP_CREATED])
+        result = self.loader.load(['data/Dataset/COP-program.txt'], True, False, 'delete', False, 1)
+        self.assertEqual(result[NODES_DELETED], 1832)
+        self.assertEqual(result[RELATIONSHIP_DELETED], 1974)
+
 
     def test_reload_upsert(self):
-        loader = DataLoader(self.driver, self.schema)
-        load_result = loader.load(self.file_list, True, False, 'upsert', True, 1)
+        load_result = self.loader.load(self.file_list, True, False, 'upsert', True, 1)
         self.assertIsInstance(load_result, dict, msg='Load data failed!')
         self.assertEqual(1832, load_result[NODES_CREATED])
         self.assertEqual(1974, load_result[RELATIONSHIP_CREATED])
+
 
 
 if __name__ == '__main__':
