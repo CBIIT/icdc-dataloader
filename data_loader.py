@@ -6,11 +6,12 @@ import re
 from neo4j import  Driver, Session, Transaction
 from utils import DATE_FORMAT, get_logger, NODES_CREATED, RELATIONSHIP_CREATED, UUID, get_uuid_for_node, \
     is_parent_pointer, RELATIONSHIP_TYPE, MULTIPLIER, ONE_TO_ONE, DEFAULT_MULTIPLIER, PROPS, UPSERT_MODE, \
-    NEW_MODE, DELETE_MODE
+    NEW_MODE, DELETE_MODE, NODES_DELETED, RELATIONSHIP_DELETED
 
 from timeit import default_timer as timer
 from icdc_schema import ICDC_Schema
 from datetime import datetime, timedelta
+from collections import deque
 
 NODE_TYPE = 'type'
 VISIT_NODE = 'visit'
@@ -118,8 +119,10 @@ class DataLoader:
             count = self.relationships_stat[rel]
             self.log.info('Relationship: [:{}] loaded: {}'.format(rel, count))
         self.log.info('{} nodes and {} relationships loaded!'.format(self.nodes_created, self.relationships_created))
+        self.log.info('{} nodes and {} relationships deleted!'.format(self.nodes_deleted, self.relationships_deleted))
         self.log.info('Loading time: {:.2f} seconds'.format(end - start))  # Time in seconds, e.g. 5.38091952400282
-        return {NODES_CREATED: self.nodes_created, RELATIONSHIP_CREATED: self.relationships_created}
+        return {NODES_CREATED: self.nodes_created, RELATIONSHIP_CREATED: self.relationships_created,
+                NODES_DELETED: self.nodes_deleted, RELATIONSHIP_DELETED: self.relationships_deleted}
 
 
 
@@ -342,16 +345,69 @@ class DataLoader:
         return statement
 
     # Delete a node and children with no other parents recursively
-    def delete_node(self):
-        pass
+    def delete_node(self, session, node):
+        delete_queue = deque([node])
+        node_deleted = 0
+        relationship_deleted = 0
+        while len(delete_queue) > 0:
+            root = delete_queue.popleft()
+            delete_queue.extend(self.get_children_with_single_parent(session, root))
+            n_deleted, r_deleted = self.delete_single_node(session, root)
+            node_deleted += n_deleted
+            relationship_deleted += r_deleted
+        return (node_deleted, relationship_deleted)
+
+
+    # Return children of node without other parents
+    def get_children_with_single_parent(self, session, node):
+        node_type = node[NODE_TYPE]
+        statement = 'MATCH (n:{0} {{ {1}: {{{1}}} }})<--(m)'.format(node_type, self.schema.get_id_field(node))
+        statement += ' WHERE NOT (n)<--(m)-->() RETURN m'
+        result = session.run(statement, node)
+        children = []
+        for obj in result:
+            children.append(self.get_node_from_result(obj, 'm'))
+        return children
+
+    @staticmethod
+    def get_node_from_result(record, name):
+        node = record.data()[name]
+        result = dict(node.items())
+        for label in node.labels:
+            result[NODE_TYPE] = label
+            break
+        return result
+
+
+    # Simple delete given node, and it's relationships
+    def delete_single_node(self, session, node):
+        node_type = node[NODE_TYPE]
+        statement = 'MATCH (n:{0} {{ {1}: {{{1}}} }}) detach delete n'.format(node_type, self.schema.get_id_field(node))
+        result = session.run(statement, node)
+        nodes_deleted = result.summary().counters.nodes_deleted
+        self.nodes_deleted += nodes_deleted
+        self.nodes_deleted_stat[node_type] = self.nodes_deleted_stat.get(node_type, 0) + nodes_deleted
+        relationship_deleted = result.summary().counters.relationships_deleted
+        self.relationships_deleted += relationship_deleted
+        return (nodes_deleted, relationship_deleted)
 
     # load file
     def load_nodes(self, session, file_name, loading_mode):
-        self.log.info('Loading nodes from file: {}'.format(file_name))
+        if loading_mode == NEW_MODE:
+            action_word = 'Loading new'
+        elif loading_mode == UPSERT_MODE:
+            action_word = 'Loading'
+        elif loading_mode == DELETE_MODE:
+            action_word = 'Deleting'
+        else:
+            raise Exception('Wrong loading_mode: {}'.format(loading_mode))
+        self.log.info('{} nodes from file: {}'.format(action_word, file_name))
 
         with open(file_name) as in_file:
             reader = csv.DictReader(in_file, delimiter='\t')
             nodes_created = 0
+            nodes_deleted = 0
+            relationship_deleted = 0
             line_num = 1
             for org_obj in reader:
                 line_num += 1
@@ -368,15 +424,24 @@ class DataLoader:
                         raise Exception('Line: {}: Node (:{} {{ {}: {} }}) exists! Abort loading!'.format(line_num, node_type, id_field, node_id))
                     else:
                         statement = self.get_new_statement(node_type, obj)
+                elif loading_mode == DELETE_MODE:
+                    n_deleted, r_deleted = self.delete_node(session, obj)
+                    nodes_deleted += n_deleted
+                    relationship_deleted += r_deleted
                 else:
                     raise Exception('Wrong loading_mode: {}'.format(loading_mode))
 
-                result = session.run(statement, obj)
-                count = result.summary().counters.nodes_created
-                self.nodes_created += count
-                nodes_created += count
-                self.nodes_stat[node_type] = self.nodes_stat.get(node_type, 0) + count
-            self.log.info('{} (:{}) node(s) loaded'.format(nodes_created, node_type))
+                if loading_mode != DELETE_MODE:
+                    result = session.run(statement, obj)
+                    count = result.summary().counters.nodes_created
+                    self.nodes_created += count
+                    nodes_created += count
+                    self.nodes_stat[node_type] = self.nodes_stat.get(node_type, 0) + count
+            if loading_mode == DELETE_MODE:
+                self.log.info('{} node(s) deleted'.format(nodes_deleted, node_type))
+                self.log.info('{} relationship(s) deleted'.format(relationship_deleted))
+            else:
+                self.log.info('{} (:{}) node(s) loaded'.format(nodes_created, node_type))
 
 
     def node_exists(self, session, label, prop, value):
@@ -476,7 +541,13 @@ class DataLoader:
                 self.log.error('Delete old relationship failed!')
 
     def load_relationships(self, session, file_name, loading_mode):
-        self.log.info('Loading relationships from file: {}'.format(file_name))
+        if loading_mode == NEW_MODE:
+            action_word = 'Loading new'
+        elif loading_mode == UPSERT_MODE:
+            action_word = 'Loading'
+        else:
+            raise Exception('Wrong loading_mode: {}'.format(loading_mode))
+        self.log.info('{} relationships from file: {}'.format(action_word, file_name))
 
         with open(file_name) as in_file:
             reader = csv.DictReader(in_file, delimiter='\t')
