@@ -149,7 +149,10 @@ def send_slack_message(messaage, log):
     if SLACK_URL:
         headers = {"Content-type": "application/json"}
         result = post(SLACK_URL, json=messaage, headers=headers)
-        log.info(result)
+        if not result or result.status_code != 200:
+            log.error('Sending Slack messages failed!')
+            if result:
+                log.error(result.content)
     else:
         log.error('Slack URL not set in configuration file!')
 
