@@ -2,7 +2,7 @@ import unittest
 import json
 import os
 from neo4j import GraphDatabase
-from raw_file_processor import FileProcessor
+from file_loader import FileLoader
 from icdc_schema import ICDC_Schema
 from data_loader import DataLoader
 
@@ -17,7 +17,7 @@ class TestLambda(unittest.TestCase):
 
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
         self.schema = ICDC_Schema(['data/icdc-model.yml', 'data/icdc-model-props.yml'])
-        self.processor = FileProcessor('', self.driver, self.schema, 'ming-icdc-file-loader', 'Final/Data_loader/Manifests')
+        self.processor = FileLoader('', self.driver, self.schema, 'ming-icdc-file-loader', 'Final/Data_loader/Manifests')
         self.loader = DataLoader(self.driver, self.schema)
         self.file_list = [
             "data/Dataset/COP-program.txt",

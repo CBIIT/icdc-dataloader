@@ -11,7 +11,8 @@ import tarfile
 import glob
 import os, sys
 from utils import UUID, INDEXD_GUID_PREFIX, get_uuid_for_node, INDEXD_MANIFEST_EXT, NODES_CREATED, RELATIONSHIP_CREATED,\
-                  TEMP_FOLDER, send_mail, VISIBILITY_TIMEOUT, removeTrailingSlash, PSWD_ENV, get_logger, UPSERT_MODE
+                  TEMP_FOLDER, send_mail, VISIBILITY_TIMEOUT, removeTrailingSlash, PSWD_ENV, get_logger, UPSERT_MODE, \
+                  send_slack_message
 from sqs import Queue, VisibilityExtender
 import json
 import csv
@@ -52,7 +53,7 @@ URL = 'url'
 MANIFEST_FIELDS = [GUID, MD5, SIZE, ACL, URL]
 
 
-class FileProcessor:
+class FileLoader:
     def __init__(self, queue_name, driver, schema, manifest_bucket, manifest_folder, dry_run=False):
         self.log = get_logger('File Processor')
         self.queue_name = queue_name
@@ -360,7 +361,7 @@ class FileProcessor:
                 extract_result = self.extract_file(bucket, key, final_path, temp_folder)
                 file_list = extract_result.get(FILES, {})
                 if not extract_result[END_NORMALLY]:
-                    msg = 'Extract RAW file "{}" failed'.format(key)
+                    msg = 'Extract RAW file "{}" failed\n'.format(key)
                     self.log.error(msg)
                     self.send_failure_email(msg)
                     succeeded = False
@@ -369,7 +370,7 @@ class FileProcessor:
                     manifests, indexd_manifests = self.process_manifest(temp_folder, file_list)
                     if not manifests:
                         self.log.error('Process manifest failed!')
-                        self.send_failure_email('Process manifest failed!')
+                        self.send_failure_email('Process manifest failed!\n')
                         continue
                     manifest_folder = os.path.dirname(key).replace(RAW_PREFIX, '')
                     self.upload_manifests(manifest_folder, manifests + indexd_manifests)
@@ -379,7 +380,7 @@ class FileProcessor:
                         self.send_success_email(key, final_path, file_list, [os.path.basename(x) for x in manifests], loading_result, end - start)
                     else:
                         self.log.error('Load manifests failed!')
-                        self.send_failure_email('Load manifests failed!')
+                        self.send_failure_email('Load manifests failed!\n')
             except Exception as e:
                 end = timer()
                 self.log.exception(e)
@@ -394,28 +395,33 @@ class FileProcessor:
 
 
     def send_success_email(self, file_name, final_path, file_list, manifests, loading_result, running_time):
-        content = 'S3 file processing succeeded!<br>\n'
-        content += 'File processed: {}<br>\n'.format(file_name)
-        content += 'Files extracted and uploaded to {}:<br>\n'.format(final_path)
-        content += '<br>\n'.join(file_list) + '<br>\n'
-        content += '=' * 70 + '<br>\n'
-        content += 'Manifests processed:<br>\n'
-        content += '<br>\n'.join(manifests) + '<br>\n'
+        content = '*S3 file processing succeeded!*\n'
+        content += '*File processed: {}*\n'.format(file_name)
+        content += 'Files extracted and uploaded to {}:\n'.format(final_path)
+        content += '\n'.join(file_list) + '\n'
+        content += '=' * 70 + '\n'
+        content += '*Manifests processed:*\n'
+        content += '\n'.join(manifests) + '\n'
         if loading_result:
-            content += '=' * 70 + '<br>\n'
-            content += 'File nodes created: {}<br>\n'.format(loading_result[NODES_CREATED])
-            content += 'Relationships created: {}<br>\n'.format(loading_result[RELATIONSHIP_CREATED])
-        content += 'Running time: {:.2f} seconds<br>\n'.format(running_time)
+            content += '=' * 70 + '\n'
+            content += '*File nodes created: {}*\n'.format(loading_result[NODES_CREATED])
+            content += '*Relationships created: {}*\n'.format(loading_result[RELATIONSHIP_CREATED])
+        content += '*Running time: {:.2f} seconds*\n'.format(running_time)
 
-        self.log.info('Sending success email...')
-        send_mail('S3 File Processing Succeeded!', content)
-        self.log.info('Success email sent')
+        self.log.info('Sending success message to Slack ...')
+        # send_mail('S3 File Processing Succeeded!', content)
+        send_slack_message({"text":  content}, self.log)
+
+        self.log.info('Success message sent')
 
     def send_failure_email(self, message):
-        content = str(message)
-        self.log.info('Sending failure email...')
-        send_mail('S3 File Processing FAILED!', content)
-        self.log.info('Failure email sent')
+        content = '*S3 File Processing FAILED!*\n'
+        content += str(message)
+        self.log.info('Sending failure message to Slack ...')
+        send_slack_message({"text": content}, self.log)
+        # send_mail('S3 File Processing FAILED!', content)
+        self.log.info('Failure message sent')
+
 
     def listen(self):
         self.queue = Queue(self.queue_name)
@@ -507,7 +513,7 @@ def main(args):
     try:
         schema = ICDC_Schema(args.schema)
         driver = neo4j.GraphDatabase.driver(uri, auth=(user, password))
-        processor = FileProcessor(args.queue, driver, schema, args.bucket, args.s3_folder, args.dry_run)
+        processor = FileLoader(args.queue, driver, schema, args.bucket, args.s3_folder, args.dry_run)
         processor.listen()
 
     except neo4j.ServiceUnavailable as err:

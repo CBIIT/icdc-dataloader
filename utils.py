@@ -10,6 +10,7 @@ from configparser import ConfigParser
 import yaml
 import subprocess
 from urllib.parse import urlparse
+from requests import post
 
 def get_logger(name):
     formatter = logging.Formatter('%(asctime)s %(levelname)s: (%(name)s) - %(message)s')
@@ -144,6 +145,15 @@ def check_schema_files(schemas, log):
             return False
     return True
 
+def send_slack_message(messaage, log):
+    if SLACK_URL:
+        headers = {"Content-type": "application/json"}
+        result = post(SLACK_URL, json=messaage, headers=headers)
+        log.info(result)
+    else:
+        log.error('Slack URL not set in configuration file!')
+
+
 config = ConfigParser()
 CONFIG_FILE_ENV_VAR = 'ICDC_DATA_LOADER_CONFIG'
 config_file = os.environ.get(CONFIG_FILE_ENV_VAR, 'config.ini')
@@ -185,6 +195,7 @@ TEMP_FOLDER = config.get('main', 'temp_folder')
 BACKUP_FOLDER = config.get('main', 'backup_folder')
 INDEXD_GUID_PREFIX = config.get('indexd', 'GUID_prefix')
 INDEXD_MANIFEST_EXT = config.get('indexd', 'ext')
+SLACK_URL = config.get('slack', 'url')
 if not INDEXD_MANIFEST_EXT.startswith('.'):
     INDEXD_MANIFEST_EXT = '.' + INDEXD_MANIFEST_EXT
 os.makedirs(BACKUP_FOLDER, exist_ok=True)
