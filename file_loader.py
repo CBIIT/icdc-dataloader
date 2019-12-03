@@ -398,10 +398,10 @@ class FileLoader:
         content = '*S3 file processing succeeded!*\n'
         content += '*File processed: {}*\n'.format(file_name)
         content += 'Files extracted and uploaded to {}:\n'.format(final_path)
-        content += '\n'.join(file_list) + '\n'
+        content += '\n'.join(['>' + f for f in file_list]) + '\n'
         content += '=' * 70 + '\n'
         content += '*Manifests processed:*\n'
-        content += '\n'.join(manifests) + '\n'
+        content += '\n'.join(['>' + f for f in manifests]) + '\n'
         if loading_result:
             content += '=' * 70 + '\n'
             content += '*File nodes created: {}*\n'.format(loading_result[NODES_CREATED])
