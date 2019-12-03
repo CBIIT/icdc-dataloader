@@ -1,6 +1,6 @@
 import unittest
 import os
-from utils import get_logger, removeTrailingSlash, UUID, NODES_CREATED, RELATIONSHIP_CREATED
+from utils import get_logger, removeTrailingSlash, UUID
 from data_loader import DataLoader
 from icdc_schema import ICDC_Schema
 from neo4j import GraphDatabase

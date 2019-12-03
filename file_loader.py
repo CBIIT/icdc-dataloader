@@ -11,7 +11,7 @@ import tarfile
 import glob
 import os, sys
 from utils import UUID, INDEXD_GUID_PREFIX, get_uuid_for_node, INDEXD_MANIFEST_EXT, NODES_CREATED, RELATIONSHIP_CREATED,\
-                  TEMP_FOLDER, send_mail, VISIBILITY_TIMEOUT, removeTrailingSlash, PSWD_ENV, get_logger, UPSERT_MODE, \
+                  TEMP_FOLDER, VISIBILITY_TIMEOUT, removeTrailingSlash, PSWD_ENV, get_logger, UPSERT_MODE, \
                   send_slack_message
 from sqs import Queue, VisibilityExtender
 import json

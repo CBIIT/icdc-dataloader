@@ -309,7 +309,8 @@ class DataLoader:
                         return False
             return not validation_failed
 
-    def get_new_statement(self, node_type, obj):
+    @staticmethod
+    def get_new_statement(node_type, obj):
         # statement is used to create current node
         prop_stmts = []
 
@@ -324,7 +325,8 @@ class DataLoader:
         statement = 'CREATE (:{0} {{ {1} }})'.format(node_type, ' ,'.join(prop_stmts))
         return statement
 
-    def get_upsert_statement(self, node_type, id_field, obj):
+    @staticmethod
+    def get_upsert_statement(node_type, id_field, obj):
         # statement is used to create current node
         statement = ''
         prop_stmts = []
@@ -438,7 +440,7 @@ class DataLoader:
                     nodes_created += count
                     self.nodes_stat[node_type] = self.nodes_stat.get(node_type, 0) + count
             if loading_mode == DELETE_MODE:
-                self.log.info('{} node(s) deleted'.format(nodes_deleted, node_type))
+                self.log.info('{} node(s) deleted'.format(nodes_deleted))
                 self.log.info('{} relationship(s) deleted'.format(relationship_deleted))
             else:
                 self.log.info('{} (:{}) node(s) loaded'.format(nodes_created, node_type))
