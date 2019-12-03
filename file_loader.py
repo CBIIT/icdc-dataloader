@@ -55,7 +55,7 @@ MANIFEST_FIELDS = [GUID, MD5, SIZE, ACL, URL]
 
 class FileLoader:
     def __init__(self, queue_name, driver, schema, manifest_bucket, manifest_folder, dry_run=False):
-        self.log = get_logger('File Processor')
+        self.log = get_logger('File Loader')
         self.queue_name = queue_name
         self.s3_client = boto3.client('s3')
         if not isinstance(driver, neo4j.Driver):
