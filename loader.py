@@ -78,6 +78,13 @@ def main():
     try:
         file_list = glob.glob('{}/*.txt'.format(directory))
         if file_list:
+            if args.wipe_db:
+                if not confirm_deletion('Wipe out entire Neo4j database before loading?'):
+                    sys.exit()
+
+            if args.mode == DELETE_MODE:
+                if not confirm_deletion('Delete all nodes and child nodes from data file?'):
+                    sys.exit()
             backup_name = datetime.datetime.today().strftime(DATETIME_FORMAT)
             host = get_host(uri)
             restore_cmd = ''
@@ -91,9 +98,6 @@ def main():
             if not args.dry_run:
                 driver = GraphDatabase.driver(uri, auth=(user, password))
             loader = DataLoader(driver, schema)
-            if args.wipe_db:
-                if not confirm_wipe_db():
-                    sys.exit()
 
             loader.load(file_list, args.cheat_mode, args.dry_run, args.mode, args.wipe_db, args.max_violations)
 
@@ -108,9 +112,9 @@ def main():
         log.exception(err)
         log.critical("Can't connect to Neo4j server at: \"{}\"".format(uri))
 
-def confirm_wipe_db():
-    print('Wipe out entire Neo4j database before loading?')
-    confirm = input('Type "yes" and press enter to proceed (You\'ll LOSE ALL DATA!!!), press enter to cancel:')
+def confirm_deletion(message):
+    print(message)
+    confirm = input('Type "yes" and press enter to proceed (You\'ll LOSE DATA!!!), press enter to cancel:')
     confirm = confirm.strip().lower()
     return confirm == 'yes'
 
