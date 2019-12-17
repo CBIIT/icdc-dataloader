@@ -24,6 +24,7 @@ def main():
     parser.add_argument('-d', '--dry-run', help='Validations only, skip loading', action='store_true')
     parser.add_argument('--wipe-db', help='Wipe out database before loading, you\'ll lose all data!', action='store_true')
     parser.add_argument('--no-backup', help='Skip backup step', action='store_true')
+    parser.add_argument('-y', '--yes', help='Automatically confirm deletion and database wiping', action='store_true')
     parser.add_argument('-M', '--max-violations', help='Max violations to display', nargs='?', type=int, default=10)
     parser.add_argument('-b', '--bucket', help='S3 bucket name')
     parser.add_argument('-f', '--s3-folder', help='S3 folder')
@@ -78,11 +79,11 @@ def main():
     try:
         file_list = glob.glob('{}/*.txt'.format(directory))
         if file_list:
-            if args.wipe_db:
+            if args.wipe_db and not args.yes:
                 if not confirm_deletion('Wipe out entire Neo4j database before loading?'):
                     sys.exit()
 
-            if args.mode == DELETE_MODE:
+            if args.mode == DELETE_MODE and not args.yes:
                 if not confirm_deletion('Delete all nodes and child nodes from data file?'):
                     sys.exit()
             backup_name = datetime.datetime.today().strftime(DATETIME_FORMAT)
