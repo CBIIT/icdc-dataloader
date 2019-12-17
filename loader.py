@@ -10,11 +10,7 @@ from data_loader import DataLoader
 from s3 import S3Bucket
 import datetime
 
-
-# Data loader will try to load all TSV(.TXT) files from given directory into Neo4j
-# optional arguments includes:
-# -i or --uri followed by Neo4j server address and port in format like bolt://12.34.56.78:7687
-def main():
+def parse_arguments():
     parser = argparse.ArgumentParser(description='Load TSV(TXT) files (from Pentaho) into Neo4j')
     parser.add_argument('-i', '--uri', help='Neo4j uri like bolt://12.34.56.78:7687')
     parser.add_argument('-u', '--user', help='Neo4j user')
@@ -22,18 +18,21 @@ def main():
     parser.add_argument('-s', '--schema', help='Schema files', action='append', required=True)
     parser.add_argument('-c', '--cheat-mode', help='Skip validations, aka. Cheat Mode', action='store_true')
     parser.add_argument('-d', '--dry-run', help='Validations only, skip loading', action='store_true')
-    parser.add_argument('--wipe-db', help='Wipe out database before loading, you\'ll lose all data!', action='store_true')
+    parser.add_argument('--wipe-db', help='Wipe out database before loading, you\'ll lose all data!',
+                        action='store_true')
     parser.add_argument('--no-backup', help='Skip backup step', action='store_true')
     parser.add_argument('-y', '--yes', help='Automatically confirm deletion and database wiping', action='store_true')
     parser.add_argument('-M', '--max-violations', help='Max violations to display', nargs='?', type=int, default=10)
     parser.add_argument('-b', '--bucket', help='S3 bucket name')
     parser.add_argument('-f', '--s3-folder', help='S3 folder')
-    parser.add_argument('-m', '--mode', help='Loading mode', choices=[UPSERT_MODE, NEW_MODE, DELETE_MODE], default=UPSERT_MODE)
+    parser.add_argument('-m', '--mode', help='Loading mode', choices=[UPSERT_MODE, NEW_MODE, DELETE_MODE],
+                        default=UPSERT_MODE)
     parser.add_argument('dir', help='Data directory')
 
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    log = get_logger('Loader')
+
+def process_arguments(args, log):
     directory = args.dir
     if args.s3_folder:
         if not os.path.exists(directory):
@@ -43,7 +42,6 @@ def main():
             if len(exist_files) > 0:
                 log.error('Folder: "{}" is not empty, please empty it first'.format(directory))
                 sys.exit(1)
-
 
     if args.s3_folder:
         if not args.bucket:
@@ -67,11 +65,23 @@ def main():
     password = args.password
     if not password:
         if PSWD_ENV not in os.environ:
-            log.error('Password not specified! Please specify password with -p or --password argument, or set {} env var'.format(PSWD_ENV))
+            log.error('Password not specified! Please specify password with -p or --password argument,' +
+                      ' or set {} env var'.format(PSWD_ENV))
             sys.exit(1)
         else:
             password = os.environ[PSWD_ENV]
     user = args.user if args.user else 'neo4j'
+    return (user, password, directory, uri)
+
+
+# Data loader will try to load all TSV(.TXT) files from given directory into Neo4j
+# optional arguments includes:
+# -i or --uri followed by Neo4j server address and port in format like bolt://12.34.56.78:7687
+def main():
+    log = get_logger('Loader')
+    args = parse_arguments()
+    user, password, directory, uri = process_arguments(args, log)
+
 
     if not check_schema_files(args.schema, log):
         sys.exit(1)
