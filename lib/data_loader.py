@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 
 import os
+from collections import deque
 import csv
+from datetime import datetime, timedelta
 import re
+
 from neo4j import  Driver, Session, Transaction
-from lib.utils import DATE_FORMAT, get_logger, NODES_CREATED, RELATIONSHIP_CREATED, UUID, get_uuid_for_node, \
+from timeit import default_timer as timer
+
+from .icdc_schema import ICDC_Schema
+from .utils import DATE_FORMAT, get_logger, NODES_CREATED, RELATIONSHIP_CREATED, UUID, get_uuid_for_node, \
     is_parent_pointer, RELATIONSHIP_TYPE, MULTIPLIER, ONE_TO_ONE, DEFAULT_MULTIPLIER, PROPS, UPSERT_MODE, \
     NEW_MODE, DELETE_MODE, NODES_DELETED, RELATIONSHIP_DELETED
-
-from timeit import default_timer as timer
-from lib.icdc_schema import ICDC_Schema
-from datetime import datetime, timedelta
-from collections import deque
 
 NODE_TYPE = 'type'
 VISIT_NODE = 'visit'
