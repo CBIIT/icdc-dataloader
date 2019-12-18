@@ -1,5 +1,5 @@
 import unittest
-from utils import get_uuid_for_node
+from lib.utils import get_uuid_for_node
 
 class TestUtils(unittest.TestCase):
     def test_uuid(self):

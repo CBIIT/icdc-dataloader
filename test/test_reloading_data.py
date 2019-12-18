@@ -1,7 +1,7 @@
 import unittest
-from utils import get_logger, NODES_CREATED, RELATIONSHIP_CREATED, NODES_DELETED, RELATIONSHIP_DELETED
-from data_loader import DataLoader
-from icdc_schema import ICDC_Schema
+from lib.utils import get_logger, NODES_CREATED, RELATIONSHIP_CREATED, NODES_DELETED, RELATIONSHIP_DELETED
+from lib.data_loader import DataLoader
+from lib.icdc_schema import ICDC_Schema
 import os
 from neo4j import GraphDatabase
 

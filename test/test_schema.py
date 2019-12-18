@@ -1,5 +1,5 @@
 import unittest
-from icdc_schema import ICDC_Schema
+from lib.icdc_schema import ICDC_Schema
 
 
 class TestSchema(unittest.TestCase):
