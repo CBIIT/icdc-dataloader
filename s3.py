@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import boto3
 import botocore
-from utils import get_logger
+from .utils import get_logger
 import os
 
 class S3Bucket:

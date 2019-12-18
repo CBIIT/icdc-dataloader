@@ -1,7 +1,7 @@
 import os
 import yaml
 import sys
-from utils import get_logger, MULTIPLIER, DEFAULT_MULTIPLIER, RELATIONSHIP_TYPE, is_parent_pointer, DATE_FORMAT, PROPS
+from .utils import get_logger, MULTIPLIER, DEFAULT_MULTIPLIER, RELATIONSHIP_TYPE, is_parent_pointer, DATE_FORMAT, PROPS
 import re
 from datetime import datetime
 
