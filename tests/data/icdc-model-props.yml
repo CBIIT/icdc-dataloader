@@ -350,7 +350,7 @@ PropDefinitions:
     Type: TBD
 # enrollment props
   cohort_description:
-    Desc: essentially, the name of the agent under test and the dose at which it is being used
+    Desc: essentially, the name of the agent under tests and the dose at which it is being used
     Src: ENROLLMENT/ENROLL/1
     Type: string
   date_of_informed_consent:

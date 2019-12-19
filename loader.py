@@ -3,11 +3,11 @@ import os, sys
 import glob
 import argparse
 from neo4j import GraphDatabase, ServiceUnavailable
-from lib.icdc_schema import ICDC_Schema
-from lib.utils import get_logger, removeTrailingSlash, PSWD_ENV, check_schema_files, DATETIME_FORMAT, get_host, \
+from common.icdc_schema import ICDC_Schema
+from common.utils import get_logger, removeTrailingSlash, PSWD_ENV, check_schema_files, DATETIME_FORMAT, get_host, \
     backup_neo4j, BACKUP_FOLDER, UPSERT_MODE, NEW_MODE, DELETE_MODE
-from lib.data_loader import DataLoader
-from lib.s3 import S3Bucket
+from common.data_loader import DataLoader
+from common.s3 import S3Bucket
 import datetime
 
 def parse_arguments():

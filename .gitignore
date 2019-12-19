@@ -6,6 +6,6 @@ Pentaho-scripts/
 __pycache__/
 *.pyc
 cmd.txt
-test/temp
-config.ini
+tests/temp
+config/config.ini
 backup/

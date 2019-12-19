@@ -10,19 +10,19 @@ import zipfile
 import tarfile
 import glob
 import os, sys
-from lib.utils import UUID, INDEXD_GUID_PREFIX, get_uuid_for_node, INDEXD_MANIFEST_EXT, NODES_CREATED, RELATIONSHIP_CREATED,\
+from common.utils import UUID, INDEXD_GUID_PREFIX, get_uuid_for_node, INDEXD_MANIFEST_EXT, NODES_CREATED, RELATIONSHIP_CREATED,\
                   TEMP_FOLDER, VISIBILITY_TIMEOUT, removeTrailingSlash, PSWD_ENV, get_logger, UPSERT_MODE, \
                   send_slack_message
-from lib.sqs import Queue, VisibilityExtender
+from common.sqs import Queue, VisibilityExtender
 import json
 import csv
 import hashlib
 import argparse
 import re
 import shutil
-from lib.data_loader import DataLoader
+from common.data_loader import DataLoader
 import neo4j
-from lib.icdc_schema import ICDC_Schema
+from common.icdc_schema import ICDC_Schema
 from timeit import default_timer as timer
 
 RAW_PREFIX = 'RAW'

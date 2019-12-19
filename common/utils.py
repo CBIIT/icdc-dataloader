@@ -159,7 +159,7 @@ def send_slack_message(messaage, log):
 
 config = ConfigParser()
 CONFIG_FILE_ENV_VAR = 'ICDC_DATA_LOADER_CONFIG'
-config_file = os.environ.get(CONFIG_FILE_ENV_VAR, 'config.ini')
+config_file = os.environ.get(CONFIG_FILE_ENV_VAR, 'config/config.ini')
 if config_file and os.path.isfile(config_file):
     config.read(config_file)
 else:
@@ -169,7 +169,7 @@ else:
     sys.exit(1)
 
 PROP_FILE_ENV_VAR = 'ICDC_DATA_LOADER_PROP'
-property_file = os.environ.get(PROP_FILE_ENV_VAR, 'props.yml')
+property_file = os.environ.get(PROP_FILE_ENV_VAR, 'config/props.yml')
 util_log = get_logger('Utils')
 if property_file and os.path.isfile(property_file):
     with open(property_file) as prop_file:
