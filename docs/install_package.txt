@@ -1,5 +1,0 @@
-pip install pyyaml
-pip install neo4j
-pip install boto3
-pip install hashlib
-pip install requests
