@@ -1,5 +1,5 @@
 import unittest
-from common.utils import get_uuid_for_node
+from common.icdc_schema import get_uuid_for_node
 
 class TestUtils(unittest.TestCase):
     def test_uuid(self):

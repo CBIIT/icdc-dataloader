@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
-import os, sys
-import glob
 import argparse
+import datetime
+import glob
+import os, sys
+import subprocess
+
 from neo4j import GraphDatabase, ServiceUnavailable
+
 from common.icdc_schema import ICDC_Schema
-from common.utils import get_logger, removeTrailingSlash, PSWD_ENV, check_schema_files, DATETIME_FORMAT, get_host, \
-    backup_neo4j, BACKUP_FOLDER, UPSERT_MODE, NEW_MODE, DELETE_MODE
+from common.utils import get_logger, removeTrailingSlash, check_schema_files, DATETIME_FORMAT, get_host, \
+     UPSERT_MODE, NEW_MODE, DELETE_MODE
+from common.config import BACKUP_FOLDER, PSWD_ENV
 from common.data_loader import DataLoader
 from common.s3 import S3Bucket
-import datetime
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Load TSV(TXT) files (from Pentaho) into Neo4j')
@@ -73,6 +77,42 @@ def process_arguments(args, log):
     user = args.user if args.user else 'neo4j'
     return (user, password, directory, uri)
 
+
+def backup_neo4j(backup_dir, name, address, log):
+    try:
+        restore_cmd = 'To restore DB from backup (to remove any changes caused by current data loading, run following commands:\n'
+        restore_cmd += '#' * 160 + '\n'
+        neo4j_cmd = 'neo4j-admin restore --from={}/{} --force'.format(BACKUP_FOLDER, name)
+        cmds = [
+            [
+                'mkdir',
+                '-p',
+                backup_dir
+            ],
+            [
+                'neo4j-admin',
+                'backup',
+                '--backup-dir={}'.format(backup_dir),
+                '--name={}'.format(name),
+            ]
+        ]
+        if address in ['localhost', '127.0.0.1']:
+            restore_cmd += '\t$ neo4j stop && {} && neo4j start\n'.format(neo4j_cmd)
+            for cmd in cmds:
+                log.info(cmd)
+                subprocess.call(cmd)
+        else:
+            second_cmd = 'sudo systemctl stop neo4j && {} && sudo systemctl start neo4j && exit'.format(neo4j_cmd)
+            restore_cmd += '\t$ echo "{}" | ssh -t {} sudo su - neo4j\n'.format(second_cmd, address)
+            for cmd in cmds:
+                remote_cmd = ['ssh', address] + cmd
+                log.info(' '.join(remote_cmd))
+                subprocess.call(remote_cmd)
+        restore_cmd += '#' * 160
+        return restore_cmd
+    except Exception as e:
+        log.exception(e)
+        return False
 
 # Data loader will try to load all TSV(.TXT) files from given directory into Neo4j
 # optional arguments includes:

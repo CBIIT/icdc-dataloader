@@ -2,10 +2,12 @@ from datetime import datetime
 import os
 import re
 import sys
+import uuid
 
 import yaml
 
-from .utils import get_logger, MULTIPLIER, DEFAULT_MULTIPLIER, RELATIONSHIP_TYPE, is_parent_pointer, DATE_FORMAT, PROPS
+from .utils import get_logger, MULTIPLIER, DEFAULT_MULTIPLIER, RELATIONSHIP_TYPE, is_parent_pointer, DATE_FORMAT
+from .config import ICDC_DOMAIN, PROPS
 
 NODES = 'Nodes'
 RELATIONSHIPS = 'Relationships'
@@ -25,6 +27,25 @@ NODE_TYPE = 'type'
 ENUM = 'enum'
 DEFAULT_VALUE = 'default_value'
 HAS_UNIT = 'has_unit'
+
+
+def get_uuid_for_node(node_type, signature):
+    """Generate V5 UUID for a node
+    Arguments:
+        node_type - a string represents type of a node, e.g. case, study, file etc.
+        signature - a string that can uniquely identify a node within it's type, e.g. case_id, clinical_study_designation etc.
+                    or a long string with all properties and values concat together if no id available
+
+    """
+    log = get_logger('Utils')
+    icdc_base_uuid = uuid.uuid5(uuid.NAMESPACE_URL, ICDC_DOMAIN)
+    # log.debug('Base UUID: {}'.format(icdc_base_uuid))
+    type_uuid = uuid.uuid5(icdc_base_uuid, node_type)
+    # log.debug('Type UUID: {}'.format(type_uuid))
+    node_uuid = uuid.uuid5(type_uuid, signature)
+    log.debug('Node UUID: {}'.format(node_uuid))
+    return str(node_uuid)
+
 
 class ICDC_Schema:
     def __init__(self, files):

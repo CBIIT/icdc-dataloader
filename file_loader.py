@@ -2,28 +2,31 @@
 # This file is used to unzip/untar raw files, populate manifest then call data loader
 # It will listen on SQS for incoming messages sent by S3, to process new files
 
-import boto3
-from botocore.exceptions import ClientError
+import glob
+import os, sys
+import tarfile
 import uuid
 from urllib.parse import unquote_plus
 import zipfile
-import tarfile
-import glob
-import os, sys
-from common.utils import UUID, INDEXD_GUID_PREFIX, get_uuid_for_node, INDEXD_MANIFEST_EXT, NODES_CREATED, RELATIONSHIP_CREATED,\
-                  TEMP_FOLDER, VISIBILITY_TIMEOUT, removeTrailingSlash, PSWD_ENV, get_logger, UPSERT_MODE, \
-                  send_slack_message
-from common.sqs import Queue, VisibilityExtender
 import json
 import csv
 import hashlib
 import argparse
 import re
 import shutil
-from common.data_loader import DataLoader
-import neo4j
-from common.icdc_schema import ICDC_Schema
 from timeit import default_timer as timer
+
+import neo4j
+import boto3
+from botocore.exceptions import ClientError
+
+from common.utils import UUID, NODES_CREATED, RELATIONSHIP_CREATED, removeTrailingSlash,\
+    get_logger, UPSERT_MODE
+from common.config import INDEXD_GUID_PREFIX, INDEXD_MANIFEST_EXT, VISIBILITY_TIMEOUT, \
+    TEMP_FOLDER, PSWD_ENV, send_slack_message
+from common.sqs import Queue, VisibilityExtender
+from common.data_loader import DataLoader
+from common.icdc_schema import ICDC_Schema, get_uuid_for_node
 
 RAW_PREFIX = 'RAW'
 FINAL_PREFIX = 'Final'
@@ -409,7 +412,6 @@ class FileLoader:
         content += '*Running time: {:.2f} seconds*\n'.format(running_time)
 
         self.log.info('Sending success message to Slack ...')
-        # send_mail('S3 File Processing Succeeded!', content)
         send_slack_message({"text":  content}, self.log)
 
         self.log.info('Success message sent')
@@ -419,7 +421,6 @@ class FileLoader:
         content += str(message)
         self.log.info('Sending failure message to Slack ...')
         send_slack_message({"text": content}, self.log)
-        # send_mail('S3 File Processing FAILED!', content)
         self.log.info('Failure message sent')
 
 
