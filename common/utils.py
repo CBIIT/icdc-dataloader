@@ -3,6 +3,8 @@ import os
 import re
 from urllib.parse import urlparse
 
+from requests import post
+
 
 def get_logger(name):
     formatter = logging.Formatter('%(asctime)s %(levelname)s: (%(name)s) - %(message)s')
@@ -40,6 +42,18 @@ def check_schema_files(schemas, log):
             log.error('{} is not a file'.format(schema_file))
             return False
     return True
+
+
+def send_slack_message(url, messaage, log):
+    if url:
+        headers = {"Content-type": "application/json"}
+        result = post(url, json=messaage, headers=headers)
+        if not result or result.status_code != 200:
+            log.error('Sending Slack messages failed!')
+            if result:
+                log.error(result.content)
+    else:
+        log.error('Slack URL not set in configuration file!')
 
 
 NODES_CREATED = 'nodes_created'

@@ -21,9 +21,9 @@ import boto3
 from botocore.exceptions import ClientError
 
 from common.utils import UUID, NODES_CREATED, RELATIONSHIP_CREATED, removeTrailingSlash,\
-    get_logger, UPSERT_MODE
+    get_logger, UPSERT_MODE, send_slack_message
 from common.config import INDEXD_GUID_PREFIX, INDEXD_MANIFEST_EXT, VISIBILITY_TIMEOUT, \
-    TEMP_FOLDER, PSWD_ENV, send_slack_message
+    TEMP_FOLDER, PSWD_ENV, SLACK_URL
 from common.sqs import Queue, VisibilityExtender
 from common.data_loader import DataLoader
 from common.icdc_schema import ICDC_Schema, get_uuid_for_node
@@ -412,7 +412,7 @@ class FileLoader:
         content += '*Running time: {:.2f} seconds*\n'.format(running_time)
 
         self.log.info('Sending success message to Slack ...')
-        send_slack_message({"text":  content}, self.log)
+        send_slack_message(SLACK_URL, {"text":  content}, self.log)
 
         self.log.info('Success message sent')
 

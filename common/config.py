@@ -1,7 +1,6 @@
 from configparser import ConfigParser
 import os, sys
 
-from requests import post
 import yaml
 
 from .utils import get_logger
@@ -39,7 +38,6 @@ SLACK_URL = config.get('slack', 'url')
 
 PROP_FILE_ENV_VAR = 'ICDC_DATA_LOADER_PROP'
 property_file = os.environ.get(PROP_FILE_ENV_VAR, 'config/props.yml')
-util_log = get_logger('Utils')
 if property_file and os.path.isfile(property_file):
     with open(property_file) as prop_file:
         PROPS = yaml.safe_load(prop_file)['Properties']
@@ -52,13 +50,4 @@ else:
             PROP_FILE_ENV_VAR))
     sys.exit(1)
 
-def send_slack_message(messaage, log):
-    if SLACK_URL:
-        headers = {"Content-type": "application/json"}
-        result = post(SLACK_URL, json=messaage, headers=headers)
-        if not result or result.status_code != 200:
-            log.error('Sending Slack messages failed!')
-            if result:
-                log.error(result.content)
-    else:
-        log.error('Slack URL not set in configuration file!')
+
