@@ -7,12 +7,12 @@ import subprocess
 
 from neo4j import GraphDatabase, ServiceUnavailable
 
-from common.icdc_schema import ICDC_Schema
-from common.utils import get_logger, removeTrailingSlash, check_schema_files, DATETIME_FORMAT, get_host, \
+from bento.common.icdc_schema import ICDC_Schema
+from bento.common.utils import get_logger, removeTrailingSlash, check_schema_files, DATETIME_FORMAT, get_host, \
      UPSERT_MODE, NEW_MODE, DELETE_MODE
-from common.config import BACKUP_FOLDER, PSWD_ENV
-from common.data_loader import DataLoader
-from common.s3 import S3Bucket
+from bento.common.config import BACKUP_FOLDER, PSWD_ENV
+from bento.common.data_loader import DataLoader
+from bento.common.s3 import S3Bucket
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Load TSV(TXT) files (from Pentaho) into Neo4j')

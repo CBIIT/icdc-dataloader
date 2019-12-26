@@ -4,8 +4,8 @@
 
 import argparse
 import sys
-from common.icdc_schema import ICDC_Schema, PROP_TYPE
-from common.utils import check_schema_files, get_logger
+from bento.common.icdc_schema import ICDC_Schema, PROP_TYPE
+from bento.common.utils import check_schema_files, get_logger
 
 
 if __name__ == '__main__':

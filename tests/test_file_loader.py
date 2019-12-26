@@ -3,8 +3,8 @@ import json
 import os
 from neo4j import GraphDatabase
 from file_loader import FileLoader
-from common.icdc_schema import ICDC_Schema
-from common.data_loader import DataLoader
+from bento.common.icdc_schema import ICDC_Schema
+from bento.common.data_loader import DataLoader
 
 
 class TestLambda(unittest.TestCase):

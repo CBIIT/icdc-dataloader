@@ -1,5 +1,5 @@
 import unittest
-from common.icdc_schema import ICDC_Schema
+from bento.common.icdc_schema import ICDC_Schema
 
 
 class TestSchema(unittest.TestCase):

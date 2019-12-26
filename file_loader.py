@@ -20,13 +20,13 @@ import neo4j
 import boto3
 from botocore.exceptions import ClientError
 
-from common.utils import UUID, NODES_CREATED, RELATIONSHIP_CREATED, removeTrailingSlash,\
+from bento.common.utils import UUID, NODES_CREATED, RELATIONSHIP_CREATED, removeTrailingSlash,\
     get_logger, UPSERT_MODE, send_slack_message
-from common.config import INDEXD_GUID_PREFIX, INDEXD_MANIFEST_EXT, VISIBILITY_TIMEOUT, \
+from bento.common.config import INDEXD_GUID_PREFIX, INDEXD_MANIFEST_EXT, VISIBILITY_TIMEOUT, \
     TEMP_FOLDER, PSWD_ENV, SLACK_URL
-from common.sqs import Queue, VisibilityExtender
-from common.data_loader import DataLoader
-from common.icdc_schema import ICDC_Schema, get_uuid_for_node
+from bento.common.sqs import Queue, VisibilityExtender
+from bento.common.data_loader import DataLoader
+from bento.common.icdc_schema import ICDC_Schema, get_uuid_for_node
 
 RAW_PREFIX = 'RAW'
 FINAL_PREFIX = 'Final'
