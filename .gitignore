@@ -8,4 +8,5 @@ __pycache__/
 cmd.txt
 tests/temp
 config/config.ini
+config/props.yml
 backup/
