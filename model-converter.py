@@ -29,7 +29,7 @@ if __name__ == '__main__':
     with open(args.graphql, 'w') as graphql_file:
         # Output Types
         for name in schema.get_node_names():
-            props = schema.get_props_for_node(name)
+            props = schema.get_public_props_for_node(name)
             typeLine = 'type {} {{'.format(name)
             print(typeLine)
             print(typeLine, file=graphql_file)
