@@ -211,7 +211,7 @@ type QueryType{
   numberOfFiles: Int @cypher(statement: "MATCH (n:file) RETURN  count (n)")
 
   caseCountByTrial(trial_id: String!):Int @cypher(statement: "MATCH (n:clinical_trial{clinical_trial_id:$trial_id})-[*5]-(c:case) RETURN  COUNT(DISTINCT(c)")
-  fileCountByTrial(trial_id: String!):Int @cypher(statement: "MATCH (t:clinical_trial {clinical_trial_id:$trial_id})<-[*]-(f:file) RETURN  COUNT(DISTINCT(f))")
+  fileCountByTrial(trial_id: String!):Int @cypher(statement: "MATCH (t:clinical_trial {clinical_trial_id:$trial_id})<-[*6]-(f:file) RETURN  COUNT(DISTINCT(f))")
 
 
 clinicalTrials: [ClinicalTrial] @cypher(statement:"MATCH (t:clinical_trial)-[*5]-(c:case) MATCH (t:clinical_trial)<-[]-(a:arm)  RETURN t.clinical_trial_id as clinical_trial_id,t.clinical_trial_long_name as clinical_trial_long_name,t.clinical_trial_description as clinical_trial_description,t.lead_organization as lead_organization,t.principal_investigators as principal_investigators,t.clinical_trial_type as clinical_trial_type,t.clinical_trial_short_name as clinical_trial_short_name, COUNT(DISTINCT(c)) as number_of_cases,COUNT(DISTINCT(a)) as number_of_arms ")
