@@ -199,6 +199,17 @@ type TrialArm{
   number_of_cases: Int
 }
 
+type CaseOverview{
+  case_id: String
+  clinical_trial_code: String
+  arm_id: String
+  arm_drug: String
+  disease: String
+  gender: String
+  race: String
+  ethnicity: String
+}
+
 schema {
  query: QueryType
 }
@@ -220,4 +231,9 @@ clinicalTrialByTrialId(trial_id: String!): [ClinicalTrial] @cypher(statement:"MA
 
 #get trial arms by trials id
 clinicalTrialArmByTrialId(trial_id: String!):[TrialArm] @cypher(statement:"MATCH (t:clinical_trial {clinical_trial_id:$trial_id})<--(a:arm) Optional MATCH(a)<-[*]-(:assignment_report)-[*]->(c:case) Return a.arm_id As arm_id,a.arm_target As arm_target, a.arm_drug As arm_drug , a.pubmed_id As pubmed_id,COUNT(DISTINCT(c)) as number_of_cases")
+
+
+#case over view
+caseOverview: [CaseOverview] @cypher(statement:"MATCH (t:clinical_trial)<-[*]-(a:arm)<-[*]-(assignment_report)-[*]->(c:case) WITH DISTINCT c AS c, t ,a  OPTIONAL MATCH (c)<-[*]-(f:file)  Return c.case_id  As case_id,t.clinical_trial_designation as clinical_trial_code,a.arm_id As arm_id, a.arm_drug As arm_drug, c.disease As disease, c.gender As gender, c.race As race, c.ethnicity As ethnicity")
+
 }
