@@ -1,183 +1,3 @@
-type arm {
-  arm_id: String
-  arm_target: String
-  arm_drug: String
-  pubmed_id: String
-  assignment_reports: [assignment_report] @relation(name:"of_arm", direction:IN)
-  clinical_trial: clinical_trial @relation(name:"of_trial", direction:OUT)
-}
-type assignment_report {
-  assignment_report_id: String
-  step_at_assignment: Int
-  assignment_logic: String
-  assignment_outcome: String
-  variant_report: variant_report @relation(name:"of_variant_report", direction:OUT)
-  ihc_assay_reports: [ihc_assay_report] @relation(name:"of_ihc_assay_report", direction:OUT)
-  arm: arm @relation(name:"of_arm", direction:OUT)
-}
-type case {
-  case_id: String
-  gender: String
-  race: String
-  ethnicity: String
-  patient_status: String
-  current_step: Int
-  disease: String
-  ctep_category: String
-  ctep_subcategory: String
-  meddra_code: String
-  prior_drugs: String
-  specimens: [specimen] @relation(name:"of_case", direction:IN)
-}
-type clinical_trial {
-  clinical_trial_id: String
-  clinical_trial_short_name: String
-  clinical_trial_description: String
-  clinical_trial_designation: String
-  clinical_trial_long_name: String
-  clinical_trial_type: String
-  lead_organization: String
-  principal_investigators: String
-  arms: [arm] @relation(name:"of_trial", direction:IN)
-}
-type copy_number_variant {
-  variant_id: String
-  external_variant_id: String
-  gene: String
-  chromosome: String
-  oncomine_variant_class: String
-  tumor_suppressor: Boolean
-  variant_reports: [variant_report] @relation(name:"copy_number_variant_of", direction:OUT)
-}
-type copy_number_variant_of {
-  copy_number: Float
-  copy_number_ci_5: Float
-  copy_number_ci_95: Float
-}
-type delins_variant {
-  variant_id: String
-  external_variant_id: String
-  gene: String
-  chromosome: String
-  exon: String
-  position: Int
-  reference: String
-  alternative: String
-  transcript_id: String
-  transcript_hgvs: String
-  oncomine_variant_class: String
-  variant_classification: String
-  amino_acid_change: String
-  variant_reports: [variant_report] @relation(name:"delins_variant_of", direction:OUT)
-}
-type delins_variant_of {
-  allele_frequency: Float
-}
-type file {
-  file_description: String
-  file_format: String
-  file_location: String
-  file_name: String
-  file_size: Float
-  file_status: String
-  file_type: String
-  md5sum: String
-  uuid: String
-  sequencing_assay: sequencing_assay @relation(name:"of_sequencing_assay", direction:OUT)
-}
-type gene_fusion_variant {
-  variant_id: String
-  external_variant_id: String
-  gene1: String
-  gene2: String
-  oncomine_variant_class: String
-  variant_reports: [variant_report] @relation(name:"gene_fusion_variant_of", direction:OUT)
-}
-type gene_fusion_variant_of {
-  gene1_read_count: Int
-  gene2_read_count: Int
-}
-type ihc_assay_report {
-  ihc_assay_id: String
-  ihc_test_gene: String
-  ihc_test_result: String
-  specimen: specimen @relation(name:"of_specimen", direction:OUT)
-  assignment_reports: [assignment_report] @relation(name:"of_ihc_assay_report", direction:IN)
-}
-type indel_variant {
-  variant_id: String
-  external_variant_id: String
-  gene: String
-  chromosome: String
-  exon: String
-  position: Int
-  reference: String
-  alternative: String
-  transcript_id: String
-  transcript_hgvs: String
-  oncomine_variant_class: String
-  variant_classification: String
-  amino_acid_change: String
-  variant_reports: [variant_report] @relation(name:"indel_variant_of", direction:OUT)
-}
-type indel_variant_of {
-  allele_frequency: Float
-}
-type nucleic_acid {
-  aliquot_id: String
-  nucleic_acid_concentration: Float
-  nucleic_acid_volume: Float
-  specimen: specimen @relation(name:"of_specimen", direction:OUT)
-  sequencing_assays: [sequencing_assay] @relation(name:"of_nucleic_acid", direction:IN)
-}
-type sequencing_assay {
-  qc_result: String
-  nucleic_acid: nucleic_acid @relation(name:"of_nucleic_acid", direction:OUT)
-  files: [file] @relation(name:"of_sequencing_assay", direction:IN)
-  variant_reports: [variant_report] @relation(name:"of_sequencing_assay", direction:IN)
-}
-type snv_variant {
-  variant_id: String
-  external_variant_id: String
-  gene: String
-  chromosome: String
-  exon: String
-  position: Int
-  reference: String
-  alternative: String
-  transcript_id: String
-  transcript_hgvs: String
-  oncomine_variant_class: String
-  variant_classification: String
-  amino_acid_change: String
-  variant_reports: [variant_report] @relation(name:"snv_variant_of", direction:OUT)
-}
-type snv_variant_of {
-  allele_frequency: Float
-}
-type specimen {
-  specimen_id: String
-  specimen_type: String
-  case: case @relation(name:"of_case", direction:OUT)
-  ihc_assay_reports: [ihc_assay_report] @relation(name:"of_specimen", direction:IN)
-  nucleic_acids: [nucleic_acid] @relation(name:"of_specimen", direction:IN)
-}
-type variant_report {
-  variant_report_id: String
-  mapd: Float
-  cellularity: Float
-  torrent_variant_caller_version: String
-  sequencing_assay: sequencing_assay @relation(name:"of_sequencing_assay", direction:OUT)
-  snv_variants: [snv_variant] @relation(name:"snv_variant_of", direction:IN)
-  delins_variants: [delins_variant] @relation(name:"delins_variant_of", direction:IN)
-  indel_variants: [indel_variant] @relation(name:"indel_variant_of", direction:IN)
-  copy_number_variants: [copy_number_variant] @relation(name:"copy_number_variant_of", direction:IN)
-  gene_fusion_variants: [gene_fusion_variant] @relation(name:"gene_fusion_variant_of", direction:IN)
-  assignment_reports: [assignment_report] @relation(name:"of_variant_report", direction:IN)
-}
-
-
-
 type ClinicalTrial{
   clinical_trial_id: String
   clinical_trial_short_name: String
@@ -216,14 +36,17 @@ type TrialIdCaseCount {
   clinical_trial_id: String
   cases: Int
 }
+
 type TrialCodeCaseCount {
   clinical_trial_designation: String
   cases: Int
 }
+
 type PubMedIDCaseCount {
   pubmed_id: String
   cases: Int
 }
+
 type GenderCaseCount {
   gender: String
   cases: Int
@@ -238,10 +61,12 @@ type EthnicityCaseCount {
   ethnicity: String
   cases: Int
 }
+
 type DiagnosisCaseCount {
   disease: String
   cases: Int
 }
+
 type FileTypeCaseCount {
   file_type: String
   cases: Int
@@ -254,10 +79,10 @@ type FileFormatCaseCount {
 
 
 schema {
- query: QueryType
+  query: QueryType
 }
 
-type QueryType{
+type QueryType {
   schemaVersion: String @cypher(statement: "RETURN '0.1.0'")
 
   numberOfTrials: Int @cypher(statement: "MATCH (n:clinical_trial) RETURN  count (n)")
@@ -265,48 +90,48 @@ type QueryType{
   numberOfFiles: Int @cypher(statement: "MATCH (n:file) RETURN  count (n)")
 
   caseCountByTrialId(trial_id: String!):Int @cypher(statement: "MATCH (n:clinical_trial {clinical_trial_id:$trial_id})<-[*]-(:assignment_report)-[*]->(c:case)  RETURN  COUNT(DISTINCT(c))")
-  fileCountByTrialId(trial_id: String!):Int @cypher(statement: "MATCH (t:clinical_trial {clinical_trial_id:$trial_id})<-[*]-(assignment_report)-[*]->(s:specimen)<-[*]-(f:file) RETURN  COUNT(DISTINCT(f))")
+  fileCountByTrialId(trial_id: String!):Int @cypher(statement: "MATCH (t:clinical_trial {clinical_trial_id:$trial_id})<-[*]-(:assignment_report)-[*]->(s:specimen)<-[*]-(f:file) RETURN  COUNT(DISTINCT(f))")
   fileCountByCaseId(case_id: String!): Int @cypher(statement: "MATCH (c:case {case_id:$case_id})<-[*]-(f:file) RETURN  COUNT(DISTINCT(f))")
 
 
 
 
-casesCountBaseOnTrialId:[TrialIdCaseCount] @cypher(statement: "MATCH (t:clinical_trial) OPTIONAL MATCH (t)<-[*]-(:assignment_report)-[*]->(c:case)  RETURN  t.clinical_trial_id AS clinical_trial_id ,count(DISTINCT(c)) AS cases ORDER BY t.clinical_trial_id")
+  casesCountBaseOnTrialId:[TrialIdCaseCount] @cypher(statement: "MATCH (t:clinical_trial) OPTIONAL MATCH (t)<-[*]-(:assignment_report)-[*]->(c:case)  RETURN  t.clinical_trial_id AS clinical_trial_id ,count(DISTINCT(c)) AS cases ORDER BY t.clinical_trial_id")
 
 
-casesCountBaseOnTrialCode: [TrialCodeCaseCount] @cypher(statement: "MATCH (t:clinical_trial) OPTIONAL MATCH (t)<-[*]-(:assignment_report)-[*]->(c:case)  RETURN  t.clinical_trial_designation AS clinical_trial_designation , count(DISTINCT(c)) AS cases ORDER BY t.clinical_trial_designation")
+  casesCountBaseOnTrialCode: [TrialCodeCaseCount] @cypher(statement: "MATCH (t:clinical_trial) OPTIONAL MATCH (t)<-[*]-(:assignment_report)-[*]->(c:case)  RETURN  t.clinical_trial_designation AS clinical_trial_designation , count(DISTINCT(c)) AS cases ORDER BY t.clinical_trial_designation")
 
 
-casesCountBaseOnPubMedID: [PubMedIDCaseCount] @cypher(statement: "MATCH (a:arm) OPTIONAL MATCH (t)<-[*]-(a:arm)<-[*]-(assignment_report)-[*]->(c:case) RETURN  a.pubmed_id AS pubmed_id,count(DISTINCT(c)) AS cases ORDER BY a.pubmed_id")
+  casesCountBaseOnPubMedID: [PubMedIDCaseCount] @cypher(statement: "MATCH (a:arm) OPTIONAL MATCH (t)<-[*]-(a:arm)<-[*]-(:assignment_report)-[*]->(c:case) RETURN  a.pubmed_id AS pubmed_id,count(DISTINCT(c)) AS cases ORDER BY a.pubmed_id")
 
 
-casesCountBaseOnGender: [GenderCaseCount] @cypher(statement: "MATCH (c:case) RETURN  c.gender AS gender ,count(DISTINCT(c)) AS cases ORDER BY c.gender")
+  casesCountBaseOnGender: [GenderCaseCount] @cypher(statement: "MATCH (c:case) RETURN  c.gender AS gender ,count(DISTINCT(c)) AS cases ORDER BY c.gender")
 
 
-casesCountBaseOnRace: [RaceCaseCount] @cypher(statement: "MATCH (c:case) RETURN  c.race AS race,count(DISTINCT(c)) AS cases ORDER BY c.race")
+  casesCountBaseOnRace: [RaceCaseCount] @cypher(statement: "MATCH (c:case) RETURN  c.race AS race,count(DISTINCT(c)) AS cases ORDER BY c.race")
 
-casesCountBaseOnEthnicity: [EthnicityCaseCount] @cypher(statement: "MATCH (c:case)  RETURN  c.ethnicity AS ethnicity ,count(DISTINCT(c)) AS cases ORDER BY c.ethnicity")
+  casesCountBaseOnEthnicity: [EthnicityCaseCount] @cypher(statement: "MATCH (c:case)  RETURN  c.ethnicity AS ethnicity ,count(DISTINCT(c)) AS cases ORDER BY c.ethnicity")
 
-casesCountBaseOnDiagnosis: [DiagnosisCaseCount] @cypher(statement: "MATCH (c:case) RETURN  c.disease AS disease ,count(DISTINCT(c)) AS cases ORDER BY c.disease")
+  casesCountBaseOnDiagnosis: [DiagnosisCaseCount] @cypher(statement: "MATCH (c:case) RETURN  c.disease AS disease ,count(DISTINCT(c)) AS cases ORDER BY c.disease")
 
-casesCountBaseOnFileType: [FileTypeCaseCount] @cypher(statement: "MATCH (f:file)  OPTIONAL MATCH (c:case)<-[*]-(f:file) RETURN f.file_type As file_type  ,count(DISTINCT(c)) AS cases ORDER BY f.file_type")
+  casesCountBaseOnFileType: [FileTypeCaseCount] @cypher(statement: "MATCH (f:file)  OPTIONAL MATCH (c:case)<-[*]-(f:file) RETURN f.file_type As file_type  ,count(DISTINCT(c)) AS cases ORDER BY f.file_type")
 
-casesCountBaseOnFileFormat: [FileFormatCaseCount] @cypher(statement: "MATCH (f:file)  OPTIONAL MATCH (c:case)<-[*]-(f:file) RETURN f.file_format As file_format  ,count(DISTINCT(c)) AS cases ORDER BY f.file_format")
-
-
+  casesCountBaseOnFileFormat: [FileFormatCaseCount] @cypher(statement: "MATCH (f:file)  OPTIONAL MATCH (c:case)<-[*]-(f:file) RETURN f.file_format As file_format  ,count(DISTINCT(c)) AS cases ORDER BY f.file_format")
 
 
-clinicalTrials: [ClinicalTrial] @cypher(statement:"MATCH (t:clinical_trial)<--(a:arm)<--(:assignment_report)-[*]->(c:case) MATCH (t:clinical_trial)<-[]-(a:arm)  RETURN t.clinical_trial_id as clinical_trial_id,t.clinical_trial_long_name as clinical_trial_long_name,t.clinical_trial_description as clinical_trial_description,t.lead_organization as lead_organization,t.principal_investigators as principal_investigators,t.clinical_trial_type as clinical_trial_type,t.clinical_trial_short_name as clinical_trial_short_name, t.clinical_trial_designation as clinical_trial_designation, COUNT(DISTINCT(c)) as number_of_cases,COUNT(DISTINCT(a)) as number_of_arms ")
-
-clinicalTrialByTrialId(trial_id: String!): [ClinicalTrial] @cypher(statement:"MATCH (t:clinical_trial {clinical_trial_id:$trial_id})<--(a:arm)<--(:assignment_report)-[*]->(c:case)  RETURN t.clinical_trial_id as clinical_trial_id,t.clinical_trial_long_name as clinical_trial_long_name,t.clinical_trial_description as clinical_trial_description,t.lead_organization as lead_organization,t.principal_investigators as principal_investigators,t.clinical_trial_type as clinical_trial_type,t.clinical_trial_short_name as clinical_trial_short_name, t.clinical_trial_designation as clinical_trial_designation, COUNT(DISTINCT(c)) as number_of_cases,COUNT(DISTINCT(a)) as number_of_arms ")
-
-#get trial arms by trials id
-clinicalTrialArmByTrialId(trial_id: String!):[TrialArm] @cypher(statement:"MATCH (t:clinical_trial {clinical_trial_id:$trial_id})<--(a:arm) Optional MATCH(a)<-[*]-(:assignment_report)-[*]->(c:case) Return a.arm_id As arm_id,a.arm_target As arm_target, a.arm_drug As arm_drug , a.pubmed_id As pubmed_id,COUNT(DISTINCT(c)) as number_of_cases")
 
 
-#case over view
-caseOverview: [CaseOverview] @cypher(statement:"MATCH (t:clinical_trial)<--(a:arm)<--(:assignment_report)-[*]->(c:case) WITH DISTINCT c AS c, t ,a  OPTIONAL MATCH (c)<-[*]-(f:file)  Return c.case_id  As case_id,t.clinical_trial_designation as clinical_trial_code,a.arm_id As arm_id, a.arm_drug As arm_drug, c.disease As disease, c.gender As gender, c.race As race, c.ethnicity As ethnicity")
+  clinicalTrials: [ClinicalTrial] @cypher(statement:"MATCH (t:clinical_trial)<--(a:arm)<--(:assignment_report)-[*]->(c:case) MATCH (t:clinical_trial)<-[]-(a:arm)  RETURN t.clinical_trial_id as clinical_trial_id,t.clinical_trial_long_name as clinical_trial_long_name,t.clinical_trial_description as clinical_trial_description,t.lead_organization as lead_organization,t.principal_investigators as principal_investigators,t.clinical_trial_type as clinical_trial_type,t.clinical_trial_short_name as clinical_trial_short_name, t.clinical_trial_designation as clinical_trial_designation, COUNT(DISTINCT(c)) as number_of_cases,COUNT(DISTINCT(a)) as number_of_arms ")
 
-# case detail
-caseDetailByCaseId(case_id: String!): [CaseOverview] @cypher(statement:"MATCH (t:clinical_trial)<--(a:arm)<--(assignment_report)-[*]->(c:case  {case_id:$case_id}) WITH DISTINCT c AS c, t ,a  OPTIONAL MATCH (c)<-[*]-(f:file)  Return c.case_id  As case_id,c.disease As disease, c.gender As gender, c.race As race, c.ethnicity As ethnicity,t.clinical_trial_designation as clinical_trial_code,COLLECT(DISTINCT(a)) AS arms",passThrough:true)
+  clinicalTrialByTrialId(trial_id: String!): [ClinicalTrial] @cypher(statement:"MATCH (t:clinical_trial {clinical_trial_id:$trial_id})<--(a:arm)<--(:assignment_report)-[*]->(c:case)  RETURN t.clinical_trial_id as clinical_trial_id,t.clinical_trial_long_name as clinical_trial_long_name,t.clinical_trial_description as clinical_trial_description,t.lead_organization as lead_organization,t.principal_investigators as principal_investigators,t.clinical_trial_type as clinical_trial_type,t.clinical_trial_short_name as clinical_trial_short_name, t.clinical_trial_designation as clinical_trial_designation, COUNT(DISTINCT(c)) as number_of_cases,COUNT(DISTINCT(a)) as number_of_arms ")
+
+  #get trial arms by trials id
+  clinicalTrialArmByTrialId(trial_id: String!):[TrialArm] @cypher(statement:"MATCH (t:clinical_trial {clinical_trial_id:$trial_id})<--(a:arm) Optional MATCH(a)<-[*]-(:assignment_report)-[*]->(c:case) Return a.arm_id As arm_id,a.arm_target As arm_target, a.arm_drug As arm_drug , a.pubmed_id As pubmed_id,COUNT(DISTINCT(c)) as number_of_cases")
+
+
+  #case over view
+  caseOverview: [CaseOverview] @cypher(statement:"MATCH (t:clinical_trial)<--(a:arm)<--(:assignment_report)-[*]->(c:case) WITH DISTINCT c AS c, t ,a  OPTIONAL MATCH (c)<-[*]-(f:file)  Return c.case_id  As case_id,t.clinical_trial_designation as clinical_trial_code,a.arm_id As arm_id, a.arm_drug As arm_drug, c.disease As disease, c.gender As gender, c.race As race, c.ethnicity As ethnicity")
+
+  # case detail
+  caseDetailByCaseId(case_id: String!): [CaseOverview] @cypher(statement:"MATCH (t:clinical_trial)<--(a:arm)<--(:assignment_report)-[*]->(c:case  {case_id:$case_id}) WITH DISTINCT c AS c, t ,a  OPTIONAL MATCH (c)<-[*]-(f:file)  Return c.case_id  As case_id,c.disease As disease, c.gender As gender, c.race As race, c.ethnicity As ethnicity,t.clinical_trial_designation as clinical_trial_code,COLLECT(DISTINCT(a)) AS arms",passThrough:true)
 }
