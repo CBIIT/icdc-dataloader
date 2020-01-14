@@ -102,7 +102,7 @@ type QueryType {
   casesCountBaseOnTrialCode: [TrialCodeCaseCount] @cypher(statement: "MATCH (t:clinical_trial) OPTIONAL MATCH (t)<-[*]-(:assignment_report)-[*]->(c:case)  RETURN  t.clinical_trial_designation AS clinical_trial_designation , count(DISTINCT(c)) AS cases ORDER BY t.clinical_trial_designation")
 
 
-  casesCountBaseOnPubMedID: [PubMedIDCaseCount] @cypher(statement: "MATCH (a:arm) OPTIONAL MATCH (t)<-[*]-(a:arm)<-[*]-(:assignment_report)-[*]->(c:case) RETURN  a.pubmed_id AS pubmed_id,count(DISTINCT(c)) AS cases ORDER BY a.pubmed_id")
+  casesCountBaseOnPubMedID: [PubMedIDCaseCount] @cypher(statement: "MATCH (a:arm) OPTIONAL MATCH (t)<--(:assignment_report)-[*]->(c:case) RETURN  a.pubmed_id AS pubmed_id,count(DISTINCT(c)) AS cases ORDER BY a.pubmed_id")
 
 
   casesCountBaseOnGender: [GenderCaseCount] @cypher(statement: "MATCH (c:case) RETURN  c.gender AS gender ,count(DISTINCT(c)) AS cases ORDER BY c.gender")
