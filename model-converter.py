@@ -13,8 +13,7 @@ if __name__ == '__main__':
     log = get_logger('Model Converter')
     parser = argparse.ArgumentParser(description='Convert ICDC YAML schema to GraphQL schema')
     parser.add_argument('-s', '--schema', help='Schema files', action='append')
-    parser.add_argument('--prop-file', help='Property file, example is in config/props.example.yml')
-    parser.add_argument('--config-file', help='Configuration file, example is in config/config.example.ini')
+    parser.add_argument('--prop-file', help='Property file, example is in config/props.example.yml', required=True)
     parser.add_argument('query_file', help='Custom query file', type=argparse.FileType('r'))
 
     parser.add_argument('graphql', help='Output GraphQL schema file name')

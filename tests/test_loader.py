@@ -40,8 +40,6 @@ class TestLoader(unittest.TestCase):
     def test_loader_construction(self):
         self.assertRaises(Exception, DataLoader, None, None, None)
         self.assertRaises(Exception, DataLoader, self.driver, None, None)
-        self.assertRaises(Exception, DataLoader, self.driver, self.schema , None)
-        self.assertRaises(Exception, DataLoader, self.driver, self.schema , ['a', 'b'])
         self.assertIsInstance(self.loader, DataLoader)
 
     def test_validate_parents_exist_in_file(self):

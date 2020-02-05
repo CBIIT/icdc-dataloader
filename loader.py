@@ -11,7 +11,7 @@ from bento.common.icdc_schema import ICDC_Schema
 from bento.common.props import Props
 from bento.common.utils import get_logger, removeTrailingSlash, check_schema_files, DATETIME_FORMAT, get_host, \
      UPSERT_MODE, NEW_MODE, DELETE_MODE
-from bento.common.config import BACKUP_FOLDER, PSWD_ENV
+from bento.common.config import BentoConfig
 from bento.common.data_loader import DataLoader
 from bento.common.s3 import S3Bucket
 
@@ -21,8 +21,9 @@ def parse_arguments():
     parser.add_argument('-u', '--user', help='Neo4j user')
     parser.add_argument('-p', '--password', help='Neo4j password')
     parser.add_argument('-s', '--schema', help='Schema files', action='append', required=True)
-    parser.add_argument('--prop-file', help='Property file, example is in config/props.example.yml')
-    parser.add_argument('--config-file', help='Configuration file, example is in config/config.example.ini')
+    parser.add_argument('--prop-file', help='Property file, example is in config/props.example.yml', required=True)
+    parser.add_argument('--config-file', help='Configuration file, example is in config/config.example.ini',
+                        required=True)
     parser.add_argument('-c', '--cheat-mode', help='Skip validations, aka. Cheat Mode', action='store_true')
     parser.add_argument('-d', '--dry-run', help='Validations only, skip loading', action='store_true')
     parser.add_argument('--wipe-db', help='Wipe out database before loading, you\'ll lose all data!',
@@ -40,6 +41,8 @@ def parse_arguments():
 
 
 def process_arguments(args, log):
+    config = BentoConfig(args.config_file)
+
     directory = args.dir
     if args.s3_folder:
         if not os.path.exists(directory):
@@ -71,21 +74,22 @@ def process_arguments(args, log):
 
     password = args.password
     if not password:
-        if PSWD_ENV not in os.environ:
+        if config.PSWD_ENV not in os.environ:
             log.error('Password not specified! Please specify password with -p or --password argument,' +
-                      ' or set {} env var'.format(PSWD_ENV))
+                      ' or set {} env var'.format(config.PSWD_ENV))
             sys.exit(1)
         else:
-            password = os.environ[PSWD_ENV]
+            password = os.environ[config.PSWD_ENV]
     user = args.user if args.user else 'neo4j'
-    return (user, password, directory, uri)
+
+    return (user, password, directory, uri, config)
 
 
 def backup_neo4j(backup_dir, name, address, log):
     try:
         restore_cmd = 'To restore DB from backup (to remove any changes caused by current data loading, run following commands:\n'
         restore_cmd += '#' * 160 + '\n'
-        neo4j_cmd = 'neo4j-admin restore --from={}/{} --force'.format(BACKUP_FOLDER, name)
+        neo4j_cmd = 'neo4j-admin restore --from={}/{} --force'.format(backup_dir, name)
         cmds = [
             [
                 'mkdir',
@@ -123,8 +127,7 @@ def backup_neo4j(backup_dir, name, address, log):
 def main():
     log = get_logger('Loader')
     args = parse_arguments()
-    user, password, directory, uri = process_arguments(args, log)
-
+    user, password, directory, uri, config = process_arguments(args, log)
 
     if not check_schema_files(args.schema, log):
         sys.exit(1)
@@ -143,7 +146,7 @@ def main():
             host = get_host(uri)
             restore_cmd = ''
             if not args.no_backup and not args.dry_run:
-                restore_cmd = backup_neo4j(BACKUP_FOLDER, backup_name, host, log)
+                restore_cmd = backup_neo4j(config.BACKUP_FOLDER, backup_name, host, log)
                 if not restore_cmd:
                     log.error('Backup Neo4j failed, abort loading!')
                     sys.exit(1)

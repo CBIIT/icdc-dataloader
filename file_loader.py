@@ -22,12 +22,11 @@ from botocore.exceptions import ClientError
 
 from bento.common.utils import UUID, NODES_CREATED, RELATIONSHIP_CREATED, removeTrailingSlash,\
     get_logger, UPSERT_MODE, send_slack_message
-from bento.common.config import INDEXD_GUID_PREFIX, INDEXD_MANIFEST_EXT, VISIBILITY_TIMEOUT, \
-    TEMP_FOLDER, PSWD_ENV, SLACK_URL
+from bento.common.config import BentoConfig
 from bento.common.props import Props
 from bento.common.sqs import Queue, VisibilityExtender
 from bento.common.data_loader import DataLoader
-from bento.common.icdc_schema import ICDC_Schema, get_uuid_for_node
+from bento.common.icdc_schema import ICDC_Schema
 
 RAW_PREFIX = 'RAW'
 FINAL_PREFIX = 'Final'
@@ -58,7 +57,10 @@ MANIFEST_FIELDS = [GUID, MD5, SIZE, ACL, URL]
 
 
 class FileLoader:
-    def __init__(self, queue_name, driver, schema, manifest_bucket, manifest_folder, dry_run=False):
+    def __init__(self, queue_name, driver, schema, config, manifest_bucket, manifest_folder, dry_run=False):
+        assert isinstance(config, BentoConfig)
+        self.config = config
+
         self.log = get_logger('File Loader')
         self.queue_name = queue_name
         self.s3_client = boto3.client('s3')
@@ -227,23 +229,21 @@ class FileLoader:
     def get_s3_location(bucket, folder, key):
         return "s3://{}/{}/{}".format(bucket, folder, key)
 
-    @staticmethod
-    def populate_indexd_record(record, file_info):
-        record[GUID] = '{}{}'.format(INDEXD_GUID_PREFIX, get_uuid_for_node("file", file_info[SHA512]))
+    def populate_indexd_record(self, record, file_info):
+        record[GUID] = '{}{}'.format(self.config.INDEXD_GUID_PREFIX, self.schema.get_uuid_for_node("file", file_info[SHA512]))
         record[MD5] = file_info[MD5_SUM]
         record[SIZE] = file_info[FILE_SIZE]
         record[ACL] = DEFAULT_ACL
         record[URL] = file_info[FILE_LOC]
         return record
 
-    @staticmethod
-    def populate_record(record, file_info):
+    def populate_record(self, record, file_info):
         file_name = file_info[FILE_NAME]
         record[FILE_SIZE] = file_info[FILE_SIZE]
         record[FILE_LOC] = file_info[FILE_LOC]
         record[MD5_SUM] = file_info[MD5_SUM]
         record[FILE_FORMAT] = (os.path.splitext(file_name)[1]).split('.')[1].lower()
-        record[UUID] = get_uuid_for_node("file", file_info[SHA512])
+        record[UUID] = self.schema.get_uuid_for_node("file", file_info[SHA512])
         record[FILE_STAT] = DEFAULT_STAT
         record[ACL] = DEFAULT_ACL
         return record
@@ -300,12 +300,11 @@ class FileLoader:
             os.remove(indexd_file)
         return succeeded
 
-    @staticmethod
-    def get_indexd_manifest_name(file_name):
+    def get_indexd_manifest_name(self, file_name):
         folder = os.path.dirname(file_name)
         base_name = os.path.basename(file_name)
         name, _ = os.path.splitext(base_name)
-        new_name = '{}_indexd{}'.format(name, INDEXD_MANIFEST_EXT)
+        new_name = '{}_indexd{}'.format(name, self.config.INDEXD_MANIFEST_EXT)
         return os.path.join(folder, new_name)
 
     @staticmethod
@@ -346,7 +345,7 @@ class FileLoader:
         for record in event['Records']:
             start = timer()
             end = start
-            temp_folder = os.path.join(TEMP_FOLDER, str(uuid.uuid4()))
+            temp_folder = os.path.join(self.config.TEMP_FOLDER, str(uuid.uuid4()))
             try:
                 os.makedirs(temp_folder)
                 bucket = record['s3']['bucket']['name']
@@ -413,7 +412,7 @@ class FileLoader:
         content += '*Running time: {:.2f} seconds*\n'.format(running_time)
 
         self.log.info('Sending success message to Slack ...')
-        send_slack_message(SLACK_URL, {"text":  content}, self.log)
+        send_slack_message(self.config.SLACK_URL, {"text":  content}, self.log)
 
         self.log.info('Success message sent')
 
@@ -430,12 +429,12 @@ class FileLoader:
         self.log.info('PIMixture Processor service started!')
         while True:
             self.log.info("Receiving more messages...")
-            for msg in self.queue.receiveMsgs(VISIBILITY_TIMEOUT):
+            for msg in self.queue.receiveMsgs(self.config.VISIBILITY_TIMEOUT):
                 extender = None
                 try:
                     data = json.loads(msg.body)
                     if data and RECORDS in data and isinstance(data[RECORDS], list):
-                        extender = VisibilityExtender(msg, VISIBILITY_TIMEOUT)
+                        extender = VisibilityExtender(msg, self.config.VISIBILITY_TIMEOUT)
                         self.log.info('Start processing job ...')
 
                         if self.handler(data):
@@ -476,6 +475,7 @@ class FileLoader:
 
 def main(args):
     log = get_logger('Raw file processor - main')
+    config = BentoConfig(args.config_file)
 
     if not args.queue:
         log.error('Please specify queue name with -q/--queue argument')
@@ -486,12 +486,12 @@ def main(args):
 
     password = args.password
     if not password:
-        if PSWD_ENV not in os.environ:
+        if config.PSWD_ENV not in os.environ:
             log.error(
-                'Password not specified! Please specify password with -p or --password argument, or set {} env var'.format( PSWD_ENV))
+                'Password not specified! Please specify password with -p or --password argument, or set {} env var'.format( config.PSWD_ENV))
             sys.exit(1)
         else:
-            password = os.environ[PSWD_ENV]
+            password = os.environ[config.PSWD_ENV]
     user = args.user if args.user else 'neo4j'
 
     if not args.schema:
@@ -516,7 +516,7 @@ def main(args):
         props = Props(args.prop_file)
         schema = ICDC_Schema(args.schema, props)
         driver = neo4j.GraphDatabase.driver(uri, auth=(user, password))
-        processor = FileLoader(args.queue, driver, schema, args.bucket, args.s3_folder, args.dry_run)
+        processor = FileLoader(args.queue, driver, schema, config, args.bucket, args.s3_folder, args.dry_run)
         processor.listen()
 
     except neo4j.ServiceUnavailable as err:
@@ -539,11 +539,12 @@ if __name__ == '__main__':
     parser.add_argument('-u', '--user', help='Neo4j user')
     parser.add_argument('-p', '--password', help='Neo4j password')
     parser.add_argument('-s', '--schema', help='Schema files', action='append')
-    parser.add_argument('--prop-file', help='Property file, example is in config/props.example.yml')
-    parser.add_argument('--config-file', help='Configuration file, example is in config/config.example.ini')
+    parser.add_argument('--prop-file', help='Property file, example is in config/props.example.yml', required=True)
+    parser.add_argument('--config-file', help='Configuration file, example is in config/config.example.ini', required=True)
     parser.add_argument('-d', '--dry-run', help='Validations only, skip loading', action='store_true')
     parser.add_argument('-m', '--max-violations', help='Max violations to display', nargs='?', type=int, default=10)
     parser.add_argument('-b', '--bucket', help='Output (manifest) S3 bucket name')
     parser.add_argument('-f', '--s3-folder', help='Output (manifest) S3 folder')
     args = parser.parse_args()
+
     main(args)
