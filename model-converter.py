@@ -5,6 +5,7 @@
 import argparse
 import sys
 from bento.common.icdc_schema import ICDC_Schema, PROP_TYPE
+from bento.common.props import Props
 from bento.common.utils import check_schema_files, get_logger
 
 
@@ -12,6 +13,8 @@ if __name__ == '__main__':
     log = get_logger('Model Converter')
     parser = argparse.ArgumentParser(description='Convert ICDC YAML schema to GraphQL schema')
     parser.add_argument('-s', '--schema', help='Schema files', action='append')
+    parser.add_argument('--prop-file', help='Property file, example is in config/props.example.yml')
+    parser.add_argument('--config-file', help='Configuration file, example is in config/config.example.ini')
     parser.add_argument('query_file', help='Custom query file', type=argparse.FileType('r'))
 
     parser.add_argument('graphql', help='Output GraphQL schema file name')
@@ -20,7 +23,8 @@ if __name__ == '__main__':
     if not check_schema_files(args.schema, log):
         sys.exit(1)
 
-    schema = ICDC_Schema(args.schema)
+    props = Props(args.prop_file)
+    schema = ICDC_Schema(args.schema, props)
 
     if not args.query_file:
         log.error('Read custom query file "{}" failed!'.format(args.query_file))

@@ -4,6 +4,7 @@ import os
 from neo4j import GraphDatabase
 from file_loader import FileLoader
 from bento.common.icdc_schema import ICDC_Schema
+from bento.common.props import Props
 from bento.common.data_loader import DataLoader
 
 
@@ -16,7 +17,8 @@ class TestLambda(unittest.TestCase):
         password = os.environ['NEO_PASSWORD']
 
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
-        self.schema = ICDC_Schema(['data/icdc-model.yml', 'data/icdc-model-props.yml'])
+        props = Props('../config/props.yml')
+        self.schema = ICDC_Schema(['data/icdc-model.yml', 'data/icdc-model-props.yml'], props)
         self.processor = FileLoader('', self.driver, self.schema, 'ming-icdc-file-loader', 'Final/Data_loader/Manifests')
         self.loader = DataLoader(self.driver, self.schema)
         self.file_list = [

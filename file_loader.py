@@ -24,6 +24,7 @@ from bento.common.utils import UUID, NODES_CREATED, RELATIONSHIP_CREATED, remove
     get_logger, UPSERT_MODE, send_slack_message
 from bento.common.config import INDEXD_GUID_PREFIX, INDEXD_MANIFEST_EXT, VISIBILITY_TIMEOUT, \
     TEMP_FOLDER, PSWD_ENV, SLACK_URL
+from bento.common.props import Props
 from bento.common.sqs import Queue, VisibilityExtender
 from bento.common.data_loader import DataLoader
 from bento.common.icdc_schema import ICDC_Schema, get_uuid_for_node
@@ -512,7 +513,8 @@ def main(args):
 
     driver = None
     try:
-        schema = ICDC_Schema(args.schema)
+        props = Props(args.prop_file)
+        schema = ICDC_Schema(args.schema, props)
         driver = neo4j.GraphDatabase.driver(uri, auth=(user, password))
         processor = FileLoader(args.queue, driver, schema, args.bucket, args.s3_folder, args.dry_run)
         processor.listen()
@@ -537,6 +539,8 @@ if __name__ == '__main__':
     parser.add_argument('-u', '--user', help='Neo4j user')
     parser.add_argument('-p', '--password', help='Neo4j password')
     parser.add_argument('-s', '--schema', help='Schema files', action='append')
+    parser.add_argument('--prop-file', help='Property file, example is in config/props.example.yml')
+    parser.add_argument('--config-file', help='Configuration file, example is in config/config.example.ini')
     parser.add_argument('-d', '--dry-run', help='Validations only, skip loading', action='store_true')
     parser.add_argument('-m', '--max-violations', help='Max violations to display', nargs='?', type=int, default=10)
     parser.add_argument('-b', '--bucket', help='Output (manifest) S3 bucket name')

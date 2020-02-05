@@ -8,6 +8,7 @@ import subprocess
 from neo4j import GraphDatabase, ServiceUnavailable
 
 from bento.common.icdc_schema import ICDC_Schema
+from bento.common.props import Props
 from bento.common.utils import get_logger, removeTrailingSlash, check_schema_files, DATETIME_FORMAT, get_host, \
      UPSERT_MODE, NEW_MODE, DELETE_MODE
 from bento.common.config import BACKUP_FOLDER, PSWD_ENV
@@ -20,6 +21,8 @@ def parse_arguments():
     parser.add_argument('-u', '--user', help='Neo4j user')
     parser.add_argument('-p', '--password', help='Neo4j password')
     parser.add_argument('-s', '--schema', help='Schema files', action='append', required=True)
+    parser.add_argument('--prop-file', help='Property file, example is in config/props.example.yml')
+    parser.add_argument('--config-file', help='Configuration file, example is in config/config.example.ini')
     parser.add_argument('-c', '--cheat-mode', help='Skip validations, aka. Cheat Mode', action='store_true')
     parser.add_argument('-d', '--dry-run', help='Validations only, skip loading', action='store_true')
     parser.add_argument('--wipe-db', help='Wipe out database before loading, you\'ll lose all data!',
@@ -144,7 +147,8 @@ def main():
                 if not restore_cmd:
                     log.error('Backup Neo4j failed, abort loading!')
                     sys.exit(1)
-            schema = ICDC_Schema(args.schema)
+            props = Props(args.prop_file)
+            schema = ICDC_Schema(args.schema, props)
             driver = None
             if not args.dry_run:
                 driver = GraphDatabase.driver(uri, auth=(user, password))

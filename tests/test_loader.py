@@ -3,6 +3,7 @@ import os
 from bento.common.utils import get_logger, removeTrailingSlash, UUID
 from bento.common.data_loader import DataLoader
 from bento.common.icdc_schema import ICDC_Schema
+from bento.common.props import Props
 from neo4j import GraphDatabase
 
 
@@ -15,7 +16,8 @@ class TestLoader(unittest.TestCase):
 
         self.driver = GraphDatabase.driver(uri, auth = (user, password))
         self.data_folder = 'data/COTC007B'
-        self.schema = ICDC_Schema(['data/icdc-model.yml', 'data/icdc-model-props.yml'])
+        props = Props('../config/props.yml')
+        self.schema = ICDC_Schema(['data/icdc-model.yml', 'data/icdc-model-props.yml'], props)
         self.log = get_logger('Test Loader')
         self.loader = DataLoader(self.driver, self.schema)
         self.file_list = [
