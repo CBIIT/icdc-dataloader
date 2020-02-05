@@ -1,0 +1,47 @@
+Properties:
+  domain: trialcommons.cancer.gov
+
+  plurals:
+    specimen: specimens
+    nucleic_acid: nucleic_acids
+    sequencing_assay: sequencing_assays
+    variant_report: variant_reports
+    snv_variant: snv_variants
+    delins_variant: delins_variants
+    indel_variant: indel_variants
+    copy_number_variant: copy_number_variants
+    gene_fusion_variant: gene_fusion_variants
+    assignment_report: assignment_reports
+    ihc_assay_report: ihc_assay_reports
+    arm: arms
+    file: files
+    case: cases
+    clinical_trial: clinical_trials
+
+  type_mapping:
+    string: String
+    number: Float
+    integer: Int
+    boolean: Boolean
+    array: Array
+    object: Object
+    datetime: DateTime
+    date: Date
+    TBD: String
+
+  id_fields:
+    specimen: specimen_id
+    ihc_assay_report: ihc_assay_id
+    nucleic_acid: aliquot_id
+    sequencing_assay: sequencing_assay_id
+    snv_variant: variant_id
+    delins_variant: variant_id
+    indel_variant: variant_id
+    copy_number_variant: variant_id
+    variant_report: variant_report_id
+    gene_fusion_variant: variant_id
+    assignment_report: assignment_report_id
+    arm: arm_id
+    case: case_id
+    file: uuid
+    clinical_trial: clinical_trial_id

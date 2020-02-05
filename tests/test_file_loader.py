@@ -18,7 +18,7 @@ class TestLambda(unittest.TestCase):
         password = os.environ['NEO_PASSWORD']
 
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
-        props = Props('../config/props.yml')
+        props = Props('../config/props-icdc.yml')
         self.schema = ICDC_Schema(['data/icdc-model.yml', 'data/icdc-model-props.yml'], props)
         config = BentoConfig('../config/config.ini')
         self.processor = FileLoader('', self.driver, self.schema, config, 'ming-icdc-file-loader', 'Final/Data_loader/Manifests')

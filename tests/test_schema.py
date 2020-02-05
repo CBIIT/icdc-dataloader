@@ -5,7 +5,7 @@ from bento.common.props import Props
 
 class TestSchema(unittest.TestCase):
     def setUp(self):
-        self.props = Props('../config/props.yml')
+        self.props = Props('../config/props-icdc.yml')
         self.schema = ICDC_Schema(['data/icdc-model.yml', 'data/icdc-model-props.yml'], self.props)
 
     def test_schema_construction(self):
