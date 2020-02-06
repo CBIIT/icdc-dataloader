@@ -88,6 +88,21 @@ type TrialArmCaseCount{
   cases: Int
 }
 
+type FilesOfCase{
+  case_id: String
+  parent:String
+  file_name: String
+  file_type: String
+  file_description: String
+  file_format: String
+  file_size: Float
+  md5sum: String
+  file_status: String
+  uuid: String
+  file_locations: String
+}
+
+
 schema {
   query: QueryType
 }
@@ -138,6 +153,11 @@ type QueryType {
   "get trial arms by trials id"
   clinicalTrialArmByTrialId(trial_id: String!):[TrialArm] @cypher(statement:"MATCH (t:clinical_trial {clinical_trial_id:$trial_id})<--(a:arm) Optional MATCH (a)<--(c:case) Return a.arm_id As arm_id,a.arm_target As arm_target, a.arm_drug As arm_drug , a.pubmed_id As pubmed_id,COUNT(DISTINCT(c)) as number_of_cases")
 
+  "get all files for a case"
+  filesOfCase(case_id: String!): [FilesOfCase] @cypher(statement: "MATCH (f:file)-[*]->(c:case{case_id: $case_id}) WITH DISTINCT(f) AS f MATCH (f)-->(parent) RETURN f.file_status AS file_status,f.file_name AS file_name ,f.file_type AS file_type,f.file_description AS file_description,f.file_format AS file_format,f.file_size AS file_size,f.md5sum AS md5sum,f.uuid AS uuid,f.file_locations AS file_locations, head(labels(parent)) AS parent, $case_id AS case_id")
+
+  "get all files for a list of cases"
+  filesOfCases(case_ids: [String!]!): [FilesOfCase] @cypher(statement: "MATCH (f:file)-[*]->(c:case) WITH DISTINCT(f) AS f, c MATCH (f)-->(parent) WHERE c.case_id IN $case_ids RETURN f.file_status AS file_status,f.file_name AS file_name ,f.file_type AS file_type,f.file_description AS file_description,f.file_format AS file_format,f.file_size AS file_size,f.md5sum AS md5sum,f.uuid AS uuid,f.file_locations AS file_locations, head(labels(parent)) AS parent, c.case_id AS case_id")
 
   "case over view"
   caseOverview: [CaseOverview] @cypher(statement:"MATCH (t:clinical_trial)<--(a:arm)<--(c:case) WITH DISTINCT c AS c, t ,a  OPTIONAL MATCH (c)<-[*]-(f:file)  Return c.case_id  As case_id,t.clinical_trial_designation as clinical_trial_code,a.arm_id As arm_id, a.arm_drug As arm_drug, a.pubmed_id As pubmed_id, c.disease As disease, c.gender As gender, c.race As race, c.ethnicity As ethnicity, t.clinical_trial_id As clinical_trial_id, a.arm_id+'_'+ a.arm_drug As trial_arm, COLLECT(DISTINCT(f.file_type)) AS file_types, COLLECT(DISTINCT(f.file_format)) AS file_formats, COLLECT(DISTINCT(f)) AS files",passThrough:true)
