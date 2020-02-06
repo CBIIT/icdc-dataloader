@@ -31,7 +31,7 @@ Properties:
 
   id_fields:
     specimen: specimen_id
-    ihc_assay_report: ihc_assay_id
+#    ihc_assay_report: ihc_assay_id
     nucleic_acid: aliquot_id
     sequencing_assay: sequencing_assay_id
     snv_variant: variant_id
