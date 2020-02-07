@@ -1,5 +1,6 @@
 Properties:
   domain: trialcommons.cancer.gov
+  rel_prop_delimiter: "$"
 
   plurals:
     specimen: specimens
