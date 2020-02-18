@@ -18,6 +18,7 @@ Properties:
     file: files
     case: cases
     clinical_trial: clinical_trials
+    metastatic_site: metastatic_sites
 
   type_mapping:
     string: String
@@ -46,3 +47,4 @@ Properties:
     case: case_id
     file: uuid
     clinical_trial: clinical_trial_id
+    metastatic_site: met_site_id
