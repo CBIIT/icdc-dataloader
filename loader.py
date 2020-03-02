@@ -10,7 +10,7 @@ from neo4j import GraphDatabase, ServiceUnavailable
 from bento.common.icdc_schema import ICDC_Schema
 from bento.common.props import Props
 from bento.common.utils import get_logger, removeTrailingSlash, check_schema_files, DATETIME_FORMAT, get_host, \
-     UPSERT_MODE, NEW_MODE, DELETE_MODE
+     UPSERT_MODE, NEW_MODE, DELETE_MODE, get_log_file
 from bento.common.config import BentoConfig
 from bento.common.data_loader import DataLoader
 from bento.common.s3 import S3Bucket
@@ -48,7 +48,7 @@ def process_arguments(args, log):
         if not os.path.exists(directory):
             os.makedirs(directory)
         else:
-            exist_files = glob.glob('{}/*'.format(directory))
+            exist_files = glob.glob('{}/*.txt'.format(directory))
             if len(exist_files) > 0:
                 log.error('Folder: "{}" is not empty, please empty it first'.format(directory))
                 sys.exit(1)
@@ -121,11 +121,18 @@ def backup_neo4j(backup_dir, name, address, log):
         log.exception(e)
         return False
 
+def upload_log_file(bucket_name, folder,file_path):
+    base_name = os.path.basename(file_path)
+    s3 = S3Bucket(bucket_name)
+    key = f'{folder}/{base_name}'
+    return s3.upload_file(key, file_path)
+
 # Data loader will try to load all TSV(.TXT) files from given directory into Neo4j
 # optional arguments includes:
 # -i or --uri followed by Neo4j server address and port in format like bolt://12.34.56.78:7687
 def main():
     log = get_logger('Loader')
+    log_file = get_log_file()
     args = parse_arguments()
     user, password, directory, uri, config = process_arguments(args, log)
 
@@ -166,9 +173,18 @@ def main():
         else:
             log.info('No files to load.')
 
+
     except ServiceUnavailable as err:
         log.exception(err)
         log.critical("Can't connect to Neo4j server at: \"{}\"".format(uri))
+
+    if args.bucket and args.s3_folder:
+        result = upload_log_file(args.bucket, args.s3_folder, log_file)
+        if result:
+            log.info(f'Uploading log file {log_file} succeeded!')
+        else:
+            log.error(f'Uploading log file {log_file} failed!')
+
 
 def confirm_deletion(message):
     print(message)
