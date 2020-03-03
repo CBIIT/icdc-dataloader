@@ -10,7 +10,13 @@ from neo4j import GraphDatabase, ServiceUnavailable
 from bento.common.icdc_schema import ICDC_Schema
 from bento.common.props import Props
 from bento.common.utils import get_logger, removeTrailingSlash, check_schema_files, DATETIME_FORMAT, get_host, \
-     UPSERT_MODE, NEW_MODE, DELETE_MODE, get_log_file
+     UPSERT_MODE, NEW_MODE, DELETE_MODE, get_log_file, LOG_PREFIX, APP_NAME
+
+if LOG_PREFIX not in os.environ:
+    os.environ[LOG_PREFIX] = 'Data_Loader'
+
+os.environ[APP_NAME] = 'Data_Loader'
+
 from bento.common.config import BentoConfig
 from bento.common.data_loader import DataLoader
 from bento.common.s3 import S3Bucket
