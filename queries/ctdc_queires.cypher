@@ -13,8 +13,7 @@ RETURN t.clinical_trial_id AS Trial_ID, t.clinical_trial_designation AS Trial_Co
 
 
 // Final version to generate SBG manifest
-MATCH (t:clinical_trial)<--(a:arm)<--(c:case)<--(s:specimen)<-[*]-(f:file)
-OPTIONAL MATCH (s)<-[*]-(ar:assignment_report)
+MATCH (t:clinical_trial)<--(a:arm)<--(c:case)<--(s:specimen)<-[*]-(f:file), (s)<-[*]-(ar:assignment_report)
 WITH DISTINCT f, t, a, c, ar, s
 OPTIONAL MATCH (s)<--(i_pten:ihc_assay_report)
   WHERE i_pten.ihc_test_gene = 'PTEN'
