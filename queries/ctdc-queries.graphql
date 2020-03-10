@@ -136,11 +136,11 @@ type QueryType {
 
   numberOfTrials: Int @cypher(statement: "MATCH (n:clinical_trial) RETURN  count (n)")
   numberOfCases: Int @cypher(statement: "MATCH (n:case) RETURN  count (n)")
-  numberOfFiles: Int @cypher(statement: "MATCH (n:file) RETURN  count (n)")
+  numberOfFiles: Int @cypher(statement: "MATCH (:assignment_report)-->(:specimen)<-[*]-(n:file) RETURN count (n)")
 
   caseCountByTrialId(trial_id: String!):Int @cypher(statement: "MATCH (n:clinical_trial {clinical_trial_id:$trial_id})<-[*]-(c:case)  RETURN  COUNT(DISTINCT(c))")
-  fileCountByTrialId(trial_id: String!):Int @cypher(statement: "MATCH (t:clinical_trial {clinical_trial_id:$trial_id})<-[*]-(f:file) RETURN  COUNT(DISTINCT(f))")
-  fileCountByCaseId(case_id: String!): Int @cypher(statement: "MATCH (c:case {case_id:$case_id})<-[*]-(f:file) RETURN  COUNT(DISTINCT(f))")
+  fileCountByTrialId(trial_id: String!):Int @cypher(statement: "MATCH (t:clinical_trial {clinical_trial_id:$trial_id})<-[*]-(s:specimen)<-[*]-(f:file), (s)<--(:assignment_report) RETURN  COUNT(DISTINCT(f))")
+  fileCountByCaseId(case_id: String!): Int @cypher(statement: "MATCH (c:case {case_id:$case_id})<--(s:specimen)<-[*]-(f:file), (s)<--(:assignment_report) RETURN  COUNT(DISTINCT(f))")
 
 
 
@@ -163,9 +163,9 @@ type QueryType {
 
   casesCountBaseOnDiagnosis: [DiagnosisCaseCount] @cypher(statement: "MATCH (c:case) RETURN  c.disease AS disease ,count(DISTINCT(c)) AS cases ORDER BY c.disease")
 
-  casesCountBaseOnFileType: [FileTypeCaseCount] @cypher(statement: "MATCH (f:file)  OPTIONAL MATCH (c:case)<-[*]-(f:file) RETURN f.file_type As file_type  ,count(DISTINCT(c)) AS cases ORDER BY f.file_type")
+  casesCountBaseOnFileType: [FileTypeCaseCount] @cypher(statement: "MATCH (f:file)-[*]->(s:specimen)-->(c:case), (s)<--(:assignment_report) RETURN f.file_type As file_type  ,count(DISTINCT(c)) AS cases ORDER BY f.file_type")
 
-  casesCountBaseOnFileFormat: [FileFormatCaseCount] @cypher(statement: "MATCH (f:file)  OPTIONAL MATCH (c:case)<-[*]-(f:file) RETURN f.file_format As file_format  ,count(DISTINCT(c)) AS cases ORDER BY f.file_format")
+  casesCountBaseOnFileFormat: [FileFormatCaseCount] @cypher(statement: "MATCH (f:file)-[*]->(s:specimen)-->(c:case), (s)<--(:assignment_report) RETURN f.file_format As file_format  ,count(DISTINCT(c)) AS cases ORDER BY f.file_format")
 
 
   casesCountBaseOnTrialArm: [TrialArmCaseCount] @cypher(statement: "MATCH (a:arm) OPTIONAL MATCH (a)<--(c:case)  RETURN  a.arm_id +'_'+a.arm_drug  AS trial_arm, count(DISTINCT(c)) AS cases ORDER BY a.arm_id +'_'+a.arm_drug")
@@ -178,18 +178,18 @@ type QueryType {
   clinicalTrialArmByTrialId(trial_id: String!):[TrialArm] @cypher(statement:"MATCH (t:clinical_trial {clinical_trial_id:$trial_id})<--(a:arm) Optional MATCH (a)<--(c:case) Return a.arm_id As arm_id,a.arm_target As arm_target, a.arm_drug As arm_drug , a.pubmed_id As pubmed_id,COUNT(DISTINCT(c)) as number_of_cases")
 
   "get all files for a case"
-  filesOfCase(case_id: String!): [FilesOfCase] @cypher(statement: "MATCH (f:file)-[*]->(c:case{case_id: $case_id}) WITH DISTINCT(f) AS f MATCH (f)-->(parent) RETURN f.file_status AS file_status,f.file_name AS file_name ,f.file_type AS file_type,f.file_description AS file_description,f.file_format AS file_format,f.file_size AS file_size,f.md5sum AS md5sum,f.uuid AS uuid,f.file_locations AS file_locations, head(labels(parent)) AS parent, $case_id AS case_id")
+  filesOfCase(case_id: String!): [FilesOfCase] @cypher(statement: "MATCH (f:file)-[*]->(s:specimen)-->(c:case {case_id: $case_id}), (s)<--(:assignment_report) WITH DISTINCT(f) AS f MATCH (f)-->(parent) RETURN f.file_status AS file_status,f.file_name AS file_name ,f.file_type AS file_type,f.file_description AS file_description,f.file_format AS file_format,f.file_size AS file_size,f.md5sum AS md5sum,f.uuid AS uuid,f.file_location AS file_locations, head(labels(parent)) AS parent, $case_id AS case_id")
 
   "get all files for a list of cases"
-  filesOfCases(case_ids: [String!]!): [FilesOfCase] @cypher(statement: "MATCH (f:file)-[*]->(c:case) WITH DISTINCT(f) AS f, c MATCH (f)-->(parent) WHERE c.case_id IN $case_ids RETURN f.file_status AS file_status,f.file_name AS file_name ,f.file_type AS file_type,f.file_description AS file_description,f.file_format AS file_format,f.file_size AS file_size,f.md5sum AS md5sum,f.uuid AS uuid,f.file_locations AS file_locations, head(labels(parent)) AS parent, c.case_id AS case_id")
+  filesOfCases(case_ids: [String!]!): [FilesOfCase] @cypher(statement: "MATCH (f:file)-[*]->(s:specimen)-->(c:case), (s)<--(:assignment_report) WITH DISTINCT(f) AS f, c MATCH (f)-->(parent) WHERE c.case_id IN $case_ids RETURN f.file_status AS file_status,f.file_name AS file_name ,f.file_type AS file_type,f.file_description AS file_description,f.file_format AS file_format,f.file_size AS file_size,f.md5sum AS md5sum,f.uuid AS uuid,f.file_location AS file_locations, head(labels(parent)) AS parent, c.case_id AS case_id")
 
   "case over view"
-  caseOverview: [CaseOverview] @cypher(statement:"MATCH (t:clinical_trial)<--(a:arm)<--(c:case) WITH DISTINCT c AS c, t ,a  OPTIONAL MATCH (c)<-[*]-(f:file)  Return c.case_id  As case_id,t.clinical_trial_designation as clinical_trial_code,a.arm_id As arm_id, a.arm_drug As arm_drug, a.pubmed_id As pubmed_id, c.disease As disease, c.gender As gender, c.race As race, c.ethnicity As ethnicity, t.clinical_trial_id As clinical_trial_id, a.arm_id+'_'+ a.arm_drug As trial_arm, COLLECT(DISTINCT(f.file_type)) AS file_types, COLLECT(DISTINCT(f.file_format)) AS file_formats, COLLECT(DISTINCT(f)) AS files",passThrough:true)
+  caseOverview: [CaseOverview] @cypher(statement:"MATCH (t:clinical_trial)<--(a:arm)<--(c:case)<--(s:specimen)<--(:assignment_report) WITH DISTINCT c AS c, t ,a, s  OPTIONAL MATCH (s)<-[*]-(f:file)  Return c.case_id  As case_id,t.clinical_trial_designation as clinical_trial_code,a.arm_id As arm_id, a.arm_drug As arm_drug, a.pubmed_id As pubmed_id, c.disease As disease, c.gender As gender, c.race As race, c.ethnicity As ethnicity, t.clinical_trial_id As clinical_trial_id, a.arm_id+'_'+ a.arm_drug As trial_arm, COLLECT(DISTINCT(f.file_type)) AS file_types, COLLECT(DISTINCT(f.file_format)) AS file_formats, COLLECT(DISTINCT(f)) AS files",passThrough:true)
 
   "case information for given cases"
   casesInList(case_ids: [String!]!): [CaseInfo] @cypher(statement:"MATCH (t:clinical_trial)<--(a:arm)<--(c:case) WITH DISTINCT c AS c, t ,a  WHERE c.case_id IN $case_ids Return t.clinical_trial_designation as clinical_trial_code, t.clinical_trial_id as clinical_trial_id, a.arm_id As arm_id, a.arm_drug As arm_drug, a.arm_target As arm_target, c.case_id As case_id, c.disease As disease, c.gender As gender, c.race As race, c.ethnicity As ethnicity",passThrough:true)
 
 
   "case detail"
-  caseDetailByCaseId(case_id: String!): [CaseDetail] @cypher(statement:"MATCH (t:clinical_trial)<--(a:arm)<--(c:case  {case_id:$case_id}) WITH DISTINCT c AS c, t ,a  OPTIONAL MATCH (c)<-[*]-(f:file)  Return c.case_id  As case_id,c.disease As disease, c.gender As gender, c.race As race, c.ethnicity As ethnicity,t.clinical_trial_designation as clinical_trial_code, t.clinical_trial_id as clinical_trial_id, COLLECT(DISTINCT(a)) AS arms",passThrough:true)
+  caseDetailByCaseId(case_id: String!): [CaseDetail] @cypher(statement:"MATCH (t:clinical_trial)<--(a:arm)<--(c:case {case_id:$case_id}) WITH DISTINCT c AS c, t ,a  Return c.case_id  As case_id,c.disease As disease, c.gender As gender, c.race As race, c.ethnicity As ethnicity,t.clinical_trial_designation as clinical_trial_code, t.clinical_trial_id as clinical_trial_id, COLLECT(DISTINCT(a)) AS arms",passThrough:true)
 }
