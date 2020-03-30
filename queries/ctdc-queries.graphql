@@ -107,12 +107,12 @@ type FileFormatCaseCount {
   cases: Int
 }
 
-type TrialArmCaseCount{
+type TrialArmCaseCount {
   trial_arm:String
   cases: Int
 }
 
-type FilesOfCase{
+type FilesOfCase {
   case_id: String
   parent:String
   file_name: String
@@ -126,6 +126,96 @@ type FilesOfCase{
   file_locations: String
 }
 
+type SnvVariant {
+  variant_id: String
+  external_variant_id: String
+  gene: String
+  chromosome: String
+  exon: Int
+  position: Int
+  reference: String
+  alternative: String
+  transcript_id: String
+  transcript_hgvs: String
+  genomic_hgvs: String
+  oncomine_variant_class: String
+  variant_classification: String
+  amino_acid_change: String
+  allele_frequency: Float
+}
+
+type DelinsVariant {
+  variant_id: String
+  external_variant_id: String
+  gene: String
+  chromosome: String
+  exon: Int
+  position: Int
+  reference: String
+  alternative: String
+  transcript_id: String
+  transcript_hgvs: String
+  genomic_hgvs: String
+  oncomine_variant_class: String
+  variant_classification: String
+  amino_acid_change: String
+  allele_frequency: Float
+}
+
+type IndelVariant {
+  variant_id: String
+  external_variant_id: String
+  gene: String
+  chromosome: String
+  exon: Int
+  position: Int
+  reference: String
+  alternative: String
+  transcript_id: String
+  transcript_hgvs: String
+  genomic_hgvs: String
+  oncomine_variant_class: String
+  variant_classification: String
+  amino_acid_change: String
+  allele_frequency: Float
+}
+
+type CopyNumberVariant {
+  variant_id: String
+  external_variant_id: String
+  gene: String
+  chromosome: String
+  oncomine_variant_class: String
+  tumor_suppressor: Boolean
+  copy_number: Float
+  copy_number_ci_5: Float
+  copy_number_ci_95: Float
+}
+
+type GeneFusionVariant {
+  variant_id: String
+  external_variant_id: String
+  gene1: String
+  gene2: String
+  oncomine_variant_class: String
+  gene1_read_count: Int
+  gene2_read_count: Int
+}
+
+type CaseVariants {
+  case_id: String
+  specimen_id: String
+  specimen_type: String
+  aliquot_id: String
+  sequencing_assay_id: String
+  variant_report_id: String
+  snv_variants_array: [SnvVariant]
+  delins_variants_array: [DelinsVariant]
+  indel_variants_array: [IndelVariant]
+  copy_number_variants_array: [CopyNumberVariant]
+  gene_fusion_variants_array: [GeneFusionVariant]
+  ihc_assay_report_array: [ihc_assay_report]
+}
 
 schema {
   query: QueryType
@@ -185,12 +275,15 @@ type QueryType {
   filesOfCases(case_ids: [String!]!): [FilesOfCase] @cypher(statement: "MATCH (f:file)-[*]->(s:specimen)-->(c:case), (s)<--(:assignment_report) WITH DISTINCT(f) AS f, c MATCH (f)-->(parent) WHERE c.case_id IN $case_ids RETURN f.file_status AS file_status,f.file_name AS file_name ,f.file_type AS file_type,f.file_description AS file_description,f.file_format AS file_format,f.file_size AS file_size,f.md5sum AS md5sum,f.uuid AS uuid,f.file_location AS file_locations, head(labels(parent)) AS parent, c.case_id AS case_id")
 
   "case over view"
-  caseOverview: [CaseOverview] @cypher(statement:"MATCH (t:clinical_trial)<--(a:arm)<--(c:case)<--(s:specimen)<--(:assignment_report) WITH DISTINCT c AS c, t ,a, s  OPTIONAL MATCH (s)<-[*]-(f:file)  Return c.case_id  As case_id,t.clinical_trial_designation as clinical_trial_code,a.arm_id As arm_id, a.arm_drug As arm_drug, a.pubmed_id As pubmed_id, c.disease As disease, c.gender As gender, c.race As race, c.ethnicity As ethnicity, t.clinical_trial_id As clinical_trial_id, a.arm_id+'_'+ a.arm_drug As trial_arm, COLLECT(DISTINCT(f.file_type)) AS file_types, COLLECT(DISTINCT(f.file_format)) AS file_formats, COLLECT(DISTINCT(f)) AS files",passThrough:true)
+  caseOverview: [CaseOverview] @cypher(statement:"MATCH (t:clinical_trial)<--(a:arm)<--(c:case)<--(s:specimen)<--(:assignment_report) WITH DISTINCT c AS c, t ,a, s  OPTIONAL MATCH (s)<-[*]-(f:file)  Return c.case_id  As case_id,t.clinical_trial_designation as clinical_trial_code,a.arm_id As arm_id, a.arm_drug As arm_drug, a.pubmed_id As pubmed_id, c.disease As disease, c.gender As gender, c.race As race, c.ethnicity As ethnicity, t.clinical_trial_id As clinical_trial_id, a.arm_id+'_'+ a.arm_drug As trial_arm, COLLECT(DISTINCT(f.file_type)) AS file_types, COLLECT(DISTINCT(f.file_format)) AS file_formats, COLLECT(DISTINCT(f)) AS files", passThrough:true)
 
   "case information for given cases"
-  casesInList(case_ids: [String!]!): [CaseInfo] @cypher(statement:"MATCH (t:clinical_trial)<--(a:arm)<--(c:case) WITH DISTINCT c AS c, t ,a  WHERE c.case_id IN $case_ids Return t.clinical_trial_designation as clinical_trial_code, t.clinical_trial_id as clinical_trial_id, a.arm_id As arm_id, a.arm_drug As arm_drug, a.arm_target As arm_target, c.case_id As case_id, c.disease As disease, c.gender As gender, c.race As race, c.ethnicity As ethnicity",passThrough:true)
+  casesInList(case_ids: [String!]!): [CaseInfo] @cypher(statement:"MATCH (t:clinical_trial)<--(a:arm)<--(c:case) WITH DISTINCT c AS c, t ,a  WHERE c.case_id IN $case_ids Return t.clinical_trial_designation as clinical_trial_code, t.clinical_trial_id as clinical_trial_id, a.arm_id As arm_id, a.arm_drug As arm_drug, a.arm_target As arm_target, c.case_id As case_id, c.disease As disease, c.gender As gender, c.race As race, c.ethnicity As ethnicity", passThrough:true)
 
 
   "case detail"
-  caseDetailByCaseId(case_id: String!): [CaseDetail] @cypher(statement:"MATCH (t:clinical_trial)<--(a:arm)<--(c:case {case_id:$case_id}) WITH DISTINCT c AS c, t ,a  Return c.case_id  As case_id,c.disease As disease, c.gender As gender, c.race As race, c.ethnicity As ethnicity,t.clinical_trial_designation as clinical_trial_code, t.clinical_trial_id as clinical_trial_id, COLLECT(DISTINCT(a)) AS arms",passThrough:true)
+  caseDetailByCaseId(case_id: String!): [CaseDetail] @cypher(statement:"MATCH (t:clinical_trial)<--(a:arm)<--(c:case {case_id:$case_id}) WITH DISTINCT c AS c, t ,a  Return c.case_id  As case_id,c.disease As disease, c.gender As gender, c.race As race, c.ethnicity As ethnicity,t.clinical_trial_designation as clinical_trial_code, t.clinical_trial_id as clinical_trial_id, COLLECT(DISTINCT(a)) AS arms", passThrough:true)
+
+  "variants_of_case"
+  variantsOfCases(case_ids: [String] = []): [CaseVariants] @cypher(statement: "MATCH (c:case) WITH COLLECT(c.case_id) AS all_cases MATCH (c:case)<--(s:specimen)<--(n:nucleic_acid)<--(sa:sequencing_assay)<--(v:variant_report) WHERE c.case_id IN CASE $case_ids WHEN [] THEN all_cases ELSE $case_ids END OPTIONAL MATCH (s)<--(ihc:ihc_assay_report) OPTIONAL MATCH (v)<-[snv_r]-(snv:snv_variant) OPTIONAL MATCH (v)<-[di_r]-(di:delins_variant) OPTIONAL MATCH (v)<-[idel_r]-(idel:indel_variant) OPTIONAL MATCH (v)<-[cp_r]-(cp:copy_number_variant) OPTIONAL MATCH (v)<-[gf_r]-(gf:gene_fusion_variant) RETURN c.case_id AS case_id, s.specimen_id AS specimen_id, s.specimen_type AS specimen_type, n.aliquot_id AS aliquot_id, sa.sequencing_assay_id AS sequencing_assay_id, v.variant_report_id AS variant_report_id, COLLECT(distinct snv{.*, allele_frequency: snv_r.allele_frequency}) AS snv_variants_array, COLLECT(distinct di{.*, allele_frequency: di_r.allele_frequency}) AS delins_variants_array, COLLECT(distinct idel{.*, allele_frequency: idel_r.allele_frequency}) AS indel_variants_array, COLLECT(distinct cp{.*, copy_number: cp_r.copy_number, copy_number_ci_95: cp_r.copy_number_ci_95, copy_number_ci_5: cp_r.copy_number_ci_5}) AS copy_number_variants_array, COLLECT(distinct gf{.*, gene1_read_count: gf_r.gene1_read_count, gene2_read_count: gf_r.gene2_read_count}) AS gene_fusion_variants_array, COLLECT(distinct ihc) AS ihc_assay_report_array", passThrough: true)
 }
