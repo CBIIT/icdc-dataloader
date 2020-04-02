@@ -217,6 +217,11 @@ type CaseVariants {
   ihc_assay_report_array: [ihc_assay_report]
 }
 
+type ArmDiagnoses {
+  arm_id: String
+  diagnoses: Int
+}
+
 schema {
   query: QueryType
 }
@@ -225,13 +230,16 @@ type QueryType {
   schemaVersion: String @cypher(statement: "RETURN '0.1.0'")
 
   numberOfTrials: Int @cypher(statement: "MATCH (n:clinical_trial) RETURN  count (n)")
+  numberOfArms: Int @cypher(statement: "MATCH (a:arm) RETURN count(a)")
   numberOfCases: Int @cypher(statement: "MATCH (n:case) RETURN  count (n)")
   numberOfFiles: Int @cypher(statement: "MATCH (:assignment_report)-->(:specimen)<-[*]-(n:file) RETURN count (n)")
+  numberOfFileTypes: Int  @cypher(statement: "MATCH (f:file) RETURN count(distinct(f.file_type))")
   numberOfDiagnoses: Int @cypher(statement: "MATCH (c:case) RETURN count(distinct(c.disease))")
 
   caseCountByTrialId(trial_id: String!):Int @cypher(statement: "MATCH (n:clinical_trial {clinical_trial_id:$trial_id})<-[*]-(c:case)  RETURN  COUNT(DISTINCT(c))")
   fileCountByTrialId(trial_id: String!):Int @cypher(statement: "MATCH (t:clinical_trial {clinical_trial_id:$trial_id})<-[*]-(s:specimen)<-[*]-(f:file), (s)<--(:assignment_report) RETURN  COUNT(DISTINCT(f))")
   fileCountByCaseId(case_id: String!): Int @cypher(statement: "MATCH (c:case {case_id:$case_id})<--(s:specimen)<-[*]-(f:file), (s)<--(:assignment_report) RETURN  COUNT(DISTINCT(f))")
+  diagnosisCountByArm: [ArmDiagnoses] @cypher(statement: "MATCH (a:arm)<-[*]-(c:case) RETURN a.arm_id AS arm_id, count(distinct(c.disease)) AS diagnoses ORDER BY diagnoses DESC")
 
 
 
