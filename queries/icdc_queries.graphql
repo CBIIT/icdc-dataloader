@@ -118,6 +118,16 @@ type FilesOfCase{
   file_locations: String
 }
 
+type StudyDetail {
+  study_code: String
+  file_name: String
+  file_type: String
+  association: String
+  description: String
+  format: String
+  size: Int
+  MD5: String
+}
 
 
 type QueryType {
@@ -166,6 +176,7 @@ type QueryType {
   filesOfCases(case_ids: [String!]!): [FilesOfCase] @cypher(statement: "MATCH (f:file)-[*]->(c:case) WITH DISTINCT(f) AS f, c MATCH (f)-->(parent) WHERE c.case_id IN $case_ids RETURN f.file_status AS file_status,f.file_name AS file_name ,f.file_type AS file_type,f.file_description AS file_description,f.file_format AS file_format,f.file_size AS file_size,f.md5sum AS md5sum,f.uuid AS uuid,f.file_locations AS file_locations, head(labels(parent)) AS parent, c.case_id AS case_id")
   caseOverview(study_codes: [String] = [], breeds: [String] = [], diagnoses: [String] = [], sexes: [String] = []): [CaseOverview] @cypher(statement: "MATCH (s:study) WITH COLLECT(DISTINCT(s.clinical_study_designation)) AS all_studies MATCH (d:demographic) WITH COLLECT(DISTINCT(d.breed)) AS all_breeds, COLLECT(DISTINCT(d.sex)) AS all_sexes, all_studies MATCH (d:diagnosis) WITH COLLECT(DISTINCT(d.disease_term)) AS all_diseases, all_breeds, all_sexes, all_studies MATCH (p:program)<-[*]-(s:study)<-[*]-(c:case)<--(demo:demographic), (c)<--(diag:diagnosis) WHERE s.clinical_study_designation IN CASE $study_codes WHEN [] THEN all_studies ELSE $study_codes END AND demo.breed IN CASE $breeds WHEN [] THEN all_breeds ELSE $breeds END AND diag.disease_term IN CASE $diagnoses WHEN [] THEN all_diseases ELSE $diagnoses END AND demo.sex IN CASE $sexes WHEN [] THEN all_sexes ELSE $sexes END OPTIONAL MATCH (f:file)-[*]->(c), (samp:sample)-[*]->(c) WITH DISTINCT c AS c, p, s, demo, diag, f, samp RETURN c.case_id AS case_id, s.clinical_study_designation AS study_code, p.program_acronym AS program, s.clinical_study_type AS study_type, demo.breed AS breed, diag.disease_term AS diagnosis, diag.stage_of_disease AS stage_of_disease, diag.primary_disease_site AS disease_site,demo.patient_age_at_enrollment AS age, demo.sex AS sex, demo.neutered_indicator AS neutered_status, COLLECT(DISTINCT(f.file_type)) AS data_types, COLLECT(DISTINCT(f.file_format)) AS file_formats, COLLECT(DISTINCT(f)) AS files,  COLLECT(DISTINCT(samp.sample_id)) as samples", passThrough:true)
   casesInList(case_ids: [String!]!): [CaseOverview] @cypher(statement: "MATCH (p:program)<-[*]-(s:study)<-[*]-(c:case)<--(demo:demographic), (c)<--(diag:diagnosis) WHERE c.case_id IN $case_ids OPTIONAL MATCH (f:file)-[*]->(c), (samp:sample)-[*]->(c) WITH DISTINCT c AS c, p, s, demo, diag, f, samp RETURN c.case_id AS case_id, s.clinical_study_designation AS study_code, p.program_acronym AS program, s.clinical_study_type AS study_type, demo.breed AS breed, diag.disease_term AS diagnosis, diag.stage_of_disease AS stage_of_disease, diag.primary_disease_site AS disease_site,demo.patient_age_at_enrollment AS age, demo.sex AS sex, demo.neutered_indicator AS neutered_status, COLLECT(DISTINCT(f.file_type)) AS data_types, COLLECT(DISTINCT(f.file_format)) AS file_formats, COLLECT(DISTINCT(f)) AS files,  COLLECT(DISTINCT(samp.sample_id)) as samples", passThrough:true)
+  studyDetail(study_code: String!): [StudyDetail] @cypher(statement: "MATCH (s:study {clinical_study_designation: $study_code})<-[*]-(p)<--(f:file) WITH DISTINCT(f), s, p RETURN s.clinical_study_designation AS study_code, f.file_name AS file_name, f.file_type AS file_type, head(labels(p)) AS association, f.file_description AS description, f.file_format AS format, f.file_size AS size, f.md5sum AS MD5")
 
   "Find nodes with parameters"
   casesByStudyId(study_id: String!): [case] @cypher(statement: "MATCH (s:study {clinical_study_designation: $study_id})<-[*]-(c:case) return DISTINCT(c)")
