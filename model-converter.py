@@ -34,21 +34,18 @@ if __name__ == '__main__':
         for name in schema.get_node_names():
             props = schema.get_public_props_for_node(name)
             typeLine = 'type {} {{'.format(name)
-            print(typeLine)
             print(typeLine, file=graphql_file)
             for prop, propType in props.items():
                 prop_type = propType[PROP_TYPE]
                 if prop_type == 'DateTime' or prop_type == 'Date':
                     prop_type = 'String'
                 propLine = '  {}: {}'.format(prop, prop_type)
-                print(propLine)
                 print(propLine, file=graphql_file)
             typeEnd = '}\n'
-            print(typeEnd)
             print(typeEnd, file=graphql_file)
 
         # Copy custom queries
         for line in args.query_file:
             print(line, end='', file=graphql_file)
 
-    print('Types: {}, Relationships: {}'.format(schema.node_count(), schema.relationship_count()))
+    log.info('Types: {}, Relationships: {}'.format(schema.node_count(), schema.relationship_count()))
