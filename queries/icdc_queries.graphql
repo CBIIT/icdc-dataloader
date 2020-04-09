@@ -125,7 +125,7 @@ type StudyDetail {
   association: String
   description: String
   format: String
-  size: Int
+  size: Float
   MD5: String
 }
 
