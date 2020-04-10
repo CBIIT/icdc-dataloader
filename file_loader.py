@@ -58,7 +58,8 @@ MANIFEST_FIELDS = [GUID, MD5, SIZE, ACL, URL]
 
 class FileLoader:
     def __init__(self, queue_name, driver, schema, config, manifest_bucket, manifest_folder, dry_run=False):
-        assert isinstance(config, BentoConfig)
+        if not isinstance(config, BentoConfig):
+            raise TypeError('config object has wrong type!')
         self.config = config
 
         self.log = get_logger('File Loader')
@@ -426,7 +427,7 @@ class FileLoader:
 
     def listen(self):
         self.queue = Queue(self.queue_name)
-        self.log.info('PIMixture Processor service started!')
+        self.log.info('File loader service started!')
         while True:
             self.log.info("Receiving more messages...")
             for msg in self.queue.receiveMsgs(self.config.VISIBILITY_TIMEOUT):
