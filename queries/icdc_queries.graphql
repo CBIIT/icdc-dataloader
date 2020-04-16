@@ -169,6 +169,14 @@ type FileDetail {
   uuid: String
 }
 
+type FileInfo {
+  GUID: String
+  md5: String
+  size: Float
+  acl: [String]
+  url: String
+}
+
 type QueryType {
   "Version"
   schemaVersion: String @cypher(statement: "RETURN '0.1.0'")
@@ -223,4 +231,5 @@ type QueryType {
   filesBySampleId(sample_id: String!): [file] @cypher(statement: "MATCH (s:sample {sample_id: $sample_id})<-[*]-(f:file) RETURN f")
   filesOfStudy(study_code: String!): [file] @cypher(statement: "MATCH (f:file)-[*]->(:study {clinical_study_designation: $study_code}) return DISTINCT(f)")
   fileDetail(file_ids: [String] = []): [FileDetail] @cypher(statement: "MATCH (f:file) WITH collect(f.uuid) as all_files MATCH (f:file)-[*]->(s:study) WHERE f.uuid IN CASE $file_ids WHEN [] THEN all_files ELSE $file_ids END OPTIONAL MATCH (f)-[*]->(c:case) OPTIONAL MATCH (f)-[*]->(co:cohort) OPTIONAL MATCH (f)-[*]->(arm:study_arm) OPTIONAL MATCH (demo:demographic)-->(c) OPTIONAL MATCH (diag:diagnosis)-->(c) OPTIONAL MATCH (f)-[*]->(v:visit) OPTIONAL MATCH (f)-->(samp:sample) WITH DISTINCT (f) AS f, s, c, co, arm, demo, diag, v, samp RETURN s.clinical_study_designation AS clinical_study_designation, s.clinical_study_name AS clinical_study_name, arm.arm AS arm, co.cohort_description AS cohort_description, co.cohort_dose AS cohort_dose, c.case_id AS case_id, demo.breed AS breed, demo.weight AS weight, demo.sex AS sex, demo.neutered_indicator AS neutered_indicator, demo.patient_age_at_enrollment AS patient_age_at_enrollment, diag.disease_term AS disease_term, diag.stage_of_disease AS stage_of_disease, diag.primary_disease_site AS primary_disease_site, diag.concurrent_disease AS concurrent_disease, diag.concurrent_disease_type AS concurrent_disease_type, v.visit_date AS visit_date, v.visit_number AS visit_number, v.day_in_cycle AS day_in_cycle, samp.sample_id AS sample_id, samp.sample_type AS sample_type, samp.general_sample_pathology AS general_sample_pathology, samp.specific_sample_pathology AS specific_sample_pathology, samp.sample_site AS sample_site, samp.date_of_sample_collection AS date_of_sample_collection, samp.necropsy_sample AS necropsy_sample, samp.percentage_tumor AS percentage_tumor, samp.percentage_stroma AS percentage_stroma, samp.comment AS comment, f.file_name AS file_name, f.file_type AS file_type, f.file_description AS file_description, f.file_format AS file_format, f.file_size AS file_size, f.md5sum AS md5sum, f.file_locations AS file_locations, f.uuid AS uuid ORDER BY file_type, case_id")
+  fileInfo(file_ids: [String] = []): [FileInfo] @cypher(statement: "MATCH (f:file) WITH collect(f.uuid) as all_files MATCH (f:file) WHERE f.uuid IN CASE $file_ids WHEN [] THEN all_files ELSE $file_ids END RETURN f.uuid AS uuid, 'dg.4DFC/' + f.uuid AS GUID, f.md5sum AS md5, f.file_size AS size, collect('Open') AS acl, f.file_locations AS url ORDER BY url")
 }
