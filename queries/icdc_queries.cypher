@@ -133,7 +133,8 @@ ORDER BY file_type, case_id
 // Get all files for SBG/IndexD
 MATCH (f:file)-[*]->(s:study)
 OPTIONAL MATCH (f)-[*]->(c:case)
-OPTIONAL MATCH (c)-->(co:cohort)-->(arm:study_arm)
+OPTIONAL MATCH (f)-[*]->(co:cohort)
+OPTIONAL MATCH (f)-[*]->(arm:study_arm)
 OPTIONAL MATCH (demo:demographic)-->(c)
 OPTIONAL MATCH (diag:diagnosis)-->(c)
 OPTIONAL MATCH (f)-[*]->(v:visit)
@@ -155,7 +156,7 @@ RETURN s.clinical_study_designation AS clinical_study_designation, s.clinical_st
        samp.date_of_sample_collection AS date_of_sample_collection, samp.necropsy_sample AS necropsy_sample,
        samp.percentage_tumor AS percentage_tumor, samp.percentage_stroma AS percentage_stroma, samp.comment AS comment,
        f.file_name AS file_name, f.file_type AS file_type, f.file_description AS file_description,
-       f.file_format AS file_format, f.file_size AS file_size, f.file_size AS size, f.md5sum AS md5sum, f.md5sum AS md5,
-       f.file_locations AS file_locations, f.file_locations AS url, f.uuid AS uuid, 'dg.4DFC/' + f.uuid AS GUID,
-       "['Open']" AS acl
+       f.file_format AS file_format, f.file_size AS file_size, f.md5sum AS md5sum,
+       f.file_locations AS file_locations, f.uuid AS uuid, 'dg.4DFC/' + f.uuid AS GUID,
+       collect('Open') AS acl
   ORDER BY file_type, case_id
