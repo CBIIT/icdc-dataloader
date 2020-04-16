@@ -131,7 +131,12 @@ RETURN s.clinical_study_designation AS clinical_study_designation, s.clinical_st
 ORDER BY file_type, case_id
 
 // Get all files for SBG/IndexD
+MATCH (f:file)
+WITH collect(f.uuid) AS all_files
 MATCH (f:file)-[*]->(s:study)
+  WHERE f.uuid IN CASE $file_ids WHEN [] THEN all_files
+    ELSE $file_ids
+    END
 OPTIONAL MATCH (f)-[*]->(c:case)
 OPTIONAL MATCH (f)-[*]->(co:cohort)
 OPTIONAL MATCH (f)-[*]->(arm:study_arm)
@@ -157,6 +162,5 @@ RETURN s.clinical_study_designation AS clinical_study_designation, s.clinical_st
        samp.percentage_tumor AS percentage_tumor, samp.percentage_stroma AS percentage_stroma, samp.comment AS comment,
        f.file_name AS file_name, f.file_type AS file_type, f.file_description AS file_description,
        f.file_format AS file_format, f.file_size AS file_size, f.md5sum AS md5sum,
-       f.file_locations AS file_locations, f.uuid AS uuid, 'dg.4DFC/' + f.uuid AS GUID,
-       collect('Open') AS acl
+       f.file_locations AS file_locations, f.uuid AS uuid
   ORDER BY file_type, case_id

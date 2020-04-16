@@ -129,6 +129,45 @@ type StudyDetail {
   MD5: String
 }
 
+type FileDetail {
+  clinical_study_designation: String
+  clinical_study_name: String
+  arm: String
+  cohort_description: String
+  cohort_dose: String
+  case_id: String
+  breed: String
+  weight: String
+  sex: String
+  neutered_indicator: String
+  patient_age_at_enrollment: Float
+  disease_term: String
+  stage_of_disease: String
+  primary_disease_site: String
+  concurrent_disease: Boolean
+  concurrent_disease_type: String
+  visit_date: String
+  visit_number: String
+  day_in_cycle: Int
+  sample_id: String
+  sample_type: String
+  general_sample_pathology: String
+  specific_sample_pathology: String
+  sample_site: String
+  date_of_sample_collection: String
+  necropsy_sample: Boolean
+  percentage_tumor: Float
+  percentage_stroma: Float
+  comment: String
+  file_name: String
+  file_type: String
+  file_description: String
+  file_format: String
+  file_size: Float
+  md5sum: String
+  file_locations: String
+  uuid: String
+}
 
 type QueryType {
   "Version"
@@ -183,4 +222,5 @@ type QueryType {
   samplesByCaseId(case_id: String!): [sample] @cypher(statement: "MATCH (c:case {case_id: $case_id})<-[*]-(s:sample) RETURN s")
   filesBySampleId(sample_id: String!): [file] @cypher(statement: "MATCH (s:sample {sample_id: $sample_id})<-[*]-(f:file) RETURN f")
   filesOfStudy(study_code: String!): [file] @cypher(statement: "MATCH (f:file)-[*]->(:study {clinical_study_designation: $study_code}) return DISTINCT(f)")
+  fileDetail(file_ids: [String] = []): [FileDetail] @cypher(statement: "MATCH (f:file) WITH collect(f.uuid) as all_files MATCH (f:file)-[*]->(s:study) WHERE f.uuid IN CASE $file_ids WHEN [] THEN all_files ELSE $file_ids END OPTIONAL MATCH (f)-[*]->(c:case) OPTIONAL MATCH (f)-[*]->(co:cohort) OPTIONAL MATCH (f)-[*]->(arm:study_arm) OPTIONAL MATCH (demo:demographic)-->(c) OPTIONAL MATCH (diag:diagnosis)-->(c) OPTIONAL MATCH (f)-[*]->(v:visit) OPTIONAL MATCH (f)-->(samp:sample) WITH DISTINCT (f) AS f, s, c, co, arm, demo, diag, v, samp RETURN s.clinical_study_designation AS clinical_study_designation, s.clinical_study_name AS clinical_study_name, arm.arm AS arm, co.cohort_description AS cohort_description, co.cohort_dose AS cohort_dose, c.case_id AS case_id, demo.breed AS breed, demo.weight AS weight, demo.sex AS sex, demo.neutered_indicator AS neutered_indicator, demo.patient_age_at_enrollment AS patient_age_at_enrollment, diag.disease_term AS disease_term, diag.stage_of_disease AS stage_of_disease, diag.primary_disease_site AS primary_disease_site, diag.concurrent_disease AS concurrent_disease, diag.concurrent_disease_type AS concurrent_disease_type, v.visit_date AS visit_date, v.visit_number AS visit_number, v.day_in_cycle AS day_in_cycle, samp.sample_id AS sample_id, samp.sample_type AS sample_type, samp.general_sample_pathology AS general_sample_pathology, samp.specific_sample_pathology AS specific_sample_pathology, samp.sample_site AS sample_site, samp.date_of_sample_collection AS date_of_sample_collection, samp.necropsy_sample AS necropsy_sample, samp.percentage_tumor AS percentage_tumor, samp.percentage_stroma AS percentage_stroma, samp.comment AS comment, f.file_name AS file_name, f.file_type AS file_type, f.file_description AS file_description, f.file_format AS file_format, f.file_size AS file_size, f.md5sum AS md5sum, f.file_locations AS file_locations, f.uuid AS uuid ORDER BY file_type, case_id")
 }
