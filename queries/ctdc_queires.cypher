@@ -13,8 +13,13 @@ RETURN t.clinical_trial_id AS Trial_ID, t.clinical_trial_designation AS Trial_Co
 
 
 // Final version to generate SBG manifest
+MATCH (f:file)
+WITH collect(f.uuid) AS all_files
 MATCH(t:clinical_trial)<--(a:arm)<--(c:case)<--(s:specimen)<--(n:nucleic_acid)<--(sa:sequencing_assay)<--(f:file),
      (s)<-[*]-(ar:assignment_report), (sa)<--(v:variant_report)
+  WHERE f.uuid IN CASE $file_ids WHEN [] THEN all_files
+    ELSE $file_ids
+    END
 WITH DISTINCT f, t, a, c, ar, s, n, sa, v
 OPTIONAL MATCH (s)<--(i_pten:ihc_assay_report)
   WHERE i_pten.ihc_test_gene = 'PTEN'
@@ -45,7 +50,8 @@ RETURN t.clinical_trial_id AS Trial_ID, t.clinical_trial_designation AS Trial_Co
          WHEN 'Aligned DNA reads file' THEN ' DNA'
          WHEN 'Aligned RNA reads file' THEN ' RNA'
          WHEN 'Variants file' THEN ' DNA/RNA'
-         WHEN 'Index file' THEN ' '
+         WHEN 'DNA Index file' THEN ' DNA'
+         WHEN 'RNA Index file' THEN ' RNA'
          END AS `Experimental_strategy`,
        sa.platform AS Platform,
        v.reference_genome AS Reference_genome,
