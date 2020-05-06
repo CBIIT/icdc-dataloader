@@ -1,0 +1,51 @@
+Config:
+  temp_folder: tmp
+  backup_folder: /tmp/data-loader-backups
+
+  sqs:
+    long_pull_time: 20
+    visibility_timeout: 30
+
+  indexd:
+    GUID_prefix: dg.4DFC/
+    ext: .tsv
+
+  slack_url:
+
+  rel_prop_delimiter: $
+
+  neo4j:
+    # Location of Neo4j server, e.g., bolt://127.0.0.1:7687
+    uri: bolt://127.0.0.1:7687
+    # Neo4j username
+    user: neo4j
+    # Neo4j password
+    password: your_neo4j_password
+
+  # Schema files' locations
+  schema:
+    - tests/data/icdc-model.yml
+    - tests/data/icdc-model-props.yml
+
+  #Property file location
+  prop_file: config/props-icdc.yml
+
+  # Skip validations, aka. Cheat Mode
+  cheat_mode: false
+  # Validations only, skip loading
+  dry_run: false
+  # Wipe out database before loading, you'll lose all data!
+  wipe_db: false
+  # Skip backup step
+  no_backup: false
+  # Automatically confirm deletion and database wiping (without asking user to confirm)
+  no_confirmation: false
+  # Max violations to display, default is 10
+  max_violations: 10
+
+  # S3 bucket name, if you are loading from an S3 bucket
+  s3_bucket:
+  # S3 folder for dataset
+  s3_folder:
+  # Loading mode, can be UPSERT_MODE, NEW_MODE or DELETE_MODE, default is UPSERT_MODE
+  loading_mode: UPSERT_MODE

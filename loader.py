@@ -26,9 +26,9 @@ def parse_arguments():
     parser.add_argument('-i', '--uri', help='Neo4j uri like bolt://12.34.56.78:7687')
     parser.add_argument('-u', '--user', help='Neo4j user')
     parser.add_argument('-p', '--password', help='Neo4j password')
-    parser.add_argument('-s', '--schema', help='Schema files', action='append', required=True)
-    parser.add_argument('--prop-file', help='Property file, example is in config/props.example.yml', required=True)
-    parser.add_argument('--config-file', help='Configuration file, example is in config/config.example.ini',
+    parser.add_argument('-s', '--schema', help='Schema files', action='append')
+    parser.add_argument('--prop-file', help='Property file, example is in config/props.example.yml')
+    parser.add_argument('--config-file', help='Configuration file, example is in config/locader.config.example.yml',
                         required=True)
     parser.add_argument('-c', '--cheat-mode', help='Skip validations, aka. Cheat Mode', action='store_true')
     parser.add_argument('-d', '--dry-run', help='Validations only, skip loading', action='store_true')
