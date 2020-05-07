@@ -181,8 +181,8 @@ def main():
 
 
     except ServiceUnavailable as err:
-        log.exception(err)
-        log.critical("Can't connect to Neo4j server at: \"{}\"".format(uri))
+        log.critical("Neo4j service not available at: \"{}\"".format(uri))
+        # log.exception(err)
 
     if args.bucket and args.s3_folder:
         result = upload_log_file(args.bucket, args.s3_folder, log_file)
