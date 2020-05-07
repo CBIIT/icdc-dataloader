@@ -6,6 +6,7 @@ import os, sys
 import subprocess
 
 from neo4j import GraphDatabase, ServiceUnavailable
+from neobolt.exceptions import AuthError
 
 from bento.common.icdc_schema import ICDC_Schema
 from bento.common.props import Props
@@ -143,7 +144,7 @@ def main():
     user, password, directory, uri, config = process_arguments(args, log)
 
     if not check_schema_files(args.schema, log):
-        sys.exit(1)
+        return
 
     try:
         file_list = glob.glob('{}/*.txt'.format(directory))
@@ -182,7 +183,11 @@ def main():
 
     except ServiceUnavailable as err:
         log.critical("Neo4j service not available at: \"{}\"".format(uri))
-        # log.exception(err)
+        return
+    except AuthError as err:
+        log.error("Wrong Neo4j username or password!")
+        return
+
 
     if args.bucket and args.s3_folder:
         result = upload_log_file(args.bucket, args.s3_folder, log_file)
