@@ -2,6 +2,7 @@ Config:
   temp_folder: tmp
   backup_folder: /tmp/data-loader-backups
 
+  # character used to separate relationship properties from relationship names
   rel_prop_delimiter: $
 
   neo4j:
@@ -12,23 +13,23 @@ Config:
     # Neo4j password
     password: your_neo4j_password
 
-  # Schema files' locations
+  # Schema files' locations, usually two files
   schema:
     - tests/data/icdc-model.yml
     - tests/data/icdc-model-props.yml
 
-  #Property file location
+  # Property file location, props-icdc.yml, props-ctdc.yml etc.
   prop_file: config/props-icdc.yml
 
   # Skip validations, aka. Cheat Mode
   cheat_mode: false
   # Validations only, skip loading
   dry_run: false
-  # Wipe out database before loading, you'll lose all data!
+  # Wipe clean database before loading, you'll lose all data!
   wipe_db: false
-  # Skip backup step
+  # Skip backup database step
   no_backup: false
-  # Automatically confirm deletion and database wiping (without asking user to confirm)
+  # Automatically confirm deletion and database wiping, without asking user to confirm
   no_confirmation: false
   # Max violations to display, default is 10
   max_violations: 10
@@ -39,3 +40,5 @@ Config:
   s3_folder:
   # Loading mode, can be UPSERT_MODE, NEW_MODE or DELETE_MODE, default is UPSERT_MODE
   loading_mode: UPSERT_MODE
+  # Location of dataset
+  dataset: tests/data/Dataset

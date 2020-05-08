@@ -37,12 +37,12 @@ def parse_arguments():
                         action='store_true')
     parser.add_argument('--no-backup', help='Skip backup step', action='store_true')
     parser.add_argument('-y', '--yes', help='Automatically confirm deletion and database wiping', action='store_true')
-    parser.add_argument('-M', '--max-violations', help='Max violations to display', nargs='?', type=int, default=10)
+    parser.add_argument('-M', '--max-violations', help='Max violations to display', nargs='?', type=int)
     parser.add_argument('-b', '--bucket', help='S3 bucket name')
     parser.add_argument('-f', '--s3-folder', help='S3 folder')
     parser.add_argument('-m', '--mode', help='Loading mode', choices=[UPSERT_MODE, NEW_MODE, DELETE_MODE],
                         default=UPSERT_MODE)
-    parser.add_argument('dir', help='Data directory')
+    parser.add_argument('--dataset', help='Dataset directory')
 
     return parser.parse_args()
 
@@ -50,46 +50,75 @@ def parse_arguments():
 def process_arguments(args, log):
     config = BentoConfig(args.config_file)
 
-    directory = args.dir
+    if args.dataset:
+        config.dataset = args.dataset
+    if not config.dataset:
+        log.error('No dataset specified! Please specify dataset in config file or with CLI argument --dataset')
+        sys.exit(1)
     if args.s3_folder:
-        if not os.path.exists(directory):
-            os.makedirs(directory)
+        config.s3_folder = args.s3_folder
+    if config.s3_folder:
+        if not os.path.exists(config.dataset):
+            os.makedirs(config.dataset)
         else:
-            exist_files = glob.glob('{}/*.txt'.format(directory))
+            exist_files = glob.glob('{}/*.txt'.format(config.dataset))
             if len(exist_files) > 0:
-                log.error('Folder: "{}" is not empty, please empty it first'.format(directory))
+                log.error('Folder: "{}" is not empty, please empty it first'.format(config.dataset))
                 sys.exit(1)
 
-    if args.s3_folder:
-        if not args.bucket:
+        if args.bucket:
+            config.s3_bucket = args.bucket
+        if not config.s3_bucket:
             log.error('Please specify S3 bucket name with -b/--bucket argument!')
             sys.exit(1)
-        bucket = S3Bucket(args.bucket)
-        if not os.path.isdir(directory):
-            log.error('{} is not a directory!'.format(directory))
+        bucket = S3Bucket(config.s3_bucket)
+        if not os.path.isdir(config.dataset):
+            log.error('{} is not a directory!'.format(config.dataset))
             sys.exit(1)
-        if not bucket.download_files_in_folder(args.s3_folder, directory):
-            log.error('Download files from S3 bucket "{}" failed!'.format(args.bucket))
+        if not bucket.download_files_in_folder(config.s3_folder, config.dataset):
+            log.error('Download files from S3 bucket "{}" failed!'.format(config.s3_bucket))
             sys.exit(1)
 
-    if not os.path.isdir(directory):
-        log.error('{} is not a directory!'.format(directory))
+    if not os.path.isdir(config.dataset):
+        log.error('{} is not a directory!'.format(config.dataset))
         sys.exit(1)
 
-    uri = args.uri if args.uri else "bolt://localhost:7687"
-    uri = removeTrailingSlash(uri)
+    if args.uri:
+        config.neo4j_uri = args.uri
+    if not config.neo4j_uri:
+        config.neo4j_uri = 'bolt://localhost:7687'
+    config.neo4j_uri = removeTrailingSlash(config.neo4j_uri)
 
-    password = args.password
-    if not password:
-        if config.PSWD_ENV not in os.environ:
-            log.error('Password not specified! Please specify password with -p or --password argument,' +
+    if config.PSWD_ENV in os.environ:
+        config.neo4j_password = os.environ[config.PSWD_ENV]
+    if args.password:
+        config.neo4j_password = args.password
+    if not config.neo4j_password:
+        log.error('Password not specified! Please specify password with -p or --password argument,' +
                       ' or set {} env var'.format(config.PSWD_ENV))
-            sys.exit(1)
-        else:
-            password = os.environ[config.PSWD_ENV]
-    user = args.user if args.user else 'neo4j'
+        sys.exit(1)
 
-    return (user, password, directory, uri, config)
+    if args.user:
+        config.neo4j_user = args.user
+    if not config.neo4j_user:
+        config.neo4j_user = 'neo4j'
+
+    if args.wipe_db:
+        config.wipe_db = args.wipe_db
+    if args.yes:
+        config.yes = args.yes
+    if args.dry_run:
+        config.dry_run = args.dry_run
+    if args.no_backup:
+        config.no_backup = args.no_backup
+    if args.cheat_mode:
+        config.cheat_mode = args.cheat_mode
+    if args.mode:
+        config.loading_mode = args.mode
+    if args.max_violations:
+        config.max_violations = int(args.max_violations)
+
+    return config
 
 
 def backup_neo4j(backup_dir, name, address, log):
@@ -140,38 +169,37 @@ def upload_log_file(bucket_name, folder,file_path):
 def main():
     log = get_logger('Loader')
     log_file = get_log_file()
-    args = parse_arguments()
-    user, password, directory, uri, config = process_arguments(args, log)
+    config = process_arguments(parse_arguments(), log)
 
-    if not check_schema_files(args.schema, log):
+    if not check_schema_files(config.schema_files, log):
         return
 
     try:
-        file_list = glob.glob('{}/*.txt'.format(directory))
+        file_list = glob.glob('{}/*.txt'.format(config.dataset))
         if file_list:
-            if args.wipe_db and not args.yes:
+            if config.wipe_db and not config.yes:
                 if not confirm_deletion('Wipe out entire Neo4j database before loading?'):
                     sys.exit()
 
-            if args.mode == DELETE_MODE and not args.yes:
+            if config.loading_mode == DELETE_MODE and not config.yes:
                 if not confirm_deletion('Delete all nodes and child nodes from data file?'):
                     sys.exit()
             backup_name = datetime.datetime.today().strftime(DATETIME_FORMAT)
-            host = get_host(uri)
+            host = get_host(config.neo4j_uri)
             restore_cmd = ''
-            if not args.no_backup and not args.dry_run:
-                restore_cmd = backup_neo4j(config.BACKUP_FOLDER, backup_name, host, log)
+            if not config.no_backup and not config.dry_run:
+                restore_cmd = backup_neo4j(config.backup_folder, backup_name, host, log)
                 if not restore_cmd:
                     log.error('Backup Neo4j failed, abort loading!')
                     sys.exit(1)
-            props = Props(args.prop_file)
-            schema = ICDC_Schema(args.schema, props)
+            props = Props(config.prop_file)
+            schema = ICDC_Schema(config.schema_files, props)
             driver = None
-            if not args.dry_run:
-                driver = GraphDatabase.driver(uri, auth=(user, password))
+            if not config.dry_run:
+                driver = GraphDatabase.driver(config.neo4j_uri, auth=(config.neo4j_user, config.neo4j_password))
             loader = DataLoader(driver, schema)
 
-            loader.load(file_list, args.cheat_mode, args.dry_run, args.mode, args.wipe_db, args.max_violations)
+            loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db, config.max_violations)
 
             if driver:
                 driver.close()
@@ -182,15 +210,15 @@ def main():
 
 
     except ServiceUnavailable as err:
-        log.critical("Neo4j service not available at: \"{}\"".format(uri))
+        log.critical("Neo4j service not available at: \"{}\"".format(config.neo4j_uri))
         return
     except AuthError as err:
         log.error("Wrong Neo4j username or password!")
         return
 
 
-    if args.bucket and args.s3_folder:
-        result = upload_log_file(args.bucket, args.s3_folder, log_file)
+    if config.s3_bucket and config.s3_folder:
+        result = upload_log_file(config.s3_bucket, config.s3_folder, log_file)
         if result:
             log.info(f'Uploading log file {log_file} succeeded!')
         else:
