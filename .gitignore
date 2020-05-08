@@ -7,6 +7,6 @@ __pycache__/
 *.pyc
 cmd.txt
 tests/temp
-config/config.ini
-config/props.yml
+config/data-loader.yml
+config/file-loader.yml
 backup/
