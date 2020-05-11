@@ -52,9 +52,17 @@ def process_arguments(args, log):
 
     if args.dataset:
         config.dataset = args.dataset
+
     if not config.dataset:
         log.error('No dataset specified! Please specify dataset in config file or with CLI argument --dataset')
         sys.exit(1)
+
+    if args.prop_file:
+        config.prop_file = args.prop_file
+
+    if args.schema:
+        config.schema_files = args.schema
+
     if args.s3_folder:
         config.s3_folder = args.s3_folder
     if config.s3_folder:
