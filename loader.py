@@ -97,7 +97,7 @@ def process_arguments(args, log):
         config.neo4j_uri = 'bolt://localhost:7687'
     config.neo4j_uri = removeTrailingSlash(config.neo4j_uri)
 
-    if config.PSWD_ENV in os.environ:
+    if config.PSWD_ENV in os.environ and not config.neo4j_password:
         config.neo4j_password = os.environ[config.PSWD_ENV]
     if args.password:
         config.neo4j_password = args.password
