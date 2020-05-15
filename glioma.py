@@ -39,3 +39,7 @@ class Glioma:
         self._assert_file_info()
         return self.file_info.get('original_md5')
 
+    def get_file_name(self):
+        self._assert_file_info()
+        return self.file_info.get('file_name')
+

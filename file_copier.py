@@ -40,6 +40,7 @@ class FileCopier:
     FILE_FORMAT = 'file_format'
     DATA_FIELDS = [UUID, FILE_SIZE, MD5_SUM, FILE_STAT, FILE_LOC, FILE_FORMAT, ACL]
 
+    DEFAULT_STAT = 'uploaded'
     INDEXD_GUID_PREFIX = 'dg.4DFC/'
     INDEXD_MANIFEST_EXT = '.tsv'
     DOMAIN = 'caninecommons.cancer.gov'
@@ -89,11 +90,23 @@ class FileCopier:
         new_name = '{}_neo4j{}'.format(name, ext)
         return os.path.join(folder, new_name)
 
-    def populate_indexd_record(self, record):
+    def populate_indexd_record(self, record, file_size):
+        record[self.SIZE] = file_size
         record[self.MD5] = self.adapter.get_org_md5()
         record[self.GUID] = '{}{}'.format(self.INDEXD_GUID_PREFIX, get_uuid(self.DOMAIN, "file", record[self.MD5]))
         record[self.ACL] = self.DEFAULT_ACL
         record[self.URL] = self.get_s3_location(self.bucket_name, self.adapter.get_dest_key())
+        return record
+
+    def populate_neo4j_record(self, record, file_size, key):
+        record[self.FILE_SIZE] = file_size
+        record[self.FILE_LOC] = self.get_s3_location(self.bucket_name, key)
+        file_name = self.adapter.get_file_name()
+        record[self.MD5_SUM] = self.adapter.get_org_md5()
+        record[self.FILE_FORMAT] = (os.path.splitext(file_name)[1]).split('.')[1].lower()
+        record[UUID] = get_uuid(self.DOMAIN, "file", record[self.MD5_SUM])
+        record[self.FILE_STAT] = self.DEFAULT_STAT
+        record[self.ACL] = self.DEFAULT_ACL
         return record
 
     def copy_all(self):
@@ -131,11 +144,14 @@ class FileCopier:
                         key = self.adapter.get_dest_key()
                         org_md5 = self.adapter.get_org_md5()
                         try:
-                            # if self.copy_file(org_url, org_md5, key):
-                            if self.file_exist(org_url):
-                                indexd_record = {self.SIZE: self.bucket.get_object_size(key)}
-                                self.populate_indexd_record(indexd_record)
+                            if self.copy_file(org_url, org_md5, key):
+                            # if self.file_exist(org_url):
+                                file_size = self.bucket.get_object_size(key)
+                                indexd_record = {}
+                                self.populate_indexd_record(indexd_record, file_size)
                                 indexd_writer.writerow(indexd_record)
+                                self.populate_neo4j_record(file_info, file_size, key)
+                                neo4j_writer.writerow(file_info)
                         except Exception as e:
                             self.files_failed += 1
                             self.log.error(f'Line: {line_num} - Copying file {key} FAILED!')
