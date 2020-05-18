@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 
 import argparse
+from collections import deque
 import csv
 import os
 
+from boto3.s3.transfer import TransferConfig
 import requests
 
 
-from bento.common.utils import get_logger, get_uuid, LOG_PREFIX, UUID
+from bento.common.utils import get_logger, get_uuid, format_bytes, LOG_PREFIX, UUID
 from bento.common.s3 import S3Bucket
 from glioma import Glioma
 
@@ -44,6 +46,15 @@ class FileCopier:
     INDEXD_GUID_PREFIX = 'dg.4DFC/'
     INDEXD_MANIFEST_EXT = '.tsv'
     DOMAIN = 'caninecommons.cancer.gov'
+
+    TTL = 'ttl'
+    INFO = 'file_info'
+    LINE = 'line_num'
+
+    TRANSFER_UNIT_MB = 1024 * 1024
+    MULTI_PART_THRESHOLD = 100 * TRANSFER_UNIT_MB
+    MULTI_PART_CHUNK_SIZE = MULTI_PART_THRESHOLD
+    PARTS_LIMIT = 900
 
     def __init__(self, bucket_name, pre_manifest, first, count, adapter):
         '''
@@ -109,87 +120,109 @@ class FileCopier:
         record[self.ACL] = self.DEFAULT_ACL
         return record
 
-    def copy_all(self, overwrite=False):
+    def copy_all(self, overwrite=False, retry=3, dryrun=False):
+        file_queue = deque()
+        self.files_processed = 0
+        self.files_skipped = 0
+        self.files_copied = 0
+        self.files_failed = 0
+        self.files_exist_at_dest = 0
+        self.files_not_found = 0
         with open(self.pre_manifest) as pre_m:
             reader = csv.DictReader(pre_m, delimiter='\t')
-            indexd_manifest = self.get_indexd_manifest_name(self.pre_manifest)
-            neo4j_manifest = self.get_neo4j_manifest_name(self.pre_manifest)
+            for i in range(self.skip):
+                next(reader)
+                self.files_skipped += 1
 
-            with open(indexd_manifest, 'w', newline='\n') as indexd_f:
-                indexd_writer = csv.DictWriter(indexd_f, delimiter='\t', fieldnames=self.MANIFEST_FIELDS)
-                indexd_writer.writeheader()
-                with open(neo4j_manifest, 'w', newline='\n') as neo4j_f:
-                    fieldnames = reader.fieldnames
-                    fieldnames += self.DATA_FIELDS
-                    neo4j_writer = csv.DictWriter(neo4j_f, delimiter='\t', fieldnames=fieldnames)
-                    neo4j_writer.writeheader()
+            line_num = self.files_skipped + 1
+            for info in reader:
+                self.files_processed += 1
+                line_num += 1
+                file_queue.append({self.LINE: line_num,
+                                   self.TTL: retry,
+                                   self.INFO: info})
+                if self.count > 0 and self.files_processed >= self.count:
+                    break
 
-                    self.files_processed = 0
-                    self.files_skipped = 0
-                    self.files_copied = 0
-                    self.files_failed = 0
-                    self.files_exist_at_dest = 0
-                    self.files_not_found = 0
-                    for i in range(self.skip):
-                        next(reader)
-                        self.files_skipped += 1
+        indexd_manifest = self.get_indexd_manifest_name(self.pre_manifest)
+        neo4j_manifest = self.get_neo4j_manifest_name(self.pre_manifest)
 
-                    line_num = self.files_skipped + 1
-                    for file_info in reader:
-                        self.files_processed += 1
-                        line_num += 1
-                        self.adapter.clear_file_info()
-                        self.adapter.load_file_info(file_info)
-                        org_url = self.adapter.get_org_url()
-                        key = self.adapter.get_dest_key()
-                        org_md5 = self.adapter.get_org_md5()
-                        try:
-                            if self.copy_file(org_url, key, overwrite):
-                            # if self.file_exist(org_url):
-                                file_size = self.bucket.get_object_size(key)
-                                indexd_record = {}
-                                self.populate_indexd_record(indexd_record, file_size)
-                                indexd_writer.writerow(indexd_record)
-                                self.populate_neo4j_record(file_info, file_size, key)
-                                neo4j_writer.writerow(file_info)
-                            else:
-                                self.files_failed += 1
-                                self.log.error(f'Line: {line_num} - Copying file {key} FAILED!')
-                        except Exception as e:
-                            self.files_failed += 1
-                            self.log.error(f'Line: {line_num} - Copying file {key} FAILED!')
-                            self.log.debug(e)
+        with open(indexd_manifest, 'w', newline='\n') as indexd_f:
+            indexd_writer = csv.DictWriter(indexd_f, delimiter='\t', fieldnames=self.MANIFEST_FIELDS)
+            indexd_writer.writeheader()
+            with open(neo4j_manifest, 'w', newline='\n') as neo4j_f:
+                fieldnames = reader.fieldnames
+                fieldnames += self.DATA_FIELDS
+                neo4j_writer = csv.DictWriter(neo4j_f, delimiter='\t', fieldnames=fieldnames)
+                neo4j_writer.writeheader()
 
-                        if self.count > 0 and self.files_processed >= self.count:
-                            break
-                    if self.files_skipped > 0:
-                        self.log.info(f'Files skipped: {self.files_skipped}')
-                    self.log.info(f'Files processed: {self.files_processed}')
-                    self.log.info(f'Files not found: {self.files_not_found}')
-                    self.log.info(f'Files copied: {self.files_copied}')
-                    self.log.info(f'Files exist at destination: {self.files_exist_at_dest}')
-                    self.log.info(f'Files failed: {self.files_failed}')
+                while file_queue:
+                    job = file_queue.popleft()
+                    job[self.TTL] -= 1
+                    file_info = job[self.INFO]
 
-    def copy_file(self, org_url, key, overwrite):
+                    self.adapter.clear_file_info()
+                    self.adapter.load_file_info(file_info)
+                    org_url = self.adapter.get_org_url()
+                    key = self.adapter.get_dest_key()
+                    try:
+                        if self.copy_file(org_url, key, overwrite, dryrun):
+                            file_size = self.bucket.get_object_size(key)
+                            indexd_record = {}
+                            self.populate_indexd_record(indexd_record, file_size)
+                            indexd_writer.writerow(indexd_record)
+                            self.populate_neo4j_record(file_info, file_size, key)
+                            neo4j_writer.writerow(file_info)
+                        else:
+                            self._deal_with_failed_file(key, job, file_queue)
+                    except Exception as e:
+                        self.log.debug(e)
+                        self._deal_with_failed_file(key, job, file_queue)
+
+                if self.files_skipped > 0:
+                    self.log.info(f'Files skipped: {self.files_skipped}')
+                self.log.info(f'Files processed: {self.files_processed}')
+                self.log.info(f'Files not found: {self.files_not_found}')
+                self.log.info(f'Files copied: {self.files_copied}')
+                self.log.info(f'Files exist at destination: {self.files_exist_at_dest}')
+                self.log.info(f'Files failed: {self.files_failed}')
+
+    def _deal_with_failed_file(self, key, job, queue):
+        if job[self.TTL] > 0:
+            self.log.error(f'Line: {job[self.LINE]} - Copying file {key} FAILED! Retry left: {job[self.TTL]}')
+            queue.append(job)
+        else:
+            self.log.critical(f'Copying file {key} failure exceeded maximum retry times, abort!')
+            self.files_failed += 1
+
+    def copy_file(self, org_url, key, overwrite, dryrun):
         self.log.info(f'Copying from {org_url} to s3://{self.bucket_name}/{key} ...')
 
         if not self.file_exist(org_url):
             return False
         with requests.get(org_url, stream=True) as r:
-            if r.status_code >= 400:
+            if not r.ok:
                 self.log.error(f'Http Error Code {r.status_code} for {org_url}')
                 return False
-                # raise Exception(f'Http Error Code {r.status_code} for {org_url}')
-            if not overwrite and r.headers['Content-length']:
+            if r.headers['Content-length']:
                 org_size = int(r.headers['Content-length'])
-                if self.bucket.same_size_file_exists(key, org_size):
+                self.log.info(f'Original file size: {format_bytes(org_size)}.')
+                if not overwrite and self.bucket.same_size_file_exists(key, org_size):
                     self.log.info(f'Same size file exists at destination: "{key}"')
                     self.files_exist_at_dest += 1
                     return True
 
-            self.bucket._upload_file_obj(key, r.raw)
-            self.files_copied += 1
-            self.log.info(f'Copying file {key} SUCCEEDED!')
+            if not dryrun:
+                parts = org_size // self.MULTI_PART_CHUNK_SIZE
+                chunk_size = self.MULTI_PART_CHUNK_SIZE if parts < self.PARTS_LIMIT else org_size // self.PARTS_LIMIT
+
+                t_config = TransferConfig(multipart_threshold=self.MULTI_PART_THRESHOLD,
+                                          multipart_chunksize= chunk_size)
+                self.bucket._upload_file_obj(key, r.raw, t_config)
+                self.files_copied += 1
+                self.log.info(f'Copying file {key} SUCCEEDED!')
+            else:
+                self.log.info(f'Copying file {key} skipped (dry run)')
             return True
 
     def file_exist(self, org_url):
@@ -215,11 +248,14 @@ def main():
                         default=-1, type=int)
     parser.add_argument('--overwrite', help='Overwrite file event same size file already exists at destination',
                         action='store_true')
+    parser.add_argument('-d', '--dryrun', help='Only check original file, won\'t copy files',
+                        action='store_true')
+    parser.add_argument('-r', '--retry', help='Number of times to retry', default=3, type=int)
     parser.add_argument('pre_manifest', help='Pre-manifest file')
     args = parser.parse_args()
 
     copier = FileCopier(args.bucket, args.pre_manifest, args.first,  args.count, Glioma(args.prefix))
-    copier.copy_all(args.overwrite)
+    copier.copy_all(args.overwrite, args.retry, args.dryrun)
 
 if __name__ == '__main__':
     main()
