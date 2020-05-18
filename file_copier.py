@@ -109,7 +109,7 @@ class FileCopier:
         record[self.ACL] = self.DEFAULT_ACL
         return record
 
-    def copy_all(self):
+    def copy_all(self, overwrite=False):
         with open(self.pre_manifest) as pre_m:
             reader = csv.DictReader(pre_m, delimiter='\t')
             indexd_manifest = self.get_indexd_manifest_name(self.pre_manifest)
@@ -144,7 +144,7 @@ class FileCopier:
                         key = self.adapter.get_dest_key()
                         org_md5 = self.adapter.get_org_md5()
                         try:
-                            if self.copy_file(org_url, key):
+                            if self.copy_file(org_url, key, overwrite):
                             # if self.file_exist(org_url):
                                 file_size = self.bucket.get_object_size(key)
                                 indexd_record = {}
@@ -152,6 +152,9 @@ class FileCopier:
                                 indexd_writer.writerow(indexd_record)
                                 self.populate_neo4j_record(file_info, file_size, key)
                                 neo4j_writer.writerow(file_info)
+                            else:
+                                self.files_failed += 1
+                                self.log.error(f'Line: {line_num} - Copying file {key} FAILED!')
                         except Exception as e:
                             self.files_failed += 1
                             self.log.error(f'Line: {line_num} - Copying file {key} FAILED!')
@@ -167,15 +170,17 @@ class FileCopier:
                     self.log.info(f'Files exist at destination: {self.files_exist_at_dest}')
                     self.log.info(f'Files failed: {self.files_failed}')
 
-    def copy_file(self, org_url, key):
+    def copy_file(self, org_url, key, overwrite):
         self.log.info(f'Copying from {org_url} to s3://{self.bucket_name}/{key} ...')
 
+        if not self.file_exist(org_url):
+            return False
         with requests.get(org_url, stream=True) as r:
             if r.status_code >= 400:
                 self.log.error(f'Http Error Code {r.status_code} for {org_url}')
                 return False
                 # raise Exception(f'Http Error Code {r.status_code} for {org_url}')
-            if r.headers['Content-length']:
+            if not overwrite and r.headers['Content-length']:
                 org_size = int(r.headers['Content-length'])
                 if self.bucket.same_size_file_exists(key, org_size):
                     self.log.info(f'Same size file exists at destination: "{key}"')
@@ -206,12 +211,15 @@ def main():
     parser.add_argument('-b', '--bucket', help='Destination bucket name', required=True)
     parser.add_argument('-p', '--prefix', help='Destination prefix for files', required=True)
     parser.add_argument('-f', '--first', help='First line to load, 1 based not counting headers', default=1, type=int)
-    parser.add_argument('-c', '--count', help='number of files to copy, default is -1 means all files in the file', default=-1, type=int)
+    parser.add_argument('-c', '--count', help='number of files to copy, default is -1 means all files in the file',
+                        default=-1, type=int)
+    parser.add_argument('--overwrite', help='Overwrite file event same size file already exists at destination',
+                        action='store_true')
     parser.add_argument('pre_manifest', help='Pre-manifest file')
     args = parser.parse_args()
 
     copier = FileCopier(args.bucket, args.pre_manifest, args.first,  args.count, Glioma(args.prefix))
-    copier.copy_all()
+    copier.copy_all(args.overwrite)
 
 if __name__ == '__main__':
     main()
