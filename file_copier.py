@@ -144,7 +144,7 @@ class FileCopier:
                         key = self.adapter.get_dest_key()
                         org_md5 = self.adapter.get_org_md5()
                         try:
-                            if self.copy_file(org_url, org_md5, key):
+                            if self.copy_file(org_url, key):
                             # if self.file_exist(org_url):
                                 file_size = self.bucket.get_object_size(key)
                                 indexd_record = {}
@@ -167,19 +167,20 @@ class FileCopier:
                     self.log.info(f'Files exist at destination: {self.files_exist_at_dest}')
                     self.log.info(f'Files failed: {self.files_failed}')
 
-    def copy_file(self, org_url, org_md5, key):
+    def copy_file(self, org_url, key):
         self.log.info(f'Copying from {org_url} to s3://{self.bucket_name}/{key} ...')
 
-        if org_md5:
-            if self.bucket.same_file_exists_on_s3(key, org_md5):
-                self.log.info(f'Same file exists at destination: "{key}"')
-                self.files_exist_at_dest += 1
-                return True
         with requests.get(org_url, stream=True) as r:
             if r.status_code >= 400:
                 self.log.error(f'Http Error Code {r.status_code} for {org_url}')
                 return False
                 # raise Exception(f'Http Error Code {r.status_code} for {org_url}')
+            if r.headers['Content-length']:
+                org_size = int(r.headers['Content-length'])
+                if self.bucket.same_size_file_exists(key, org_size):
+                    self.log.info(f'Same size file exists at destination: "{key}"')
+                    self.files_exist_at_dest += 1
+                    return True
 
             self.bucket._upload_file_obj(key, r.raw)
             self.files_copied += 1
