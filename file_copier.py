@@ -127,7 +127,7 @@ class FileCopier:
         self.files_copied = 0
         self.files_failed = 0
         self.files_exist_at_dest = 0
-        self.files_not_found = 0
+        self.files_not_found = set()
         with open(self.pre_manifest) as pre_m:
             reader = csv.DictReader(pre_m, delimiter='\t')
             for i in range(self.skip):
@@ -182,7 +182,7 @@ class FileCopier:
                 if self.files_skipped > 0:
                     self.log.info(f'Files skipped: {self.files_skipped}')
                 self.log.info(f'Files processed: {self.files_processed}')
-                self.log.info(f'Files not found: {self.files_not_found}')
+                self.log.info(f'Files not found: {len(self.files_not_found)}')
                 self.log.info(f'Files copied: {self.files_copied}')
                 self.log.info(f'Files exist at destination: {self.files_exist_at_dest}')
                 self.log.info(f'Files failed: {self.files_failed}')
@@ -226,16 +226,14 @@ class FileCopier:
             return True
 
     def file_exist(self, org_url):
-        self.log.info(f'Checking file {org_url}')
         with requests.head(org_url) as r:
             if r.ok:
-                self.log.info(f'File exists!')
                 return True
             elif r.status_code == 404:
-                self.log.error(f'File not found!')
-                self.files_not_found += 1
+                self.log.error(f'File not found: {org_url}!')
+                self.files_not_found.add(org_url)
             else:
-                self.log.error(r.status_code)
+                self.log.error(f'Head file error - {r.status_code}: {org_url}')
             return False
 
 
