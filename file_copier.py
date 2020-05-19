@@ -38,7 +38,7 @@ class FileCopier:
     FILE_SIZE = "file_size"
     MD5_SUM = 'md5sum'
     FILE_STAT = 'file_status'
-    FILE_LOC = 'file_location'
+    FILE_LOC = 'file_locations'
     FILE_FORMAT = 'file_format'
     DATA_FIELDS = [UUID, FILE_SIZE, MD5_SUM, FILE_STAT, FILE_LOC, FILE_FORMAT, ACL]
 
