@@ -1,4 +1,3 @@
-Config:
   temp_folder: tmp
   backup_folder: /tmp/data-loader-backups
 
@@ -33,6 +32,8 @@ Config:
   no_confirmation: false
   # Max violations to display, default is 10, can be overridden by -M/--max-violations argument
   max_violations: 10
+  #Disable saving parent IDs in children
+  no_parents: false
 
   # S3 bucket name, if you are loading from an S3 bucket, can be overridden by -b/--bucket argument
   s3_bucket:
@@ -42,3 +43,5 @@ Config:
   loading_mode: UPSERT_MODE
   # Location of dataset, can be overridden by --dataset argument
   dataset: tests/data/Dataset
+
+

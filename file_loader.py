@@ -378,7 +378,7 @@ class FileLoader:
                         continue
                     manifest_folder = os.path.dirname(key).replace(RAW_PREFIX, '')
                     self.upload_manifests(manifest_folder, manifests + indexd_manifests)
-                    loading_result = self.load_manifests(manifests)
+                    loading_result = self. load_manifests(manifests)
                     end = timer()
                     if loading_result:
                         self.send_success_email(key, final_path, file_list, [os.path.basename(x) for x in manifests], loading_result, end - start)
@@ -463,7 +463,7 @@ class FileLoader:
                     if not self.loader.validate_parents_exist_in_file(file, 1):
                         self.log.error('Validate parents in {} failed, abort loading!'.format(file))
                         return False
-                return self.loader.load(manifests, False, self.dry_run, UPSERT_MODE, False, 1)
+                return self.loader.load(manifests, False, self.dry_run, UPSERT_MODE, False, 1, False)
             else:
                 self.log.error('Can\'t load manifest, because data loader is not valid!')
                 return False
