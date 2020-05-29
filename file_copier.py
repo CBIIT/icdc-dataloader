@@ -359,24 +359,18 @@ class FileLoader:
                         dryrun = data[self.DRY_RUN]
 
                         extender = VisibilityExtender(msg, self.VISIBILITY_TIMEOUT)
-                        if dryrun or local_dryrun:
-                            self.log.info(f'Dry run mode, file won\'t be copied!')
-                            # Todo: Need a realistic result here
-                            result = {}
+                        bucket_name = data[self.BUCKET]
+                        if not self.copier:
+                            self.copier = Copier(bucket_name, self.adapter)
+                        else:
+                            self.copier.set_bucket(bucket_name)
+
+                        result = self.copier.stream_file(data[self.INFO], data[self.OVERWRITE], dryrun or local_dryrun)
+
+                        if result[Copier.STATUS]:
                             self.result_queue.sendMsgToQueue(result, f'{result[Copier.NAME]}_{get_time_stamp()}')
                         else:
-                            bucket_name = data[self.BUCKET]
-                            if not self.copier:
-                                self.copier = Copier(bucket_name, self.adapter)
-                            else:
-                                self.copier.set_bucket(bucket_name)
-
-                            result = self.copier.stream_file(data[self.INFO], data[self.OVERWRITE], data[self.DRY_RUN])
-
-                            if result[Copier.STATUS]:
-                                self.result_queue.sendMsgToQueue(result, f'{result[Copier.NAME]}_{get_time_stamp()}')
-                            else:
-                                self._deal_with_failed_file_sqs(data)
+                            self._deal_with_failed_file_sqs(data)
 
                         extender.stop()
                         extender = None

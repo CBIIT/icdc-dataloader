@@ -85,6 +85,9 @@ class Copier:
                         self.files_exist_at_dest += 1
                         succeed[self.SIZE] = org_size
                         return succeed
+                else:
+                    org_size = 0
+
 
                 size = 0
                 if not dryrun:
@@ -99,6 +102,7 @@ class Copier:
                     size = self.bucket.get_object_size(key)
                 else:
                     self.log.info(f'Copying file {key} skipped (dry run)')
+                    size = org_size
                 succeed[self.SIZE] = size
                 return succeed
 
