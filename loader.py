@@ -12,6 +12,7 @@ from bento.common.icdc_schema import ICDC_Schema
 from bento.common.props import Props
 from bento.common.utils import get_logger, removeTrailingSlash, check_schema_files, DATETIME_FORMAT, get_host, \
      UPSERT_MODE, NEW_MODE, DELETE_MODE, get_log_file, LOG_PREFIX, APP_NAME
+from bento.common.visit_creator import VisitCreator
 
 if LOG_PREFIX not in os.environ:
     os.environ[LOG_PREFIX] = 'Data_Loader'
@@ -204,7 +205,8 @@ def main():
             driver = None
             if not config.dry_run:
                 driver = GraphDatabase.driver(config.neo4j_uri, auth=(config.neo4j_user, config.neo4j_password))
-            loader = DataLoader(driver, schema)
+            visit_creator = VisitCreator(schema)
+            loader = DataLoader(driver, schema, visit_creator)
 
             loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db, config.max_violations)
 
