@@ -42,6 +42,7 @@ def parse_arguments():
     parser.add_argument('-m', '--mode', help='Loading mode', choices=[UPSERT_MODE, NEW_MODE, DELETE_MODE],
                         default=UPSERT_MODE)
     parser.add_argument('--dataset', help='Dataset directory')
+    parser.add_argument('--no-parents', help='Does not save parent IDs in children', action='store_true')
 
     return parser.parse_args()
 
@@ -124,6 +125,8 @@ def process_arguments(args, log):
         config.loading_mode = args.mode
     if args.max_violations:
         config.max_violations = int(args.max_violations)
+    if args.no_parents:
+        config.no_parents = args.no_parents
 
     return config
 
@@ -206,7 +209,8 @@ def main():
                 driver = GraphDatabase.driver(config.neo4j_uri, auth=(config.neo4j_user, config.neo4j_password))
             loader = DataLoader(driver, schema)
 
-            loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db, config.max_violations)
+            loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db,
+                        config.max_violations, config.no_parents)
 
             if driver:
                 driver.close()
