@@ -8,7 +8,7 @@ import os
 
 
 from bento.common.sqs import Queue, VisibilityExtender
-from bento.common.utils import get_logger, get_uuid, LOG_PREFIX, UUID, get_time_stamp
+from bento.common.utils import get_logger, get_uuid, LOG_PREFIX, UUID, get_time_stamp, removeTrailingSlash
 from glioma import Glioma
 from copier import Copier
 
@@ -29,7 +29,6 @@ SOLO_MODE = 'solo'
 
 
 class FileLoader:
-    adapter_attrs = ['load_file_info', 'clear_file_info', 'get_org_url', 'get_dest_key', 'get_org_md5']
 
     DEFAULT_ACL = "['Open']"
     GUID = 'GUID'
@@ -59,8 +58,9 @@ class FileLoader:
     OVERWRITE = 'overwrite'
     DRY_RUN = 'dry_run'
     BUCKET = 'bucket'
+    PREFIX = 'prefix'
 
-    def __init__(self, mode, adapter, bucket_name=None, pre_manifest=None, first=1, count=-1, job_queue=None, result_queue=None):
+    def __init__(self, mode, adapter, bucket_name=None, prefix=None, pre_manifest=None, first=1, count=-1, job_queue=None, result_queue=None):
         """"
 
         :param bucket_name: string type
@@ -87,6 +87,11 @@ class FileLoader:
             if not bucket_name:
                 raise ValueError('Empty destination bucket name')
             self.bucket_name = bucket_name
+
+            if prefix and isinstance(prefix, str):
+                self.prefix = removeTrailingSlash(prefix)
+            else:
+                raise ValueError(f'Invalid prefix: "{prefix}"')
 
             if not pre_manifest or not os.path.isfile(pre_manifest):
                 raise ValueError(f'Pre-manifest: "{pre_manifest}" dosen\'t exist')
@@ -166,7 +171,8 @@ class FileLoader:
                               self.OVERWRITE: overwrite,
                               self.DRY_RUN: dryrun,
                               self.INFO: info,
-                              self.BUCKET: self.bucket_name
+                              self.BUCKET: self.bucket_name,
+                              self.PREFIX: self.prefix
                               })
                 if self.files_processed >= self.count > 0:
                     break
@@ -184,7 +190,7 @@ class FileLoader:
         if self.mode != SOLO_MODE:
             self.log.critical(f'Function only works in {SOLO_MODE} mode!')
             return False
-        self.copier = Copier(self.bucket_name, self.adapter)
+        self.copier = Copier(self.bucket_name, self.prefix, self.adapter)
 
         file_queue = deque(self._read_pre_manifest(overwrite, retry, dryrun))
 
@@ -356,13 +362,15 @@ class FileLoader:
                             self.INFO in data and
                             self.TTL in data and
                             self.OVERWRITE in data and
+                            self.PREFIX in data and
                             self.DRY_RUN in data):
                             dryrun = data[self.DRY_RUN]
 
                             extender = VisibilityExtender(msg, self.VISIBILITY_TIMEOUT)
                             bucket_name = data[self.BUCKET]
+                            prefix = data[self.PREFIX]
                             if not self.copier:
-                                self.copier = Copier(bucket_name, self.adapter)
+                                self.copier = Copier(bucket_name, prefix, self.adapter)
                             else:
                                 self.copier.set_bucket(bucket_name)
 
@@ -412,10 +420,41 @@ class FileLoader:
             self.start_work(dryrun)
 
 
+def validate_args(args, log):
+    mode = args.mode
+    if mode != SOLO_MODE:
+        if not args.job_queue:
+            log.critical(f'--job-queue is requied in {args.mode} mode!')
+            return False
+        if not args.result_queue:
+            log.critical(f'--result-queue is requied in {args.mode} mode!')
+            return False
+
+    if mode != SLAVE_MODE:
+        if not args.bucket:
+            log.critical(f'-b/--bucket is requied in {args.mode} mode!')
+            return False
+
+        if not args.prefix:
+            log.critical(f'-p/--prefix is requied in {args.mode} mode!')
+            return False
+
+        if not args.pre_manifest:
+            log.critical(f'--pre-manifest is requied in {args.mode} mode!')
+            return False
+
+        if not os.path.isfile(args.pre_manifest):
+            log.critical(f'{args.pre_manifest} is not a file!')
+            return False
+
+    return True
+
 def main():
+    log = get_logger('File_Copier_CLI')
+
     parser = argparse.ArgumentParser(description='Copy files from orginal S3 buckets to specified bucket')
     parser.add_argument('-b', '--bucket', help='Destination bucket name')
-    parser.add_argument('-p', '--prefix', help='Destination prefix for files', required=True)
+    parser.add_argument('-p', '--prefix', help='Destination prefix for files')
     parser.add_argument('-f', '--first', help='First line to load, 1 based not counting headers', default=1, type=int)
     parser.add_argument('-c', '--count', help='number of files to copy, default is -1 means all files in the file',
                         default=-1, type=int)
@@ -430,19 +469,15 @@ def main():
     parser.add_argument('--result-queue', help='Result SQS queue name')
     parser.add_argument('--pre-manifest', help='Pre-manifest file')
     args = parser.parse_args()
-    log = get_logger('File_Copier_CLI')
+
+    if not validate_args(args, log):
+        return
+
 
     if args.mode == SOLO_MODE:
-        loader = FileLoader(args.mode, Glioma(args.prefix), args.bucket, args.pre_manifest, args.first, args.count)
+        loader = FileLoader(args.mode, Glioma(), args.bucket, args.prefix, args.pre_manifest, args.first, args.count)
     else:
-        if not args.job_queue:
-            log.critical(f'Job SQS queue name is required for {args.mode} mode')
-            return
-        if not args.result_queue:
-            log.critical(f'Result SQS queue name is required for {args.mode} mode')
-            return
-
-        loader = FileLoader(args.mode, Glioma(args.prefix), args.bucket, args.pre_manifest, args.first, args.count,
+        loader = FileLoader(args.mode, Glioma(), args.bucket, args.prefix, args.pre_manifest, args.first, args.count,
                             args.job_queue, args.result_queue)
     loader.run(args.overwrite, args.retry, args.dryrun)
 

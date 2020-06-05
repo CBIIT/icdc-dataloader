@@ -3,14 +3,14 @@
 from boto3.s3.transfer import TransferConfig
 import requests
 
-from bento.common.utils import get_logger, format_bytes
+from bento.common.utils import get_logger, format_bytes, removeTrailingSlash
 from bento.common.s3 import S3Bucket
 
 
 
 class Copier:
-    adapter_attrs = ['load_file_info', 'clear_file_info', 'get_org_url', 'get_dest_key', 'get_org_md5', 'get_file_name',
-                     'get_fields', 'filter_fields']
+    adapter_attrs = ['load_file_info', 'clear_file_info', 'get_org_url', 'get_file_name', 'get_org_md5',
+                     'filter_fields']
 
     TRANSFER_UNIT_MB = 1024 * 1024
     MULTI_PART_THRESHOLD = 100 * TRANSFER_UNIT_MB
@@ -26,7 +26,7 @@ class Copier:
     FIELDS = 'fields'
 
 
-    def __init__(self, bucket_name, adapter):
+    def __init__(self, bucket_name, prefix, adapter):
 
         """"
         Copy file from URL or local file to S3 bucket
@@ -36,6 +36,11 @@ class Copier:
             raise ValueError('Empty destination bucket name')
         self.bucket_name = bucket_name
         self.bucket = S3Bucket(self.bucket_name)
+
+        if prefix and isinstance(prefix, str):
+            self.prefix = removeTrailingSlash(prefix)
+        else:
+            raise ValueError(f'Invalid prefix: "{prefix}"')
 
         # Verify adapter has all functions needed
         for attr in self.adapter_attrs:
@@ -62,7 +67,7 @@ class Copier:
             self.adapter.clear_file_info()
             self.adapter.load_file_info(file_info)
             org_url = self.adapter.get_org_url()
-            key = self.adapter.get_dest_key()
+            key = f'{self.prefix}/{self.adapter.get_file_name()}'
             succeed = {self.STATUS: True,
                     self.MD5: self.adapter.get_org_md5(),
                     self.NAME: self.adapter.get_file_name(),

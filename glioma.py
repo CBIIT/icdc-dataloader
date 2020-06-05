@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import requests
 
-from bento.common.utils import removeTrailingSlash, get_logger
+from bento.common.utils import get_logger
 
 
 class Glioma:
@@ -10,12 +10,7 @@ class Glioma:
     max_version = 10
 
 
-    def __init__(self, prefix):
-        if prefix and isinstance(prefix, str):
-            self.prefix = removeTrailingSlash(prefix)
-        else:
-            raise ValueError(f'Invalid prefix: "{prefix}"')
-
+    def __init__(self):
         self.log = get_logger('Glioma_adapter')
 
     def _assert_file_info(self):
@@ -45,11 +40,6 @@ class Glioma:
 
         raise LookupError(f'Couldn\'t find file {real_name}!')
         # return 'https://sra-pub-src-1.s3.amazonaws.com/SRR10386332/CGP_S03_5E9A_305F1E05_T1_A1_J05.bam.1'
-
-    def get_dest_key(self):
-        self._assert_file_info()
-        name = self.file_info.get('file_name')
-        return f'{self.prefix}/{name}'
 
     def get_org_md5(self):
         self._assert_file_info()
