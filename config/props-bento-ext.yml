@@ -1,0 +1,58 @@
+Properties:
+  domain: trialcommons.cancer.gov
+  rel_prop_delimiter: "$"
+
+  plurals:
+    aliquot: aliquots
+    analyte: analytes
+    cross_reference_database: cross_reference_databases
+    demographic_data: demographic_data
+    diagnosis: diagnoses
+    exposure: exposures
+    family_medical_history: family_medical_histories
+    file: files
+    follow_up: follow_ups
+    fraction: fractions
+    institution: institutions
+    laboratory_procedure: laboratory_procedures
+    program: programs
+    project: projects
+    report: reports
+    sample: samples
+    stratification_factor: stratification_factors
+    study: studies
+    study_subject: study_subjects
+    therapeutic_procedure: therapeutic_procedures
+
+  type_mapping:
+    string: String
+    number: Float
+    integer: Int
+    boolean: Boolean
+    array: Array
+    object: Object
+    datetime: DateTime
+    date: Date
+    TBD: String
+
+  id_fields:
+    aliquot: aliquot_id
+    analyte: analyte_id
+    cross_reference_database: cross_reference_database_id
+    demographic_data: demographic_data_id
+    diagnosis: diagnosis_id
+    exposure: exposure_node_id
+    family_medical_history: family_history_id
+    file: file_id
+    follow_up: follow_up_id
+    fraction: fraction_id
+    institution: institution_id
+    laboratory_procedure: laboratory_procedure_id
+    program: program_id
+    project: project_id
+    report: report_id
+    sample: sample_id
+    stratification_factor: stratification_factor_id
+    study: study_id
+    study_subject: study_subject_id
+    therapeutic_procedure: therapeutic_procedure_id
