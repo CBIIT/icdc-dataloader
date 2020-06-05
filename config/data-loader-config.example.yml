@@ -2,9 +2,6 @@ Config:
   temp_folder: tmp
   backup_folder: /tmp/data-loader-backups
 
-  # character used to separate relationship properties from relationship names
-  rel_prop_delimiter: $
-
   neo4j:
     # Location of Neo4j server, e.g., bolt://127.0.0.1:7687, can be overridden by -i/--uir argument
     uri: bolt://127.0.0.1:7687
