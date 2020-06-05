@@ -186,7 +186,9 @@ def main():
         return
 
     try:
-        file_list = glob.glob('{}/*.txt'.format(config.dataset))
+        txt_files = glob.glob('{}/*.txt'.format(config.dataset))
+        tsv_files = glob.glob('{}/*.tsv'.format(config.dataset))
+        file_list = txt_files + tsv_files
         if file_list:
             if config.wipe_db and not config.yes:
                 if not confirm_deletion('Wipe out entire Neo4j database before loading?'):
