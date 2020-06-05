@@ -342,57 +342,61 @@ class FileLoader:
             return False
 
         while True:
-            self.log.info(f'Waiting for jobs on queue: {self.job_queue_name}, {self.files_processed} files have been processed so far')
-            for msg in self.job_queue.receiveMsgs(self.VISIBILITY_TIMEOUT):
-                self.log.info(f'Received a job!')
-                extender = None
-                data = None
-                try:
-                    data = json.loads(msg.body)
-                    # Make sure job is in correct format
-                    self.log.info(data)
-                    if (self.BUCKET in data and
-                        self.INFO in data and
-                        self.TTL in data and
-                        self.OVERWRITE in data and
-                        self.DRY_RUN in data):
-                        dryrun = data[self.DRY_RUN]
+            try:
+                self.log.info(f'Waiting for jobs on queue: {self.job_queue_name}, {self.files_processed} files have been processed so far')
+                for msg in self.job_queue.receiveMsgs(self.VISIBILITY_TIMEOUT):
+                    self.log.info(f'Received a job!')
+                    extender = None
+                    data = None
+                    try:
+                        data = json.loads(msg.body)
+                        self.log.debug(data)
+                        # Make sure job is in correct format
+                        if (self.BUCKET in data and
+                            self.INFO in data and
+                            self.TTL in data and
+                            self.OVERWRITE in data and
+                            self.DRY_RUN in data):
+                            dryrun = data[self.DRY_RUN]
 
-                        extender = VisibilityExtender(msg, self.VISIBILITY_TIMEOUT)
-                        bucket_name = data[self.BUCKET]
-                        if not self.copier:
-                            self.copier = Copier(bucket_name, self.adapter)
+                            extender = VisibilityExtender(msg, self.VISIBILITY_TIMEOUT)
+                            bucket_name = data[self.BUCKET]
+                            if not self.copier:
+                                self.copier = Copier(bucket_name, self.adapter)
+                            else:
+                                self.copier.set_bucket(bucket_name)
+
+                            result = self.copier.stream_file(data[self.INFO], data[self.OVERWRITE], dryrun or local_dryrun)
+
+                            if result[Copier.STATUS]:
+                                self.result_queue.sendMsgToQueue(result, f'{result[Copier.NAME]}_{get_time_stamp()}')
+                            else:
+                                self._deal_with_failed_file_sqs(data)
+
+                            extender.stop()
+                            extender = None
+                            self.files_processed += 1
+                            self.log.info(f'Copying file finished!')
+                            msg.delete()
                         else:
-                            self.copier.set_bucket(bucket_name)
+                            self.log.error(f'Wrong message type!')
+                            self.log.error(data)
+                            msg.delete()
 
-                        result = self.copier.stream_file(data[self.INFO], data[self.OVERWRITE], dryrun or local_dryrun)
-
-                        if result[Copier.STATUS]:
-                            self.result_queue.sendMsgToQueue(result, f'{result[Copier.NAME]}_{get_time_stamp()}')
-                        else:
+                    except Exception as e:
+                        self.log.dubug(e)
+                        self.log.critical(f'Something wrong happened while processing file! Check debug log for details.')
+                        if data:
                             self._deal_with_failed_file_sqs(data)
 
-                        extender.stop()
-                        extender = None
-                        self.files_processed += 1
-                        self.log.info(f'Copying file finished!')
-                        msg.delete()
-                    else:
-                        self.log.error(f'Wrong message type!')
-                        self.log.error(data)
-                        msg.delete()
+                    finally:
+                        if extender:
+                            extender.stop()
+                            extender = None
 
-                except Exception as e:
-                    self.log.dubug(e)
-                    self.log.critical(f'Something wrong happened while processing file! Check debug log for details.')
-                    if data:
-                        self._deal_with_failed_file_sqs(data)
-
-                finally:
-                    if extender:
-                        extender.stop()
-                        extender = None
-        pass
+            except KeyboardInterrupt:
+                self.log.info('Good bye!')
+                return
 
     def _deal_with_failed_file_sqs(self, job):
         self.log.info(f'Copy file FAILED, {job[self.TTL] - 1} retry left!')
