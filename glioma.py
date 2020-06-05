@@ -6,7 +6,6 @@ from bento.common.utils import removeTrailingSlash, get_logger
 
 class Glioma:
     url_prefix = 'https://sra-pub-src-1.s3.amazonaws.com'
-    bucket_name = 'sra-pub-src-1'
     cleanup_fields = ['original_md5', 'SRA_accession']
     max_version = 10
 
@@ -37,10 +36,7 @@ class Glioma:
         self._assert_file_info()
         real_name = self._dash_to_underscore(self.file_info.get('file_name'))
         for i in range(1, self.max_version):
-            url = 'https://{}.s3.amazonaws.com/{}/{}.{}'.format(self.bucket_name,
-                                                                self.file_info.get('SRA_accession'),
-                                                                real_name,
-                                                                i)
+            url = '{}/{}/{}.{}'.format(self.url_prefix, self.file_info.get('SRA_accession'), real_name, i)
             r = requests.head(url)
             if r.ok:
                 return url
