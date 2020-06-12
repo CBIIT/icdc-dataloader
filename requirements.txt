@@ -1,4 +1,4 @@
 pyyaml
-neo4j
+neo4j==1.7.6
 boto3
 requests
