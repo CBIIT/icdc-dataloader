@@ -1,0 +1,33 @@
+Config:
+    # Domain name of the project, used to generate UUIDs, required!
+    # for ICDC use: caninecommons.cancer.gov
+    # for CTDC use: trialcommons.cancer.gov
+    # for Bento reference implementation use: bento-tools.org
+    domain: bento-tools.org
+
+    # Destination bucket name
+    bucket:
+    # Prefix for files in destination bucket
+    prefix:
+    # First line to load, 1 based not counting headers, default is 1
+    first: 1
+    # Number of files to copy, default is -1 means all files in the file
+    count: -1
+    # Number of retries, default is 3
+    retry: 3
+    # Running mode, can be one of [MASTER_MODE, SLAVE_MODE, SOLO_MODE], default is SOLO_MODE
+    mode:
+    # Job SQS queue name
+    job_queue:
+    # Result SQS queue name
+    result_queue:
+
+    # Pre-manifest file
+    pre_manifest:
+
+    # Overwrite file even same size file already exists at destination
+    overwrite: false
+    # Only check original file, won't copy any files
+    dryrun: false
+
+

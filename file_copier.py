@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import argparse
 from collections import deque
 import csv
 import json
@@ -11,6 +10,7 @@ from bento.common.sqs import Queue, VisibilityExtender
 from bento.common.utils import get_logger, get_uuid, LOG_PREFIX, UUID, get_time_stamp, removeTrailingSlash
 from glioma import Glioma
 from copier import Copier
+from file_copier_config import MASTER_MODE, SLAVE_MODE, SOLO_MODE, Config
 
 if LOG_PREFIX not in os.environ:
     os.environ[LOG_PREFIX] = 'File_Loader'
@@ -22,10 +22,6 @@ Inputs:
   pre-manifest: TSV file that contains all information of original files
   target bucket: 
 """
-
-MASTER_MODE = 'master'
-SLAVE_MODE = 'slave'
-SOLO_MODE = 'solo'
 
 
 class FileLoader:
@@ -48,7 +44,6 @@ class FileLoader:
     DEFAULT_STAT = 'uploaded'
     INDEXD_GUID_PREFIX = 'dg.4DFC/'
     INDEXD_MANIFEST_EXT = '.tsv'
-    DOMAIN = 'caninecommons.cancer.gov'
     VISIBILITY_TIMEOUT = 30
 
     # keys in job dict
@@ -60,10 +55,10 @@ class FileLoader:
     BUCKET = 'bucket'
     PREFIX = 'prefix'
 
-    def __init__(self, mode, adapter, bucket_name=None, prefix=None, pre_manifest=None, first=1, count=-1, job_queue=None, result_queue=None):
+    def __init__(self, mode, adapter, domain=None, bucket=None, prefix=None, pre_manifest=None, first=1, count=-1, job_queue=None, result_queue=None, retry=3, overwrite=False, dryrun=False):
         """"
 
-        :param bucket_name: string type
+        :param bucket: string type
         :param pre_manifest: string type, holds path to pre-manifest
         :param first: first file of files to process, file 1 is in line 2 of pre-manifest
         :param count: number of files to process
@@ -84,9 +79,9 @@ class FileLoader:
             self.result_queue = Queue(result_queue)
 
         if self.mode != SLAVE_MODE:
-            if not bucket_name:
+            if not bucket:
                 raise ValueError('Empty destination bucket name')
-            self.bucket_name = bucket_name
+            self.bucket_name = bucket
 
             if prefix and isinstance(prefix, str):
                 self.prefix = removeTrailingSlash(prefix)
@@ -96,6 +91,10 @@ class FileLoader:
             if not pre_manifest or not os.path.isfile(pre_manifest):
                 raise ValueError(f'Pre-manifest: "{pre_manifest}" dosen\'t exist')
             self.pre_manifest = pre_manifest
+
+            if not domain:
+                raise ValueError(f'Empty domain!')
+            self.domain = domain
 
         if not hasattr(adapter, 'filter_fields'):
             raise TypeError(f'Adapter does not have a "filter_fields" method')
@@ -107,6 +106,15 @@ class FileLoader:
         self.skip = first - 1
         self.count = count
 
+        if not isinstance(retry, int) and retry > 0:
+            raise ValueError(f'Invalid retry value: {retry}')
+        self.retry = retry
+        if not isinstance(overwrite, bool):
+            raise TypeError(f'Invalid overwrite value: {overwrite}')
+        self.overwrite = overwrite
+        if not isinstance(dryrun, bool):
+            raise TypeError(f'Invalid dryrun value: {dryrun}')
+        self.dryrun = dryrun
 
         self.log = get_logger('FileLoader')
 
@@ -137,7 +145,7 @@ class FileLoader:
     def populate_indexd_record(self, record, result):
         record[self.SIZE] = result[Copier.SIZE]
         record[self.MD5] = result[Copier.MD5]
-        record[self.GUID] = '{}{}'.format(self.INDEXD_GUID_PREFIX, get_uuid(self.DOMAIN, "file", record[self.MD5]))
+        record[self.GUID] = '{}{}'.format(self.INDEXD_GUID_PREFIX, get_uuid(self.domain, "file", record[self.MD5]))
         record[self.ACL] = self.DEFAULT_ACL
         record[self.URL] = self.get_s3_location(self.bucket_name, result[Copier.KEY])
         return record
@@ -148,7 +156,7 @@ class FileLoader:
         file_name = result[Copier.NAME]
         record[self.MD5_SUM] = result[Copier.MD5]
         record[self.FILE_FORMAT] = (os.path.splitext(file_name)[1]).split('.')[1].lower()
-        record[UUID] = get_uuid(self.DOMAIN, "file", record[self.MD5_SUM])
+        record[UUID] = get_uuid(self.domain, "file", record[self.MD5_SUM])
         record[self.FILE_STAT] = self.DEFAULT_STAT
         record[self.ACL] = self.DEFAULT_ACL
         return record
@@ -411,7 +419,11 @@ class FileLoader:
         job[self.TTL] -= 1
         self.job_queue.sendMsgToQueue(job, f'{job[self.LINE]}_{job[self.TTL]}')
 
-    def run(self, overwrite=False, retry=3, dryrun=False):
+    def run(self, overwrite=None, retry=None, dryrun=None):
+        overwrite = overwrite if overwrite is not None else self.overwrite
+        retry = retry if retry is not None else self.retry
+        dryrun = dryrun if dryrun is not None else self.dryrun
+
         if self.mode == SOLO_MODE:
             self.copy_all(overwrite, retry, dryrun)
         elif self.mode == MASTER_MODE:
@@ -420,66 +432,14 @@ class FileLoader:
             self.start_work(dryrun)
 
 
-def validate_args(args, log):
-    mode = args.mode
-    if mode != SOLO_MODE:
-        if not args.job_queue:
-            log.critical(f'--job-queue is requied in {args.mode} mode!')
-            return False
-        if not args.result_queue:
-            log.critical(f'--result-queue is requied in {args.mode} mode!')
-            return False
-
-    if mode != SLAVE_MODE:
-        if not args.bucket:
-            log.critical(f'-b/--bucket is requied in {args.mode} mode!')
-            return False
-
-        if not args.prefix:
-            log.critical(f'-p/--prefix is requied in {args.mode} mode!')
-            return False
-
-        if not args.pre_manifest:
-            log.critical(f'--pre-manifest is requied in {args.mode} mode!')
-            return False
-
-        if not os.path.isfile(args.pre_manifest):
-            log.critical(f'{args.pre_manifest} is not a file!')
-            return False
-
-    return True
 
 def main():
-    log = get_logger('File_Copier_CLI')
-
-    parser = argparse.ArgumentParser(description='Copy files from orginal S3 buckets to specified bucket')
-    parser.add_argument('-b', '--bucket', help='Destination bucket name')
-    parser.add_argument('-p', '--prefix', help='Destination prefix for files')
-    parser.add_argument('-f', '--first', help='First line to load, 1 based not counting headers', default=1, type=int)
-    parser.add_argument('-c', '--count', help='number of files to copy, default is -1 means all files in the file',
-                        default=-1, type=int)
-    parser.add_argument('--overwrite', help='Overwrite file event same size file already exists at destination',
-                        action='store_true')
-    parser.add_argument('-d', '--dryrun', help='Only check original file, won\'t copy files',
-                        action='store_true')
-    parser.add_argument('-r', '--retry', help='Number of times to retry', default=3, type=int)
-    parser.add_argument('-m', '--mode', help='Running mode', choices=[MASTER_MODE, SLAVE_MODE, SOLO_MODE],
-                        default=SOLO_MODE)
-    parser.add_argument('--job-queue', help='Job SQS queue name')
-    parser.add_argument('--result-queue', help='Result SQS queue name')
-    parser.add_argument('--pre-manifest', help='Pre-manifest file')
-    args = parser.parse_args()
-
-    if not validate_args(args, log):
+    config = Config()
+    if not config.validate():
         return
 
-
-    if args.mode == SOLO_MODE:
-        loader = FileLoader(args.mode, Glioma(), args.bucket, args.prefix, args.pre_manifest, args.first, args.count)
-    else:
-        loader = FileLoader(args.mode, Glioma(), args.bucket, args.prefix, args.pre_manifest, args.first, args.count,
-                            args.job_queue, args.result_queue)
-    loader.run(args.overwrite, args.retry, args.dryrun)
+    loader = FileLoader(adapter=Glioma(), **config.data)
+    loader.run()
 
 if __name__ == '__main__':
     main()
