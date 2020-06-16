@@ -8,7 +8,7 @@ import os
 from bento.common.sqs import Queue, VisibilityExtender
 from bento.common.utils import get_logger, get_uuid, LOG_PREFIX, UUID, get_time_stamp, removeTrailingSlash
 from copier import Copier
-from file_copier_config import MASTER_MODE, SLAVE_MODE, SOLO_MODE, Config, GLIOMA
+from file_copier_config import MASTER_MODE, SLAVE_MODE, SOLO_MODE, Config, GLIOMA_ADAPTER, LOCAL_ADAPTER
 
 if LOG_PREFIX not in os.environ:
     os.environ[LOG_PREFIX] = 'File_Loader'
@@ -90,6 +90,7 @@ class FileLoader:
             if not pre_manifest or not os.path.isfile(pre_manifest):
                 raise ValueError(f'Pre-manifest: "{pre_manifest}" dosen\'t exist')
             self.pre_manifest = pre_manifest
+            self.working_dir = os.path.dirname(self.pre_manifest)
 
             if not domain:
                 raise ValueError(f'Empty domain!')
@@ -121,12 +122,22 @@ class FileLoader:
         self.files_failed = 0
 
     def _init_adapter(self, adapter_name):
+        """
+        Initialize different adapters base on given adapter_name
+        :param adapter_name:
+        :return:
+        """
         if adapter_name not in Config.valid_adapters:
             raise ValueError(f'Adapter "{adapter_name}" is invalid!')
 
-        if adapter_name == GLIOMA:
+        if adapter_name == GLIOMA_ADAPTER:
             from adapters.glioma import Glioma
             self.adapter = Glioma()
+            if not hasattr(self.adapter, 'filter_fields'):
+                raise TypeError(f'Adapter does not have a "filter_fields" method')
+        elif adapter_name == LOCAL_ADAPTER:
+            from adapters.local_adapter import BentoLocal
+            self.adapter = BentoLocal(self.working_dir)
             if not hasattr(self.adapter, 'filter_fields'):
                 raise TypeError(f'Adapter does not have a "filter_fields" method')
 

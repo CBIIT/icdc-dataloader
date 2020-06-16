@@ -6,11 +6,12 @@ from bento.common.config_base import BentoConfig
 MASTER_MODE = 'master'
 SLAVE_MODE = 'slave'
 SOLO_MODE = 'solo'
-GLIOMA = 'glioma'
+GLIOMA_ADAPTER = 'glioma'
+LOCAL_ADAPTER = 'local'
 
 class Config(BentoConfig):
     valid_modes = [MASTER_MODE, SLAVE_MODE, SOLO_MODE]
-    valid_adapters = [GLIOMA]
+    valid_adapters = [GLIOMA_ADAPTER, LOCAL_ADAPTER]
     def __init__(self):
         parser = argparse.ArgumentParser(description='Copy files from orginal S3 buckets to specified bucket')
         parser.add_argument('-b', '--bucket', help='Destination bucket name')
@@ -27,7 +28,7 @@ class Config(BentoConfig):
         parser.add_argument('--job-queue', help='Job SQS queue name')
         parser.add_argument('--result-queue', help='Result SQS queue name')
         parser.add_argument('--pre-manifest', help='Pre-manifest file')
-        parser.add_argument('-a', '--adapter', help='Adapter to use', choices=[GLIOMA])
+        parser.add_argument('-a', '--adapter', help='Adapter to use', choices=[GLIOMA_ADAPTER])
         parser.add_argument('config_file', help='Confguration file')
         args = parser.parse_args()
         super().__init__(args.config_file, args, 'config_file')

@@ -89,10 +89,9 @@ class Copier:
                 succeed[self.SIZE] = org_size
                 return succeed
 
-
             if self._is_local(org_url):
                 file_path = self._get_local_path(org_url)
-                with open(file_path) as stream:
+                with open(file_path, 'rb') as stream:
                     return self._upload_obj(stream, key, org_size, dryrun, succeed)
             else:
                 with requests.get(org_url, stream=True) as r:
@@ -138,7 +137,11 @@ class Copier:
     def _file_exists(self, org_url):
         if self._is_local(org_url):
             file_path = self._get_local_path(org_url)
-            return os.path.isfile(file_path)
+            if not os.path.isfile(file_path):
+                self.log.error(f'"{file_path}" is not a file!')
+                return False
+            else:
+                return True
         else:
             with requests.head(org_url) as r:
                 if r.ok:
