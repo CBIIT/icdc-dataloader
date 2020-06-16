@@ -7,9 +7,12 @@ OPTIONAL MATCH (ss)<-[*]-(d:diagnosis)
 OPTIONAL MATCH (ss)<-[*]-(tp:therapeutic_procedure)
 OPTIONAL MATCH (ss)<-[*]-(demo:demographic_data)
 OPTIONAL MATCH (ss)<-[*]-(f:file)
+OPTIONAL MATCH (ss)<-[*]-(sp:sample)
+OPTIONAL MATCH (ss)<--()-->(lp:laboratory_procedure)
 RETURN p.program_acronym AS program,
        s.study_acronym AS study_acronym,
        s.study_short_description AS study_short_description,
+       s.study_acronym + ': ' + s.study_short_description AS study_info,
        ss.study_subject_id AS subject_id,
        ss.disease_subtype AS diagnosis,
        sf.grouped_recurrence_score AS recurrence_score,
@@ -23,7 +26,9 @@ RETURN p.program_acronym AS program,
        demo.age_at_index AS age_at_index,
        demo.survival_time AS survival_time,
        demo.survival_time_unit AS survival_time_unit,
-       collect(f) AS files
+       collect(f) AS files,
+       collect(sp.sample_id) AS samples,
+       collect(lp.laboratory_procedure_id) AS lab_procedures
 
 // subjectsInList
 MATCH (ss:study_subject)
