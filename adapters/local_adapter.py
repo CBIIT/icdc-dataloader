@@ -15,8 +15,9 @@ class BentoLocal:
         - get_file_name
         - get_org_md5
     """
-    # Following columns/fields must exist in pre-manifest file
+    # Following column must exist in pre-manifest file
     name_field = 'file_name'
+    # Following column is optional in pre-manifest file, if omit MD5 will be computed from local file
     md5_field = 'md5sum'
 
     cleanup_fields = [md5_field, name_field]
