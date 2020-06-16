@@ -5,12 +5,10 @@ import csv
 import json
 import os
 
-
 from bento.common.sqs import Queue, VisibilityExtender
 from bento.common.utils import get_logger, get_uuid, LOG_PREFIX, UUID, get_time_stamp, removeTrailingSlash
-from glioma import Glioma
 from copier import Copier
-from file_copier_config import MASTER_MODE, SLAVE_MODE, SOLO_MODE, Config
+from file_copier_config import MASTER_MODE, SLAVE_MODE, SOLO_MODE, Config, GLIOMA
 
 if LOG_PREFIX not in os.environ:
     os.environ[LOG_PREFIX] = 'File_Loader'
@@ -65,9 +63,10 @@ class FileLoader:
         :param adapter: any object that has following methods/properties defined in adapter_attrs
 
         """
-        if mode != MASTER_MODE and mode != SLAVE_MODE and mode != SOLO_MODE:
+        if mode not in Config.valid_modes:
             raise ValueError(f'Invalid loading mode: {mode}')
         self.mode = mode
+
         if mode != SOLO_MODE:
             if not job_queue:
                 raise ValueError(f'Job queue name is required in {self.mode} mode!')
@@ -96,9 +95,7 @@ class FileLoader:
                 raise ValueError(f'Empty domain!')
             self.domain = domain
 
-        if not hasattr(adapter, 'filter_fields'):
-            raise TypeError(f'Adapter does not have a "filter_fields" method')
-        self.adapter = adapter
+        self._init_adapter(adapter)
         self.copier = None
 
         if not first > 0 or count == 0:
@@ -122,6 +119,16 @@ class FileLoader:
         self.files_processed = 0
         self.files_skipped = 0
         self.files_failed = 0
+
+    def _init_adapter(self, adapter_name):
+        if adapter_name not in Config.valid_adapters:
+            raise ValueError(f'Adapter "{adapter_name}" is invalid!')
+
+        if adapter_name == GLIOMA:
+            from adapters.glioma import Glioma
+            self.adapter = Glioma()
+            if not hasattr(self.adapter, 'filter_fields'):
+                raise TypeError(f'Adapter does not have a "filter_fields" method')
 
     def get_indexd_manifest_name(self, file_name):
         folder = os.path.dirname(file_name)
@@ -219,7 +226,7 @@ class FileLoader:
                     job[self.TTL] -= 1
                     file_info = job[self.INFO]
                     try:
-                        result = self.copier.stream_file(file_info, overwrite, dryrun)
+                        result = self.copier.copy_file(file_info, overwrite, dryrun)
                         if result[Copier.STATUS]:
                             indexd_record = {}
                             self.populate_indexd_record(indexd_record, result)
@@ -382,7 +389,7 @@ class FileLoader:
                             else:
                                 self.copier.set_bucket(bucket_name)
 
-                            result = self.copier.stream_file(data[self.INFO], data[self.OVERWRITE], dryrun or local_dryrun)
+                            result = self.copier.copy_file(data[self.INFO], data[self.OVERWRITE], dryrun or local_dryrun)
 
                             if result[Copier.STATUS]:
                                 self.result_queue.sendMsgToQueue(result, f'{result[Copier.NAME]}_{get_time_stamp()}')
@@ -438,7 +445,7 @@ def main():
     if not config.validate():
         return
 
-    loader = FileLoader(adapter=Glioma(), **config.data)
+    loader = FileLoader(**config.data)
     loader.run()
 
 if __name__ == '__main__':

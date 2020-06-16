@@ -5,6 +5,16 @@ from bento.common.utils import get_logger
 
 
 class Glioma:
+    """
+    Following methods are required:
+        - filter_fields
+        - get_fields
+        - load_file_info
+        - clear_file_info
+        - get_org_url
+        - get_file_name
+        - get_org_md5
+    """
     url_prefix = 'https://sra-pub-src-1.s3.amazonaws.com'
     cleanup_fields = ['original_md5', 'SRA_accession']
     max_version = 10
@@ -22,12 +32,25 @@ class Glioma:
         return input.replace('-', '_')
 
     def load_file_info(self, file_info):
+        """
+        Load new file information
+        :param file_info:
+        :return: None
+        """
         self.file_info = file_info
 
     def clear_file_info(self):
+        """
+        Clear last file information loaded
+        :return: None
+        """
         self.file_info = {}
 
     def get_org_url(self):
+        """
+        Get file's URL in original location
+        :return: URL: str, will be in file:// scheme if it's local file
+        """
         self._assert_file_info()
         real_name = self._dash_to_underscore(self.file_info.get('file_name'))
         for i in range(1, self.max_version):
@@ -42,14 +65,26 @@ class Glioma:
         # return 'https://sra-pub-src-1.s3.amazonaws.com/SRR10386332/CGP_S03_5E9A_305F1E05_T1_A1_J05.bam.1'
 
     def get_org_md5(self):
+        """
+        Get file's original MD5
+        :return: MD5: str, None if not available in self.file_info
+        """
         self._assert_file_info()
         return self.file_info.get('original_md5')
 
     def get_file_name(self):
+        """
+        Get file name, without any path
+        :return: file name: str
+        """
         self._assert_file_info()
         return self.file_info.get('file_name')
 
     def get_fields(self):
+        """
+        Get available fields exclude the ones in self.cleanup_fields in self.file_info
+        :return:
+        """
         obj = {}
         for key, val in self.file_info.items():
             if key in self.cleanup_fields:
@@ -60,6 +95,11 @@ class Glioma:
         return obj
 
     def filter_fields(self, fields):
+        """
+        Remove all fields that's in self.cleanup_fields from input field list
+        :param fields: list
+        :return: field list with unwanted fields removed
+        """
         return list(filter(lambda f: f not in self.cleanup_fields, fields))
 
 

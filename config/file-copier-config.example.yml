@@ -5,6 +5,9 @@ Config:
     # for Bento reference implementation use: bento-tools.org
     domain: bento-tools.org
 
+    # Which adapter to use, can be 'glioma'
+    adapter: glioma
+
     # Destination bucket name
     bucket:
     # Prefix for files in destination bucket
@@ -15,7 +18,7 @@ Config:
     count: -1
     # Number of retries, default is 3
     retry: 3
-    # Running mode, can be one of [MASTER_MODE, SLAVE_MODE, SOLO_MODE], default is SOLO_MODE
+    # Running mode, can be 'master', 'slave' or 'solo', default is 'solo'
     mode:
     # Job SQS queue name
     job_queue:

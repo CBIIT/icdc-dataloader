@@ -6,8 +6,11 @@ from bento.common.config_base import BentoConfig
 MASTER_MODE = 'master'
 SLAVE_MODE = 'slave'
 SOLO_MODE = 'solo'
+GLIOMA = 'glioma'
 
 class Config(BentoConfig):
+    valid_modes = [MASTER_MODE, SLAVE_MODE, SOLO_MODE]
+    valid_adapters = [GLIOMA]
     def __init__(self):
         parser = argparse.ArgumentParser(description='Copy files from orginal S3 buckets to specified bucket')
         parser.add_argument('-b', '--bucket', help='Destination bucket name')
@@ -24,6 +27,7 @@ class Config(BentoConfig):
         parser.add_argument('--job-queue', help='Job SQS queue name')
         parser.add_argument('--result-queue', help='Result SQS queue name')
         parser.add_argument('--pre-manifest', help='Pre-manifest file')
+        parser.add_argument('-a', '--adapter', help='Adapter to use', choices=[GLIOMA])
         parser.add_argument('config_file', help='Confguration file')
         args = parser.parse_args()
         super().__init__(args.config_file, args, 'config_file')
@@ -31,8 +35,21 @@ class Config(BentoConfig):
     def validate(self):
         mode = self.data.get('mode')
         if mode is None:
-            self.log.critical(f'mode is required, choose from "{MASTER_MODE}", "{SLAVE_MODE}" and "{SOLO_MODE}"')
+            self.log.critical(f'mode is required, choose from {self.valid_modes}')
             return False
+        elif mode not in self.valid_modes:
+            self.log.critical(f'mode "{mode}" is not valid, choose from {self.valid_modes}')
+            return False
+
+        adapter = self.data.get('adapter')
+        if adapter is None:
+            self.log.critical(f'adapter is required, choose from {self.valid_adapters}')
+            return False
+        elif adapter not in self.valid_adapters:
+            self.log.critical(
+                f'mode "{adapter}" is not valid, choose from {self.valid_adapters}')
+            return False
+
         if mode != SOLO_MODE:
             if not self.data.get('job_queue'):
                 self.log.critical(f'job_queue is required in {mode} mode!')
