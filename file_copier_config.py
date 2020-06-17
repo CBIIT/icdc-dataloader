@@ -7,11 +7,12 @@ MASTER_MODE = 'master'
 SLAVE_MODE = 'slave'
 SOLO_MODE = 'solo'
 GLIOMA_ADAPTER = 'glioma'
+GLIOMA_BAI_ADAPTER = 'glioma-bai'
 LOCAL_ADAPTER = 'local'
 
 class Config(BentoConfig):
     valid_modes = [MASTER_MODE, SLAVE_MODE, SOLO_MODE]
-    valid_adapters = [GLIOMA_ADAPTER, LOCAL_ADAPTER]
+    valid_adapters = [GLIOMA_ADAPTER, GLIOMA_BAI_ADAPTER, LOCAL_ADAPTER]
     def __init__(self):
         parser = argparse.ArgumentParser(description='Copy files from orginal S3 buckets to specified bucket')
         parser.add_argument('-b', '--bucket', help='Destination bucket name')
@@ -24,11 +25,11 @@ class Config(BentoConfig):
         parser.add_argument('-d', '--dryrun', help='Only check original file, won\'t copy any files',
                             action='store_true')
         parser.add_argument('-r', '--retry', help='Number of times to retry', type=int)
-        parser.add_argument('-m', '--mode', help='Running mode', choices=[MASTER_MODE, SLAVE_MODE, SOLO_MODE])
+        parser.add_argument('-m', '--mode', help='Running mode', choices=self.valid_modes)
         parser.add_argument('--job-queue', help='Job SQS queue name')
         parser.add_argument('--result-queue', help='Result SQS queue name')
         parser.add_argument('--pre-manifest', help='Pre-manifest file')
-        parser.add_argument('-a', '--adapter', help='Adapter to use', choices=[GLIOMA_ADAPTER])
+        parser.add_argument('-a', '--adapter', help='Adapter to use', choices=self.valid_adapters)
         parser.add_argument('config_file', help='Confguration file')
         args = parser.parse_args()
         super().__init__(args.config_file, args, 'config_file')

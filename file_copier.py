@@ -8,7 +8,7 @@ import os
 from bento.common.sqs import Queue, VisibilityExtender
 from bento.common.utils import get_logger, get_uuid, LOG_PREFIX, UUID, get_time_stamp, removeTrailingSlash
 from copier import Copier
-from file_copier_config import MASTER_MODE, SLAVE_MODE, SOLO_MODE, Config, GLIOMA_ADAPTER, LOCAL_ADAPTER
+from file_copier_config import MASTER_MODE, SLAVE_MODE, SOLO_MODE, Config, GLIOMA_ADAPTER, LOCAL_ADAPTER, GLIOMA_BAI_ADAPTER
 
 if LOG_PREFIX not in os.environ:
     os.environ[LOG_PREFIX] = 'File_Loader'
@@ -133,13 +133,17 @@ class FileLoader:
         if adapter_name == GLIOMA_ADAPTER:
             from adapters.glioma import Glioma
             self.adapter = Glioma()
-            if not hasattr(self.adapter, 'filter_fields'):
-                raise TypeError(f'Adapter does not have a "filter_fields" method')
+        elif adapter_name == GLIOMA_BAI_ADAPTER:
+            from adapters.glioma_bai_local import GliomaBaiLocal
+            self.adapter = GliomaBaiLocal(self.working_dir)
         elif adapter_name == LOCAL_ADAPTER:
             from adapters.local_adapter import BentoLocal
             self.adapter = BentoLocal(self.working_dir)
-            if not hasattr(self.adapter, 'filter_fields'):
-                raise TypeError(f'Adapter does not have a "filter_fields" method')
+        else:
+            raise ValueError(f'Uninitialized adapter: "{adapter_name}"')
+
+        if not hasattr(self.adapter, 'filter_fields'):
+            raise TypeError(f'Adapter "{adapter_name}" does not have a "filter_fields" method')
 
     def get_indexd_manifest_name(self, file_name):
         folder = os.path.dirname(file_name)

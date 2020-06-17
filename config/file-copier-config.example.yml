@@ -5,8 +5,8 @@ Config:
     # for Bento reference implementation use: bento-tools.org
     domain: bento-tools.org
 
-    # Which adapter to use, can be 'glioma'
-    adapter: glioma
+    # Which adapter to use, can be 'glioma', 'glioma-bai' or 'local'
+    adapter: local
 
     # Destination bucket name
     bucket:

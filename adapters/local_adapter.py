@@ -6,6 +6,7 @@ from bento.common.utils import get_logger, get_md5
 
 class BentoLocal:
     """
+    This adapter assumes all data files are in same folder as the pre-manifest
     Following methods are required:
         - filter_fields
         - get_fields
