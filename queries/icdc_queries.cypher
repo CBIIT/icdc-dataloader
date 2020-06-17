@@ -108,7 +108,8 @@ RETURN c.case_id AS case_id,
        collect(DISTINCT(f.file_type)) AS data_types,
        collect(DISTINCT(f.file_format)) AS file_formats,
        collect(DISTINCT(f)) AS files,
-       collect(DISTINCT(samp.sample_id)) AS samples
+       collect(DISTINCT(samp.sample_id)) AS samples,
+       collect(DISTINCT(samp)) AS sample_list
 
 // casesInList query
 MATCH (p:program)<-[*]-(s:study)<-[*]-(c:case)<--(demo:demographic), (c)<--(diag:diagnosis)
