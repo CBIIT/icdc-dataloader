@@ -16,18 +16,18 @@ class BentoLocal:
         - get_file_name
         - get_org_md5
     """
-    # Following column must exist in pre-manifest file
-    name_field = 'file_name'
-    # Following column is optional in pre-manifest file, if omit MD5 will be computed from local file
-    md5_field = 'md5sum'
 
-    cleanup_fields = [md5_field, name_field]
-
-    def __init__(self, working_dir):
+    def __init__(self, working_dir, name_field='file_name', md5_field='md5sum', size_field=None):
         self.log = get_logger('Local_adapter')
         if not os.path.isdir(working_dir):
             raise ValueError(f'"{working_dir}" is not a directory!')
         self.working_dir = working_dir
+        self.name_field = name_field
+        self.md5_field = md5_field
+        self.cleanup_fields = [name_field, md5_field]
+        if size_field is not None:
+            self.size_field = size_field
+            self.cleanup_fields.append(size_field)
 
     def _assert_file_info(self):
         if not hasattr(self, 'file_info') or not self.file_info:

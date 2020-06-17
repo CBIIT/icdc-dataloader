@@ -53,7 +53,7 @@ class FileLoader:
     BUCKET = 'bucket'
     PREFIX = 'prefix'
 
-    def __init__(self, mode, adapter, domain=None, bucket=None, prefix=None, pre_manifest=None, first=1, count=-1, job_queue=None, result_queue=None, retry=3, overwrite=False, dryrun=False):
+    def __init__(self, mode, adapter, adapter_params=None, domain=None, bucket=None, prefix=None, pre_manifest=None, first=1, count=-1, job_queue=None, result_queue=None, retry=3, overwrite=False, dryrun=False):
         """"
 
         :param bucket: string type
@@ -96,7 +96,7 @@ class FileLoader:
                 raise ValueError(f'Empty domain!')
             self.domain = domain
 
-        self._init_adapter(adapter)
+        self._init_adapter(adapter, adapter_params)
         self.copier = None
 
         if not first > 0 or count == 0:
@@ -121,7 +121,7 @@ class FileLoader:
         self.files_skipped = 0
         self.files_failed = 0
 
-    def _init_adapter(self, adapter_name):
+    def _init_adapter(self, adapter_name, params):
         """
         Initialize different adapters base on given adapter_name
         :param adapter_name:
@@ -133,12 +133,9 @@ class FileLoader:
         if adapter_name == GLIOMA_ADAPTER:
             from adapters.glioma import Glioma
             self.adapter = Glioma()
-        elif adapter_name == GLIOMA_BAI_ADAPTER:
-            from adapters.glioma_bai_local import GliomaBaiLocal
-            self.adapter = GliomaBaiLocal(self.working_dir)
         elif adapter_name == LOCAL_ADAPTER:
             from adapters.local_adapter import BentoLocal
-            self.adapter = BentoLocal(self.working_dir)
+            self.adapter = BentoLocal(self.working_dir, **params)
         else:
             raise ValueError(f'Uninitialized adapter: "{adapter_name}"')
 

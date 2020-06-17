@@ -8,6 +8,11 @@ Config:
     # Which adapter to use, can be 'glioma', 'glioma-bai' or 'local'
     adapter: local
 
+    # Following value will be adapter specific and will be passed into adapter's constructor
+    adapter_params:
+        param1:
+        param2:
+
     # Destination bucket name
     bucket:
     # Prefix for files in destination bucket
