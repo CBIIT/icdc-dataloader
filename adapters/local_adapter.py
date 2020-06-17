@@ -17,7 +17,15 @@ class BentoLocal:
         - get_org_md5
     """
 
-    def __init__(self, working_dir, name_field='file_name', md5_field='md5sum', size_field=None):
+    def __init__(self, working_dir, name_field='file_name', md5_field='md5sum', size_field=None, verify=True):
+        """
+
+        :param working_dir: location of pre-manifest and files
+        :param name_field: field name used to store file name
+        :param md5_field: field name used to store original MD5
+        :param size_field: field name used to store original file size
+        :param verify: whether or not to verify MD5 and size
+        """
         self.log = get_logger('Local_adapter')
         if not os.path.isdir(working_dir):
             raise ValueError(f'"{working_dir}" is not a directory!')
@@ -25,9 +33,10 @@ class BentoLocal:
         self.name_field = name_field
         self.md5_field = md5_field
         self.cleanup_fields = [name_field, md5_field]
+        self.size_field = size_field
         if size_field is not None:
-            self.size_field = size_field
             self.cleanup_fields.append(size_field)
+        self.verify = verify
 
     def _assert_file_info(self):
         if not hasattr(self, 'file_info') or not self.file_info:
@@ -61,15 +70,39 @@ class BentoLocal:
 
     def get_org_md5(self):
         """
-        Get file's original MD5
+        Get file's original MD5,
+        If original file's MD5 is given in column named in self.md5_field, then it will be used to verify file content
+        If original file's size is given in column named in self.size_field, then file size will be verified also
         :return: MD5: str, None if not available in self.file_info
         """
         self._assert_file_info()
         org_md5 = self.file_info.get(self.md5_field)
-        if not org_md5:
-            org_md5 = get_md5(self._get_local_path())
+        if not org_md5 or self.verify:
+            real_md5 = get_md5(self._get_local_path())
+
+            if not org_md5:
+                return real_md5
+            else:
+                if org_md5 != real_md5:
+                    self.log.error(f'File content does NOT match given MD5: {self.get_file_name()}!')
+                    raise ValueError(f'MD5 verification failed!')
+        if not self._check_file_size():
+            self.log.error(f'File size does NOT match given size: {self.get_file_name()}!')
+            raise ValueError(f'File size verification failed!')
 
         return org_md5
+
+    def _check_file_size(self):
+        """
+        Verify local file size
+        :return: bool
+        """
+        if self.size_field and self.verify:
+            org_size = int(self.file_info.get(self.size_field))
+            real_size = os.path.getsize(self._get_local_path())
+            return org_size == real_size
+        else:
+            return True
 
     def get_file_name(self):
         """

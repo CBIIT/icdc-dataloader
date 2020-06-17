@@ -8,7 +8,7 @@ Config:
     # Which adapter to use, can be 'glioma', 'glioma-bai' or 'local'
     adapter: local
 
-    # Following value will be adapter specific and will be passed into adapter's constructor
+    # Following value will be adapter specific and will be passed into adapter's constructor as is
     adapter_params:
         param1:
         param2:
