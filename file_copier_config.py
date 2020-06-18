@@ -6,13 +6,9 @@ from bento.common.config_base import BentoConfig
 MASTER_MODE = 'master'
 SLAVE_MODE = 'slave'
 SOLO_MODE = 'solo'
-GLIOMA_ADAPTER = 'glioma'
-GLIOMA_BAI_ADAPTER = 'glioma-bai'
-LOCAL_ADAPTER = 'local'
 
 class Config(BentoConfig):
     valid_modes = [MASTER_MODE, SLAVE_MODE, SOLO_MODE]
-    valid_adapters = [GLIOMA_ADAPTER, GLIOMA_BAI_ADAPTER, LOCAL_ADAPTER]
     def __init__(self):
         parser = argparse.ArgumentParser(description='Copy files from orginal S3 buckets to specified bucket')
         parser.add_argument('-b', '--bucket', help='Destination bucket name')
@@ -29,7 +25,8 @@ class Config(BentoConfig):
         parser.add_argument('--job-queue', help='Job SQS queue name')
         parser.add_argument('--result-queue', help='Result SQS queue name')
         parser.add_argument('--pre-manifest', help='Pre-manifest file')
-        parser.add_argument('-a', '--adapter', help='Adapter to use', choices=self.valid_adapters)
+        parser.add_argument('--adapter-module', help='Adapter module name')
+        parser.add_argument('--adapter-class', help='Adapter class name')
         parser.add_argument('config_file', help='Confguration file')
         args = parser.parse_args()
         super().__init__(args.config_file, args, 'config_file')
@@ -43,13 +40,12 @@ class Config(BentoConfig):
             self.log.critical(f'mode "{mode}" is not valid, choose from {self.valid_modes}')
             return False
 
-        adapter = self.data.get('adapter')
-        if adapter is None:
-            self.log.critical(f'adapter is required, choose from {self.valid_adapters}')
+        if not self.data.get('adapter_module'):
+            self.log.critical(f'adapter_module is required!')
             return False
-        elif adapter not in self.valid_adapters:
-            self.log.critical(
-                f'mode "{adapter}" is not valid, choose from {self.valid_adapters}')
+
+        if not self.data.get('adapter_class'):
+            self.log.critical(f'adapter_class is required!')
             return False
 
         if mode != SOLO_MODE:

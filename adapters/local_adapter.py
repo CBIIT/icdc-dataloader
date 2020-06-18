@@ -20,7 +20,7 @@ class BentoLocal:
     def __init__(self, working_dir, name_field='file_name', md5_field='md5sum', size_field=None, verify=True):
         """
 
-        :param working_dir: location of pre-manifest and files
+        :param working_dir: location of pre-manifest and files, all adapters should accept this parameter!
         :param name_field: field name used to store file name
         :param md5_field: field name used to store original MD5
         :param size_field: field name used to store original file size

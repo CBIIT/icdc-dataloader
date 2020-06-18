@@ -5,13 +5,17 @@ Config:
     # for Bento reference implementation use: bento-tools.org
     domain: bento-tools.org
 
-    # Which adapter to use, can be 'glioma', 'glioma-bai' or 'local'
-    adapter: local
+    # Adapter's module name
+    adapter_module: adapters.local_adapter
+    # Adapter's class name
+    adapter_class: BentoLocal
 
     # Following value will be adapter specific and will be passed into adapter's constructor as is
     adapter_params:
-        param1:
-        param2:
+        name_field: file_name
+        md5_field: original_md5sum
+        size_field: original_file_size
+        verify: true
 
     # Destination bucket name
     bucket:

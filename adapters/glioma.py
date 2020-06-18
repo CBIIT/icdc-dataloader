@@ -20,7 +20,11 @@ class Glioma:
     max_version = 10
 
 
-    def __init__(self):
+    def __init__(self, working_dir):
+        """
+
+        :param working_dir: location of pre-manifest and files, all adapters should accept this parameter!
+        """
         self.log = get_logger('Glioma_adapter')
 
     def _assert_file_info(self):

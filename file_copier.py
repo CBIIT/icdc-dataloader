@@ -2,13 +2,14 @@
 
 from collections import deque
 import csv
+from importlib import import_module
 import json
 import os
 
 from bento.common.sqs import Queue, VisibilityExtender
 from bento.common.utils import get_logger, get_uuid, LOG_PREFIX, UUID, get_time_stamp, removeTrailingSlash
 from copier import Copier
-from file_copier_config import MASTER_MODE, SLAVE_MODE, SOLO_MODE, Config, GLIOMA_ADAPTER, LOCAL_ADAPTER, GLIOMA_BAI_ADAPTER
+from file_copier_config import MASTER_MODE, SLAVE_MODE, SOLO_MODE, Config
 
 if LOG_PREFIX not in os.environ:
     os.environ[LOG_PREFIX] = 'File_Loader'
@@ -53,7 +54,7 @@ class FileLoader:
     BUCKET = 'bucket'
     PREFIX = 'prefix'
 
-    def __init__(self, mode, adapter, adapter_params=None, domain=None, bucket=None, prefix=None, pre_manifest=None, first=1, count=-1, job_queue=None, result_queue=None, retry=3, overwrite=False, dryrun=False):
+    def __init__(self, mode, adapter_module, adapter_class, adapter_params=None, domain=None, bucket=None, prefix=None, pre_manifest=None, first=1, count=-1, job_queue=None, result_queue=None, retry=3, overwrite=False, dryrun=False):
         """"
 
         :param bucket: string type
@@ -95,8 +96,10 @@ class FileLoader:
             if not domain:
                 raise ValueError(f'Empty domain!')
             self.domain = domain
+        else:
+            self.working_dir = None
 
-        self._init_adapter(adapter, adapter_params)
+        self._init_adapter(adapter_module, adapter_class, adapter_params)
         self.copier = None
 
         if not first > 0 or count == 0:
@@ -121,26 +124,21 @@ class FileLoader:
         self.files_skipped = 0
         self.files_failed = 0
 
-    def _init_adapter(self, adapter_name, params):
+    def _init_adapter(self, adapter_module, adapter_class, params):
         """
         Initialize different adapters base on given adapter_name
         :param adapter_name:
         :return:
         """
-        if adapter_name not in Config.valid_adapters:
-            raise ValueError(f'Adapter "{adapter_name}" is invalid!')
-
-        if adapter_name == GLIOMA_ADAPTER:
-            from adapters.glioma import Glioma
-            self.adapter = Glioma()
-        elif adapter_name == LOCAL_ADAPTER:
-            from adapters.local_adapter import BentoLocal
-            self.adapter = BentoLocal(self.working_dir, **params)
+        module = import_module(adapter_module)
+        class_ = getattr(module, adapter_class)
+        if isinstance(params, dict):
+            self.adapter = class_(self.working_dir, **params)
         else:
-            raise ValueError(f'Uninitialized adapter: "{adapter_name}"')
+            self.adapter = class_(self.working_dir)
 
         if not hasattr(self.adapter, 'filter_fields'):
-            raise TypeError(f'Adapter "{adapter_name}" does not have a "filter_fields" method')
+            raise TypeError(f'Adapter "{adapter_class}" does not have a "filter_fields" method')
 
     def get_indexd_manifest_name(self, file_name):
         folder = os.path.dirname(file_name)
