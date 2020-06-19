@@ -8,16 +8,15 @@ class BentoAdapter:
     Base adapter class provides common methods
 
     Following methods are required for an adapter and are provided in this class
-    - filter_fields
-    - get_fields
-    - load_file_info
-    - clear_file_info
-    - get_file_name
+        - filter_fields
+        - get_fields
+        - load_file_info
+        - clear_file_info
+        - get_file_name
+        - get_org_md5
 
-
-    Following methods are required and subclasses should provide them
-    - get_org_url
-    - get_org_md5
+    Following methods are required and subclasses is responsible to provide them, and override above methods if needed
+        - get_org_url
     """
 
     def __init__(self, name_field, md5_field=None):
