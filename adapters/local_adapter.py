@@ -14,7 +14,7 @@ class BentoLocal(BentoAdapter):
         - get_org_md5
     """
 
-    def __init__(self, data_dir, name_field='file_name', md5_field=None, size_field=None, verify=True):
+    def __init__(self, data_dir, name_field=None, md5_field=None, acl_field=None, size_field=None, verify=True):
         """
 
         :param data_dir: location of data files
@@ -23,7 +23,7 @@ class BentoLocal(BentoAdapter):
         :param size_field: field name used to store original file size
         :param verify: whether or not to verify MD5 and size
         """
-        super().__init__(name_field, md5_field)
+        super().__init__(name_field, md5_field, acl_field)
         data_dir = removeTrailingSlash(data_dir)
         if not os.path.isdir(data_dir):
             raise ValueError(f'"{data_dir}" is not a directory!')

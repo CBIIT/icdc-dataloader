@@ -18,16 +18,15 @@ class BentoAdapter:
     Following methods are required and subclasses is responsible to provide them, and override above methods if needed
         - get_org_url
     """
+    DEFAULT_ACL = "['Open']"
 
-    def __init__(self, name_field, md5_field=None):
+    def __init__(self, name_field=None, md5_field=None, acl_field=None):
         self.log = get_logger('Bento_adapter')
-        self.name_field = name_field
-        self.cleanup_fields = [name_field]
-        if md5_field:
-            self.md5_field = md5_field
-            self.cleanup_fields.append(md5_field)
-        else:
-            self.md5_field = None
+        self.name_field = name_field if name_field else 'file_name'
+        self.md5_field = md5_field if md5_field else 'md5sum'
+        self.acl_field = acl_field if acl_field else 'acl'
+
+        self.cleanup_fields = [self.name_field, self.md5_field, self.acl_field]
         self.file_info = {}
 
     def load_file_info(self, file_info):
@@ -80,6 +79,17 @@ class BentoAdapter:
             return self.file_info.get(self.md5_field)
         else:
             return None
+
+    def get_acl(self):
+        """
+        Get file's ACL if given, other wise return DEFAULT_ACL
+        :return: str
+        """
+        self._assert_file_info()
+        if self.acl_field:
+            return self.file_info.get(self.acl_field)
+        else:
+            return self.DEFAULT_ACL
 
     def get_fields(self):
         """

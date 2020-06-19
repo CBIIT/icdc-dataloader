@@ -25,20 +25,18 @@ Inputs:
 
 class FileLoader:
 
-    DEFAULT_ACL = "['Open']"
     GUID = 'GUID'
     MD5 = 'md5'
     SIZE = 'size'
-    ACL = 'acl'
     URL = 'url'
-    MANIFEST_FIELDS = [GUID, MD5, SIZE, ACL, URL]
+    MANIFEST_FIELDS = [GUID, MD5, SIZE, Copier.ACL, URL]
 
     FILE_SIZE = "file_size"
     MD5_SUM = 'md5sum'
     FILE_STAT = 'file_status'
     FILE_LOC = 'file_locations'
     FILE_FORMAT = 'file_format'
-    DATA_FIELDS = [UUID, FILE_SIZE, MD5_SUM, FILE_STAT, FILE_LOC, FILE_FORMAT, ACL]
+    DATA_FIELDS = [UUID, FILE_SIZE, MD5_SUM, FILE_STAT, FILE_LOC, FILE_FORMAT, Copier.ACL]
 
     DEFAULT_STAT = 'uploaded'
     INDEXD_GUID_PREFIX = 'dg.4DFC/'
@@ -160,7 +158,7 @@ class FileLoader:
         record[self.SIZE] = result[Copier.SIZE]
         record[self.MD5] = result[Copier.MD5]
         record[self.GUID] = '{}{}'.format(self.INDEXD_GUID_PREFIX, get_uuid(self.domain, "file", record[self.MD5]))
-        record[self.ACL] = self.DEFAULT_ACL
+        record[Copier.ACL] = result[Copier.ACL]
         record[self.URL] = self.get_s3_location(self.bucket_name, result[Copier.KEY])
         return record
 
@@ -172,7 +170,7 @@ class FileLoader:
         record[self.FILE_FORMAT] = (os.path.splitext(file_name)[1]).split('.')[1].lower()
         record[UUID] = get_uuid(self.domain, "file", record[self.MD5_SUM])
         record[self.FILE_STAT] = self.DEFAULT_STAT
-        record[self.ACL] = self.DEFAULT_ACL
+        record[Copier.ACL] = result[Copier.ACL]
         return record
 
     def _read_pre_manifest(self, overwrite, retry, dryrun):

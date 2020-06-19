@@ -12,7 +12,7 @@ from bento.common.s3 import S3Bucket
 
 class Copier:
     adapter_attrs = ['load_file_info', 'clear_file_info', 'get_org_url', 'get_file_name', 'get_org_md5',
-                     'filter_fields', 'get_fields']
+                     'filter_fields', 'get_fields', 'get_acl']
 
     TRANSFER_UNIT_MB = 1024 * 1024
     MULTI_PART_THRESHOLD = 100 * TRANSFER_UNIT_MB
@@ -26,7 +26,7 @@ class Copier:
     KEY = 'key'
     NAME = 'name'
     FIELDS = 'fields'
-
+    ACL = 'acl'
 
     def __init__(self, bucket_name, prefix, adapter):
 
@@ -73,7 +73,8 @@ class Copier:
                     self.MD5: self.adapter.get_org_md5(),
                     self.NAME: self.adapter.get_file_name(),
                     self.KEY: key,
-                    self.FIELDS: self.adapter.get_fields()
+                    self.FIELDS: self.adapter.get_fields(),
+                    self.ACL: self.adapter.get_acl()
                     }
 
             self.log.info(f'Copying from {org_url} to s3://{self.bucket_name}/{key} ...')
