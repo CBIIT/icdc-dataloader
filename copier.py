@@ -1,5 +1,6 @@
 #!/bin/env python3
 import os
+import re
 
 from boto3.s3.transfer import TransferConfig
 import requests
@@ -64,6 +65,9 @@ class Copier:
             self.adapter.clear_file_info()
             self.adapter.load_file_info(file_info)
             org_url = self.adapter.get_org_url()
+            if not self._is_valid_url(org_url):
+                self.log.error(f'"{org_url}" is not a valid URL!')
+                return {self.STATUS: False}
             key = f'{self.prefix}/{self.adapter.get_file_name()}'
             succeed = {self.STATUS: True,
                     self.MD5: self.adapter.get_org_md5(),
@@ -155,6 +159,9 @@ class Copier:
 
     def _is_local(self, org_url):
         return org_url.startswith('file://')
+
+    def _is_valid_url(self, org_url):
+        return re.search(r'^[^:/]+://', org_url)
 
     def _get_local_path(self, org_url):
         if self._is_local(org_url):

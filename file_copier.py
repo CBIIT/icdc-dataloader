@@ -91,13 +91,10 @@ class FileLoader:
             if not pre_manifest or not os.path.isfile(pre_manifest):
                 raise ValueError(f'Pre-manifest: "{pre_manifest}" dosen\'t exist')
             self.pre_manifest = pre_manifest
-            self.working_dir = os.path.dirname(self.pre_manifest)
 
             if not domain:
                 raise ValueError(f'Empty domain!')
             self.domain = domain
-        else:
-            self.working_dir = None
 
         self._init_adapter(adapter_module, adapter_class, adapter_params)
         self.copier = None
@@ -133,9 +130,9 @@ class FileLoader:
         module = import_module(adapter_module)
         class_ = getattr(module, adapter_class)
         if isinstance(params, dict):
-            self.adapter = class_(self.working_dir, **params)
+            self.adapter = class_(**params)
         else:
-            self.adapter = class_(self.working_dir)
+            self.adapter = class_()
 
         if not hasattr(self.adapter, 'filter_fields'):
             raise TypeError(f'Adapter "{adapter_class}" does not have a "filter_fields" method')

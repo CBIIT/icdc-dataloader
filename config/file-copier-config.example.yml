@@ -10,8 +10,10 @@ Config:
     # Adapter's class name
     adapter_class: BentoLocal
 
-    # Following value will be adapter specific and will be passed into adapter's constructor as is
+    # Following parameter will  will be passed into adapter's constructor as is
     adapter_params:
+        # following parameters are specifically for "BentoLocal" adapter
+        data_dir:
         name_field: file_name
         md5_field: original_md5sum
         size_field: original_file_size
