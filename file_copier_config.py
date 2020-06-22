@@ -20,6 +20,7 @@ class Config(BentoConfig):
                             action='store_true')
         parser.add_argument('-d', '--dryrun', help='Only check original file, won\'t copy any files',
                             action='store_true')
+        parser.add_argument('-v', '--verify-md5', help='Verify original MD5', action='store_true')
         parser.add_argument('-r', '--retry', help='Number of times to retry', type=int)
         parser.add_argument('-m', '--mode', help='Running mode', choices=self.valid_modes)
         parser.add_argument('--job-queue', help='Job SQS queue name')

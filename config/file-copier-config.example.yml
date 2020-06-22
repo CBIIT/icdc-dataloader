@@ -43,5 +43,7 @@ Config:
     overwrite: false
     # Only check original file, won't copy any files
     dryrun: false
+    # Verify original MD5, if one is given in pre-manifest
+    verify_md5: false
 
 

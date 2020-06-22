@@ -51,8 +51,9 @@ class FileLoader:
     DRY_RUN = 'dry_run'
     BUCKET = 'bucket'
     PREFIX = 'prefix'
+    VERIFY_MD5 = 'verify_md5'
 
-    def __init__(self, mode, adapter_module, adapter_class, adapter_params=None, domain=None, bucket=None, prefix=None, pre_manifest=None, first=1, count=-1, job_queue=None, result_queue=None, retry=3, overwrite=False, dryrun=False):
+    def __init__(self, mode, adapter_module, adapter_class, adapter_params=None, domain=None, bucket=None, prefix=None, pre_manifest=None, first=1, count=-1, job_queue=None, result_queue=None, retry=3, overwrite=False, dryrun=False, verify_md5=False):
         """"
 
         :param bucket: string type
@@ -111,6 +112,7 @@ class FileLoader:
         if not isinstance(dryrun, bool):
             raise TypeError(f'Invalid dryrun value: {dryrun}')
         self.dryrun = dryrun
+        self.verify_md5 = verify_md5
 
         self.log = get_logger('FileLoader')
 
@@ -173,7 +175,7 @@ class FileLoader:
         record[Copier.ACL] = result[Copier.ACL]
         return record
 
-    def _read_pre_manifest(self, overwrite, retry, dryrun):
+    def _read_pre_manifest(self):
         files = []
         with open(self.pre_manifest) as pre_m:
             reader = csv.DictReader(pre_m, delimiter='\t')
@@ -187,24 +189,22 @@ class FileLoader:
                 self.files_processed += 1
                 line_num += 1
                 files.append({self.LINE: line_num,
-                              self.TTL: retry,
-                              self.OVERWRITE: overwrite,
-                              self.DRY_RUN: dryrun,
+                              self.TTL: self.retry,
+                              self.OVERWRITE: self.overwrite,
+                              self.DRY_RUN: self.dryrun,
                               self.INFO: info,
                               self.BUCKET: self.bucket_name,
-                              self.PREFIX: self.prefix
+                              self.PREFIX: self.prefix,
+                              self.VERIFY_MD5: self.verify_md5
                               })
                 if self.files_processed >= self.count > 0:
                     break
         return files
 
     # Use this method in solo mode
-    def copy_all(self, overwrite, retry, dryrun):
+    def copy_all(self):
         """
           Read file information from pre-manifest and copy them all to destination bucket
-          :param overwrite: overwrite same file at destination
-          :param retry:
-          :param dryrun:
           :return:
         """
         if self.mode != SOLO_MODE:
@@ -212,7 +212,7 @@ class FileLoader:
             return False
         self.copier = Copier(self.bucket_name, self.prefix, self.adapter)
 
-        file_queue = deque(self._read_pre_manifest(overwrite, retry, dryrun))
+        file_queue = deque(self._read_pre_manifest())
 
         indexd_manifest = self.get_indexd_manifest_name(self.pre_manifest)
         neo4j_manifest = self.get_neo4j_manifest_name(self.pre_manifest)
@@ -231,7 +231,7 @@ class FileLoader:
                     job[self.TTL] -= 1
                     file_info = job[self.INFO]
                     try:
-                        result = self.copier.copy_file(file_info, overwrite, dryrun)
+                        result = self.copier.copy_file(file_info, self.overwrite, self.dryrun, self.verify_md5)
                         if result[Copier.STATUS]:
                             indexd_record = {}
                             self.populate_indexd_record(indexd_record, result)
@@ -262,13 +262,10 @@ class FileLoader:
             self.files_failed += 1
 
     # Use this method in master mode
-    def process_all(self, overwrite, retry, dryrun):
+    def process_all(self):
         """
         Read file information from pre-manifest and push jobs into job queue
         Listen on result queue for loading result
-        :param overwrite: overwrite same file at destination
-        :param retry:
-        :param dryrun:
         :return:
         """
         if self.mode != MASTER_MODE:
@@ -276,10 +273,10 @@ class FileLoader:
             return False
 
         try:
-            files = self._read_pre_manifest(overwrite, retry, dryrun)
+            files = self._read_pre_manifest()
             count = 0
             for job in files:
-                if dryrun:
+                if self.dryrun:
                     self.log.info(f'Dry run mode, jobs will be sent to queue but files won\'t be copied!')
                 else:
                     self.log.info(f'Line {job[self.LINE]}: file info sent to queue: {self.job_queue_name}')
@@ -362,7 +359,7 @@ class FileLoader:
 
 
     # Use this method in slave mode
-    def start_work(self, local_dryrun):
+    def start_work(self):
         if self.mode != SLAVE_MODE:
             self.log.critical(f'Function only works in {SLAVE_MODE} mode!')
             return False
@@ -383,8 +380,11 @@ class FileLoader:
                             self.TTL in data and
                             self.OVERWRITE in data and
                             self.PREFIX in data and
-                            self.DRY_RUN in data):
+                            self.DRY_RUN in data and
+                            self.VERIFY_MD5 in data
+                        ):
                             dryrun = data[self.DRY_RUN]
+                            verify_md5 = data[self.VERIFY_MD5]
 
                             extender = VisibilityExtender(msg, self.VISIBILITY_TIMEOUT)
                             bucket_name = data[self.BUCKET]
@@ -394,7 +394,7 @@ class FileLoader:
                             else:
                                 self.copier.set_bucket(bucket_name)
 
-                            result = self.copier.copy_file(data[self.INFO], data[self.OVERWRITE], dryrun or local_dryrun)
+                            result = self.copier.copy_file(data[self.INFO], data[self.OVERWRITE], dryrun or self.dryrun, verify_md5)
 
                             if result[Copier.STATUS]:
                                 self.result_queue.sendMsgToQueue(result, f'{result[Copier.NAME]}_{get_time_stamp()}')
@@ -431,17 +431,13 @@ class FileLoader:
         job[self.TTL] -= 1
         self.job_queue.sendMsgToQueue(job, f'{job[self.LINE]}_{job[self.TTL]}')
 
-    def run(self, overwrite=None, retry=None, dryrun=None):
-        overwrite = overwrite if overwrite is not None else self.overwrite
-        retry = retry if retry is not None else self.retry
-        dryrun = dryrun if dryrun is not None else self.dryrun
-
+    def run(self):
         if self.mode == SOLO_MODE:
-            self.copy_all(overwrite, retry, dryrun)
+            self.copy_all()
         elif self.mode == MASTER_MODE:
-            self.process_all(overwrite, retry, dryrun)
+            self.process_all()
         elif self.mode == SLAVE_MODE:
-            self.start_work(dryrun)
+            self.start_work()
 
 
 

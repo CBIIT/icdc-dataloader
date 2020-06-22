@@ -60,15 +60,16 @@ class Copier:
             self.bucket_name = bucket_name
             self.bucket = S3Bucket(self.bucket_name)
 
-    def copy_file(self, file_info, overwrite, dryrun):
+    def copy_file(self, file_info, overwrite, dryrun, verify_md5=False):
         """
         Copy a file to S3 bucket
         :param file_info: dict that has file information
         :param overwrite: overwrite file in S3 bucket even existing file has same size
         :param dryrun: only do preliminary check, don't copy file
-        :param verify: verify file size and MD5 in file_info against orginal file
+        :param verify_md5: verify file size and MD5 in file_info against orginal file
         :return: dict
         """
+        local_file = None
         try:
             self.adapter.clear_file_info()
             self.adapter.load_file_info(file_info)
@@ -90,11 +91,18 @@ class Copier:
 
             file_name = self.adapter.get_file_name()
             org_md5 = self.adapter.get_org_md5()
-            local_file = None
             if not org_md5:
-                self.log.info(f'Original MD5 not available, download and calculate MD5 locally...')
+                self.log.info(f'Original MD5 not available, calculate MD5 locally...')
                 local_file = f'tmp/{file_name}'
                 org_md5 = self._get_org_md5(org_url, local_file)
+            elif verify_md5:
+                self.log.info(f'Downloading file and verifying MD5 locally...')
+                local_file = f'tmp/{file_name}'
+                local_md5 = self._get_org_md5(org_url, local_file)
+                if local_md5 != org_md5:
+                    self.log.error(f'MD5 verify failed! Original MD5: {org_md5}, local MD5: {local_md5}')
+                    return {self.STATUS: False}
+                self.log.info(f'MD5 verified!')
 
             self.log.info(f'Original MD5 {org_md5}')
 
@@ -127,7 +135,6 @@ class Copier:
             elif local_file:
                 with open(local_file, 'rb') as stream:
                     dest_size = self._upload_obj(stream, key, org_size)
-                os.remove(local_file)
             # Original file is remote file
             else:
                 with requests.get(org_url, stream=True) as r:
@@ -143,6 +150,9 @@ class Copier:
             self.log.debug(e)
             self.log.error('Copy file failed! Check debug log for detailed information')
             return {self.STATUS: False}
+        finally:
+            if local_file and os.path.isfile(local_file):
+                os.remove(local_file)
 
     def _upload_obj(self, stream, key, org_size):
             parts = org_size // self.MULTI_PART_CHUNK_SIZE
@@ -162,7 +172,8 @@ class Copier:
         :return:
         """
         if self._is_local(org_url):
-            raise ValueError(f'Local file did not return valid MD5!')
+            file_path = self._get_local_path(org_url)
+            return get_md5(file_path)
         else:
             # Download to local and calculate MD5
             stream_download(org_url, local_file)

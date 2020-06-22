@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 
-from bento.common.utils import get_md5, removeTrailingSlash
+from bento.common.utils import removeTrailingSlash
 from .base_adapter import BentoAdapter
 
 
@@ -38,19 +38,6 @@ class BentoLocal(BentoAdapter):
 
     def _get_local_path(self):
         return f'{self.data_dir}/{self._get_raw_name()}'
-
-    def get_org_md5(self):
-        """
-        Get file's original MD5, if original file's MD5 is given in column named in self.md5_field, otherwise calculate
-        from local file
-        :return: MD5: str, None if not available in self.file_info
-        """
-        self._assert_file_info()
-        org_md5 = super().get_org_md5()
-        if not org_md5:
-            org_md5 = get_md5(self._get_local_path())
-
-        return org_md5
 
     def get_org_size(self):
         """
