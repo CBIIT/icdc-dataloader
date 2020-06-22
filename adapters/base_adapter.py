@@ -14,19 +14,21 @@ class BentoAdapter:
         - clear_file_info
         - get_file_name
         - get_org_md5
+        - get_org_size
 
     Following methods are required and subclasses is responsible to provide them, and override above methods if needed
         - get_org_url
     """
     DEFAULT_ACL = "['Open']"
 
-    def __init__(self, name_field=None, md5_field=None, acl_field=None):
+    def __init__(self, name_field=None, md5_field=None, size_field=None, acl_field=None):
         self.log = get_logger('Bento_adapter')
         self.name_field = name_field if name_field else 'file_name'
         self.md5_field = md5_field if md5_field else 'md5sum'
         self.acl_field = acl_field if acl_field else 'acl'
+        self.size_field = size_field if size_field else 'file_size'
 
-        self.cleanup_fields = [self.name_field, self.md5_field, self.acl_field]
+        self.cleanup_fields = [self.name_field, self.md5_field, self.size_field, self.acl_field]
         self.file_info = {}
 
     def load_file_info(self, file_info):
@@ -75,10 +77,15 @@ class BentoAdapter:
         :return: MD5: str, None if not available in self.file_info
         """
         self._assert_file_info()
-        if self.md5_field:
-            return self.file_info.get(self.md5_field)
-        else:
-            return None
+        return self.file_info.get(self.md5_field)
+
+    def get_org_size(self):
+        """
+        Get file's original size
+        :return: size in bytes
+        """
+        self._assert_file_info()
+        return self.file_info.get(self.size_field)
 
     def get_acl(self):
         """
@@ -86,10 +93,8 @@ class BentoAdapter:
         :return: str
         """
         self._assert_file_info()
-        if self.acl_field:
-            return self.file_info.get(self.acl_field)
-        else:
-            return self.DEFAULT_ACL
+        acl = self.file_info.get(self.acl_field)
+        return acl if acl else self.DEFAULT_ACL
 
     def get_fields(self):
         """

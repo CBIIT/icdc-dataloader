@@ -350,7 +350,7 @@ class FileLoader:
                                 msg.delete()
 
                         except Exception as e:
-                            self.log.dubug(e)
+                            self.log.debug(e)
                             self.log.critical(f'Something wrong happened while processing file! Check debug log for details.')
 
                         finally:
@@ -412,7 +412,7 @@ class FileLoader:
                             msg.delete()
 
                     except Exception as e:
-                        self.log.dubug(e)
+                        self.log.debug(e)
                         self.log.critical(f'Something wrong happened while processing file! Check debug log for details.')
                         if data:
                             self._deal_with_failed_file_sqs(data)

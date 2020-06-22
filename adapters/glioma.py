@@ -1,19 +1,15 @@
 #!/usr/bin/env python3
-import os
 import requests
 
-from bento.common.utils import get_logger
-from .base_adapter import BentoAdapter
+from .web_adapter import BentoWeb
 
 
-class Glioma(BentoAdapter):
+class Glioma(BentoWeb):
     """
     Following methods are required:
         - get_org_url
         - get_org_md5
     """
-    url_prefix = 'https://sra-pub-src-1.s3.amazonaws.com'
-    cleanup_fields = ['original_md5', 'SRA_accession']
     max_version = 10
 
 
@@ -22,7 +18,8 @@ class Glioma(BentoAdapter):
 
         :param working_dir: location of pre-manifest and files, all adapters should accept this parameter!
         """
-        super().__init__(name_field='file_name', md5_field='original_md5')
+        super().__init__(name_field='file_name', md5_field='original_md5', url_prefix='https://sra-pub-src-1.s3.amazonaws.com')
+        self.cleanup_fields.append('SRA_accession')
 
     @staticmethod
     def _dash_to_underscore(input):
@@ -44,5 +41,4 @@ class Glioma(BentoAdapter):
                 self.log.info(f'File {real_name} version {i} doesn\'t exist')
 
         raise LookupError(f'Couldn\'t find file {real_name}!')
-        # return 'https://sra-pub-src-1.s3.amazonaws.com/SRR10386332/CGP_S03_5E9A_305F1E05_T1_A1_J05.bam.1'
 
