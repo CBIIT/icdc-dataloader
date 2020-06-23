@@ -31,12 +31,13 @@ class FileLoader:
     URL = 'url'
     MANIFEST_FIELDS = [GUID, MD5, SIZE, Copier.ACL, URL]
 
+    FILE_NAME = 'file_name'
     FILE_SIZE = "file_size"
     MD5_SUM = 'md5sum'
     FILE_STAT = 'file_status'
-    FILE_LOC = 'file_locations'
+    FILE_LOC = 'file_location'
     FILE_FORMAT = 'file_format'
-    DATA_FIELDS = [UUID, FILE_SIZE, MD5_SUM, FILE_STAT, FILE_LOC, FILE_FORMAT, Copier.ACL]
+    DATA_FIELDS = [FILE_NAME, UUID, FILE_SIZE, MD5_SUM, FILE_STAT, FILE_LOC, FILE_FORMAT, Copier.ACL]
 
     DEFAULT_STAT = 'uploaded'
     INDEXD_GUID_PREFIX = 'dg.4DFC/'
@@ -165,6 +166,7 @@ class FileLoader:
         return record
 
     def populate_neo4j_record(self, record, result):
+        record[self.FILE_NAME] = result[Copier.NAME]
         record[self.FILE_SIZE] = result[Copier.SIZE]
         record[self.FILE_LOC] = self.get_s3_location(self.bucket_name, result[Copier.KEY])
         file_name = result[Copier.NAME]
