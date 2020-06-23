@@ -15,7 +15,7 @@ RETURN t.clinical_trial_id AS Trial_ID,
 MATCH (f:file)
 WITH collect(f.uuid) AS all_files
 MATCH(t:clinical_trial)<--(a:arm)<--(c:case)<--(s:specimen)<--(n:nucleic_acid)<--(sa:sequencing_assay)<--(f:file),
-     (s)<-[*]-(ar:assignment_report), (sa)<--(v:variant_report)
+     (sa)<--(v:variant_report)
   WHERE f.uuid IN CASE $file_ids WHEN [] THEN all_files
     ELSE $file_ids
     END
@@ -27,7 +27,7 @@ OPTIONAL MATCH (s)<--(i_mlh1:ihc_assay_report)
   WHERE i_mlh1.ihc_test_gene = 'MLH1'
 OPTIONAL MATCH (s)<--(i_rb:ihc_assay_report)
   WHERE i_rb.ihc_test_gene = 'RB'
-WITH DISTINCT f, t, a, c, ar, s, n, sa, v, i_pten, i_msh2, i_mlh1, i_rb
+WITH DISTINCT f, t, a, c, s, n, sa, v, i_pten, i_msh2, i_mlh1, i_rb
 RETURN t.clinical_trial_id AS Trial_ID, t.clinical_trial_designation AS Trial_Code,
        a.arm_id AS Treatment_Arm,
        c.case_id AS Case_ID, c.gender AS Gender, c.race AS Race, c.ethnicity AS Ethnicity, c.disease AS Diagnosis,
@@ -40,7 +40,6 @@ RETURN t.clinical_trial_id AS Trial_ID, t.clinical_trial_designation AS Trial_Co
        coalesce(i_mlh1.ihc_test_result, 'UNKNOWN') AS MLH1_IHC_Status,
        coalesce(i_msh2.ihc_test_result, 'UNKNOWN') AS MSH2_IHC_Status,
        coalesce(i_rb.ihc_test_result, 'UNKNOWN') AS RB_IHC_Status,
-       ar.assignment_outcome AS Assignment_Outcome,
        sa.experimental_method + ':' + CASE f.file_type
          WHEN 'Aligned DNA reads file' THEN ' DNA'
          WHEN 'Aligned RNA reads file' THEN ' RNA'
