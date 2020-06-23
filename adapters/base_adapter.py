@@ -85,7 +85,12 @@ class BentoAdapter:
         :return: size in bytes
         """
         self._assert_file_info()
-        return self.file_info.get(self.size_field)
+        try:
+            return int(self.file_info.get(self.size_field))
+        except Exception as e:
+            self.log.error('Failed to get file size!')
+            self.log.exception(e)
+            return None
 
     def get_acl(self):
         """
