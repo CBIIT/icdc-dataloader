@@ -86,7 +86,8 @@ class BentoAdapter:
         """
         self._assert_file_info()
         try:
-            return int(self.file_info.get(self.size_field))
+            raw_size = self.file_info.get(self.size_field)
+            return int(raw_size) if raw_size else None
         except Exception as e:
             self.log.error('Failed to get file size!')
             self.log.exception(e)
