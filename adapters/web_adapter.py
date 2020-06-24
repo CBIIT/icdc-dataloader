@@ -17,7 +17,7 @@ class BentoWeb(BentoAdapter):
     """
 
 
-    def __init__(self, url_prefix=None, name_field=None, md5_field=None, acl_field=None, size_field=None):
+    def __init__(self, url_prefix=None, name_field=None, md5_field=None, acl_field=None, size_field=None, location_field=None):
         """
         If url_prefix is given, then it will prepend to file names to get original URL,
         Otherwise, it will assume name_field contains complete URLs
@@ -28,7 +28,7 @@ class BentoWeb(BentoAdapter):
         :param url_prefix: URL prefix to prepend to all file names
         :param verify: whether or not to verify MD5 and size
         """
-        super().__init__(name_field=name_field, md5_field=md5_field, size_field=size_field, acl_field=acl_field)
+        super().__init__(name_field=name_field, md5_field=md5_field, size_field=size_field, acl_field=acl_field, location_field=location_field)
         if isinstance(url_prefix, str) and url_prefix:
             self.url_prefix = removeTrailingSlash(url_prefix)
         else:
@@ -39,10 +39,11 @@ class BentoWeb(BentoAdapter):
         Get file's URL in original location
         :return: URL: str
         """
+        file_path = self._get_path()
         if self.url_prefix:
-            return urljoin(self.url_prefix, self._get_raw_name())
+            return urljoin(self.url_prefix, file_path)
         else:
-            return self.file_info.get(self.name_field)
+            return file_path
 
     def get_org_size(self):
         """

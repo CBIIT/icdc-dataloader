@@ -13,7 +13,7 @@ class BentoLocal(BentoAdapter):
         - get_org_url
     """
 
-    def __init__(self, data_dir, name_field=None, md5_field=None, size_field=None, acl_field=None):
+    def __init__(self, data_dir, name_field=None, md5_field=None, size_field=None, acl_field=None, location_field=None):
         """
 
         :param data_dir: location of data files
@@ -21,7 +21,7 @@ class BentoLocal(BentoAdapter):
         :param md5_field: field name used to store original MD5
         :param size_field: field name used to store original file size
         """
-        super().__init__(name_field=name_field, md5_field=md5_field, size_field=size_field, acl_field=acl_field)
+        super().__init__(name_field=name_field, md5_field=md5_field, size_field=size_field, acl_field=acl_field, location_field=location_field)
         data_dir = removeTrailingSlash(data_dir)
         if not os.path.isdir(data_dir):
             raise ValueError(f'"{data_dir}" is not a directory!')
@@ -36,7 +36,7 @@ class BentoLocal(BentoAdapter):
         return f'file://{self._get_local_path()}'
 
     def _get_local_path(self):
-        return os.path.join(self.data_dir, self._get_raw_name())
+        return os.path.join(self.data_dir, self._get_path())
 
     def get_org_size(self):
         """
