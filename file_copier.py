@@ -31,14 +31,16 @@ class FileLoader:
     URL = 'url'
     MANIFEST_FIELDS = [GUID, MD5, SIZE, Copier.ACL, URL]
 
+    NODE_TYPE = 'type'
     FILE_NAME = 'file_name'
     FILE_SIZE = "file_size"
     MD5_SUM = 'md5sum'
     FILE_STAT = 'file_status'
     FILE_LOC = 'file_location'
     FILE_FORMAT = 'file_format'
-    DATA_FIELDS = [FILE_NAME, UUID, FILE_SIZE, MD5_SUM, FILE_STAT, FILE_LOC, FILE_FORMAT, Copier.ACL]
+    DATA_FIELDS = [NODE_TYPE, FILE_NAME, UUID, FILE_SIZE, MD5_SUM, FILE_STAT, FILE_LOC, FILE_FORMAT, Copier.ACL]
 
+    DEFAULT_NODE_TYPE = 'file'
     DEFAULT_STAT = 'uploaded'
     INDEXD_GUID_PREFIX = 'dg.4DFC/'
     INDEXD_MANIFEST_EXT = '.tsv'
@@ -166,6 +168,8 @@ class FileLoader:
         return record
 
     def populate_neo4j_record(self, record, result):
+        if self.NODE_TYPE not in record:
+            record[self.NODE_TYPE] = self.DEFAULT_NODE_TYPE
         record[self.FILE_NAME] = result[Copier.NAME]
         record[self.FILE_SIZE] = result[Copier.SIZE]
         record[self.FILE_LOC] = self.get_s3_location(self.bucket_name, result[Copier.KEY])
@@ -223,8 +227,10 @@ class FileLoader:
             indexd_writer = csv.DictWriter(indexd_f, delimiter='\t', fieldnames=self.MANIFEST_FIELDS)
             indexd_writer.writeheader()
             with open(neo4j_manifest, 'w', newline='\n') as neo4j_f:
-                fieldnames = self.adapter.filter_fields(self.field_names)
-                fieldnames += self.DATA_FIELDS
+                fieldnames = self.DATA_FIELDS
+                for field in self.adapter.filter_fields(self.field_names):
+                    if field not in fieldnames:
+                        fieldnames.append(field)
                 neo4j_writer = csv.DictWriter(neo4j_f, delimiter='\t', fieldnames=fieldnames)
                 neo4j_writer.writeheader()
 
