@@ -36,7 +36,7 @@ class BentoLocal(BentoAdapter):
         return f'file://{self._get_local_path()}'
 
     def _get_local_path(self):
-        return f'{self.data_dir}/{self._get_raw_name()}'
+        return os.path.join(self.data_dir, self._get_raw_name())
 
     def get_org_size(self):
         """

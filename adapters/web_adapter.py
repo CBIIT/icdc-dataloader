@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from urllib.parse import urljoin
 
 import requests
 
@@ -36,10 +37,10 @@ class BentoWeb(BentoAdapter):
     def get_org_url(self):
         """
         Get file's URL in original location
-        :return: URL: str, will be in file:// scheme if it's local file
+        :return: URL: str
         """
         if self.url_prefix:
-            return f'{self.url_prefix}/{self._get_raw_name()}'
+            return urljoin(self.url_prefix, self._get_raw_name())
         else:
             return self.file_info.get(self.name_field)
 
