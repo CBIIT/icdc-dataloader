@@ -6,9 +6,8 @@ from .web_adapter import BentoWeb
 
 class Glioma(BentoWeb):
     """
-    Following methods are required:
+    Following method is required:
         - get_org_url
-        - get_org_md5
     """
     max_version = 10
 

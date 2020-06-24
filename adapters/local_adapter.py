@@ -9,7 +9,7 @@ class BentoLocal(BentoAdapter):
     """
     This adapter assumes all data files are in folder given by parameter data_dir
 
-    Following methods are required:
+    Following method is required:
         - get_org_url
     """
 

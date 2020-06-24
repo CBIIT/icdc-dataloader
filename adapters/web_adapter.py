@@ -11,7 +11,7 @@ class BentoWeb(BentoAdapter):
     This adapter handles original files are publicly accessible on the web
     Pre-manifest file can contain Original URLs or file names and a common URL prefix given in a parameter
 
-    Following methods are required:
+    Following method is required:
         - get_org_url
     """
 
