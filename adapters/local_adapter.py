@@ -11,7 +11,6 @@ class BentoLocal(BentoAdapter):
 
     Following methods are required:
         - get_org_url
-        - get_org_md5
     """
 
     def __init__(self, data_dir, name_field=None, md5_field=None, size_field=None, acl_field=None):

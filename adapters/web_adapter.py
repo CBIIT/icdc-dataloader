@@ -13,7 +13,6 @@ class BentoWeb(BentoAdapter):
 
     Following methods are required:
         - get_org_url
-        - get_org_md5
     """
 
 
