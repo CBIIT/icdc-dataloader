@@ -92,8 +92,9 @@ MATCH (p:program)<-[*]-(s:study)<-[*]-(c:case)<--(demo:demographic), (c)<--(diag
     ELSE $sexes
     END
 OPTIONAL MATCH (f:file)-[*]->(c)
+OPTIONAL MATCH (f)-->(prt)
 OPTIONAL MATCH (samp:sample)-[*]->(c)
-WITH DISTINCT c AS c, p, s, demo, diag, f, samp
+WITH DISTINCT c AS c, p, s, demo, diag, f, samp, prt
 RETURN c.case_id AS case_id,
        s.clinical_study_designation AS study_code,
        p.program_acronym AS program,
@@ -107,7 +108,9 @@ RETURN c.case_id AS case_id,
        demo.neutered_indicator AS neutered_status,
        collect(DISTINCT(f.file_type)) AS data_types,
        collect(DISTINCT(f.file_format)) AS file_formats,
-       collect(DISTINCT(f)) AS files,
+       collect(DISTINCT(f {
+         parent:labels(prt)[0], .file_name, .file_name, .file_type, .file_description, .file_format, .file_size, .md5sum, .file_status, .uuid, .file_locations}))
+       AS files,
        collect(DISTINCT(samp.sample_id)) AS samples,
        collect(DISTINCT(samp)) AS sample_list
 
