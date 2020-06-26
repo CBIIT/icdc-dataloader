@@ -67,7 +67,7 @@ RETURN ss.study_subject_id AS subject_id,
 // programDetail
 MATCH (p:program {program_id: $program_id})
 MATCH (p)<-[*]-(s:study)<-[*]-(ss:study_subject)
-WITH s {.study_type, .study_acronym, .study_name, .study_short_description,
+WITH s {.study_type, .study_acronym, .study_name, .study_full_description,
        num_subjects:count(DISTINCT ss.study_subject_id)} AS study, p
 OPTIONAL MATCH (p)<-[*]-(ss:study_subject)
 OPTIONAL MATCH (p)-[*]->(ins:institution)
