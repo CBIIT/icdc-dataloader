@@ -63,3 +63,22 @@ RETURN ss.study_subject_id AS subject_id,
        f.file_size AS file_size,
        f.file_id AS file_id,
        f.md5sum AS md5sum
+
+// programDetail
+MATCH (p:program {program_id: $program_id})
+MATCH (p)<-[*]-(s:study)<-[*]-(ss:study_subject)
+WITH s {.study_type, .study_acronym, .study_name, .study_short_description,
+       num_subjects:count(DISTINCT ss.study_subject_id)} AS study, p
+OPTIONAL MATCH (p)<-[*]-(ss:study_subject)
+OPTIONAL MATCH (p)-[*]->(ins:institution)
+OPTIONAL MATCH (p)<-[*]-(f:file)
+RETURN p.program_acronym AS program_acronym,
+       p.program_id AS program_id,
+       p.program_name AS program_name,
+       p.program_full_description AS program_full_description,
+       ins.institution_name AS institution_name,
+       p.program_external_url AS program_external_url,
+       count(DISTINCT ss) AS num_subjects,
+       count(DISTINCT f) AS num_files,
+       collect(DISTINCT ss.disease_subtype) AS disease_subtypes,
+       collect(DISTINCT study) AS studies
