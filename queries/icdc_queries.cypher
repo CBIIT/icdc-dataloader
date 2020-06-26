@@ -114,6 +114,52 @@ RETURN c.case_id AS case_id,
        collect(DISTINCT(samp.sample_id)) AS samples,
        collect(DISTINCT(samp)) AS sample_list
 
+// caseOverview with study-level files attache to all cases in the study
+MATCH (s:study)
+WITH collect(DISTINCT(s.clinical_study_designation)) AS all_studies
+MATCH (d:demographic)
+WITH collect(DISTINCT(d.breed)) AS all_breeds, collect(DISTINCT(d.sex)) AS all_sexes, all_studies
+MATCH (d:diagnosis)
+WITH collect(DISTINCT(d.disease_term)) AS all_diseases, all_breeds, all_sexes, all_studies
+MATCH (p:program)<-[*]-(s:study)<-[*]-(c:case)<--(demo:demographic), (c)<--(diag:diagnosis)
+  WHERE s.clinical_study_designation IN CASE $study_codes WHEN [] THEN all_studies
+    ELSE $study_codes
+    END
+  AND demo.breed IN CASE $breeds WHEN [] THEN all_breeds
+    ELSE $breeds
+    END
+  AND diag.disease_term IN CASE $diagnoses WHEN [] THEN all_diseases
+    ELSE $diagnoses
+    END
+  AND demo.sex IN CASE $sexes WHEN [] THEN all_sexes
+    ELSE $sexes
+    END
+OPTIONAL MATCH (f:file)-[*]->(c)
+OPTIONAL MATCH (f)-->(prt)
+OPTIONAL MATCH (f2:file)--(s)
+OPTIONAL MATCH (samp:sample)-[*]->(c)
+WITH DISTINCT c AS c, p, s, demo, diag, f, f2, samp, prt
+RETURN c.case_id AS case_id,
+       s.clinical_study_designation AS study_code,
+       p.program_acronym AS program,
+       s.clinical_study_type AS study_type,
+       demo.breed AS breed,
+       diag.disease_term AS diagnosis,
+       diag.stage_of_disease AS stage_of_disease,
+       diag.primary_disease_site AS disease_site,
+       demo.patient_age_at_enrollment AS age,
+       demo.sex AS sex,
+       demo.neutered_indicator AS neutered_status,
+       collect(DISTINCT(f.file_type)) AS data_types,
+       collect(DISTINCT(f.file_format)) AS file_formats,
+       collect(DISTINCT(f {
+         parent:labels(prt)[0], .file_name, .file_name, .file_type, .file_description, .file_format, .file_size, .md5sum, .file_status, .uuid, .file_locations}))
+       + collect(DISTINCT(f2 {
+         parent:labels(s)[0], .file_name, .file_name, .file_type, .file_description, .file_format, .file_size, .md5sum, .file_status, .uuid, .file_locations}))
+       AS files,
+       collect(DISTINCT(samp.sample_id)) AS samples,
+       collect(DISTINCT(samp)) AS sample_list
+
 // casesInList query
 MATCH (p:program)<-[*]-(s:study)<-[*]-(c:case)<--(demo:demographic), (c)<--(diag:diagnosis)
      WHERE c.case_id IN $case_ids
