@@ -46,7 +46,12 @@ class FileLoader:
     INDEXD_MANIFEST_EXT = '.tsv'
     VISIBILITY_TIMEOUT = 30
 
+    ADAPTER_MODULE = 'adapter_module'
+    ADAPTER_CLASS = 'adapter_class'
+    ADAPTER_PARAMS = 'adapter_params'
+
     # keys in job dict
+    ADAPTER_CONF = 'adapter_config'
     TTL = 'ttl'
     INFO = 'file_info'
     LINE = 'line_num'
@@ -56,7 +61,7 @@ class FileLoader:
     PREFIX = 'prefix'
     VERIFY_MD5 = 'verify_md5'
 
-    def __init__(self, mode, adapter_module, adapter_class, adapter_params=None, domain=None, bucket=None, prefix=None, pre_manifest=None, first=1, count=-1, job_queue=None, result_queue=None, retry=3, overwrite=False, dryrun=False, verify_md5=False):
+    def __init__(self, mode, adapter_module=None, adapter_class=None, adapter_params=None, domain=None, bucket=None, prefix=None, pre_manifest=None, first=1, count=-1, job_queue=None, result_queue=None, retry=3, overwrite=False, dryrun=False, verify_md5=False):
         """"
 
         :param bucket: string type
@@ -98,7 +103,16 @@ class FileLoader:
                 raise ValueError(f'Empty domain!')
             self.domain = domain
 
-        self._init_adapter(adapter_module, adapter_class, adapter_params)
+            self.adapter_config = {
+                self.ADAPTER_PARAMS: adapter_params,
+                self.ADAPTER_CLASS: adapter_class,
+                self.ADAPTER_MODULE: adapter_module
+            }
+            self._init_adapter(adapter_module, adapter_class, adapter_params)
+        else:
+            self.adapter = None
+            self.adapter_config = {}
+
         self.copier = None
 
         if not first > 0 or count == 0:
@@ -194,15 +208,17 @@ class FileLoader:
             for info in reader:
                 self.files_processed += 1
                 line_num += 1
-                files.append({self.LINE: line_num,
-                              self.TTL: self.retry,
-                              self.OVERWRITE: self.overwrite,
-                              self.DRY_RUN: self.dryrun,
-                              self.INFO: info,
-                              self.BUCKET: self.bucket_name,
-                              self.PREFIX: self.prefix,
-                              self.VERIFY_MD5: self.verify_md5
-                              })
+                files.append({
+                    self.ADAPTER_CONF: self.adapter_config,
+                    self.LINE: line_num,
+                    self.TTL: self.retry,
+                    self.OVERWRITE: self.overwrite,
+                    self.DRY_RUN: self.dryrun,
+                    self.INFO: info,
+                    self.BUCKET: self.bucket_name,
+                    self.PREFIX: self.prefix,
+                    self.VERIFY_MD5: self.verify_md5
+                })
                 if self.files_processed >= self.count > 0:
                     break
         return files
@@ -383,7 +399,9 @@ class FileLoader:
                         data = json.loads(msg.body)
                         self.log.debug(data)
                         # Make sure job is in correct format
-                        if (self.BUCKET in data and
+                        if (
+                            self.ADAPTER_CONF in data and
+                            self.BUCKET in data and
                             self.INFO in data and
                             self.TTL in data and
                             self.OVERWRITE in data and
@@ -391,16 +409,30 @@ class FileLoader:
                             self.DRY_RUN in data and
                             self.VERIFY_MD5 in data
                         ):
+                            extender = VisibilityExtender(msg, self.VISIBILITY_TIMEOUT)
                             dryrun = data[self.DRY_RUN]
                             verify_md5 = data[self.VERIFY_MD5]
 
-                            extender = VisibilityExtender(msg, self.VISIBILITY_TIMEOUT)
+                            adapter_config = data[self.ADAPTER_CONF]
                             bucket_name = data[self.BUCKET]
                             prefix = data[self.PREFIX]
-                            if not self.copier:
+                            if self.adapter_config != adapter_config:
+                                self.adapter_config = adapter_config
+                                self._init_adapter(adapter_module=adapter_config[self.ADAPTER_MODULE],
+                                                   adapter_class=adapter_config[self.ADAPTER_CLASS],
+                                                   params=adapter_config[self.ADAPTER_PARAMS]
+                                                   )
+                                self.bucket_name = bucket_name
+                                self.prefix = prefix
                                 self.copier = Copier(bucket_name, prefix, self.adapter)
-                            else:
+
+                            if bucket_name != self.bucket_name:
+                                self.bucket_name = bucket_name
                                 self.copier.set_bucket(bucket_name)
+
+                            if prefix != self.prefix:
+                                self.prefix = prefix
+                                self.copier.set_prefix(prefix)
 
                             result = self.copier.copy_file(data[self.INFO], data[self.OVERWRITE], dryrun or self.dryrun, verify_md5)
 

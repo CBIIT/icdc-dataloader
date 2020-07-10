@@ -41,14 +41,6 @@ class Config(BentoConfig):
             self.log.critical(f'mode "{mode}" is not valid, choose from {self.valid_modes}')
             return False
 
-        if not self.data.get('adapter_module'):
-            self.log.critical(f'adapter_module is required!')
-            return False
-
-        if not self.data.get('adapter_class'):
-            self.log.critical(f'adapter_class is required!')
-            return False
-
         if mode != SOLO_MODE:
             if not self.data.get('job_queue'):
                 self.log.critical(f'job_queue is required in {mode} mode!')
@@ -58,6 +50,14 @@ class Config(BentoConfig):
                 return False
 
         if mode != SLAVE_MODE:
+            if not self.data.get('adapter_module'):
+                self.log.critical(f'adapter_module is required!')
+                return False
+
+            if not self.data.get('adapter_class'):
+                self.log.critical(f'adapter_class is required!')
+                return False
+
             if not self.data.get('domain'):
                 self.log.critical(f'domain is required in {mode} mode!')
                 return False
