@@ -21,7 +21,7 @@ def main():
     args = parser.parse_args()
 
     # Exit if no schema files were specified or the specified files do not exist
-    if not check_schema_files(args.schema):
+    if not check_schema_files(args.schema, log):
         sys.exit(1)
 
     # Exit if no query files were specified or the specified file does not exist
@@ -130,29 +130,6 @@ def count_parenthesis(line):
     count = line.count("(")
     count -= line.count(")")
     return count
-
-
-def check_schema_files(schemas):
-    """
-    Checks if schema files were specified and if the files exist
-
-    :param schemas: the schema files specified as command line parameters
-    :return: true if schema files were specified and exist
-    """
-    log = get_logger('Model Converter')
-    # If no schemas were specified
-    if not schemas:
-        log.error('Please specify schema file(s) with -s or --schema argument')
-        return False
-
-    # Check if schema files exists
-    for schema_file in schemas:
-        if not os.path.isfile(schema_file):
-            log.error('{} is not a file'.format(schema_file))
-            return False
-
-    # Return true if all checks are passed
-    return True
 
 
 # Call to main function
