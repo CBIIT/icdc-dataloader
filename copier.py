@@ -60,6 +60,11 @@ class Copier:
             self.bucket_name = bucket_name
             self.bucket = S3Bucket(self.bucket_name)
 
+    def set_prefix(self, raw_prefix):
+        prefix = removeTrailingSlash(raw_prefix)
+        if prefix != self.prefix:
+            self.prefix = prefix
+
     def copy_file(self, file_info, overwrite, dryrun, verify_md5=False):
         """
         Copy a file to S3 bucket
