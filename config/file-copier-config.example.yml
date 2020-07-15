@@ -1,0 +1,49 @@
+Config:
+    # Domain name of the project, used to generate UUIDs, required!
+    # for ICDC use: caninecommons.cancer.gov
+    # for CTDC use: trialcommons.cancer.gov
+    # for Bento reference implementation use: bento-tools.org
+    domain: bento-tools.org
+
+    # Adapter's module name
+    adapter_module: adapters.local_adapter
+    # Adapter's class name
+    adapter_class: BentoLocal
+
+    # Following parameter will  will be passed into adapter's constructor as is
+    adapter_params:
+        # following parameters are specifically for "BentoLocal" adapter
+        data_dir:
+        name_field: file_name
+        md5_field: original_md5sum
+        size_field: original_file_size
+        verify: true
+
+    # Destination bucket name
+    bucket:
+    # Prefix for files in destination bucket
+    prefix:
+    # First line to load, 1 based not counting headers, default is 1
+    first: 1
+    # Number of files to copy, default is -1 means all files in the file
+    count: -1
+    # Number of retries, default is 3
+    retry: 3
+    # Running mode, can be 'master', 'slave' or 'solo', default is 'solo'
+    mode:
+    # Job SQS queue name
+    job_queue:
+    # Result SQS queue name
+    result_queue:
+
+    # Pre-manifest file
+    pre_manifest:
+
+    # Overwrite file even same size file already exists at destination
+    overwrite: false
+    # Only check original file, won't copy any files
+    dryrun: false
+    # Verify original MD5, if one is given in pre-manifest
+    verify_md5: false
+
+

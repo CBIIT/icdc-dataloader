@@ -1,0 +1,13 @@
+Config:
+  temp_folder: tmp
+
+  sqs:
+    long_pull_time: 20
+    visibility_timeout: 30
+
+  indexd:
+    GUID_prefix: dg.4DFC/
+    ext: .tsv
+
+  slack_url:
+
