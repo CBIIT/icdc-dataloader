@@ -4,22 +4,32 @@ nav_order: 1
 title: Model Converter
 ---
 # Model Converter
-This is the user documentation for the model converter module contained in the ICDC-Dataloader utility.
+This is the user documentation for the Model Converter module contained in the ICDC-Dataloader utility.
+
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/f4d5afb8403642dbab917cb4aa4ef47d)](https://www.codacy.com/gh/CBIIT/icdc-dataloader?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=CBIIT/icdc-dataloader&amp;utm_campaign=Badge_Grade)
 ## Introduction
-The Model Converter is used to generate a GraphQL formatted schema from YAML format input files. 
+The Model Converter uses a combination of YAML format schema files, a YAML formatted properties files, and a GraphQL formatted queries file to generate a GraphQL formatted schema. After the GraphQL schema if generated, the Model Converter also generates a simplified, more easily readable version of the GraphQL schema for documentation purposes.
+
+The Model Converter can be found in this Github Repository: [ICDC-Dataloader](https://github.com/CBIIT/icdc-dataloader)
 ## Pre-requisites
+* Python 3.6 or newer
 ## Dependencies
+Run ```pip3 install -r requirements.txt``` to install dependencies. Or run ```pip install -r requirements.txt``` if you are using virtualenv. The dependencies included in ````requirements.txt```` are listed below:
+* pyyaml
+* neo4j - version 1.7.6
+* boto3
+* requests
 ## Inputs
-* YAML Formatted schema file(s)
-* YAML formatted properties file
-* GraphQL formatted queries file
-* Filepath for the generated outputs
+* YAML formatted schema file(s)
+* A YAML formatted properties file
+* A GraphQL formatted queries file
+* The filepath to be used for the generated output files
 ## Outputs
 * A GraphQL formatted schema
-* A simplified and easier to read version of the GraphQL schema that used for documentation purposes only.
+* A simplified, more easily readable version of the GraphQL schema for documentation purposes
 ## Command Line Arguments
 * Schema File(s)
-    * The YAML formatted schema file(s) that contain the model specifications used to generate the GrapQL schema.
+    * The YAML formatted schema file(s) that contain the model specifications used to generate the GraphQL schema.
     * Command: ````-s/--schema````
     * At least one schema file is required
     * Default Value: ````N/A````
@@ -44,17 +54,17 @@ Below is an example command to run the model converter:
 model-converter.py --schema schema-file-1.yml --schema schema-file-2.yml --prop-file schema-properties.yml --query-file queries.graphql --output output_folder\data-model-schema.graphql
 ````
 ### Example Inputs
-* Schema Files
+* **Schema Files**
     * ````schema-file-1.yml````
     * ````schema-file-2.yml````
-* Properties File
+* **Properties File**
     * ````schema-properties.yml````
-* Query File
+* **Query File**
     * ````queries.graphql````
-* Output Filepath
+* **Output Filepath**
     * ````output_folder\data-model-schema.graphql````
 ### Example Outputs
-* GraphQL Schema
+* **GraphQL Schema**
     * ````output_folder\data-model-schema.graphql````
-* Simplified Documentation Schema
+* **Simplified Documentation Schema**
     * ````output_folder\data-model-schema-doc.graphql````
