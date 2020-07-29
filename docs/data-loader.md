@@ -7,29 +7,42 @@ title: Data Loader
 This is the user documentation for the Data Loader module contained in the ICDC-Dataloader utility.
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/f4d5afb8403642dbab917cb4aa4ef47d)](https://www.codacy.com/gh/CBIIT/icdc-dataloader?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=CBIIT/icdc-dataloader&amp;utm_campaign=Badge_Grade)
+
 ## Introduction
 The Data Loader module is a versatile Python application used to load data into a Neo4j database. The application is capable of loading data from either a system directory or from an Amazon Web Services (AWS) S3 Bucket
 
 The Data Loader can be found in this Github Repository: [ICDC-Dataloader](https://github.com/CBIIT/icdc-dataloader)
+
 ## Pre-requisites
 * Python 3.6 or newer
 * An initialized and running Neo4j database
-* If loading from an AWS S3 bucket, AWS Command Line Interface (CLI)
+* AWS S3 bucket, if applicable
+
 ## Dependencies
 Run ```pip3 install -r requirements.txt``` to install dependencies. Or run ```pip install -r requirements.txt``` if you are using virtualenv. The dependencies included in ````requirements.txt```` are listed below:
+
 * pyyaml
 * neo4j - version 1.7.6
 * boto3
 * requests
+
 ## Inputs
+* A Data Loader configuration file
 * Neo4j endpoint and credentials
 * YAML formatted schema file and properties files
-* A Data Loader configuration file
 * If loading from an AWS S3 bucket, the S3 folder and bucket name
 * The dataset directory or a local temporary folder if loading from an AWS S3 bucket
+
 ## Outputs
-The Data Loader module loads data into the specified Neo4j database but does not produce any outputs.
+The Data Loader module loads data into the specified Neo4j database, and log messages to console as well as a log file inside ````tmp/```` folder.
+
 ## Command Line Arguments
+* **Configuration File**
+    * The YAML file containing the configuration details for the Data Loader execution
+    * Command : ````<configuration file>````
+    * Required
+    * Most, if not all CLI arguments can also be specified in this configuration file
+    * Default Value : ````N/A````
 * **Neo4j URI**
     * Address of the target Neo4j endpoint
     * Command : ````-i/--uri <URI>````
@@ -43,7 +56,7 @@ The Data Loader module loads data into the specified Neo4j database but does not
 * **Neo4j Password**
     * Password to be used for the Neo4j database
     * Command : ````-p/--password <password>````
-    * Not required if specified in the configuration file
+    * Not required if specified in the configuration file, or in environment variable ````NEO_PASSWORD````
     * Default Value : ````N/A````
 * **Schema File(s)**
     * The file path(s) of the YAML formatted schema file(s). Use multiple –schema arguments (one for each schema file), if more than one schema files are needed
@@ -54,39 +67,35 @@ The Data Loader module loads data into the specified Neo4j database but does not
     * The file containing the properties for the specified schema
     * Command : ````--prop-file <properties file>````
     * Not required if specified in the configuration file
-    * Default Value : ````N/A````
-* **Configuration File**
-    * The YAML file containing the configuration details for the Data Loader execution
-    * Command : ````<configuration file>````
-    * Required
+    * Example files can be found under ````config/```` folder, such as  ````config/props-bento-ext.yml```` for Bento reference implementation, and ````config/props-ctdc.yml```` for CTDC etc.
     * Default Value : ````N/A````
 * **Enable Cheat Mode**
     * Disables data validation before loading data
     * Command : ````-c/--cheat-mode````
     * Not required
-    * Default Value : ````N/A````
+    * Default Value : ````false````
 * **Enable Dry Run**
     * Runs data validation only, disables loading data
     * Command : ````-d/--dry-run````
     * Not required
-    * Default Value : ````N/A````
+    * Default Value : ````false````
 * **Wipe Database**
     * Clears all data in the database before loading the data
     * Command : ````--wipe-db````
     * Not required
-    * Default Value : ````N/A````
+    * Default Value : ````false````
 * **Disable Backup**
     * Skips the backing up the database before loading the data
     * Command : ````--no-backup````
     * Not required
-    * Default Value : ````N/A````
+    * Default Value : ````false````
 * **Enable Auto-Confirm**
     * Automatically confirms any confirmation prompts that are displayed during the data loading
     * Command : ````-y/--yes````
     * Not Required
-    * Default Value : ````N/A````
+    * Default Value : ````false````
 * **Maximum Violations to Display**
-    * The maximum number of violations(per data file) to be displayed in the console output during data loading
+    * The maximum number of violations (per data file) to be displayed in the console output during data loading
     * Command : ````-M/--max-violations <number>````
     * Not Required
     * Default Value : ````10````
@@ -109,17 +118,19 @@ The Data Loader module loads data into the specified Neo4j database but does not
     * Does not save parent node IDs in children nodes
     * Command : ````--no-parents````
     * Not Required
-    * Default Value : ````N/A````
+    * Default Value : ````false````
 * **Dataset Directory**
     * The directory containing the data to be loaded, a temporary directory if loading from an S3 bucket
     * Command : ````--dataset <dir>````
     * Not required if specified in the configuration file
     * Default Value : ````N/A````
+
 ## Usage Example
 Below is an example command to run the Model Converter:
 ````
-python3 loader.py -p secret -s tests/data/icdc-model.yml -s tests/data/icdc-model-props.yml config/config.yml --prop-file config/props-icdc.yml -–dataset /data/Dataset-20191119
+python3 loader.py config/config.yml -p secret -s tests/data/icdc-model.yml -s tests/data/icdc-model-props.yml --prop-file config/props-icdc.yml -–dataset /data/Dataset-20191119
 ````
+
 ### Example Inputs
 * **Neo4j Password**
     * ````secret````
