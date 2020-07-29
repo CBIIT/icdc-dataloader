@@ -7,21 +7,26 @@ title: File Loader
 This is the user documentation for the File Loader module contained in the ICDC-Dataloader utility.
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/f4d5afb8403642dbab917cb4aa4ef47d)](https://www.codacy.com/gh/CBIIT/icdc-dataloader?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=CBIIT/icdc-dataloader&amp;utm_campaign=Badge_Grade)
+
 ## Introduction
 The File Loader module processes incoming S3 files and then calls the Data Loader module to load the processed file data into a Neo4j database.
 
 The File Loader can be found in this Github Repository: [ICDC-Dataloader](https://github.com/CBIIT/icdc-dataloader)
+
 ## Pre-requisites
 * Python 3.6 or newer
 * An initialized and running Neo4j database
 * An AWS S3 bucket containing the data to be loaded
 * AWS Command Line Interface (CLI)
+
 ## Dependencies
 Run ```pip3 install -r requirements.txt``` to install dependencies. Or run ```pip install -r requirements.txt``` if you are using virtualenv. The dependencies included in ````requirements.txt```` are listed below:
+
 * pyyaml
 * neo4j - version 1.7.6
 * boto3
 * requests
+
 ## Inputs
 * Neo4j endpoint and credentials
 * YAML formatted schema file and properties files
@@ -29,8 +34,10 @@ Run ```pip3 install -r requirements.txt``` to install dependencies. Or run ```pi
 * S3 folder name
 * S3 bucket name
 * SQS name
+
 ## Outputs
 The File Loader module loads data into the specified Neo4j database but does not produce any outputs.
+
 ## Command Line Arguments
 * **Amazon Simple Queue Service (SQS) Name**
     * The name of the SQS queue
@@ -87,11 +94,13 @@ The File Loader module loads data into the specified Neo4j database but does not
     * Command : ````-f/--s3-folder <folder name>````
     * Required
     * Default Value : ````N/A````
+
 ## Usage Example
 Below is an example command to run the File Loader:
 ````
 file_loader.py -q example-queue -p secret -s tests/data/icdc-model.yml -s tests/data/icdc-model-props.yml config/config.yml --prop-file config/props-icdc.yml -b s3_bucket -f s3_folder
 ````
+
 ### Example Inputs
 * **SQS Name**
     * ````example-queue````
