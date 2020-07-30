@@ -84,6 +84,7 @@ def process_arguments(args, log):
         if not os.path.isdir(config.dataset):
             log.error('{} is not a directory!'.format(config.dataset))
             sys.exit(1)
+        log.info(f'Loading data from s3://{config.s3_bucket}/{config.s3_folder}')
         if not bucket.download_files_in_folder(config.s3_folder, config.dataset):
             log.error('Download files from S3 bucket "{}" failed!'.format(config.s3_bucket))
             sys.exit(1)
