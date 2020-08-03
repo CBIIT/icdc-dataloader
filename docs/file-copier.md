@@ -10,6 +10,7 @@ This is the user documentation for the File Copier module contained in the ICDC-
 
 ## Introduction
 The File Copier copies files from a source URL to a designated AWS S3 Bucket. It has 3 modes of operation:
+
 * **Master mode** - The File Copier will read all of the file information from the pre-manifest, push jobs onto the job queue, and then listen to the results queue for the loading results.
 * **Slave mode** - The File Copier will grab jobs from the job queue, perform the copy job, and then push the job result to the result queue.
 * **Solo mode** - The File Copier will read all of the file information from the pre-manifest and then copy all of the files to the destination S3 bucket.
@@ -20,11 +21,12 @@ The File Copier can be found in this Github Repository: [ICDC-Dataloader](https:
 * Python 3.6 or newer
 * An initialized destination AWS S3 bucket
 * AWS Command Line Interface (CLI)
-* Initialized Job and Result SWS Queues (````master```` and ````slave```` modes only)
-* An adapter for the data model
+* Initialized Job and Result SQS FIFO Queues (````master```` and ````slave```` modes only)
+* An adapter to process information read from pre-manifest
 
 ## Dependencies
 Run ```pip3 install -r requirements.txt``` to install dependencies. Or run ```pip install -r requirements.txt``` if you are using virtualenv. The dependencies included in ````requirements.txt```` are listed below:
+
 *   pyyaml
 *   neo4j - version 1.7.6
 *   boto3
@@ -35,13 +37,42 @@ Run ```pip3 install -r requirements.txt``` to install dependencies. Or run ```pi
 *   The name of the destination S3 bucket
 *   A File Copier config file
 *   The module name and class name of the adapter for the data being transferred
-*   A pre-manifest file
-*   The names of the job and result SQS queues (````master```` and ````slave```` modes only)
+*   A pre-manifest file (in TSV format)
+*   The names of the job and result SQS FIFO queues (````master```` and ````slave```` modes only)
 
 ## Outputs
-The File Copier module copies files into the specified S3 bucket, and log messages to console as well as a log file inside ````tmp/```` folder.
+The File Copier module will produce following outputs
+
+* Copies files into the specified S3 bucket
+* Generates two manifest files in the same place as pre-manifest file, one for DCF/IndexD, the other for Neo4j database.
+* Log messages to console as well as a log file inside ````tmp/```` folder.
+
+## Configuration file
+All the inputs of File Copier can be set in a YAML format configuration file. An example configuration file can be found in ````config/file-copier-config.example.yml````
+
+* domain
+* adapter_module
+* adapter_class
+* adapter_params: An object which contains parameters for the adapter's constructor. Only available in configuration file, not as CLI arguments.
+* bucket
+* prefix
+* first
+* count
+* retry
+* mode
+* job_queue
+* result_queue
+* pre_manifest
+* overwrite
+* dryrun
+* verify_md5
 
 ## Command Line Arguments
+* **Configuration File**
+    * The YAML file containing the configuration details for the File Copier execution
+    * Command : ````<configuration file>````
+    * Required
+    * Default Value: ````N/A````
 * **Destination S3 Bucket Name**
     * The files in the source S3 Bucket will be copied into this destination S3 Bucket.
     * Command: ````-b/--bucket <S3 bucket name>````
@@ -98,12 +129,12 @@ The File Copier module copies files into the specified S3 bucket, and log messag
     * Required when not in ````solo```` mode
     * Default Value: ````N/A````
 * **Result SQS Queue Name**
-    * The results of the File Copier jobs will be sent to the result SWS queue with the name specified by this input.
+    * The results of the File Copier jobs will be sent to the result SQS queue with the name specified by this input.
     * Command: ````--result-queue````
     * Required when not in ````solo```` mode
     * Default Value: ````N/A````
 * **Pre-manifest File**
-    * The CSV file containing the details of the files to be copied.
+    * The TSV file containing the details of the files to be copied.
     * Command: ````--pre-manifest````
     * Required when not in ````slave```` mode
     * Default Value: ````N/A````
@@ -117,23 +148,19 @@ The File Copier module copies files into the specified S3 bucket, and log messag
     * Command: ````--adapter-class````
     * Required when not in ````slave```` mode
     * Default Value: ````N/A````
-* **Configuration File**
-    * The YAML file containing the configuration details for the File Copier execution
-    * Command : ````<configuration file>````
-    * Required
-    * Default Value: ````N/A````
+
 
 ## Usage Examples
 Below are example commands to run the File Copier.
 
 ### Solo Mode
 ````
-file_copier.py -b example_bucket --domain example_domain -p example_prefix -m solo --pre-manifest example_file.csv --adapter-module example_module --adapter-class example_class example_config.yml 
+file_copier.py -b example_bucket --domain example_domain -p example_prefix -m solo --pre-manifest example_file.tsv --adapter-module example_module --adapter-class example_class example_config.yml 
 ````
 
 ### Master Mode
 ````
-file_copier.py -b example_bucket --domain example_domain -p example_prefix -m master --job-queue example_job_queue --result-queue example_result_queue --pre-manifest example_file.csv --adapter-module example_module --adapter-class example_class example_config.yml 
+file_copier.py -b example_bucket --domain example_domain -p example_prefix -m master --job-queue example_job_queue --result-queue example_result_queue --pre-manifest example_file.tsv --adapter-module example_module --adapter-class example_class example_config.yml 
 ````
 
 ### Solo Mode
@@ -156,7 +183,7 @@ file_copier.py -b example_bucket -m slave --job-queue example_job_queue --result
 * **Result SQS Queue Name**
     * ````example_result_queue````
 * **Pre-manifest File**
-    * ````example_file.csv````
+    * ````example_file.tsv````
 * **Adapter Module Name**
     * ````example_module````
 * **Adapter Class Name**
