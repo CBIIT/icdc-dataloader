@@ -43,29 +43,31 @@ Run ```pip3 install -r requirements.txt``` to install dependencies. Or run ```pi
 ## Outputs
 The File Copier module will produce following outputs
 
-* Copies files into the specified S3 bucket
-* Generates two manifest files in the same place as pre-manifest file, one for DCF/IndexD, the other for Neo4j database.
-* Log messages to console as well as a log file inside ````tmp/```` folder.
+*    Copies files into the specified S3 bucket
+*    Generates two manifest files in the same place as pre-manifest file, one for DCF/IndexD, the other for Neo4j database.
+*    Log messages to console as well as a log file inside ````tmp/```` folder.
 
 ## Configuration file
-All the inputs of File Copier can be set in a YAML format configuration file. An example configuration file can be found in ````config/file-copier-config.example.yml````
+All the inputs of File Copier can be set in a YAML format configuration file by using the fields defined below. 
 
-* domain
-* adapter_module
-* adapter_class
-* adapter_params: An object which contains parameters for the adapter's constructor. Only available in configuration file, not as CLI arguments.
-* bucket
-* prefix
-* first
-* count
-* retry
-* mode
-* job_queue
-* result_queue
-* pre_manifest
-* overwrite
-* dryrun
-* verify_md5
+An example configuration file can be found in ````config/file-copier-config.example.yml````
+
+*  ````domain````: The domain name of the project.
+*  ````adapter_module````: The module name of the adapter that will be used by the File Copier during operation.
+*  ````adapter_class````: The class name of the adapter that will be used by the File Copier during operation.
+*  ````adapter_params````: An object which contains parameters for the adapter's constructor. Only available in configuration file, not as CLI arguments.
+*  ````bucket````: The files in the source S3 Bucket will be copied into this destination S3 Bucket.
+*  ````prefix````: Prefix for files being copied into the destination bucket.
+*  ````first````: The first line to load. Lines are indexed starting with 1 and header lines are not counted.
+*  ````count````: The number of files to be copy, a value of ````-1```` will copy all files.
+*  ````retry````: The number of times that the File Copier will retry the copy operation.
+*  ````mode````: The mode that the File Copier will run, the only valid inputs are ````master````, ````slave````, and ````solo````.
+*  ````job_queue````: The File Copier will send jobs to the job SQS queue with the name specified by this input.
+*  ````result_queue````: The results of the File Copier jobs will be sent to the result SQS queue with the name specified by this input.
+*  ````pre_manifest````: The TSV file containing the details of the files to be copied.
+*  ````overwrite````: Overwrites files even if they already exist in the destination and are the same size.
+*  ````dryrun````: Runs checks on original files but does not perform the copy operation.
+*  ````verify_md5````: Verify that the size and MD5 hash of the original file and the generated copy are the same.
 
 ## Command Line Arguments
 * **Configuration File**
