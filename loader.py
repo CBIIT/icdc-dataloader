@@ -2,8 +2,10 @@
 import argparse
 import datetime
 import glob
-import os, sys
+import os
+import platform
 import subprocess
+import sys
 
 from neo4j import GraphDatabase, ServiceUnavailable
 from neobolt.exceptions import AuthError
@@ -11,7 +13,7 @@ from neobolt.exceptions import AuthError
 from bento.common.icdc_schema import ICDC_Schema
 from bento.common.props import Props
 from bento.common.utils import get_logger, removeTrailingSlash, check_schema_files, DATETIME_FORMAT, get_host, \
-     UPSERT_MODE, NEW_MODE, DELETE_MODE, get_log_file, LOG_PREFIX, APP_NAME
+    UPSERT_MODE, NEW_MODE, DELETE_MODE, get_log_file, LOG_PREFIX, APP_NAME
 from bento.common.visit_creator import VisitCreator
 
 if LOG_PREFIX not in os.environ:
@@ -30,7 +32,9 @@ def parse_arguments():
     parser.add_argument('-p', '--password', help='Neo4j password')
     parser.add_argument('-s', '--schema', help='Schema files', action='append')
     parser.add_argument('--prop-file', help='Property file, example is in config/props.example.yml')
-    parser.add_argument('config_file', help='Configuration file, example is in config/data-loader-config.example.yml')
+    parser.add_argument('--backup-folder', help='Location to store database backup')
+    parser.add_argument('config_file', help='Configuration file, example is in config/data-loader-config.example.yml',
+                        nargs='?', default=None)
     parser.add_argument('-c', '--cheat-mode', help='Skip validations, aka. Cheat Mode', action='store_true')
     parser.add_argument('-d', '--dry-run', help='Validations only, skip loading', action='store_true')
     parser.add_argument('--wipe-db', help='Wipe out database before loading, you\'ll lose all data!',
@@ -49,10 +53,16 @@ def parse_arguments():
 
 
 def process_arguments(args, log):
-    config = BentoConfig(args.config_file)
+    config_file = None
+    if args.config_file:
+        config_file = args.config_file
+    config = BentoConfig(config_file)
 
     if args.dataset:
         config.dataset = args.dataset
+
+    if args.backup_folder:
+        config.backup_folder = args.backup_folder
 
     if not config.dataset:
         log.error('No dataset specified! Please specify dataset in config file or with CLI argument --dataset')
@@ -113,14 +123,20 @@ def process_arguments(args, log):
     if not config.neo4j_user:
         config.neo4j_user = 'neo4j'
 
+    if args.no_backup:
+        config.no_backup = args.no_backup
+    if args.backup_folder:
+        config.backup_folder = args.backup_folder
+    if not config.backup_folder and not config.no_backup:
+        log.error('Backup folder not specified! A backup folder is required unless the --no-backup argument is used')
+        sys.exit(1)
+
     if args.wipe_db:
         config.wipe_db = args.wipe_db
     if args.yes:
         config.yes = args.yes
     if args.dry_run:
         config.dry_run = args.dry_run
-    if args.no_backup:
-        config.no_backup = args.no_backup
     if args.cheat_mode:
         config.cheat_mode = args.cheat_mode
     if args.mode:
@@ -138,12 +154,18 @@ def backup_neo4j(backup_dir, name, address, log):
         restore_cmd = 'To restore DB from backup (to remove any changes caused by current data loading, run following commands:\n'
         restore_cmd += '#' * 160 + '\n'
         neo4j_cmd = 'neo4j-admin restore --from={}/{} --force'.format(backup_dir, name)
+        mkdir_cmd = [
+            'mkdir',
+            '-p',
+            backup_dir
+        ]
+        is_shell = False
+        # settings for Windows platforms
+        if platform.system() == "Windows":
+            mkdir_cmd[2] = os.path.abspath(backup_dir)
+            is_shell = True
         cmds = [
-            [
-                'mkdir',
-                '-p',
-                backup_dir
-            ],
+            mkdir_cmd,
             [
                 'neo4j-admin',
                 'backup',
@@ -152,10 +174,15 @@ def backup_neo4j(backup_dir, name, address, log):
             ]
         ]
         if address in ['localhost', '127.0.0.1']:
-            restore_cmd += '\t$ neo4j stop && {} && neo4j start\n'.format(neo4j_cmd)
+            # On Windows, the Neo4j service cannot be accessed through the command line without an absolute path
+            # or a custom installation location
+            if platform.system() == "Windows":
+                restore_cmd += '\tManually stop the Neo4j service\n\t$ {}\n\tManually start the Neo4j service\n'.format(neo4j_cmd)
+            else:
+                restore_cmd += '\t$ neo4j stop && {} && neo4j start\n'.format(neo4j_cmd)
             for cmd in cmds:
                 log.info(cmd)
-                subprocess.call(cmd)
+                subprocess.call(cmd, shell=is_shell)
         else:
             second_cmd = 'sudo systemctl stop neo4j && {} && sudo systemctl start neo4j && exit'.format(neo4j_cmd)
             restore_cmd += '\t$ echo "{}" | ssh -t {} sudo su - neo4j\n'.format(second_cmd, address)

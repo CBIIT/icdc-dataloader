@@ -7,8 +7,8 @@ Config:
     uri: bolt://127.0.0.1:7687
     # Neo4j username, can be overridden by -u/--user argument
     user: neo4j
-    # Neo4j password, can be overridden by -p/--password argument, and environment variable NEO_PASSWORD
-    password: your_neo4j_password
+    # Neo4j password, if not set here, will try to read from environment variable NEO_PASSWORD. CLI argument -p/--password will overwrite either settings
+    password: # your_neo4j_password
 
   # Schema files' locations, usually two file, can be overridden by -s/--schema argument
   schema:
