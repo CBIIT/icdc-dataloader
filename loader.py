@@ -25,6 +25,7 @@ from bento.common.config import BentoConfig
 from bento.common.data_loader import DataLoader
 from bento.common.s3 import S3Bucket
 
+
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Load TSV(TXT) files (from Pentaho) into Neo4j')
     parser.add_argument('-i', '--uri', help='Neo4j uri like bolt://12.34.56.78:7687')
@@ -58,21 +59,47 @@ def process_arguments(args, log):
         config_file = args.config_file
     config = BentoConfig(config_file)
 
+    # Required Fields
     if args.dataset:
         config.dataset = args.dataset
-
-    if args.backup_folder:
-        config.backup_folder = args.backup_folder
-
     if not config.dataset:
-        log.error('No dataset specified! Please specify dataset in config file or with CLI argument --dataset')
+        log.error('No dataset specified! Please specify a dataset in config file or with CLI argument --dataset')
+        sys.exit(1)
+    if not os.path.isdir(config.dataset):
+        log.error('{} is not a directory!'.format(config.dataset))
         sys.exit(1)
 
     if args.prop_file:
         config.prop_file = args.prop_file
+    if not config.prop_file:
+        log.error('No properties file specified! ' +
+                  'Please specify a properties file in config file or with CLI argument --prop-file')
+        sys.exit(1)
 
     if args.schema:
         config.schema_files = args.schema
+    if not config.schema_files:
+        log.error('No schema file specified! ' +
+                  'Please specify at least one schema file in config file or with CLI argument --schema')
+        sys.exit(1)
+
+    if config.PSWD_ENV in os.environ and not config.neo4j_password:
+        config.neo4j_password = os.environ[config.PSWD_ENV]
+    if args.password:
+        config.neo4j_password = args.password
+    if not config.neo4j_password:
+        log.error('Password not specified! Please specify password with -p or --password argument,' +
+                  ' or set {} env var'.format(config.PSWD_ENV))
+        sys.exit(1)
+
+    # Conditionally Required Fields
+    if args.no_backup:
+        config.no_backup = args.no_backup
+    if args.backup_folder:
+        config.backup_folder = args.backup_folder
+    if not config.backup_folder and not config.no_backup:
+        log.error('Backup folder not specified! A backup folder is required unless the --no-backup argument is used')
+        sys.exit(1)
 
     if args.s3_folder:
         config.s3_folder = args.s3_folder
@@ -99,50 +126,40 @@ def process_arguments(args, log):
             log.error('Download files from S3 bucket "{}" failed!'.format(config.s3_bucket))
             sys.exit(1)
 
-    if not os.path.isdir(config.dataset):
-        log.error('{} is not a directory!'.format(config.dataset))
-        sys.exit(1)
-
+    # Optional Fields
     if args.uri:
         config.neo4j_uri = args.uri
     if not config.neo4j_uri:
         config.neo4j_uri = 'bolt://localhost:7687'
     config.neo4j_uri = removeTrailingSlash(config.neo4j_uri)
 
-    if config.PSWD_ENV in os.environ and not config.neo4j_password:
-        config.neo4j_password = os.environ[config.PSWD_ENV]
-    if args.password:
-        config.neo4j_password = args.password
-    if not config.neo4j_password:
-        log.error('Password not specified! Please specify password with -p or --password argument,' +
-                      ' or set {} env var'.format(config.PSWD_ENV))
-        sys.exit(1)
-
     if args.user:
         config.neo4j_user = args.user
     if not config.neo4j_user:
         config.neo4j_user = 'neo4j'
 
-    if args.no_backup:
-        config.no_backup = args.no_backup
-    if args.backup_folder:
-        config.backup_folder = args.backup_folder
-    if not config.backup_folder and not config.no_backup:
-        log.error('Backup folder not specified! A backup folder is required unless the --no-backup argument is used')
-        sys.exit(1)
-
     if args.wipe_db:
         config.wipe_db = args.wipe_db
+
     if args.yes:
         config.yes = args.yes
+
     if args.dry_run:
         config.dry_run = args.dry_run
+
     if args.cheat_mode:
         config.cheat_mode = args.cheat_mode
+
     if args.mode:
         config.loading_mode = args.mode
+    if not config.loading_mode:
+        config.loading_mode = "UPSERT_MODE"
+
     if args.max_violations:
         config.max_violations = int(args.max_violations)
+    if not config.max_violations:
+        config.max_violations = 10
+
     if args.no_parents:
         config.no_parents = args.no_parents
 
@@ -177,7 +194,8 @@ def backup_neo4j(backup_dir, name, address, log):
             # On Windows, the Neo4j service cannot be accessed through the command line without an absolute path
             # or a custom installation location
             if platform.system() == "Windows":
-                restore_cmd += '\tManually stop the Neo4j service\n\t$ {}\n\tManually start the Neo4j service\n'.format(neo4j_cmd)
+                restore_cmd += '\tManually stop the Neo4j service\n\t$ {}\n\tManually start the Neo4j service\n'.format(
+                    neo4j_cmd)
             else:
                 restore_cmd += '\t$ neo4j stop && {} && neo4j start\n'.format(neo4j_cmd)
             for cmd in cmds:
@@ -196,11 +214,13 @@ def backup_neo4j(backup_dir, name, address, log):
         log.exception(e)
         return False
 
-def upload_log_file(bucket_name, folder,file_path):
+
+def upload_log_file(bucket_name, folder, file_path):
     base_name = os.path.basename(file_path)
     s3 = S3Bucket(bucket_name)
     key = f'{folder}/{base_name}'
     return s3.upload_file(key, file_path)
+
 
 # Data loader will try to load all TSV(.TXT) files from given directory into Neo4j
 # optional arguments includes:
@@ -259,7 +279,6 @@ def main():
         log.error("Wrong Neo4j username or password!")
         return
 
-
     if config.s3_bucket and config.s3_folder:
         result = upload_log_file(config.s3_bucket, config.s3_folder, log_file)
         if result:
@@ -273,6 +292,7 @@ def confirm_deletion(message):
     confirm = input('Type "yes" and press enter to proceed (You\'ll LOSE DATA!!!), press enter to cancel:')
     confirm = confirm.strip().lower()
     return confirm == 'yes'
+
 
 if __name__ == '__main__':
     main()
