@@ -195,11 +195,27 @@ class FileLoader:
         record[Copier.ACL] = result[Copier.ACL]
         return record
 
+    def _clean_up_field_names(self, headers):
+        '''
+        Removes leading and trailing spaces from header names
+        :param headers:
+        :return:
+        '''
+        return [header.strip() for header in headers]
+
+    def _clean_up_record(self, record):
+        '''
+        Removes leading and trailing spaces from keys in org_record
+        :param record:
+        :return:
+        '''
+        return {key.strip(): value for key, value in record.items()}
+
     def _read_pre_manifest(self):
         files = []
         with open(self.pre_manifest) as pre_m:
             reader = csv.DictReader(pre_m, delimiter='\t')
-            self.field_names = reader.fieldnames
+            self.field_names = self._clean_up_field_names(reader.fieldnames)
             for i in range(self.skip):
                 next(reader)
                 self.files_skipped += 1
@@ -214,7 +230,7 @@ class FileLoader:
                     self.TTL: self.retry,
                     self.OVERWRITE: self.overwrite,
                     self.DRY_RUN: self.dryrun,
-                    self.INFO: info,
+                    self.INFO: self._clean_up_record(info),
                     self.BUCKET: self.bucket_name,
                     self.PREFIX: self.prefix,
                     self.VERIFY_MD5: self.verify_md5
