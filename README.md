@@ -1,31 +1,22 @@
-# icdc-dataloader
+# NCI ICDC/CTDC Data Loader
+This is the documentation index for the NCI ICDC/CTDC Data Loader
+
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/f4d5afb8403642dbab917cb4aa4ef47d)](https://www.codacy.com/manual/FNLCR_2/icdc-dataloader?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=CBIIT/icdc-dataloader&amp;utm_campaign=Badge_Grade)
-This is the NCI ICDC/CTDC Data Loader
 
-Data Loader requires Python 3.6 or newer.
+## Module List
+The NCI ICDC/CTDC Data Loader includes multiple data loading modules:
 
-## Dependencies
-Run ```pip3 install -r requirements.txt``` to install dependencies. Or run ```pip install -r requirements.txt``` if you are using virtualenv. 
-
-## Command line arguments
--   ```-i/--uri, Neo4j URI, should look like "bolt://12.34.56.78:7687", default value "bolt://localhost:7687"```
--   ```-u/--user, Neo4j user, default value: "neo4j"```
--   ```-p/--password, Neo4j password, if omit, will read from environment variable "NEO_PASSWORD"```
--   ```-s/--schema, schema file's path, use multiple -s argument if you have schema files. This argument is required```
--   ```--prop-file, property file, for ICDC use config/props-icdc.yml, for CTDC use config/props-ctdc.yml. This argument is required```
--   ```--config-file, configuration file, example is in config/config.example.ini'. This argument is required```
--   ```-c/--cheat-mode, skip validations, aka. Cheat Mode```
--   ```-d/--dry-run, validations only, skip loading```
--   ```--wipe-db, wipe out database before loading```
--   ```--no-backup, kkip backup step```
--   ```-y/--yes, automatically confirm deletion and database wiping```
--   ```-M/--max-violations, max violations to display, default  value is 10```
--   ```-b/--bucket, s3 bucket name, use this argument only to load data from a S3 bucket```
--   ```-f/--s3-folder, s3 folder, use this argument only to load data from a S3 bucket```
--   ```-m/--mode, loading mode, valid values are: "UPSERT_MODE", "NEW_MODE" and "DELETE_MODE", default value is "UPSERT_MODE"```
--   ```<dir>, dataset directory, or local temporary folder when loading from a S3 bucket```
-
-## Usage examples
-To load data in /data/Dataset-20191119 to local Neo4j, with password 'secret'.
-
-Run ```python3 loader.py -p secret -s tests/data/icdc-model.yml -s tests/data/icdc-model-props.yml  --config-file config/config.ini --prop-file config/props-icdc.yml /data/Dataset-20191119```
+*   **Data Loader**
+    *   The Data Loader module is a versatile Python application used to load data into a Neo4j database.
+    *   [Data Loader Documentation](docs/data-loader.md)
+*   **File Copier**
+    *   The File Copier module copies files from a source URL to a designated AWS S3 Bucket.
+    *   [File Copier Documentation](docs/file-copier.md)
+    
+*   **File Loader**
+    *   The File Loader module processes incoming S3 files and then calls the Data Loader module to load the processed file data into a Neo4j database.
+    *   [File Loader Documentation](docs/file-loader.md)
+    
+*   **Model Converter**
+    *   The Model Converter uses a combination of YAML format schema files, a YAML formatted properties files, and a GraphQL formatted queries file to generate a GraphQL formatted schema.
+    *   [Model Converter Documentation](docs/model-converter.md)
