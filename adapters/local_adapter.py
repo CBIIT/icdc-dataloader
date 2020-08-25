@@ -46,6 +46,7 @@ class BentoLocal(BentoAdapter):
         self._assert_file_info()
         org_size = super().get_org_size()
         if not org_size:
+            self.log.info('Original file size is not available, calculate from local file!')
             org_size = os.path.getsize(self._get_local_path())
 
         return org_size
