@@ -65,7 +65,7 @@ def process_arguments(args, log):
     if not config.dataset:
         log.error('No dataset specified! Please specify a dataset in config file or with CLI argument --dataset')
         sys.exit(1)
-    if not os.path.isdir(config.dataset):
+    if not config.s3_folder and not os.path.isdir(config.dataset):
         log.error('{} is not a directory!'.format(config.dataset))
         sys.exit(1)
 
@@ -280,7 +280,7 @@ def main():
         return
 
     if config.s3_bucket and config.s3_folder:
-        result = upload_log_file(config.s3_bucket, config.s3_folder, log_file)
+        result = upload_log_file(config.s3_bucket, f'{config.s3_folder}/logs', log_file)
         if result:
             log.info(f'Uploading log file {log_file} succeeded!')
         else:
