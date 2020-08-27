@@ -272,10 +272,10 @@ def main():
             log.info('No files to load.')
 
 
-    except ServiceUnavailable as err:
+    except ServiceUnavailable:
         log.critical("Neo4j service not available at: \"{}\"".format(config.neo4j_uri))
         return
-    except AuthError as err:
+    except AuthError:
         log.error("Wrong Neo4j username or password!")
         return
 

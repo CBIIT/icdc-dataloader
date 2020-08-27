@@ -14,13 +14,12 @@ from file_copier_config import MASTER_MODE, SLAVE_MODE, SOLO_MODE, Config
 if LOG_PREFIX not in os.environ:
     os.environ[LOG_PREFIX] = 'File_Loader'
 
-""""
-This script copies (stream in memory) files from an URL to specified S3 bucket
 
-Inputs:
-  pre-manifest: TSV file that contains all information of original files
-  target bucket: 
-"""
+# This script copies (stream in memory) files from an URL to specified S3 bucket
+#
+# Inputs:
+#   pre-manifest: TSV file that contains all information of original files
+#   target bucket:
 
 
 class FileLoader:
@@ -195,7 +194,8 @@ class FileLoader:
         record[Copier.ACL] = result[Copier.ACL]
         return record
 
-    def _clean_up_field_names(self, headers):
+    @staticmethod
+    def _clean_up_field_names(headers):
         '''
         Removes leading and trailing spaces from header names
         :param headers:
@@ -203,7 +203,8 @@ class FileLoader:
         '''
         return [header.strip() for header in headers]
 
-    def _clean_up_record(self, record):
+    @staticmethod
+    def _clean_up_record(record):
         '''
         Removes leading and trailing spaces from keys in org_record
         :param record:
@@ -216,7 +217,7 @@ class FileLoader:
         with open(self.pre_manifest) as pre_m:
             reader = csv.DictReader(pre_m, delimiter='\t')
             self.field_names = self._clean_up_field_names(reader.fieldnames)
-            for i in range(self.skip):
+            for _ in range(self.skip):
                 next(reader)
                 self.files_skipped += 1
 

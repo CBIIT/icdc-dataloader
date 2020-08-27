@@ -21,8 +21,8 @@ class Glioma(BentoWeb):
         self.cleanup_fields.append('SRA_accession')
 
     @staticmethod
-    def _dash_to_underscore(input):
-        return input.replace('-', '_')
+    def _dash_to_underscore(org):
+        return org.replace('-', '_')
 
     def get_org_url(self):
         """
