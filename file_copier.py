@@ -24,7 +24,6 @@ Inputs:
 
 
 class FileLoader:
-
     GUID = 'GUID'
     MD5 = 'md5'
     SIZE = 'size'
@@ -61,79 +60,111 @@ class FileLoader:
     PREFIX = 'prefix'
     VERIFY_MD5 = 'verify_md5'
 
-    def __init__(self, mode, adapter_module=None, adapter_class=None, adapter_params=None, domain=None, bucket=None, prefix=None, pre_manifest=None, first=1, count=-1, job_queue=None, result_queue=None, retry=3, overwrite=False, dryrun=False, verify_md5=False):
-        """"
+    def __init__(self, mode, adapter_module=None, adapter_class=None, adapter_params=None, domain=None, bucket=None,
+                 prefix=None, pre_manifest=None, first=1, count=-1, job_queue=None, result_queue=None, retry=3,
+                 overwrite=False, dryrun=False, verify_md5=False):
 
+        """"
         :param bucket: string type
         :param pre_manifest: string type, holds path to pre-manifest
         :param first: first file of files to process, file 1 is in line 2 of pre-manifest
         :param count: number of files to process
         :param adapter: any object that has following methods/properties defined in adapter_attrs
-
         """
+
+        # Initialize parameter storage variable defaults
+        self.adapter = None
+        self.adapter_config = {}
+        self.copier = None
+        self.verify_md5 = verify_md5
+
+        # Verify that the mode is valid and then store it
         if mode not in Config.valid_modes:
             raise ValueError(f'Invalid loading mode: {mode}')
         self.mode = mode
 
+        # Master and Slave mode verifications
         if mode != SOLO_MODE:
+
+            # Verify that a job queue name was specified and then store it
             if not job_queue:
                 raise ValueError(f'Job queue name is required in {self.mode} mode!')
             self.job_queue_name = job_queue
-            self.job_queue = Queue(job_queue)
+
+            # Verify that a result queue name was specified and then store it
             if not result_queue:
                 raise ValueError(f'Result queue name is required in {self.mode} mode!')
             self.result_queue_name = result_queue
-            self.result_queue = Queue(result_queue)
 
+        # Master and Solo mode verifications
         if self.mode != SLAVE_MODE:
+
+            # Verify that a bucket was specified and then store it
             if not bucket:
                 raise ValueError('Empty destination bucket name')
             self.bucket_name = bucket
 
+            # Verify that a prefix was specified and that it is a string, then format and store it
             if prefix and isinstance(prefix, str):
                 self.prefix = removeTrailingSlash(prefix)
             else:
                 raise ValueError(f'Invalid prefix: "{prefix}"')
 
+            # Verify that a pre-manifest was specified and that it exists, then store it
             if not pre_manifest or not os.path.isfile(pre_manifest):
                 raise ValueError(f'Pre-manifest: "{pre_manifest}" dosen\'t exist')
             self.pre_manifest = pre_manifest
 
+            # Verify that a domain was specified and then store it
             if not domain:
                 raise ValueError(f'Empty domain!')
             self.domain = domain
 
+            # Store the adapter configuration
             self.adapter_config = {
                 self.ADAPTER_PARAMS: adapter_params,
                 self.ADAPTER_CLASS: adapter_class,
                 self.ADAPTER_MODULE: adapter_module
             }
+
+            # Initialize the adapter
             self._init_adapter(adapter_module, adapter_class, adapter_params)
+
+        # Verify that the first parameter is grater than 0 then use it to initialize the skip value
+        if first > 0:
+            self.skip = first - 1
         else:
-            self.adapter = None
-            self.adapter_config = {}
+            raise ValueError(f'Invalid first ({first}), value must be greater than 0')
 
-        self.copier = None
+        # Verify that the count parameter is grater than 0 or equal to -1, then store it
+        if count > 0 or count == -1:
+            self.count = count
+        else:
+            raise ValueError(f'Invalid count ({count}), value must be greater than 0 or equal to -1')
 
-        if not first > 0 or count == 0:
-            raise ValueError(f'Invalid first ({first}) or count ({count})')
-        self.skip = first - 1
-        self.count = count
-
+        # Verify that the retry parameter is an integer greater than 0 and then store it
         if not isinstance(retry, int) and retry > 0:
-            raise ValueError(f'Invalid retry value: {retry}')
+            raise ValueError(f'Invalid retry value: {retry}, value must be an integer greater than 0')
         self.retry = retry
+
+        # Verify that the overwrite parameter is a boolean and then store it
         if not isinstance(overwrite, bool):
             raise TypeError(f'Invalid overwrite value: {overwrite}')
         self.overwrite = overwrite
+
+        # Verify that the dryrun parameter is a boolean and then store it
         if not isinstance(dryrun, bool):
             raise TypeError(f'Invalid dryrun value: {dryrun}')
         self.dryrun = dryrun
-        self.verify_md5 = verify_md5
 
+        # Initialize logger
         self.log = get_logger('FileLoader')
 
-        # Statistics
+        # Initialize queue objects
+        self.job_queue = Queue(job_queue)
+        self.result_queue = Queue(result_queue)
+
+        # Initialize statistics variables
         self.files_processed = 0
         self.files_skipped = 0
         self.files_failed = 0
@@ -163,6 +194,12 @@ class FileLoader:
 
     @staticmethod
     def get_s3_location(bucket, key):
+        """
+        Return S3 location by formatting the bucket and key inputs
+        :param bucket:
+        :param key:
+        :return:
+        """
         return "s3://{}/{}".format(bucket, key)
 
     @staticmethod
@@ -239,15 +276,17 @@ class FileLoader:
                     break
         return files
 
-    # Use this method in solo mode
-    def copy_all(self):
+    def _run_solo_mode(self):
         """
-          Read file information from pre-manifest and copy them all to destination bucket
-          :return:
+        File Copier main thread of execution in SOLO mode
         """
+
+        # Verify that the stored mode is SOLO
         if self.mode != SOLO_MODE:
             self.log.critical(f'Function only works in {SOLO_MODE} mode!')
             return False
+
+        # Initialize the Copier
         self.copier = Copier(self.bucket_name, self.prefix, self.adapter)
 
         file_queue = deque(self._read_pre_manifest())
@@ -292,6 +331,8 @@ class FileLoader:
                 self.log.info(f'Files copied: {self.copier.files_copied}')
                 self.log.info(f'Files exist at destination: {self.copier.files_exist_at_dest}')
                 self.log.info(f'Files failed: {self.files_failed}')
+                # Cleanup tmp directory
+                self.adapter.clear_file_info()
 
     def _deal_with_failed_file(self, job, queue):
         if job[self.TTL] > 0:
@@ -302,7 +343,7 @@ class FileLoader:
             self.files_failed += 1
 
     # Use this method in master mode
-    def process_all(self):
+    def _run_master_mode(self):
         """
         Read file information from pre-manifest and push jobs into job queue
         Listen on result queue for loading result
@@ -329,7 +370,6 @@ class FileLoader:
             self.log.debug(e)
             self.log.critical(f'Process files FAILED! Check debug log for detailed information.')
 
-
     # read result from result queue - master mode
     def read_result(self, num_files):
         if self.mode != MASTER_MODE:
@@ -349,7 +389,8 @@ class FileLoader:
 
                 count = 0
                 while count < num_files:
-                    self.log.info(f'Waiting for results on queue: {self.result_queue_name}, {num_files - count} files pending')
+                    self.log.info(
+                        f'Waiting for results on queue: {self.result_queue_name}, {num_files - count} files pending')
                     for msg in self.result_queue.receiveMsgs(self.VISIBILITY_TIMEOUT):
                         self.log.info(f'Received a result!')
                         extender = None
@@ -357,11 +398,11 @@ class FileLoader:
                             result = json.loads(msg.body)
                             # Make sure result is in correct format
                             if (result and
-                                Copier.STATUS in result and
-                                Copier.MD5 in result and
-                                Copier.NAME in result and
-                                Copier.KEY in result and
-                                Copier.FIELDS in  result
+                                    Copier.STATUS in result and
+                                    Copier.MD5 in result and
+                                    Copier.NAME in result and
+                                    Copier.KEY in result and
+                                    Copier.FIELDS in result
                             ):
                                 extender = VisibilityExtender(msg, self.VISIBILITY_TIMEOUT)
 
@@ -388,7 +429,8 @@ class FileLoader:
 
                         except Exception as e:
                             self.log.debug(e)
-                            self.log.critical(f'Something wrong happened while processing file! Check debug log for details.')
+                            self.log.critical(
+                                f'Something wrong happened while processing file! Check debug log for details.')
 
                         finally:
                             if extender:
@@ -397,16 +439,16 @@ class FileLoader:
 
         self.log.info(f'All {num_files} files finished!')
 
-
     # Use this method in slave mode
-    def start_work(self):
+    def _run_slave_mode(self):
         if self.mode != SLAVE_MODE:
             self.log.critical(f'Function only works in {SLAVE_MODE} mode!')
             return False
 
         while True:
             try:
-                self.log.info(f'Waiting for jobs on queue: {self.job_queue_name}, {self.files_processed} files have been processed so far')
+                self.log.info(
+                    f'Waiting for jobs on queue: {self.job_queue_name}, {self.files_processed} files have been processed so far')
                 for msg in self.job_queue.receiveMsgs(self.VISIBILITY_TIMEOUT):
                     self.log.info(f'Received a job!')
                     extender = None
@@ -416,14 +458,14 @@ class FileLoader:
                         self.log.debug(data)
                         # Make sure job is in correct format
                         if (
-                            self.ADAPTER_CONF in data and
-                            self.BUCKET in data and
-                            self.INFO in data and
-                            self.TTL in data and
-                            self.OVERWRITE in data and
-                            self.PREFIX in data and
-                            self.DRY_RUN in data and
-                            self.VERIFY_MD5 in data
+                                self.ADAPTER_CONF in data and
+                                self.BUCKET in data and
+                                self.INFO in data and
+                                self.TTL in data and
+                                self.OVERWRITE in data and
+                                self.PREFIX in data and
+                                self.DRY_RUN in data and
+                                self.VERIFY_MD5 in data
                         ):
                             extender = VisibilityExtender(msg, self.VISIBILITY_TIMEOUT)
                             dryrun = data[self.DRY_RUN]
@@ -450,7 +492,8 @@ class FileLoader:
                                 self.prefix = prefix
                                 self.copier.set_prefix(prefix)
 
-                            result = self.copier.copy_file(data[self.INFO], data[self.OVERWRITE], dryrun or self.dryrun, verify_md5)
+                            result = self.copier.copy_file(data[self.INFO], data[self.OVERWRITE], dryrun or self.dryrun,
+                                                           verify_md5)
 
                             if result[Copier.STATUS]:
                                 self.result_queue.sendMsgToQueue(result, f'{result[Copier.NAME]}_{get_time_stamp()}')
@@ -469,7 +512,8 @@ class FileLoader:
 
                     except Exception as e:
                         self.log.debug(e)
-                        self.log.critical(f'Something wrong happened while processing file! Check debug log for details.')
+                        self.log.critical(
+                            f'Something wrong happened while processing file! Check debug log for details.')
                         if data:
                             self._deal_with_failed_file_sqs(data)
 
@@ -489,21 +533,24 @@ class FileLoader:
 
     def run(self):
         if self.mode == SOLO_MODE:
-            self.copy_all()
+            self._run_solo_mode()
         elif self.mode == MASTER_MODE:
-            self.process_all()
+            self._run_master_mode()
         elif self.mode == SLAVE_MODE:
-            self.start_work()
-
+            self._run_slave_mode()
 
 
 def main():
+    # Initialize and validate the configuration
     config = Config()
     if not config.validate():
         return
 
+    # Initialize the File Loader instance
     loader = FileLoader(**config.data)
+    # Run the File Loader
     loader.run()
+
 
 if __name__ == '__main__':
     main()

@@ -5,8 +5,11 @@ import re
 from boto3.s3.transfer import TransferConfig
 import requests
 
+from adapters.local_adapter import BentoLocal
 from bento.common.utils import get_logger, format_bytes, removeTrailingSlash, stream_download, get_md5
 from bento.common.s3 import S3Bucket
+
+
 
 
 
@@ -29,10 +32,8 @@ class Copier:
     ACL = 'acl'
 
     def __init__(self, bucket_name, prefix, adapter):
-
         """"
         Copy file from URL or local file to S3 bucket
-        :param bucket_name: string type
         """
         if not bucket_name:
             raise ValueError('Empty destination bucket name')
@@ -79,7 +80,7 @@ class Copier:
             self.adapter.clear_file_info()
             self.adapter.load_file_info(file_info)
             org_url = self.adapter.get_org_url()
-            if not self._is_valid_url(org_url):
+            if not _is_valid_url(org_url):
                 self.log.error(f'"{org_url}" is not a valid URL!')
                 return {self.STATUS: False}
             if not self._file_exists(org_url):
@@ -99,11 +100,11 @@ class Copier:
             if not org_md5:
                 self.log.info(f'Original MD5 not available, calculate MD5 locally...')
                 local_file = f'tmp/{file_name}'
-                org_md5 = self._get_org_md5(org_url, local_file)
+                org_md5 = _get_org_md5(org_url, local_file)
             elif verify_md5:
                 self.log.info(f'Downloading file and verifying MD5 locally...')
                 local_file = f'tmp/{file_name}'
-                local_md5 = self._get_org_md5(org_url, local_file)
+                local_md5 = _get_org_md5(org_url, local_file)
                 if local_md5 != org_md5:
                     self.log.error(f'MD5 verify failed! Original MD5: {org_md5}, local MD5: {local_md5}')
                     return {self.STATUS: False}
@@ -112,15 +113,13 @@ class Copier:
             self.log.info(f'Original MD5 {org_md5}')
 
             succeed = {self.STATUS: True,
-                    self.MD5: org_md5,
-                    self.NAME: file_name,
-                    self.KEY: key,
-                    self.FIELDS: self.adapter.get_fields(),
-                    self.ACL: self.adapter.get_acl(),
-                    self.SIZE: org_size
-                    }
-
-
+                       self.MD5: org_md5,
+                       self.NAME: file_name,
+                       self.KEY: key,
+                       self.FIELDS: self.adapter.get_fields(),
+                       self.ACL: self.adapter.get_acl(),
+                       self.SIZE: org_size
+                       }
 
             if dryrun:
                 self.log.info(f'Copying file {key} skipped (dry run)')
@@ -132,8 +131,8 @@ class Copier:
 
             self.log.info(f'Copying from {org_url} to s3://{self.bucket_name}/{key} ...')
             # Original file is local
-            if self._is_local(org_url):
-                file_path = self._get_local_path(org_url)
+            if _is_local(org_url):
+                file_path = _get_local_path(org_url)
                 with open(file_path, 'rb') as stream:
                     dest_size = self._upload_obj(stream, key, org_size)
             # Original file has been downloaded to local
@@ -160,35 +159,19 @@ class Copier:
                 os.remove(local_file)
 
     def _upload_obj(self, stream, key, org_size):
-            parts = org_size // self.MULTI_PART_CHUNK_SIZE
-            chunk_size = self.MULTI_PART_CHUNK_SIZE if parts < self.PARTS_LIMIT else org_size // self.PARTS_LIMIT
+        parts = org_size // self.MULTI_PART_CHUNK_SIZE
+        chunk_size = self.MULTI_PART_CHUNK_SIZE if parts < self.PARTS_LIMIT else org_size // self.PARTS_LIMIT
 
-            t_config = TransferConfig(multipart_threshold=self.MULTI_PART_THRESHOLD,
-                                      multipart_chunksize=chunk_size)
-            self.bucket._upload_file_obj(key, stream, t_config)
-            self.files_copied += 1
-            self.log.info(f'Copying file {key} SUCCEEDED!')
-            return self.bucket.get_object_size(key)
-
-    def _get_org_md5(self, org_url, local_file):
-        """
-        Get original MD5, if adapter can't get it, calculate it from original file, download if necessary
-        :param org_url:
-        :return:
-        """
-        if self._is_local(org_url):
-            file_path = self._get_local_path(org_url)
-            return get_md5(file_path)
-        else:
-            # Download to local and calculate MD5
-            stream_download(org_url, local_file)
-            if not os.path.isfile(local_file):
-                raise Exception(f'Download file {org_url} to local failed!')
-            return get_md5(local_file)
+        t_config = TransferConfig(multipart_threshold=self.MULTI_PART_THRESHOLD,
+                                  multipart_chunksize=chunk_size)
+        self.bucket.upload_file_obj(key, stream, t_config)
+        self.files_copied += 1
+        self.log.info(f'Copying file {key} SUCCEEDED!')
+        return self.bucket.get_object_size(key)
 
     def _file_exists(self, org_url):
-        if self._is_local(org_url):
-            file_path = self._get_local_path(org_url)
+        if _is_local(org_url):
+            file_path = _get_local_path(org_url)
             if not os.path.isfile(file_path):
                 self.log.error(f'"{file_path}" is not a file!')
                 return False
@@ -204,16 +187,36 @@ class Copier:
                 else:
                     self.log.error(f'Head file error - {r.status_code}: {org_url}')
                 return False
+# End of Copier Class
 
-    def _is_local(self, org_url):
-        return org_url.startswith('file://')
 
-    def _is_valid_url(self, org_url):
-        return re.search(r'^[^:/]+://', org_url)
+def _get_org_md5(org_url, local_file):
+    """
+    Get original MD5, if adapter can't get it, calculate it from original file, download if necessary
+    :param org_url:
+    :return:
+    """
+    if _is_local(org_url):
+        file_path = _get_local_path(org_url)
+        return get_md5(file_path)
+    else:
+        # Download to local and calculate MD5
+        stream_download(org_url, local_file)
+        if not os.path.isfile(local_file):
+            raise Exception(f'Download file {org_url} to local failed!')
+        return get_md5(local_file)
 
-    def _get_local_path(self, org_url):
-        if self._is_local(org_url):
-            return org_url.replace('file://', '')
-        else:
-            raise ValueError(f'{org_url} is not a local file!')
 
+def _is_local(org_url):
+    return org_url.startswith('file://')
+
+
+def _is_valid_url(org_url):
+    return re.search(r'^[^:/]+://', org_url)
+
+
+def _get_local_path(org_url):
+    if _is_local(org_url):
+        return org_url.replace('file://', '')
+    else:
+        raise ValueError(f'{org_url} is not a local file!')
