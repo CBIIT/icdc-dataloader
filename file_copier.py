@@ -6,6 +6,7 @@ from importlib import import_module
 import json
 import os
 
+from adapters.web_tar_adapter import BentoWebTar
 from bento.common.sqs import Queue, VisibilityExtender
 from bento.common.utils import get_logger, get_uuid, LOG_PREFIX, UUID, get_time_stamp, removeTrailingSlash
 from copier import Copier
@@ -333,6 +334,8 @@ class FileLoader:
                 self.log.info(f'Files failed: {self.files_failed}')
                 # Cleanup tmp directory
                 self.adapter.clear_file_info()
+                if isinstance(self.adapter, BentoWebTar):
+                    self.adapter.clear_temp_tar()
 
     def _deal_with_failed_file(self, job, queue):
         if job[self.TTL] > 0:
