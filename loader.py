@@ -49,7 +49,8 @@ def parse_arguments():
                         default=UPSERT_MODE)
     parser.add_argument('--dataset', help='Dataset directory')
     parser.add_argument('--no-parents', help='Does not save parent IDs in children', action='store_true')
-
+    parser.add_argument('--split-transactions', help='Creates a separate transaction for each file',
+                        action='store_true')
     return parser.parse_args()
 
 
@@ -93,10 +94,16 @@ def process_arguments(args, log):
         sys.exit(1)
 
     # Conditionally Required Fields
+    if args.split_transactions:
+        config.split_transactions = args.split_transactions
     if args.no_backup:
         config.no_backup = args.no_backup
     if args.backup_folder:
         config.backup_folder = args.backup_folder
+    if config.split_transactions and config.no_backup:
+        log.error('--split-transaction and --no-backup cannot both be enabled, a backup is required when running'
+                  ' in split transactions mode')
+        sys.exit(1)
     if not config.backup_folder and not config.no_backup:
         log.error('Backup folder not specified! A backup folder is required unless the --no-backup argument is used')
         sys.exit(1)
@@ -162,6 +169,8 @@ def process_arguments(args, log):
 
     if args.no_parents:
         config.no_parents = args.no_parents
+
+
 
     return config
 
@@ -262,7 +271,7 @@ def main():
             loader = DataLoader(driver, schema, visit_creator)
 
             loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db,
-                        config.max_violations, config.no_parents)
+                        config.max_violations, config.no_parents, split=config.split_transactions)
 
             if driver:
                 driver.close()
