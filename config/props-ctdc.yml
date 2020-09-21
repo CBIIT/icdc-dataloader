@@ -19,6 +19,8 @@ Properties:
     case: cases
     clinical_trial: clinical_trials
     metastatic_site: metastatic_sites
+    disease_eligibility_criterion: disease_eligibility_criterions
+    drug_eligibility_criterion: drug_eligibility_criterions
 
   type_mapping:
     string: String
@@ -48,3 +50,5 @@ Properties:
     file: uuid
     clinical_trial: clinical_trial_id
     metastatic_site: met_site_id
+    disease_eligibility_criterion: disease_eligibility_criterion_id
+    drug_eligibility_criterion: drug_eligibility_criterion_id
