@@ -242,6 +242,8 @@ def main():
     if not check_schema_files(config.schema_files, log):
         return
 
+    driver = None
+    restore_cmd = ''
     try:
         txt_files = glob.glob('{}/*.txt'.format(config.dataset))
         tsv_files = glob.glob('{}/*.tsv'.format(config.dataset))
@@ -256,7 +258,6 @@ def main():
                     sys.exit()
             backup_name = datetime.datetime.today().strftime(DATETIME_FORMAT)
             host = get_host(config.neo4j_uri)
-            restore_cmd = ''
             if not config.no_backup and not config.dry_run:
                 restore_cmd = backup_neo4j(config.backup_folder, backup_name, host, log)
                 if not restore_cmd:
@@ -264,7 +265,6 @@ def main():
                     sys.exit(1)
             props = Props(config.prop_file)
             schema = ICDC_Schema(config.schema_files, props)
-            driver = None
             if not config.dry_run:
                 driver = GraphDatabase.driver(config.neo4j_uri, auth=(config.neo4j_user, config.neo4j_password))
             visit_creator = VisitCreator(schema)
@@ -287,6 +287,14 @@ def main():
     except AuthError:
         log.error("Wrong Neo4j username or password!")
         return
+    except KeyboardInterrupt:
+        log.critical("User stopped the loading!")
+        return
+    finally:
+        if driver:
+            driver.close()
+        if restore_cmd:
+            log.info(restore_cmd)
 
     if config.s3_bucket and config.s3_folder:
         result = upload_log_file(config.s3_bucket, f'{config.s3_folder}/logs', log_file)
