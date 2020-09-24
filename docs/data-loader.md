@@ -63,6 +63,7 @@ An example configuration file can be found in ````config/data-loader-config.exam
 *  ````no_confirmation````: Automatically confirms any confirmation prompts that are displayed during the data loading
 *  ````max_violations````: The maximum number of violations (per data file) to be displayed in the console output during data loading
 *  ````no_parents````: Does not save parent node IDs in children nodes
+*  ````split_transactions````: Splits the database load operations into separate transactions for each file
 *  ````s3_bucket````: The name of the S3 bucket containing the data to be loaded
 *  ````s3_folder````: The name of the S3 folder containing the data to be loaded
 *  ````loading_mode````: The loading mode to be used
@@ -155,6 +156,11 @@ All of command line arguments can be specified in the configuration file. If an 
 * **Enable No Parent IDs Mode**
     * Does not save parent node IDs in children nodes
     * Command : ````--no-parents````
+    * Not Required
+    * Default Value : ````false````
+* **Enable Split Transactions Mode**
+    * Creates a separate database transactions for each file while loading
+    * Command : ````--split-transactions````
     * Not Required
     * Default Value : ````false````
 * **Dataset Directory**

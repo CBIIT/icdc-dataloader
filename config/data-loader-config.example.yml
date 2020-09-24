@@ -30,8 +30,10 @@ Config:
   no_confirmation: false
   # Max violations to display, default is 10, can be overridden by -M/--max-violations argument
   max_violations: 10
-  #Disable saving parent IDs in children
+  # Disable saving parent IDs in children
   no_parents: false
+  # Split the loading transaction into separate transactions for each file
+  split_transactions: false
 
   # S3 bucket name, if you are loading from an S3 bucket, can be overridden by -b/--bucket argument
   s3_bucket:

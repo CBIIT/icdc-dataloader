@@ -49,7 +49,8 @@ def parse_arguments():
                         default=UPSERT_MODE)
     parser.add_argument('--dataset', help='Dataset directory')
     parser.add_argument('--no-parents', help='Does not save parent IDs in children', action='store_true')
-
+    parser.add_argument('--split-transactions', help='Creates a separate transaction for each file',
+                        action='store_true')
     return parser.parse_args()
 
 
@@ -93,10 +94,16 @@ def process_arguments(args, log):
         sys.exit(1)
 
     # Conditionally Required Fields
+    if args.split_transactions:
+        config.split_transactions = args.split_transactions
     if args.no_backup:
         config.no_backup = args.no_backup
     if args.backup_folder:
         config.backup_folder = args.backup_folder
+    if config.split_transactions and config.no_backup:
+        log.error('--split-transaction and --no-backup cannot both be enabled, a backup is required when running'
+                  ' in split transactions mode')
+        sys.exit(1)
     if not config.backup_folder and not config.no_backup:
         log.error('Backup folder not specified! A backup folder is required unless the --no-backup argument is used')
         sys.exit(1)
@@ -162,6 +169,8 @@ def process_arguments(args, log):
 
     if args.no_parents:
         config.no_parents = args.no_parents
+
+
 
     return config
 
@@ -233,6 +242,8 @@ def main():
     if not check_schema_files(config.schema_files, log):
         return
 
+    driver = None
+    restore_cmd = ''
     try:
         txt_files = glob.glob('{}/*.txt'.format(config.dataset))
         tsv_files = glob.glob('{}/*.tsv'.format(config.dataset))
@@ -247,7 +258,6 @@ def main():
                     sys.exit()
             backup_name = datetime.datetime.today().strftime(DATETIME_FORMAT)
             host = get_host(config.neo4j_uri)
-            restore_cmd = ''
             if not config.no_backup and not config.dry_run:
                 restore_cmd = backup_neo4j(config.backup_folder, backup_name, host, log)
                 if not restore_cmd:
@@ -255,14 +265,13 @@ def main():
                     sys.exit(1)
             props = Props(config.prop_file)
             schema = ICDC_Schema(config.schema_files, props)
-            driver = None
             if not config.dry_run:
                 driver = GraphDatabase.driver(config.neo4j_uri, auth=(config.neo4j_user, config.neo4j_password))
             visit_creator = VisitCreator(schema)
             loader = DataLoader(driver, schema, visit_creator)
 
             loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db,
-                        config.max_violations, config.no_parents)
+                        config.max_violations, config.no_parents, split=config.split_transactions)
 
             if driver:
                 driver.close()
@@ -278,6 +287,14 @@ def main():
     except AuthError:
         log.error("Wrong Neo4j username or password!")
         return
+    except KeyboardInterrupt:
+        log.critical("User stopped the loading!")
+        return
+    finally:
+        if driver:
+            driver.close()
+        if restore_cmd:
+            log.info(restore_cmd)
 
     if config.s3_bucket and config.s3_folder:
         result = upload_log_file(config.s3_bucket, f'{config.s3_folder}/logs', log_file)
