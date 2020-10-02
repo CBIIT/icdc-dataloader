@@ -214,7 +214,7 @@ def backup_neo4j(backup_dir, name, address, log):
             second_cmd = 'sudo systemctl stop neo4j && {} && sudo systemctl start neo4j && exit'.format(neo4j_cmd)
             restore_cmd += '\t$ echo "{}" | ssh -t {} sudo su - neo4j\n'.format(second_cmd, address)
             for cmd in cmds:
-                remote_cmd = ['ssh', address] + cmd
+                remote_cmd = ['ssh', address, '-o', 'StrictHostKeyChecking=no'] + cmd
                 log.info(' '.join(remote_cmd))
                 subprocess.call(remote_cmd)
         restore_cmd += '#' * 160
