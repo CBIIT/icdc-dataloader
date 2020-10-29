@@ -62,7 +62,7 @@ def write_to_output(args, schema):
     :param schema: The schema object
     """
     # Open graphql output file for writing
-    with open(args.output, 'w') as graphql_file:
+    with open(args.output, 'w', newline='\n') as graphql_file:
         # For each node create Graphql type definition
         for name in schema.get_node_names():
             props = schema.get_public_props_for_node(name)
@@ -93,7 +93,7 @@ def copy_and_remove_tags(graphql_file_name):
     # Create a blank file
     name, ext = os.path.splitext(graphql_file_name)
     doc_file_name = name + "-doc" + ext
-    doc_file = open(doc_file_name, 'w')
+    doc_file = open(doc_file_name, 'w', newline = '\n')
 
     # For each line containing the tag character, remove everything after the tag and then write the line to the
     # doc file. Checks the number of parenthesis to see if the tag spans multiple lines
