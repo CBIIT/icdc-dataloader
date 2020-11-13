@@ -3,8 +3,6 @@ import argparse
 import datetime
 import glob
 import os
-import platform
-import subprocess
 import sys
 
 from neo4j import GraphDatabase, ServiceUnavailable
@@ -170,58 +168,7 @@ def process_arguments(args, log):
     if args.no_parents:
         config.no_parents = args.no_parents
 
-
-
     return config
-
-
-def backup_neo4j(backup_dir, name, address, log):
-    try:
-        restore_cmd = 'To restore DB from backup (to remove any changes caused by current data loading, run following commands:\n'
-        restore_cmd += '#' * 160 + '\n'
-        neo4j_cmd = 'neo4j-admin restore --from={}/{} --force'.format(backup_dir, name)
-        mkdir_cmd = [
-            'mkdir',
-            '-p',
-            backup_dir
-        ]
-        is_shell = False
-        # settings for Windows platforms
-        if platform.system() == "Windows":
-            mkdir_cmd[2] = os.path.abspath(backup_dir)
-            is_shell = True
-        cmds = [
-            mkdir_cmd,
-            [
-                'neo4j-admin',
-                'backup',
-                '--backup-dir={}'.format(backup_dir),
-                '--name={}'.format(name),
-            ]
-        ]
-        if address in ['localhost', '127.0.0.1']:
-            # On Windows, the Neo4j service cannot be accessed through the command line without an absolute path
-            # or a custom installation location
-            if platform.system() == "Windows":
-                restore_cmd += '\tManually stop the Neo4j service\n\t$ {}\n\tManually start the Neo4j service\n'.format(
-                    neo4j_cmd)
-            else:
-                restore_cmd += '\t$ neo4j stop && {} && neo4j start\n'.format(neo4j_cmd)
-            for cmd in cmds:
-                log.info(cmd)
-                subprocess.call(cmd, shell=is_shell)
-        else:
-            second_cmd = 'sudo systemctl stop neo4j && {} && sudo systemctl start neo4j && exit'.format(neo4j_cmd)
-            restore_cmd += '\t$ echo "{}" | ssh -t {} sudo su - neo4j\n'.format(second_cmd, address)
-            for cmd in cmds:
-                remote_cmd = ['ssh', address, '-o', 'StrictHostKeyChecking=no'] + cmd
-                log.info(' '.join(remote_cmd))
-                subprocess.call(remote_cmd)
-        restore_cmd += '#' * 160
-        return restore_cmd
-    except Exception as e:
-        log.exception(e)
-        return False
 
 
 def upload_log_file(bucket_name, folder, file_path):
@@ -256,13 +203,7 @@ def main():
             if config.loading_mode == DELETE_MODE and not config.yes:
                 if not confirm_deletion('Delete all nodes and child nodes from data file?'):
                     sys.exit()
-            backup_name = datetime.datetime.today().strftime(DATETIME_FORMAT)
-            host = get_host(config.neo4j_uri)
-            if not config.no_backup and not config.dry_run:
-                restore_cmd = backup_neo4j(config.backup_folder, backup_name, host, log)
-                if not restore_cmd:
-                    log.error('Backup Neo4j failed, abort loading!')
-                    sys.exit(1)
+
             props = Props(config.prop_file)
             schema = ICDC_Schema(config.schema_files, props)
             if not config.dry_run:
@@ -271,7 +212,8 @@ def main():
             loader = DataLoader(driver, schema, visit_creator)
 
             loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db,
-                        config.max_violations, config.no_parents, split=config.split_transactions)
+                        config.max_violations, config.no_parents, split=config.split_transactions,
+                        no_backup=config.no_backup, neo4j_uri=config.neo4j_uri, backup_folder=config.backup_folder)
 
             if driver:
                 driver.close()
