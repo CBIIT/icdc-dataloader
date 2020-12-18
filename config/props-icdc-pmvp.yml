@@ -32,6 +32,7 @@ Properties:
     follow_up: follow_ups
     off_study: off_studies
     off_treatment: off_treatments
+    registration: registrations
 
   type_mapping:
     string: String
