@@ -1,6 +1,7 @@
 tmp/
 venv/
 env/
+venv3_new/
 .idea/
 Pentaho-scripts/
 __pycache__/

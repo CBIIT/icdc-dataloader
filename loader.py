@@ -5,8 +5,9 @@ import glob
 import os
 import sys
 
-from neo4j import GraphDatabase, ServiceUnavailable
-from neobolt.exceptions import AuthError
+from neo4j import GraphDatabase
+from neo4j.exceptions import ServiceUnavailable
+from neo4j.exceptions import AuthError
 
 from bento.common.icdc_schema import ICDC_Schema
 from bento.common.props import Props
