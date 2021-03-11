@@ -48,8 +48,8 @@ Properties:
   id_fields:
     program: program_acronym
     study: clinical_study_designation
-    study_arm: arm
-    cohort: cohort_description
+    study_arm: arm_id
+    cohort: cohort_id
     case: case_id
     enrollment: enrollment_id
     visit: visit_id
