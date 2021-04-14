@@ -207,7 +207,11 @@ def main():
             props = Props(config.prop_file)
             schema = ICDC_Schema(config.schema_files, props)
             if not config.dry_run:
-                driver = GraphDatabase.driver(config.neo4j_uri, auth=(config.neo4j_user, config.neo4j_password))
+                driver = GraphDatabase.driver(
+                    config.neo4j_uri,
+                    auth=(config.neo4j_user, config.neo4j_password),
+                    encrypted=False
+                )
             visit_creator = VisitCreator(schema)
             loader = DataLoader(driver, schema, visit_creator)
 
