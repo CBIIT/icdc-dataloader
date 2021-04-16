@@ -204,7 +204,11 @@ def main():
                 if not confirm_deletion('Delete all nodes and child nodes from data file?'):
                     sys.exit()
 
-            props = Props(config.prop_file)
+            prop_path = os.path.join(config.dataset, config.prop_file)
+            if os.path.isfile(prop_path):
+                props = Props(prop_path)
+            else:
+                props = Props(config.prop_file)
             schema = ICDC_Schema(config.schema_files, props)
             if not config.dry_run:
                 driver = GraphDatabase.driver(config.neo4j_uri, auth=(config.neo4j_user, config.neo4j_password))
