@@ -33,6 +33,7 @@ Properties:
     off_study: off_studies
     off_treatment: off_treatments
     registration: registrations
+    image_collection: image_collections
 
   type_mapping:
     string: String
@@ -40,6 +41,7 @@ Properties:
     integer: Int
     boolean: Boolean
     array: Array
+    list: Array
     object: Object
     datetime: DateTime
     date: Date
