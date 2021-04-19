@@ -72,6 +72,8 @@ def write_to_output(args, schema):
                 prop_type = propType[PROP_TYPE]
                 if prop_type == 'DateTime' or prop_type == 'Date':
                     prop_type = 'String'
+                if prop_type == 'Object' or prop_type == 'Array':
+                    prop_type = 'String'
                 prop_line = '  {}: {}'.format(prop, prop_type)
                 print(prop_line, file=graphql_file)
             type_end = '}\n'
