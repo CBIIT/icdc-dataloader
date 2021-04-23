@@ -7,7 +7,7 @@ import json
 import os
 
 from bento.common.sqs import Queue, VisibilityExtender
-from bento.common.utils import get_logger, get_uuid, LOG_PREFIX, UUID, get_time_stamp, removeTrailingSlash
+from bento.common.utils import get_logger, get_uuid, LOG_PREFIX, UUID, get_time_stamp, removeTrailingSlash, load_plugin
 from copier import Copier
 from file_copier_config import MASTER_MODE, SLAVE_MODE, SOLO_MODE, Config
 
@@ -143,12 +143,7 @@ class FileLoader:
         :param adapter_name:
         :return:
         """
-        module = import_module(adapter_module)
-        class_ = getattr(module, adapter_class)
-        if isinstance(params, dict):
-            self.adapter = class_(**params)
-        else:
-            self.adapter = class_()
+        self.adapter = load_plugin(adapter_module, adapter_class, params)
 
         if not hasattr(self.adapter, 'filter_fields'):
             raise TypeError(f'Adapter "{adapter_class}" does not have a "filter_fields" method')
