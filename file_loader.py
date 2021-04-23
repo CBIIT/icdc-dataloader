@@ -22,11 +22,11 @@ from botocore.exceptions import ClientError
 
 from bento.common.utils import UUID, NODES_CREATED, RELATIONSHIP_CREATED, removeTrailingSlash,\
     get_logger, UPSERT_MODE, send_slack_message
-from bento.common.config import BentoConfig
-from bento.common.props import Props
+from config import BentoConfig
+from props import Props
 from bento.common.sqs import Queue, VisibilityExtender
-from bento.common.data_loader import DataLoader
-from bento.common.icdc_schema import ICDC_Schema
+from data_loader import DataLoader
+from icdc_schema import ICDC_Schema
 
 RAW_PREFIX = 'RAW'
 FINAL_PREFIX = 'Final'

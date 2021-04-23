@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import argparse
-import datetime
 import glob
 import os
 import sys
@@ -8,19 +7,18 @@ import sys
 from neo4j import GraphDatabase, ServiceUnavailable
 from neobolt.exceptions import AuthError
 
-from bento.common.icdc_schema import ICDC_Schema
-from bento.common.props import Props
-from bento.common.utils import get_logger, removeTrailingSlash, check_schema_files, DATETIME_FORMAT, get_host, \
-    UPSERT_MODE, NEW_MODE, DELETE_MODE, get_log_file, LOG_PREFIX, APP_NAME
-from bento.common.visit_creator import VisitCreator
+from icdc_schema import ICDC_Schema
+from props import Props
+from bento.common.utils import get_logger, removeTrailingSlash, check_schema_files, UPSERT_MODE, NEW_MODE, DELETE_MODE, get_log_file, LOG_PREFIX, APP_NAME
+from visit_creator import VisitCreator
 
 if LOG_PREFIX not in os.environ:
     os.environ[LOG_PREFIX] = 'Data_Loader'
 
 os.environ[APP_NAME] = 'Data_Loader'
 
-from bento.common.config import BentoConfig
-from bento.common.data_loader import DataLoader
+from config import BentoConfig
+from data_loader import DataLoader
 from bento.common.s3 import S3Bucket
 
 

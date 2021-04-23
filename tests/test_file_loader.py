@@ -3,10 +3,10 @@ import json
 import os
 from neo4j import GraphDatabase
 from file_loader import FileLoader
-from bento.common.icdc_schema import ICDC_Schema
-from bento.common.props import Props
-from bento.common.config import BentoConfig
-from bento.common.data_loader import DataLoader
+from icdc_schema import ICDC_Schema
+from props import Props
+from config import BentoConfig
+from data_loader import DataLoader
 
 
 class TestLambda(unittest.TestCase):
