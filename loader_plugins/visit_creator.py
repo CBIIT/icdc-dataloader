@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from neo4j import Session, Transaction
 
 from icdc_schema import ICDC_Schema
-from bento.common.utils import get_logger, UUID, RELATIONSHIP_TYPE, DATE_FORMAT
+from bento.common.utils import get_logger, UUID, RELATIONSHIP_TYPE, DATE_FORMAT, MISSING_PARENT
 
 VISIT_NODE = 'visit'
 VISIT_ID = 'visit_id'
@@ -40,10 +40,10 @@ class VisitCreator:
         # Dictionary to cache case IDs and their associated cycles in order to prevent redundant querying
         self.cycle_map = {}
 
-    def is_valid_int_node(self, node_type):
-        return node_type == VISIT_NODE
+    def should_run(self, node_type, event):
+        return node_type == VISIT_NODE and event == MISSING_PARENT
 
-    def create_intermediate_node(self, session, line_num, node_type, node_id, src):
+    def create_node(self, session, line_num, node_type, node_id, src):
         if node_type != VISIT_NODE:
             self.log.debug("Line: {}: Won't create node for type: '{}'".format(line_num, VISIT_NODE, node_type))
             return False

@@ -9,8 +9,8 @@ from neobolt.exceptions import AuthError
 
 from icdc_schema import ICDC_Schema
 from props import Props
-from bento.common.utils import get_logger, removeTrailingSlash, check_schema_files, UPSERT_MODE, NEW_MODE, DELETE_MODE, get_log_file, LOG_PREFIX, APP_NAME
-from visit_creator import VisitCreator
+from bento.common.utils import get_logger, removeTrailingSlash, check_schema_files, UPSERT_MODE, NEW_MODE, DELETE_MODE, \
+    get_log_file, LOG_PREFIX, APP_NAME, load_plugin
 
 if LOG_PREFIX not in os.environ:
     os.environ[LOG_PREFIX] = 'Data_Loader'
@@ -175,6 +175,12 @@ def upload_log_file(bucket_name, folder, file_path):
     key = f'{folder}/{base_name}'
     return s3.upload_file(key, file_path)
 
+def prepare_plugin(config, schema):
+    if not config.params:
+        config.params = {}
+    config.params['schema'] = schema
+    return load_plugin(config.module_name, config.class_name, config.params)
+
 
 # Data loader will try to load all TSV(.TXT) files from given directory into Neo4j
 # optional arguments includes:
@@ -210,8 +216,12 @@ def main():
             schema = ICDC_Schema(config.schema_files, props)
             if not config.dry_run:
                 driver = GraphDatabase.driver(config.neo4j_uri, auth=(config.neo4j_user, config.neo4j_password))
-            visit_creator = VisitCreator(schema)
-            loader = DataLoader(driver, schema, visit_creator)
+
+            plugins = []
+            if len(config.plugins) > 0:
+                for plugin_config in config.plugins:
+                    plugins.append(prepare_plugin(plugin_config, schema))
+            loader = DataLoader(driver, schema, plugins)
 
             loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db,
                         config.max_violations, config.no_parents, split=config.split_transactions,

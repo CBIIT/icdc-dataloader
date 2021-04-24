@@ -4,6 +4,12 @@ import yaml
 
 from bento.common.utils import get_logger
 
+class PluginConfig:
+    def __init__(self, config):
+        self.module_name = config['module']
+        self.class_name = config['class']
+        self.params = config.get('params')
+
 
 class BentoConfig:
     def __init__(self, config_file):
@@ -76,6 +82,11 @@ class BentoConfig:
                         self.neo4j_uri = neo4j.get('uri')
                         self.neo4j_user = neo4j.get('user')
                         self.neo4j_password = neo4j.get('password')
+
+                    self.plugins = []
+                    if 'plugins' in config:
+                        for plugin in config.get('plugins', []) or []:
+                            self.plugins.append(PluginConfig(plugin))
 
                     self.schema_files = config.get('schema')
                     self.prop_file = config.get('prop_file')

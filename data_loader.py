@@ -17,7 +17,8 @@ from neo4j import Driver
 from icdc_schema import ICDC_Schema
 from bento.common.utils import get_logger, NODES_CREATED, RELATIONSHIP_CREATED, UUID, \
     RELATIONSHIP_TYPE, MULTIPLIER, ONE_TO_ONE, DEFAULT_MULTIPLIER, UPSERT_MODE, \
-    NEW_MODE, DELETE_MODE, NODES_DELETED, RELATIONSHIP_DELETED, combined_dict_counters
+    NEW_MODE, DELETE_MODE, NODES_DELETED, RELATIONSHIP_DELETED, combined_dict_counters, \
+    MISSING_PARENT
 
 NODE_TYPE = 'type'
 PROP_TYPE = 'Type'
@@ -115,7 +116,7 @@ def backup_neo4j(backup_dir, name, address, log):
 
 
 class DataLoader:
-    def __init__(self, driver, schema, intermediate_node_creator=None):
+    def __init__(self, driver, schema, plugins=[]):
         if not schema or not isinstance(schema, ICDC_Schema):
             raise Exception('Invalid ICDC_Schema object')
         self.log = get_logger('Data Loader')
@@ -123,14 +124,21 @@ class DataLoader:
         self.schema = schema
         self.rel_prop_delimiter = self.schema.rel_prop_delimiter
 
-        if intermediate_node_creator:
-            if not hasattr(intermediate_node_creator, 'create_intermediate_node'):
-                raise ValueError('Invalide Intermediate node creator')
-            if not hasattr(intermediate_node_creator, 'nodes_stat'):
-                raise ValueError('Invalide Intermediate node creator')
-            if not hasattr(intermediate_node_creator, 'relationships_stat'):
-                raise ValueError('Invalide Intermediate node creator')
-        self.int_node_creator = intermediate_node_creator
+        if plugins:
+            for plugin in plugins:
+                if not hasattr(plugin, 'create_node'):
+                    raise ValueError('Invalid Plugin!')
+                if not hasattr(plugin, 'should_run'):
+                    raise ValueError('Invalid Plugin!')
+                if not hasattr(plugin, 'nodes_stat'):
+                    raise ValueError('Invalid Plugin!')
+                if not hasattr(plugin, 'relationships_stat'):
+                    raise ValueError('Invalid Plugin!')
+                if not hasattr(plugin, 'nodes_created'):
+                    raise ValueError('Invalid Plugin!')
+                if not hasattr(plugin, 'relationships_created'):
+                    raise ValueError('Invalid Plugin!')
+        self.plugins = plugins
 
     def check_files(self, file_list):
         if not file_list:
@@ -223,11 +231,11 @@ class DataLoader:
         end = timer()
 
         # Print statistics
-        if self.int_node_creator:
-            combined_dict_counters(self.nodes_stat, self.int_node_creator.nodes_stat)
-            combined_dict_counters(self.relationships_stat, self.int_node_creator.relationships_stat)
-            self.nodes_created += self.int_node_creator.nodes_created
-            self.relationships_created += self.int_node_creator.relationships_created
+        for plugin in self.plugins:
+            combined_dict_counters(self.nodes_stat, plugin.nodes_stat)
+            combined_dict_counters(self.relationships_stat, plugin.relationships_stat)
+            self.nodes_created += plugin.nodes_created
+            self.relationships_created += plugin.relationships_created
         for node in sorted(self.nodes_stat.keys()):
             count = self.nodes_stat[node]
             self.log.info('Node: (:{}) loaded: {}'.format(node, count))
@@ -674,15 +682,16 @@ class DataLoader:
                     self.log.error('Line: {}: Relationship not found!'.format(line_num))
                     raise Exception('Undefined relationship, abort loading!')
                 if not self.node_exists(session, other_node, other_id, value):
-                    if create_intermediate_node and self.int_node_creator and self.int_node_creator.is_valid_int_node(
-                            other_node):
-                        if self.int_node_creator.create_intermediate_node(session, line_num, other_node, value, obj):
-                            int_node_created += 1
-                            relationships.append({PARENT_TYPE: other_node, PARENT_ID_FIELD: other_id, PARENT_ID: value,
-                                                  RELATIONSHIP_TYPE: relationship_name, MULTIPLIER: multiplier})
-                        else:
-                            self.log.error(
-                                'Line: {}: Couldn\'t create {} node automatically!'.format(line_num, other_node))
+                    if create_intermediate_node:
+                        for plugin in self.plugins:
+                            if plugin.should_run(other_node, MISSING_PARENT):
+                                if plugin.create_node(session, line_num, other_node, value, obj):
+                                    int_node_created += 1
+                                    relationships.append({PARENT_TYPE: other_node, PARENT_ID_FIELD: other_id, PARENT_ID: value,
+                                                          RELATIONSHIP_TYPE: relationship_name, MULTIPLIER: multiplier})
+                                else:
+                                    self.log.error(
+                                        'Line: {}: Couldn\'t create {} node automatically!'.format(line_num, other_node))
                     else:
                         self.log.warning(
                             'Line: {}: Parent node (:{} {{{}: "{}"}} not found in DB!'.format(line_num, other_node,

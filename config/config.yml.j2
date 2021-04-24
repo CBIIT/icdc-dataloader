@@ -15,6 +15,10 @@ Config:
     - {{model_file1}}
     - {{model_file2}}
 
+  plugins:
+    - module: loader_plugins.visit_creator
+      class: VisitCreator
+
   #Property file location
   prop_file: {{property_file}}
 
