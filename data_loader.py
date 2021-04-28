@@ -18,7 +18,7 @@ from icdc_schema import ICDC_Schema
 from bento.common.utils import get_logger, NODES_CREATED, RELATIONSHIP_CREATED, UUID, \
     RELATIONSHIP_TYPE, MULTIPLIER, ONE_TO_ONE, DEFAULT_MULTIPLIER, UPSERT_MODE, \
     NEW_MODE, DELETE_MODE, NODES_DELETED, RELATIONSHIP_DELETED, combined_dict_counters, \
-    MISSING_PARENT
+    MISSING_PARENT, NODE_LOADED
 
 NODE_TYPE = 'type'
 PROP_TYPE = 'Type'
@@ -256,7 +256,7 @@ class DataLoader:
             self.load_nodes(tx, txt, loading_mode, no_parents, split)
         if loading_mode != DELETE_MODE:
             for txt in file_list:
-                self.load_relationships(tx, txt, loading_mode, split)
+                self.load_relationships(tx, txt, loading_mode, no_parents, split)
 
     # Remove extra spaces at begining and end of the keys and values
     @staticmethod
@@ -319,23 +319,12 @@ class DataLoader:
                     # todo: need to transform items if item type is not string
                     obj[key] = json.dumps(items)
 
-        if UUID not in obj:
-            id_field = self.schema.get_id_field(obj)
-            id_value = self.schema.get_id(obj)
-            node_type = obj.get(NODE_TYPE)
-            if node_type:
-                if not id_value:
-                    obj[UUID] = self.schema.get_uuid_for_node(node_type, self.get_signature(obj))
-                elif id_field != UUID:
-                    obj[UUID] = self.schema.get_uuid_for_node(node_type, id_value)
-            else:
-                raise Exception('No "type" property in node')
 
         obj2 = {}
         for key, value in obj.items():
             obj2[key] = value
             # Add parent id field(s) into node
-            if self.schema.is_parent_pointer(key) and not no_parents:
+            if self.schema.is_parent_pointer(key) and not no_parents and obj[NODE_TYPE] not in self.schema.props.reuse_nodes:
                 header = key.split('.')
                 if len(header) > 2:
                     self.log.warning('Column header "{}" has multiple periods!'.format(key))
@@ -353,13 +342,26 @@ class DataLoader:
             for extra_prop_name, extra_value in self.schema.get_extra_props(node_type, key, value).items():
                 obj2[extra_prop_name] = extra_value
 
+        if UUID not in obj2:
+            id_field = self.schema.get_id_field(obj2)
+            id_value = self.schema.get_id(obj2)
+            node_type = obj2.get(NODE_TYPE)
+            if node_type:
+                if not id_value:
+                    obj2[UUID] = self.schema.get_uuid_for_node(node_type, self.get_signature(obj2))
+                elif id_field != UUID:
+                    obj2[UUID] = self.schema.get_uuid_for_node(node_type, id_value)
+            else:
+                raise Exception('No "type" property in node')
+
         return obj2
 
-    @staticmethod
-    def get_signature(node):
+    def get_signature(self, node):
         result = []
-        for key, value in node.items():
-            result.append('{}: {}'.format(key, value))
+        for key in sorted(node.keys()):
+            value = node[key]
+            if not self.schema.is_parent_pointer(key):
+                result.append('{}: {}'.format(key, value))
         return '{{ {} }}'.format(', '.join(result))
 
     # Validate all cases exist in a data (TSV/TXT) file
@@ -770,7 +772,7 @@ class DataLoader:
             if not del_result:
                 self.log.error('Delete old relationship failed!')
 
-    def load_relationships(self, session, file_name, loading_mode, split=False):
+    def load_relationships(self, session, file_name, loading_mode, no_parents, split=False):
         if loading_mode == NEW_MODE:
             action_word = 'Loading new'
         elif loading_mode == UPSERT_MODE:
@@ -796,7 +798,7 @@ class DataLoader:
             for org_obj in reader:
                 line_num += 1
                 transaction_counter += 1
-                obj = self.prepare_node(org_obj, False)
+                obj = self.prepare_node(org_obj, no_parents)
                 node_type = obj[NODE_TYPE]
                 results = self.collect_relationships(obj, tx, True, line_num)
                 relationships = results[RELATIONSHIPS]
@@ -812,6 +814,7 @@ class DataLoader:
                         multiplier = relationship[MULTIPLIER]
                         parent_node = relationship[PARENT_TYPE]
                         parent_id_field = relationship[PARENT_ID_FIELD]
+                        parent_id = relationship[PARENT_ID]
                         properties = relationship_props.get(relationship_name, {})
                         if multiplier in [DEFAULT_MULTIPLIER, ONE_TO_ONE]:
                             if loading_mode == UPSERT_MODE:
@@ -834,7 +837,7 @@ class DataLoader:
                         statement += ' ON MATCH SET r.{} = datetime()'.format(UPDATED)
                         statement += ', {}'.format(prop_statement) if prop_statement else ''
 
-                        result = tx.run(statement, {**obj, **properties})
+                        result = tx.run(statement, {**obj, parent_id_field: parent_id, **properties})
                         count = result.summary().counters.relationships_created
                         self.relationships_created += count
                         relationship_pattern = '(:{})->[:{}]->(:{})'.format(node_type, relationship_name, parent_node)
@@ -842,6 +845,9 @@ class DataLoader:
                                                                                                 0) + count
                         self.relationships_stat[relationship_name] = self.relationships_stat.get(relationship_name,
                                                                                                  0) + count
+                    for plugin in self.plugins:
+                        if plugin.should_run(node_type, NODE_LOADED):
+                            plugin.create_node(session=tx, line_num=line_num, node_type=node_type, node_id=obj[self.schema.get_id_field(obj)])
                 # commit and restart a transaction when batch size reached
                 if split and transaction_counter >= BATCH_SIZE:
                     tx.commit()

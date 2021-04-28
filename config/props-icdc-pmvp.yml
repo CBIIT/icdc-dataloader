@@ -59,6 +59,9 @@ Properties:
     sample: sample_id
     file: uuid
 
+  reuse_nodes:
+    - registration
+
   visit_date_in_nodes:
     vital_signs: date_of_vital_signs
     physical_exam: date_of_examination

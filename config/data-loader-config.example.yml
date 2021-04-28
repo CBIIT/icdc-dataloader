@@ -19,7 +19,10 @@ Config:
   plugins:
     - module: loader_plugins.visit_creator
       class: VisitCreator
-      params:
+
+    - module: loader_plugins.individual_creator
+      class: IndividualCreator
+
     - moduel: moduel_name_2
       class: clase_name_2
       params:
