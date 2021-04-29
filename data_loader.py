@@ -508,7 +508,7 @@ class DataLoader:
             elif self.schema.is_relationship_property(key):
                 continue
 
-            prop_stmts.append('{0}: {{{0}}}'.format(key))
+            prop_stmts.append('{0}: ${0}'.format(key))
 
         statement = 'CREATE (:{0} {{ {1} }})'.format(node_type, ' ,'.join(prop_stmts))
         return statement
@@ -528,9 +528,9 @@ class DataLoader:
             elif self.schema.is_relationship_property(key):
                 continue
 
-            prop_stmts.append('n.{0} = {{{0}}}'.format(key))
+            prop_stmts.append('n.{0} = ${0}'.format(key))
 
-        statement += 'MERGE (n:{0} {{ {1}: {{{1}}} }})'.format(node_type, id_field)
+        statement += 'MERGE (n:{0} {{ {1}: ${1} }})'.format(node_type, id_field)
         statement += ' ON CREATE ' + 'SET n.{} = datetime(), '.format(CREATED) + ' ,'.join(prop_stmts)
         statement += ' ON MATCH ' + 'SET n.{} = datetime(), '.format(UPDATED) + ' ,'.join(prop_stmts)
         return statement
@@ -551,7 +551,7 @@ class DataLoader:
     # Return children of node without other parents
     def get_children_with_single_parent(self, session, node):
         node_type = node[NODE_TYPE]
-        statement = 'MATCH (n:{0} {{ {1}: {{{1}}} }})<--(m)'.format(node_type, self.schema.get_id_field(node))
+        statement = 'MATCH (n:{0} {{ {1}: ${1} }})<--(m)'.format(node_type, self.schema.get_id_field(node))
         statement += ' WHERE NOT (n)<--(m)-->() RETURN m'
         result = session.run(statement, node)
         children = []
@@ -563,7 +563,7 @@ class DataLoader:
     def get_node_from_result(record, name):
         node = record.data()[name]
         result = dict(node.items())
-        for label in node.labels:
+        for label in record[0].labels:
             result[NODE_TYPE] = label
             break
         return result
@@ -571,12 +571,12 @@ class DataLoader:
     # Simple delete given node, and it's relationships
     def delete_single_node(self, session, node):
         node_type = node[NODE_TYPE]
-        statement = 'MATCH (n:{0} {{ {1}: {{{1}}} }}) detach delete n'.format(node_type, self.schema.get_id_field(node))
+        statement = 'MATCH (n:{0} {{ {1}: ${1} }}) detach delete n'.format(node_type, self.schema.get_id_field(node))
         result = session.run(statement, node)
-        nodes_deleted = result.summary().counters.nodes_deleted
+        nodes_deleted = result.consume().counters.nodes_deleted
         self.nodes_deleted += nodes_deleted
         self.nodes_deleted_stat[node_type] = self.nodes_deleted_stat.get(node_type, 0) + nodes_deleted
-        relationship_deleted = result.summary().counters.relationships_deleted
+        relationship_deleted = result.consume().counters.relationships_deleted
         self.relationships_deleted += relationship_deleted
         return (nodes_deleted, relationship_deleted)
 
@@ -635,7 +635,7 @@ class DataLoader:
 
                 if loading_mode != DELETE_MODE:
                     result = tx.run(statement, obj)
-                    count = result.summary().counters.nodes_created
+                    count = result.consume().counters.nodes_created
                     self.nodes_created += count
                     nodes_created += count
                     self.nodes_stat[node_type] = self.nodes_stat.get(node_type, 0) + count
@@ -657,9 +657,9 @@ class DataLoader:
                 self.log.info('{} (:{}) node(s) loaded'.format(nodes_created, node_type))
 
     def node_exists(self, session, label, prop, value):
-        statement = 'MATCH (m:{0} {{ {1}: {{{1}}} }}) return m'.format(label, prop)
+        statement = 'MATCH (m:{0} {{ {1}: ${1} }}) return m'.format(label, prop)
         result = session.run(statement, {prop: value})
-        count = result.detach()
+        count = len(result.data())
         if count > 1:
             self.log.warning('More than one nodes found! ')
         return count >= 1
@@ -718,13 +718,13 @@ class DataLoader:
 
     def parent_already_has_child(self, session, node_type, node, relationship_name, parent_type, parent_id_field,
                                  parent_id):
-        statement = 'MATCH (n:{})-[r:{}]->(m:{} {{ {}: {{parent_id}} }}) return n'.format(node_type, relationship_name,
+        statement = 'MATCH (n:{})-[r:{}]->(m:{} {{ {}: $parent_id }}) return n'.format(node_type, relationship_name,
                                                                                           parent_type, parent_id_field)
         result = session.run(statement, {"parent_id": parent_id})
         if result:
             child = result.single()
             if child:
-                find_current_node_statement = 'MATCH (n:{0} {{ {1}: {{{1}}} }}) return n'.format(node_type,
+                find_current_node_statement = 'MATCH (n:{0} {{ {1}: ${1} }}) return n'.format(node_type,
                                                                                                  self.schema.get_id_field(
                                                                                                      node))
                 current_node_result = session.run(find_current_node_statement, node)
@@ -742,7 +742,7 @@ class DataLoader:
         parent_type = relationship[PARENT_TYPE]
         parent_id_field = relationship[PARENT_ID_FIELD]
 
-        base_statement = 'MATCH (n:{0} {{ {1}: {{{1}}} }})-[r:{2}]->(m:{3})'.format(node_type,
+        base_statement = 'MATCH (n:{0} {{ {1}: ${1} }})-[r:{2}]->(m:{3})'.format(node_type,
                                                                                     self.schema.get_id_field(node),
                                                                                     relationship_name, parent_type)
         statement = base_statement + ' return m.{} AS {}'.format(parent_id_field, PARENT_ID)
@@ -828,8 +828,8 @@ class DataLoader:
                         else:
                             self.log.debug('Multiplier: {}, no action needed!'.format(multiplier))
                         prop_statement = ', '.join(self.get_relationship_prop_statements(properties))
-                        statement = 'MATCH (m:{0} {{ {1}: {{{1}}} }})'.format(parent_node, parent_id_field)
-                        statement += ' MATCH (n:{0} {{ {1}: {{{1}}} }})'.format(node_type,
+                        statement = 'MATCH (m:{0} {{ {1}: ${1} }})'.format(parent_node, parent_id_field)
+                        statement += ' MATCH (n:{0} {{ {1}: ${1} }})'.format(node_type,
                                                                                 self.schema.get_id_field(obj))
                         statement += ' MERGE (n)-[r:{}]->(m)'.format(relationship_name)
                         statement += ' ON CREATE SET r.{} = datetime()'.format(CREATED)
@@ -838,7 +838,7 @@ class DataLoader:
                         statement += ', {}'.format(prop_statement) if prop_statement else ''
 
                         result = tx.run(statement, {**obj, parent_id_field: parent_id, **properties})
-                        count = result.summary().counters.relationships_created
+                        count = result.consume().counters.relationships_created
                         self.relationships_created += count
                         relationship_pattern = '(:{})->[:{}]->(:{})'.format(node_type, relationship_name, parent_node)
                         relationships_created[relationship_pattern] = relationships_created.get(relationship_pattern,
@@ -870,7 +870,7 @@ class DataLoader:
         prop_stmts = []
 
         for key in props:
-            prop_stmts.append('r.{0} = {{{0}}}'.format(key))
+            prop_stmts.append('r.{0} = ${0}'.format(key))
         return prop_stmts
 
     def wipe_db(self, session, split=False):
@@ -878,7 +878,7 @@ class DataLoader:
             return self.wipe_db_split(session)
         else:
             cleanup_db = 'MATCH (n) DETACH DELETE n'
-            result = session.run(cleanup_db).summary()
+            result = session.run(cleanup_db).consume()
             self.nodes_deleted = result.counters.nodes_deleted
             self.relationships_deleted = result.counters.relationships_deleted
             self.log.info('{} nodes deleted!'.format(self.nodes_deleted))
@@ -889,7 +889,7 @@ class DataLoader:
             tx = session.begin_transaction()
             try:
                 cleanup_db = f'MATCH (n) WITH n LIMIT {BATCH_SIZE} DETACH DELETE n'
-                result = session.run(cleanup_db).summary()
+                result = session.run(cleanup_db).consume()
                 tx.commit()
                 deleted_nodes = result.counters.nodes_deleted
                 self.nodes_deleted += deleted_nodes

@@ -68,7 +68,7 @@ class VisitCreator:
         if NODE_TYPE not in src:
             self.log.error('Line: {}: Given object doesn\'t have a "{}" field!'.format(line_num, NODE_TYPE))
             return False
-        statement = 'MERGE (v:{} {{ {}: {{node_id}}, {}: {{date}}, {}: true, {}: {{{}}} }})'.format(
+        statement = 'MERGE (v:{} {{ {}: $node_id, {}: $date, {}: true, {}: ${} }})'.format(
             VISIT_NODE, VISIT_ID, VISIT_DATE, INFERRED, UUID, UUID)
         statement += ' ON CREATE SET v.{} = datetime()'.format(CREATED)
         statement += ' ON MATCH SET v.{} = datetime()'.format(UPDATED)
@@ -76,7 +76,7 @@ class VisitCreator:
         result = session.run(statement, {"node_id": node_id, "date": date,
                                          UUID: self.schema.get_uuid_for_node(VISIT_NODE, node_id)})
         if result:
-            count = result.summary().counters.nodes_created
+            count = result.consume().counters.nodes_created
             self.nodes_created += count
             self.nodes_stat[VISIT_NODE] = self.nodes_stat.get(VISIT_NODE, 0) + count
             if count > 0:
@@ -90,11 +90,11 @@ class VisitCreator:
     def connect_visit_to_cycle(self, session, line_num, visit_id, case_id, visit_date):
         cycle_data_array = []
         if case_id not in self.cycle_map:
-            find_cycles_stmt = 'MATCH (c:cycle) WHERE c.case_id = {case_id} RETURN c ORDER BY c.date_of_cycle_start'
+            find_cycles_stmt = 'MATCH (c:cycle) WHERE c.case_id = $case_id RETURN c ORDER BY c.date_of_cycle_start'
             result = session.run(find_cycles_stmt, {'case_id': case_id})
             if result:
                 # Iterates through each record in the result
-                for record in result.records():
+                for record in result:
                     # Retreives the cycle object from the record
                     cycle = record.data()['c']
                     # Stores the relevant cycle data in a dictionary
@@ -105,7 +105,7 @@ class VisitCreator:
                     cycle_data = {
                         START_DATE: formatted_start_date,
                         END_DATE: formatted_end_date,
-                        CYCLE_ID: cycle.id
+                        CYCLE_ID: record[0].id
                     }
                     # Adds the dictionary to an array for storage
                     cycle_data_array.append(cycle_data)
@@ -140,14 +140,14 @@ class VisitCreator:
                                                                                              PREDATE)
                             + ' days before first cycle started: {}, connected to first cycle'.format(
                                 first_date.strftime(DATE_FORMAT)))
-                    connect_stmt = 'MATCH (v:{} {{ {}: {{visit_id}} }}) '.format(VISIT_NODE, VISIT_ID)
-                    connect_stmt += 'MATCH (c:{}) WHERE id(c) = {{cycle_id}} '.format(CYCLE_NODE)
+                    connect_stmt = 'MATCH (v:{} {{ {}: $visit_id }}) '.format(VISIT_NODE, VISIT_ID)
+                    connect_stmt += 'MATCH (c:{}) WHERE id(c) = $cycle_id '.format(CYCLE_NODE)
                     connect_stmt += 'MERGE (v)-[r:{} {{ {}: true }}]->(c)'.format(relationship_name, INFERRED)
                     connect_stmt += ' ON CREATE SET r.{} = datetime()'.format(CREATED)
                     connect_stmt += ' ON MATCH SET r.{} = datetime()'.format(UPDATED)
 
                     cnt_result = session.run(connect_stmt, {'visit_id': visit_id, 'cycle_id': cycle_data[CYCLE_ID]})
-                    relationship_created = cnt_result.summary().counters.relationships_created
+                    relationship_created = cnt_result.consume().counters.relationships_created
                     if relationship_created > 0:
                         self.relationships_created += relationship_created
                         self.relationships_stat[relationship_name] = self.relationships_stat.get(relationship_name,
@@ -168,14 +168,14 @@ class VisitCreator:
         relationship_name = self.schema.get_relationship(VISIT_NODE, CASE_NODE)[RELATIONSHIP_TYPE]
         if not relationship_name:
             return False
-        cnt_statement = 'MATCH (c:case {{ case_id: {{case_id}} }}) MATCH (v:visit {{ {}: {{visit_id}} }}) '.format(
+        cnt_statement = 'MATCH (c:case {{ case_id: $case_id }}) MATCH (v:visit {{ {}: $visit_id }}) '.format(
             VISIT_ID)
         cnt_statement += 'MERGE (c)<-[r:{} {{ {}: true }}]-(v)'.format(relationship_name, INFERRED)
         cnt_statement += ' ON CREATE SET r.{} = datetime()'.format(CREATED)
         cnt_statement += ' ON MATCH SET r.{} = datetime()'.format(UPDATED)
 
         result = session.run(cnt_statement, {'case_id': case_id, 'visit_id': visit_id})
-        relationship_created = result.summary().counters.relationships_created
+        relationship_created = result.consume().counters.relationships_created
         if relationship_created > 0:
             self.relationships_created += relationship_created
             self.relationships_stat[relationship_name] = self.relationships_stat.get(relationship_name,
