@@ -1,26 +1,25 @@
 #!/usr/bin/env python3
 import argparse
-import datetime
 import glob
 import os
 import sys
 
-from neo4j import GraphDatabase, ServiceUnavailable
-from neobolt.exceptions import AuthError
+from neo4j import GraphDatabase
+from neo4j.exceptions import ServiceUnavailable
+from neo4j.exceptions import AuthError
 
-from bento.common.icdc_schema import ICDC_Schema
-from bento.common.props import Props
-from bento.common.utils import get_logger, removeTrailingSlash, check_schema_files, DATETIME_FORMAT, get_host, \
-    UPSERT_MODE, NEW_MODE, DELETE_MODE, get_log_file, LOG_PREFIX, APP_NAME
-from bento.common.visit_creator import VisitCreator
+from icdc_schema import ICDC_Schema
+from props import Props
+from bento.common.utils import get_logger, removeTrailingSlash, check_schema_files, UPSERT_MODE, NEW_MODE, DELETE_MODE, \
+    get_log_file, LOG_PREFIX, APP_NAME, load_plugin
 
 if LOG_PREFIX not in os.environ:
     os.environ[LOG_PREFIX] = 'Data_Loader'
 
 os.environ[APP_NAME] = 'Data_Loader'
 
-from bento.common.config import BentoConfig
-from bento.common.data_loader import DataLoader
+from config import BentoConfig
+from data_loader import DataLoader
 from bento.common.s3 import S3Bucket
 
 
@@ -46,7 +45,6 @@ def parse_arguments():
     parser.add_argument('-m', '--mode', help='Loading mode', choices=[UPSERT_MODE, NEW_MODE, DELETE_MODE],
                         default=UPSERT_MODE)
     parser.add_argument('--dataset', help='Dataset directory')
-    parser.add_argument('--no-parents', help='Does not save parent IDs in children', action='store_true')
     parser.add_argument('--split-transactions', help='Creates a separate transaction for each file',
                         action='store_true')
     return parser.parse_args()
@@ -165,9 +163,6 @@ def process_arguments(args, log):
     if not config.max_violations:
         config.max_violations = 10
 
-    if args.no_parents:
-        config.no_parents = args.no_parents
-
     return config
 
 
@@ -176,6 +171,12 @@ def upload_log_file(bucket_name, folder, file_path):
     s3 = S3Bucket(bucket_name)
     key = f'{folder}/{base_name}'
     return s3.upload_file(key, file_path)
+
+def prepare_plugin(config, schema):
+    if not config.params:
+        config.params = {}
+    config.params['schema'] = schema
+    return load_plugin(config.module_name, config.class_name, config.params)
 
 
 # Data loader will try to load all TSV(.TXT) files from given directory into Neo4j
@@ -212,11 +213,15 @@ def main():
             schema = ICDC_Schema(config.schema_files, props)
             if not config.dry_run:
                 driver = GraphDatabase.driver(config.neo4j_uri, auth=(config.neo4j_user, config.neo4j_password))
-            visit_creator = VisitCreator(schema)
-            loader = DataLoader(driver, schema, visit_creator)
+
+            plugins = []
+            if len(config.plugins) > 0:
+                for plugin_config in config.plugins:
+                    plugins.append(prepare_plugin(plugin_config, schema))
+            loader = DataLoader(driver, schema, plugins)
 
             loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db,
-                        config.max_violations, config.no_parents, split=config.split_transactions,
+                        config.max_violations, split=config.split_transactions,
                         no_backup=config.no_backup, neo4j_uri=config.neo4j_uri, backup_folder=config.backup_folder)
 
             if driver:

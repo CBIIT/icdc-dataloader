@@ -15,6 +15,20 @@ Config:
     - tests/data/icdc-model.yml
     - tests/data/icdc-model-props.yml
 
+  # Plugin can be used to create additional nodes and relationships
+  plugins:
+    - module: loader_plugins.visit_creator
+      class: VisitCreator
+
+    - module: loader_plugins.individual_creator
+      class: IndividualCreator
+
+    - moduel: moduel_name_2
+      class: clase_name_2
+      params:
+        param_1: value_1
+        param_2: value_2
+
   # Property file location, props-icdc.yml, props-ctdc.yml etc. can be overridden by --prop-file argument
   prop_file: config/props-icdc.yml
 

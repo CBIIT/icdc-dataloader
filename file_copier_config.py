@@ -1,7 +1,7 @@
 import argparse
 import os
 
-from bento.common.config_base import BentoConfig
+from config_base import BentoConfig
 
 MASTER_MODE = 'master'
 SLAVE_MODE = 'slave'

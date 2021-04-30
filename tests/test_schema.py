@@ -1,6 +1,6 @@
 import unittest
-from bento.common.icdc_schema import ICDC_Schema
-from bento.common.props import Props
+from icdc_schema import ICDC_Schema
+from props import Props
 
 
 class TestSchema(unittest.TestCase):

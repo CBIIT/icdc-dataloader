@@ -1,8 +1,8 @@
 import unittest
 from bento.common.utils import get_logger, NODES_CREATED, RELATIONSHIP_CREATED, NODES_DELETED, RELATIONSHIP_DELETED
-from bento.common.data_loader import DataLoader
-from bento.common.icdc_schema import ICDC_Schema
-from bento.common.props import Props
+from data_loader import DataLoader
+from icdc_schema import ICDC_Schema
+from props import Props
 import os
 from neo4j import GraphDatabase
 

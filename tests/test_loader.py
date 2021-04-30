@@ -1,9 +1,9 @@
 import unittest
 import os
 from bento.common.utils import get_logger, removeTrailingSlash, UUID
-from bento.common.data_loader import DataLoader
-from bento.common.icdc_schema import ICDC_Schema
-from bento.common.props import Props
+from data_loader import DataLoader
+from icdc_schema import ICDC_Schema
+from props import Props
 from neo4j import GraphDatabase
 
 
