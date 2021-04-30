@@ -58,6 +58,7 @@ Properties:
     diagnosis: diagnosis_id
     sample: sample_id
     file: uuid
+    individual: individual_id
 
   reuse_nodes:
     - registration

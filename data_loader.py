@@ -847,7 +847,8 @@ class DataLoader:
                                                                                                  0) + count
                     for plugin in self.plugins:
                         if plugin.should_run(node_type, NODE_LOADED):
-                            plugin.create_node(session=tx, line_num=line_num, src=obj)
+                            if plugin.create_node(session=tx, line_num=line_num, src=obj):
+                                int_nodes_created += 1
                 # commit and restart a transaction when batch size reached
                 if split and transaction_counter >= BATCH_SIZE:
                     tx.commit()

@@ -1,8 +1,12 @@
 
 from icdc_schema import ICDC_Schema, NODE_TYPE
 from bento.common.utils import get_logger, NODE_LOADED
+from data_loader import CREATED, UPDATED
+from bento.common.utils import UUID
 
 REGISTRATION_NODE = 'registration'
+CASE_NODE = 'case'
+INDIVIDUAL_NODE = 'individual'
 
 class IndividualCreator:
     def __init__(self, schema):
@@ -19,7 +23,9 @@ class IndividualCreator:
     def should_run(self, node_type, event):
         return node_type == REGISTRATION_NODE and event == NODE_LOADED
 
+    # Create individual node if needed (a registration node connects more than one case node)
     def create_node(self, session, **kwargs):
+        individual_created = False
         line_num = kwargs.get('line_num')
         src = kwargs.get('src')
         node_type = src[NODE_TYPE]
@@ -28,22 +34,70 @@ class IndividualCreator:
         if node_type != REGISTRATION_NODE:
             return False
 
-        statement = f'MATCH (c1:case)<--(r:{REGISTRATION_NODE})-->(c2:case) WHERE r.{id_field} = ${id_field} RETURN c1, r, c2'
+        statement = f'''
+            MATCH (c:{CASE_NODE})<--(r:{REGISTRATION_NODE}) 
+            OPTIONAL match (c)-->(i:{INDIVIDUAL_NODE})
+            WITH r, collect(DISTINCT c) AS cc, collect(distinct i) AS ci 
+            WHERE size(cc) > 1 and r.{id_field} = ${id_field}
+            RETURN cc, ci
+        '''
+        result = session.run(statement, {id_field: node_id})
+        for r in result:
+            individual_nodes = r.get('ci')
+            case_nodes = r.get('cc')
+            if len(individual_nodes) > 1:
+                # Todo:
+                #      if found more individuals:
+                #          find all cases of all individuals
+                #          delete all but the oldest individual
+                #          connect all cases including newly found ones to the oldest individual
+                msg = f"Line: {line_num}: More than one individuals associated with one dog!"
+                self.log.error(msg)
+                raise Exception(msg)
 
-        # Todo:
-        # 1. find all cases of current registration
-        #    if more than one cases found:
-        #      find all individuals of cases
-        #      if there is no individuals:
-        #         create new individual with ID based on registration uuid
-        #         connect all(both) cases to the new individual
-        #      elif there is one individual:
-        #          connect all cases to the individual
-        #      else (more individuals):
-        #          find all cases of all individuals
-        #          delete all but the oldest individual
-        #          connect all cases including newly found ones to the oldest individual
-        #    else: (only one case)
-        #        return
+            elif len(individual_nodes) == 1:
+                individual = individual_nodes[0]
+                i_id = id(individual)
+            elif len(individual_nodes) == 0:
+                individual_id = self.schema.get_uuid_for_node(INDIVIDUAL_NODE, node_id)
+                i_id = self.create_individual(session, individual_id)
+                individual_created = True
 
-        self.log.info(f'Line: {line_num}: {statement}')
+            for case in case_nodes:
+                self.connect_case_to_individual(session, case.id, i_id)
+
+            return individual_created
+
+
+    def create_individual(self, session, node_id):
+        id_field = self.schema.props.id_fields.get(INDIVIDUAL_NODE)
+        statement = f'''
+            CREATE (i:{INDIVIDUAL_NODE} {{ {id_field}: ${id_field}, {CREATED}: datetime(), {UUID}:${id_field} }})
+            RETURN id(i) AS node_id
+            '''
+        result = session.run(statement, {id_field: node_id})
+        if result:
+            i_id = result.single()
+            count = result.consume().counters.nodes_created
+            self.nodes_created += count
+            self.nodes_stat[INDIVIDUAL_NODE] = self.nodes_stat.get(INDIVIDUAL_NODE, 0) + count
+            return i_id[0]
+        else:
+            return None
+
+    def connect_case_to_individual(self, session, c_id, i_id):
+        relationship_name = self.schema.get_relationship(CASE_NODE, INDIVIDUAL_NODE).get('relationship_type')
+        statement = f'''
+            MATCH (i:{INDIVIDUAL_NODE})
+            WHERE id(i) = $i_id
+            MATCH (c:{CASE_NODE})
+            WHERE id(c) = $c_id
+            MERGE (c)-[r:{relationship_name}]->(i)
+              ON CREATE SET r.{CREATED} = datetime()
+            '''
+        result = session.run(statement, {'c_id': c_id, 'i_id': i_id})
+        if result:
+            count = result.consume().counters.relationships_created
+            self.relationships_created += count
+            self.relationships_stat[relationship_name] = self.relationships_stat.get(relationship_name, 0) + count
+

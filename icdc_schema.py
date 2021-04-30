@@ -387,7 +387,7 @@ class ICDC_Schema:
                         'Property: "{}":"{}" is not a valid "{}" type!'.format(rel_prop, value, prop_type))
 
             elif key not in properties:
-                self.log.warn('Property "{}" is not in data model!'.format(key))
+                self.log.debug('Property "{}" is not in data model!'.format(key))
             else:
                 prop_type = properties[key]
                 if not self._validate_type(prop_type, value):
