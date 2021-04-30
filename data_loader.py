@@ -163,7 +163,7 @@ class DataLoader:
             self.log.info('Cheat mode enabled, all validations skipped!')
             return True
 
-    def load(self, file_list, cheat_mode, dry_run, loading_mode, wipe_db, max_violations, no_parents,
+    def load(self, file_list, cheat_mode, dry_run, loading_mode, wipe_db, max_violations,
              split=False, no_backup=True, backup_folder="/", neo4j_uri=None):
         if not self.check_files(file_list):
             return False
@@ -213,14 +213,14 @@ class DataLoader:
         with self.driver.session() as session:
             # Split Transactions enabled
             if split:
-                self._load_all(session, file_list, loading_mode, no_parents, split, wipe_db)
+                self._load_all(session, file_list, loading_mode, split, wipe_db)
 
             # Split Transactions Disabled
             else:
                 # Data updates transaction
                 tx = session.begin_transaction()
                 try:
-                    self._load_all(tx, file_list, loading_mode, no_parents, split, wipe_db)
+                    self._load_all(tx, file_list, loading_mode, split, wipe_db)
                     tx.commit()
                 except Exception as e:
                     tx.rollback()
@@ -249,14 +249,14 @@ class DataLoader:
         return {NODES_CREATED: self.nodes_created, RELATIONSHIP_CREATED: self.relationships_created,
                 NODES_DELETED: self.nodes_deleted, RELATIONSHIP_DELETED: self.relationships_deleted}
 
-    def _load_all(self, tx, file_list, loading_mode, no_parents, split, wipe_db):
+    def _load_all(self, tx, file_list, loading_mode, split, wipe_db):
         if wipe_db:
             self.wipe_db(tx, split)
         for txt in file_list:
-            self.load_nodes(tx, txt, loading_mode, no_parents, split)
+            self.load_nodes(tx, txt, loading_mode, split)
         if loading_mode != DELETE_MODE:
             for txt in file_list:
-                self.load_relationships(tx, txt, loading_mode, no_parents, split)
+                self.load_relationships(tx, txt, loading_mode, split)
 
     # Remove extra spaces at begining and end of the keys and values
     @staticmethod
@@ -270,7 +270,7 @@ class DataLoader:
     # Add uuid to nodes if one not exists
     # Add parent id(s)
     # Add extra properties for "value with unit" properties
-    def prepare_node(self, node, no_parents):
+    def prepare_node(self, node):
         obj = self.cleanup_node(node)
 
         node_type = obj.get(NODE_TYPE, None)
@@ -324,7 +324,7 @@ class DataLoader:
         for key, value in obj.items():
             obj2[key] = value
             # Add parent id field(s) into node
-            if self.schema.is_parent_pointer(key) and not no_parents and obj[NODE_TYPE] not in self.schema.props.reuse_nodes:
+            if obj[NODE_TYPE] in self.schema.props.save_parent_id and self.schema.is_parent_pointer(key):
                 header = key.split('.')
                 if len(header) > 2:
                     self.log.warning('Column header "{}" has multiple periods!'.format(key))
@@ -365,7 +365,7 @@ class DataLoader:
         return '{{ {} }}'.format(', '.join(result))
 
     # Validate all cases exist in a data (TSV/TXT) file
-    def validate_cases_exist_in_file(self, file_name, max_violations, no_parents):
+    def validate_cases_exist_in_file(self, file_name, max_violations):
         if not self.driver or not isinstance(self.driver, Driver):
             self.log.error('Invalid Neo4j Python Driver!')
             return False
@@ -378,7 +378,7 @@ class DataLoader:
                 validation_failed = False
                 violations = 0
                 for org_obj in reader:
-                    obj = self.prepare_node(org_obj, no_parents)
+                    obj = self.prepare_node(org_obj)
                     line_num += 1
                     # Validate parent exist
                     if CASE_ID in obj:
@@ -394,7 +394,7 @@ class DataLoader:
                 return not validation_failed
 
     # Validate all parents exist in a data (TSV/TXT) file
-    def validate_parents_exist_in_file(self, file_name, max_violations, no_parents):
+    def validate_parents_exist_in_file(self, file_name, max_violations):
         validation_failed = True
         if not self.driver or not isinstance(self.driver, Driver):
             self.log.error('Invalid Neo4j Python Driver!')
@@ -409,7 +409,7 @@ class DataLoader:
                 violations = 0
                 for org_obj in reader:
                     line_num += 1
-                    obj = self.prepare_node(org_obj, no_parents)
+                    obj = self.prepare_node(org_obj)
                     results = self.collect_relationships(obj, session, False, line_num)
                     relationships = results[RELATIONSHIPS]
                     provided_parents = results[PROVIDED_PARENTS]
@@ -581,7 +581,7 @@ class DataLoader:
         return (nodes_deleted, relationship_deleted)
 
     # load file
-    def load_nodes(self, session, file_name, loading_mode, no_parents, split=False):
+    def load_nodes(self, session, file_name, loading_mode, split=False):
         if loading_mode == NEW_MODE:
             action_word = 'Loading new'
         elif loading_mode == UPSERT_MODE:
@@ -611,7 +611,7 @@ class DataLoader:
             for org_obj in reader:
                 line_num += 1
                 transaction_counter += 1
-                obj = self.prepare_node(org_obj, no_parents)
+                obj = self.prepare_node(org_obj)
                 node_type = obj[NODE_TYPE]
                 node_id = self.schema.get_id(obj)
                 if not node_id:
@@ -772,7 +772,7 @@ class DataLoader:
             if not del_result:
                 self.log.error('Delete old relationship failed!')
 
-    def load_relationships(self, session, file_name, loading_mode, no_parents, split=False):
+    def load_relationships(self, session, file_name, loading_mode, split=False):
         if loading_mode == NEW_MODE:
             action_word = 'Loading new'
         elif loading_mode == UPSERT_MODE:
@@ -798,7 +798,7 @@ class DataLoader:
             for org_obj in reader:
                 line_num += 1
                 transaction_counter += 1
-                obj = self.prepare_node(org_obj, no_parents)
+                obj = self.prepare_node(org_obj)
                 node_type = obj[NODE_TYPE]
                 results = self.collect_relationships(obj, tx, True, line_num)
                 relationships = results[RELATIONSHIPS]

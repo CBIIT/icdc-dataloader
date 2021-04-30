@@ -45,7 +45,6 @@ def parse_arguments():
     parser.add_argument('-m', '--mode', help='Loading mode', choices=[UPSERT_MODE, NEW_MODE, DELETE_MODE],
                         default=UPSERT_MODE)
     parser.add_argument('--dataset', help='Dataset directory')
-    parser.add_argument('--no-parents', help='Does not save parent IDs in children', action='store_true')
     parser.add_argument('--split-transactions', help='Creates a separate transaction for each file',
                         action='store_true')
     return parser.parse_args()
@@ -164,9 +163,6 @@ def process_arguments(args, log):
     if not config.max_violations:
         config.max_violations = 10
 
-    if args.no_parents:
-        config.no_parents = args.no_parents
-
     return config
 
 
@@ -225,7 +221,7 @@ def main():
             loader = DataLoader(driver, schema, plugins)
 
             loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db,
-                        config.max_violations, config.no_parents, split=config.split_transactions,
+                        config.max_violations, split=config.split_transactions,
                         no_backup=config.no_backup, neo4j_uri=config.neo4j_uri, backup_folder=config.backup_folder)
 
             if driver:

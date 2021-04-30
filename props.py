@@ -19,7 +19,7 @@ class Props:
                 self.domain = props.get('domain', 'Unknown.domain.nci.nih.gov')
                 self.rel_prop_delimiter = props.get('rel_prop_delimiter', '$')
                 self.indexes = props.get('indexes', [])
-                self.reuse_nodes = props.get('reuse_nodes', [])
+                self.save_parent_id = props.get('save_parent_id', [])
         else:
             msg = f'Can NOT open file: "{file_name}"'
             self.log.error(msg)

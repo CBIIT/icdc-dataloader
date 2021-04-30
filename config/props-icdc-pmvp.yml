@@ -63,6 +63,9 @@ Properties:
   reuse_nodes:
     - registration
 
+  save_parent_id:
+    - demographic
+
   visit_date_in_nodes:
     vital_signs: date_of_vital_signs
     physical_exam: date_of_examination
