@@ -60,9 +60,6 @@ Properties:
     file: uuid
     individual: individual_id
 
-  reuse_nodes:
-    - registration
-
   save_parent_id:
     - demographic
 
