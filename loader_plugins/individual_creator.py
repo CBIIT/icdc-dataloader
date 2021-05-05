@@ -57,7 +57,7 @@ class IndividualCreator:
 
             elif len(individual_nodes) == 1:
                 individual = individual_nodes[0]
-                i_id = id(individual)
+                i_id = individual.id
             elif len(individual_nodes) == 0:
                 individual_id = self.schema.get_uuid_for_node(INDIVIDUAL_NODE, node_id)
                 i_id = self.create_individual(session, individual_id)
