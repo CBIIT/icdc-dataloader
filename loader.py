@@ -135,6 +135,7 @@ def process_arguments(args, log):
     if not config.neo4j_uri:
         config.neo4j_uri = 'bolt://localhost:7687'
     config.neo4j_uri = removeTrailingSlash(config.neo4j_uri)
+    log.info(f"Loading into Neo4j at: {config.neo4j_uri}")
 
     if args.user:
         config.neo4j_user = args.user
