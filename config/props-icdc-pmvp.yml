@@ -58,7 +58,7 @@ Properties:
     diagnosis: diagnosis_id
     sample: sample_id
     file: uuid
-    individual: individual_id
+    canine_individual: canine_individual_id
 
   save_parent_id:
     - demographic

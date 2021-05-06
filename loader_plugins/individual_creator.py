@@ -6,7 +6,7 @@ from bento.common.utils import UUID
 
 REGISTRATION_NODE = 'registration'
 CASE_NODE = 'case'
-INDIVIDUAL_NODE = 'individual'
+INDIVIDUAL_NODE = 'canine_individual'
 
 class IndividualCreator:
     def __init__(self, schema):
@@ -69,13 +69,14 @@ class IndividualCreator:
             return individual_created
 
 
-    def create_individual(self, session, node_id):
+    def create_individual(self, session, uuid):
         id_field = self.schema.props.id_fields.get(INDIVIDUAL_NODE)
         statement = f'''
-            CREATE (i:{INDIVIDUAL_NODE} {{ {id_field}: ${id_field}, {CREATED}: datetime(), {UUID}:${id_field} }})
+            MATCH (i:{INDIVIDUAL_NODE}) WITH coalesce(max(i.{id_field}) + 1, 1) AS i_id
+            CREATE (i:{INDIVIDUAL_NODE} {{ {id_field}: i_id, {CREATED}: datetime(), {UUID}:${UUID} }})
             RETURN id(i) AS node_id
             '''
-        result = session.run(statement, {id_field: node_id})
+        result = session.run(statement, {UUID: uuid})
         if result:
             i_id = result.single()
             count = result.consume().counters.nodes_created
