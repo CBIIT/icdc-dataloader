@@ -30,7 +30,7 @@ Config:
         param_2: value_2
 
   # Property file location, props-icdc.yml, props-ctdc.yml etc. can be overridden by --prop-file argument
-  prop_file: config/props-icdc.yml
+  prop_file: config/props-icdc-pmvp.yml
 
   # Skip validations, aka. Cheat Mode, can be overridden by -c/--cheat-mode argument
   cheat_mode: false
@@ -44,8 +44,6 @@ Config:
   no_confirmation: false
   # Max violations to display, default is 10, can be overridden by -M/--max-violations argument
   max_violations: 10
-  # Disable saving parent IDs in children
-  no_parents: false
   # Split the loading transaction into separate transactions for each file
   split_transactions: false
 

@@ -18,6 +18,8 @@ Config:
   plugins:
     - module: loader_plugins.visit_creator
       class: VisitCreator
+    - module: loader_plugins.individual_creator
+      class: IndividualCreator
 
   #Property file location
   prop_file: {{property_file}}
@@ -34,8 +36,7 @@ Config:
   no_confirmation: true
   # Max violations to display, default is 10
   max_violations: 10
-  no_parents: false
-  split_transactions: {{split_transactions}}    
+  split_transactions: {{split_transactions}}
 
   # S3 bucket name, if you are loading from an S3 bucket
   s3_bucket: {{data_bucket}}
