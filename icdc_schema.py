@@ -475,7 +475,7 @@ class ICDC_Schema:
         return True
 
     def get_list_values(self, list_str):
-        return [item.strip() for item in list_str.split(LIST_DELIMITER)]
+        return [item.strip() for item in list_str.split(LIST_DELIMITER) if item.strip()]
 
     # Find relationship type from src to dest
     def get_relationship(self, src, dest):
