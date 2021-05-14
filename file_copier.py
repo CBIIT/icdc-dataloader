@@ -170,9 +170,9 @@ class FileLoader:
     def populate_indexd_record(self, record, result):
         record[self.SIZE] = result[Copier.SIZE]
         record[self.MD5] = result[Copier.MD5]
-        record[self.GUID] = '{}{}'.format(self.INDEXD_GUID_PREFIX, get_uuid(self.domain, "file", record[self.MD5]))
         record[Copier.ACL] = result[Copier.ACL]
         record[self.URL] = self.get_s3_location(self.bucket_name, result[Copier.KEY])
+        record[self.GUID] = '{}{}'.format(self.INDEXD_GUID_PREFIX, get_uuid(self.domain, "file", record[self.URL]))
         return record
 
     def populate_neo4j_record(self, record, result):
@@ -184,7 +184,7 @@ class FileLoader:
         file_name = result[Copier.NAME]
         record[self.MD5_SUM] = result[Copier.MD5]
         record[self.FILE_FORMAT] = (os.path.splitext(file_name)[1]).split('.')[1].lower()
-        record[UUID] = get_uuid(self.domain, "file", record[self.MD5_SUM])
+        record[UUID] = get_uuid(self.domain, "file", record[self.FILE_LOC])
         record[self.FILE_STAT] = self.DEFAULT_STAT
         record[Copier.ACL] = result[Copier.ACL]
         return record
