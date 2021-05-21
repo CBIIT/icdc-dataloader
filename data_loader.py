@@ -86,8 +86,7 @@ def backup_neo4j(backup_dir, name, address, log):
             [
                 'neo4j-admin',
                 'backup',
-                '--backup-dir={}'.format(backup_dir),
-                '--name={}'.format(name),
+                '--backup-dir={}'.format(backup_dir)
             ]
         ]
         if address in ['localhost', '127.0.0.1']:
