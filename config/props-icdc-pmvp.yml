@@ -34,6 +34,7 @@ Properties:
     off_treatment: off_treatments
     registration: registrations
     image_collection: image_collections
+    publication: publications
 
   type_mapping:
     string: String
@@ -59,6 +60,7 @@ Properties:
     sample: sample_id
     file: uuid
     canine_individual: canine_individual_id
+    publication: publication_title
 
   save_parent_id:
     - demographic
