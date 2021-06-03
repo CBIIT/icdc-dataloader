@@ -1,9 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from neo4j import Session, Transaction
 
 from icdc_schema import ICDC_Schema
-from bento.common.utils import get_logger, UUID, RELATIONSHIP_TYPE, DATE_FORMAT, MISSING_PARENT
+from bento.common.utils import get_logger, UUID, RELATIONSHIP_TYPE, MISSING_PARENT, parse_date, \
+    date_to_string
 
 VISIT_NODE = 'visit'
 VISIT_ID = 'visit_id'
@@ -95,13 +96,14 @@ class VisitCreator:
             if result:
                 # Iterates through each record in the result
                 for record in result:
-                    # Retreives the cycle object from the record
+                    # Retrieves the cycle object from the record
                     cycle = record.data()['c']
                     # Stores the relevant cycle data in a dictionary
-                    formatted_start_date = datetime.strptime(cycle[START_DATE], DATE_FORMAT)
-                    formatted_end_date = None
-                    if cycle[END_DATE]:
-                        formatted_end_date = datetime.strptime(cycle[END_DATE], DATE_FORMAT)
+                    formatted_start_date = parse_date(cycle[START_DATE])
+                    try:
+                        formatted_end_date = parse_date(cycle[END_DATE])
+                    except ValueError:
+                        formatted_end_date = None
                     cycle_data = {
                         START_DATE: formatted_start_date,
                         END_DATE: formatted_end_date,
@@ -120,7 +122,7 @@ class VisitCreator:
             if not relationship_name:
                 return False
             for cycle_data in cycle_data_array:
-                date = datetime.strptime(visit_date, DATE_FORMAT)
+                date = parse_date(visit_date)
                 start_date = cycle_data[START_DATE]
                 if not first_date:
                     first_date = start_date
@@ -128,18 +130,16 @@ class VisitCreator:
                 if cycle_data[END_DATE]:
                     end_date = cycle_data[END_DATE]
                 else:
-                    self.log.warning('Line: {}: No end dates for cycle started on {} for {}'.format(line_num,
-                                                                                                    start_date.strftime(
-                                                                                                        DATE_FORMAT),
-                                                                                                    case_id))
-                    end_date = datetime.strptime(FOREVER, DATE_FORMAT)
+                    self.log.warning('Line: {}: No end dates for cycle started on {} for {}'
+                                     .format(line_num, date_to_string(start_date), case_id))
+                    end_date = parse_date(FOREVER)
                 if (start_date <= date <= end_date) or (first_date > date >= pre_date):
                     if first_date > date >= pre_date:
                         self.log.info(
                             'Line: {}: Date: {} is before first cycle, but within {}'.format(line_num, visit_date,
                                                                                              PREDATE)
-                            + ' days before first cycle started: {}, connected to first cycle'.format(
-                                first_date.strftime(DATE_FORMAT)))
+                            + ' days before first cycle started: {}, connected to first cycle'
+                            .format(date_to_string(first_date)))
                     connect_stmt = 'MATCH (v:{} {{ {}: $visit_id }}) '.format(VISIT_NODE, VISIT_ID)
                     connect_stmt += 'MATCH (c:{}) WHERE id(c) = $cycle_id '.format(CYCLE_NODE)
                     connect_stmt += 'MERGE (v)-[r:{} {{ {}: true }}]->(c)'.format(relationship_name, INFERRED)
@@ -150,8 +150,8 @@ class VisitCreator:
                     relationship_created = cnt_result.consume().counters.relationships_created
                     if relationship_created > 0:
                         self.relationships_created += relationship_created
-                        self.relationships_stat[relationship_name] = self.relationships_stat.get(relationship_name,
-                                                                                                 0) + relationship_created
+                        self.relationships_stat[relationship_name] = \
+                            self.relationships_stat.get(relationship_name, 0) + relationship_created
                         return True
                     else:
                         self.log.error(
