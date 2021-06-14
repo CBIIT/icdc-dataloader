@@ -1,11 +1,11 @@
-from datetime import datetime
 import os
 import re
 import sys
 
 import yaml
 
-from bento.common.utils import get_logger, MULTIPLIER, DEFAULT_MULTIPLIER, RELATIONSHIP_TYPE, DATE_FORMAT, get_uuid
+from bento.common.utils import get_logger, MULTIPLIER, DEFAULT_MULTIPLIER, RELATIONSHIP_TYPE, get_uuid, \
+    parse_date
 from props import Props
 
 NODES = 'Nodes'
@@ -461,7 +461,7 @@ class ICDC_Schema:
                 return False
             try:
                 if str_value.strip() != '':
-                    datetime.strptime(str_value, DATE_FORMAT)
+                    parse_date(str_value)
             except ValueError:
                 return False
         elif model_type[PROP_TYPE] == 'DateTime':
@@ -469,7 +469,7 @@ class ICDC_Schema:
                 return False
             try:
                 if str_value.strip() != '':
-                    datetime.strptime(str_value, DATE_FORMAT)
+                    parse_date(str_value)
             except ValueError:
                 return False
         return True

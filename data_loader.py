@@ -10,7 +10,7 @@ import platform
 import subprocess
 import json
 from timeit import default_timer as timer
-from bento.common.utils import get_host, DATETIME_FORMAT
+from bento.common.utils import get_host, DATETIME_FORMAT, reformat_date
 
 from neo4j import Driver
 
@@ -317,7 +317,15 @@ class DataLoader:
                     items = self.schema.get_list_values(value)
                     # todo: need to transform items if item type is not string
                     obj[key] = json.dumps(items)
-
+                elif key_type == 'DateTime' or key_type == 'Date':
+                    try:
+                        if value is None:
+                            cleaned_value = None
+                        else:
+                            cleaned_value = reformat_date(value)
+                    except Exception:
+                        cleaned_value = None
+                    obj[key] = cleaned_value
 
         obj2 = {}
         for key, value in obj.items():
