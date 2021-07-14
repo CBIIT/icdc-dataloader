@@ -1,18 +1,21 @@
 #!/user/bin/env python3
 import os
+import argparse
 
 from neo4j import GraphDatabase
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import streaming_bulk
+import yaml
+import tqdm
 
 from bento.common.utils import get_logger
 
 logger = get_logger('ESLoader')
 
 class ESLoader:
-    def __init__(self, es_endpoint, neo4j_driver, index_name, mapping, cypher_query):
+    def __init__(self, es_host, neo4j_driver, index_name, mapping, cypher_query):
         self.neo4j_driver = neo4j_driver
-        self.es_client = Elasticsearch(hosts=[es_endpoint])
+        self.es_client = Elasticsearch(hosts=[es_host])
         self.index_name = index_name
         self.mapping = mapping
         self.cypher_query = cypher_query
@@ -51,7 +54,7 @@ class ESLoader:
         result = self.delete_index(self.index_name)
         logger.info(result)
 
-        logger.info('Creating index')
+        logger.info(f'Creating index "{self.index_name}"')
         result = self.create_index(self.index_name, self.mapping)
         logger.info(result)
 
@@ -71,68 +74,28 @@ class ESLoader:
 
 
 def main():
-    neo4j_uri = 'bolt://127.0.0.1:7687'
-    neo4j_user = 'neo4j'
-    neo4j_password = os.environ['NEO_PASSWORD']
-    es_endpoint = 'localhost'
-    index_name = 'dashboard'
-    mapping = {
-        "program": {"type": "keyword"},
-        "study": {"type": "keyword"},
-        "diagnosis": {"type": "keyword"},
-        "rc_score": {"type": "keyword"},
-        "tumor_size": {"type": "keyword"},
-        "chemo_regimen": {"type": "keyword"},
-        "tumor_grade": {"type": "keyword"},
-        "er_status": {"type": "keyword"},
-        "pr_status": {"type": "keyword"},
-        "endo_therapy": {"type": "keyword"},
-        "meno_status": {"type": "keyword"},
-        "tissue_type": {"type": "keyword"},
-        "composition": {"type": "keyword"},
-        "association": {"type": "keyword"},
-        "file_type": {"type": "keyword"},
-    }
+    parser = argparse.ArgumentParser(description='Load data from Neo4j to Elasticsearch')
+    parser.add_argument('config_file',
+                        type=argparse.FileType('r'),
+                        help='Configuration file, example is in config/es_loader.example.yml',
+                        nargs='?')
+    args = parser.parse_args()
 
-    cypher_query = """
-        MATCH (ss)<-[:sf_of_study_subject]-(sf)
-        MATCH (ss)<-[:diagnosis_of_study_subject]-(d)<-[:tp_of_diagnosis]-(tp)
-        MATCH (ss:study_subject)-[:study_subject_of_study]->(s)-[:study_of_program]->(p)
-        MATCH (ss)<-[:demographic_of_study_subject]-(demo)
-        MATCH (ss)<-[:sample_of_study_subject]-(samp)
-        MATCH (ss)<-[*..2]-(parent)<--(f:file)
-        OPTIONAL MATCH (f)-[:file_of_laboratory_procedure]->(lp)
-        OPTIONAL MATCH (ss)-[:study_subject_of_study]->(s)-[:study_of_program]->(p)
-        OPTIONAL MATCH (ss)<-[:sf_of_study_subject]-(sf)
-        OPTIONAL MATCH (ss)<-[:diagnosis_of_study_subject]-(d)
-        OPTIONAL MATCH (d)<-[:tp_of_diagnosis]-(tp)
-        OPTIONAL MATCH (ss)<-[:demographic_of_study_subject]-(demo)
-        RETURN  
-            p.program_acronym AS program,
-            (s.study_acronym + ': ' + s.study_short_description) AS study,
-            ss.disease_subtype AS diagnosis,
-            sf.grouped_recurrence_score AS rc_score,
-            d.tumor_size_group AS tumor_size,
-            tp.chemotherapy_regimen AS chemo_regimen,
-            d.tumor_grade AS tumor_grade,
-            d.er_status AS er_status,
-            d.pr_status AS pr_status,
-            tp.endocrine_therapy_type AS endo_therapy,
-            demo.menopause_status AS  meno_status,
-            samp.tissue_type AS tissue_type,
-            samp.composition AS composition,
-            head(labels(parent)) AS association,
-            f.file_type AS file_type
-    """
+    config = yaml.safe_load(args.config_file)['Config']
 
     neo4j_driver = GraphDatabase.driver(
-        neo4j_uri,
-        auth=(neo4j_user, neo4j_password),
+        config['neo4j_uri'],
+        auth=(config['neo4j_user'], config['neo4j_password']),
         encrypted=False
     )
 
-    loader = ESLoader(es_endpoint=es_endpoint, neo4j_driver=neo4j_driver, index_name=index_name, mapping=mapping,
-                      cypher_query=cypher_query)
+    loader = ESLoader(
+        es_host=config['es_host'],
+        neo4j_driver=neo4j_driver,
+        index_name=config['index_name'],
+        mapping=config['mapping'],
+        cypher_query=config['cypher_query']
+    )
     loader.load()
 
 if __name__ == '__main__':
