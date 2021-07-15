@@ -10,4 +10,5 @@ cmd.txt
 tests/temp
 config/data-loader.yml
 config/file-loader.yml
+config/es_loader_bento.yml
 backup/

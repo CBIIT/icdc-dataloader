@@ -1,0 +1,69 @@
+Config:
+  neo4j_uri: bolt://{{neo4j_ip}}:7687
+  neo4j_user: neo4j
+  neo4j_password: "{{ neo4j_password }}"
+  es_host: {{ es_host }}
+
+  index_name: dashboard
+  mapping:
+    program:
+      type: keyword
+    study:
+      type: keyword
+    diagnosis:
+      type: keyword
+    rc_score:
+      type: keyword
+    tumor_size:
+      type: keyword
+    chemo_regimen:
+      type: keyword
+    tumor_grade:
+      type: keyword
+    er_status:
+      type: keyword
+    pr_status:
+      type: keyword
+    endo_therapy:
+      type: keyword
+    meno_status:
+      type: keyword
+    tissue_type:
+      type: keyword
+    composition:
+      type: keyword
+    association:
+      type: keyword
+    file_type:
+      type: keyword
+
+  cypher_query: "
+    MATCH (ss)<-[:sf_of_study_subject]-(sf)
+    MATCH (ss)<-[:diagnosis_of_study_subject]-(d)<-[:tp_of_diagnosis]-(tp)
+    MATCH (ss:study_subject)-[:study_subject_of_study]->(s)-[:study_of_program]->(p)
+    MATCH (ss)<-[:demographic_of_study_subject]-(demo)
+    MATCH (ss)<-[:sample_of_study_subject]-(samp)
+    MATCH (ss)<-[*..2]-(parent)<--(f:file)
+    OPTIONAL MATCH (f)-[:file_of_laboratory_procedure]->(lp)
+    OPTIONAL MATCH (ss)-[:study_subject_of_study]->(s)-[:study_of_program]->(p)
+    OPTIONAL MATCH (ss)<-[:sf_of_study_subject]-(sf)
+    OPTIONAL MATCH (ss)<-[:diagnosis_of_study_subject]-(d)
+    OPTIONAL MATCH (d)<-[:tp_of_diagnosis]-(tp)
+    OPTIONAL MATCH (ss)<-[:demographic_of_study_subject]-(demo)
+    RETURN
+    p.program_acronym AS program,
+    (s.study_acronym + ': ' + s.study_short_description) AS study,
+    ss.disease_subtype AS diagnosis,
+    sf.grouped_recurrence_score AS rc_score,
+    d.tumor_size_group AS tumor_size,
+    tp.chemotherapy_regimen AS chemo_regimen,
+    d.tumor_grade AS tumor_grade,
+    d.er_status AS er_status,
+    d.pr_status AS pr_status,
+    tp.endocrine_therapy_type AS endo_therapy,
+    demo.menopause_status AS  meno_status,
+    samp.tissue_type AS tissue_type,
+    samp.composition AS composition,
+    head(labels(parent)) AS association,
+    f.file_type AS file_type
+    "
