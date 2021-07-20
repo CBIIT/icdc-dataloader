@@ -72,7 +72,7 @@ class IndividualCreator:
     def create_individual(self, session, uuid):
         id_field = self.schema.props.id_fields.get(INDIVIDUAL_NODE)
         statement = f'''
-            MATCH (i:{INDIVIDUAL_NODE}) WITH coalesce(max(i.{id_field}) + 1, 1) AS i_id
+            MATCH (i:{INDIVIDUAL_NODE}) WITH apoc.number.format(coalesce(max(toInteger(i.canine_individual_id)) + 1, 1), '0000') AS i_id
             CREATE (i:{INDIVIDUAL_NODE} {{ {id_field}: i_id, {CREATED}: datetime(), {UUID}:${UUID} }})
             RETURN id(i) AS node_id
             '''
