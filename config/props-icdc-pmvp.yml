@@ -35,6 +35,7 @@ Properties:
     registration: registrations
     image_collection: image_collections
     publication: publications
+    canine_individual: canine_individuals
 
   type_mapping:
     string: String
