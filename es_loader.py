@@ -34,7 +34,7 @@ class ESLoader:
         )
 
     def delete_index(self, index_name):
-        return self.es_client.indices.delete(index=index_name)
+        return self.es_client.indices.delete(index=index_name, ignore_unavailable=True)
 
     def get_data(self, cypher_query, fields):
         """Reads data from Neo4j, for each row
