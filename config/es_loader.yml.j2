@@ -6,25 +6,27 @@ Config:
 
   index_name: dashboard
   mapping:
-    program:
+    programs:
       type: keyword
-    study:
+    studies:
       type: keyword
-    diagnosis:
+    subject_id:
       type: keyword
-    rc_score:
+    diagnoses:
       type: keyword
-    tumor_size:
+    rc_scores:
+      type: keyword
+    tumor_sizes:
       type: keyword
     chemo_regimen:
       type: keyword
-    tumor_grade:
+    tumor_grades:
       type: keyword
     er_status:
       type: keyword
     pr_status:
       type: keyword
-    endo_therapy:
+    endo_therapies:
       type: keyword
     meno_status:
       type: keyword
@@ -51,19 +53,20 @@ Config:
     OPTIONAL MATCH (d)<-[:tp_of_diagnosis]-(tp)
     OPTIONAL MATCH (ss)<-[:demographic_of_study_subject]-(demo)
     RETURN
-    p.program_acronym AS program,
-    (s.study_acronym + ': ' + s.study_short_description) AS study,
-    ss.disease_subtype AS diagnosis,
-    sf.grouped_recurrence_score AS rc_score,
-    d.tumor_size_group AS tumor_size,
+    p.program_acronym AS programs,
+    (s.study_acronym + ': ' + s.study_short_description) AS studies,
+    ss.study_subject_id AS subject_id,
+    ss.disease_subtype AS diagnoses,
+    sf.grouped_recurrence_score AS rc_scores,
+    d.tumor_size_group AS tumor_sizes,
     tp.chemotherapy_regimen AS chemo_regimen,
-    d.tumor_grade AS tumor_grade,
+    d.tumor_grade AS tumor_grades,
     d.er_status AS er_status,
     d.pr_status AS pr_status,
-    tp.endocrine_therapy_type AS endo_therapy,
+    tp.endocrine_therapy_type AS endo_therapies,
     demo.menopause_status AS  meno_status,
-    samp.tissue_type AS tissue_type,
-    samp.composition AS composition,
-    head(labels(parent)) AS association,
-    f.file_type AS file_type
+    COLLECT(DISTINCT samp.tissue_type) AS tissue_type,
+    COLLECT(DISTINCT samp.composition) AS composition,
+    COLLECT(DISTINCT head(labels(parent))) AS association,
+    COLLECT(DISTINCT f.file_type) AS file_type
     "
