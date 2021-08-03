@@ -13,12 +13,9 @@ from bento.common.utils import get_logger
 logger = get_logger('ESLoader')
 
 class ESLoader:
-    def __init__(self, es_host, neo4j_driver, index_name, mapping, cypher_query):
+    def __init__(self, es_host, neo4j_driver):
         self.neo4j_driver = neo4j_driver
         self.es_client = Elasticsearch(hosts=[es_host])
-        self.index_name = index_name
-        self.mapping = mapping
-        self.cypher_query = cypher_query
 
     def create_index(self, index_name, mapping):
         """Creates an index in Elasticsearch if one isn't already there."""
@@ -49,13 +46,13 @@ class ESLoader:
                     doc[key] = record[key]
                 yield doc
 
-    def load(self):
-        logger.info('Deleting index')
-        result = self.delete_index(self.index_name)
+    def load(self, index_name, mapping, cypher_query):
+        logger.info(f'Deleting old index "{index_name}"')
+        result = self.delete_index(index_name)
         logger.info(result)
 
-        logger.info(f'Creating index "{self.index_name}"')
-        result = self.create_index(self.index_name, self.mapping)
+        logger.info(f'Creating index "{index_name}"')
+        result = self.create_index(index_name, mapping)
         logger.info(result)
 
         logger.info('Indexing data from Neo4j')
@@ -64,8 +61,8 @@ class ESLoader:
         total = 0
         for ok, action in streaming_bulk(
                 client=self.es_client,
-                index=self.index_name,
-                actions=self.get_data(self.cypher_query, self.mapping.keys())
+                index=index_name,
+                actions=self.get_data(cypher_query, mapping.keys())
         ):
             # progress.update(1)
             total += 1
@@ -75,13 +72,16 @@ class ESLoader:
 
 def main():
     parser = argparse.ArgumentParser(description='Load data from Neo4j to Elasticsearch')
+    parser.add_argument('indices_file',
+                        type=argparse.FileType('r'),
+                        help='Configuration file for indices, example is in config/es_indices.example.yml')
     parser.add_argument('config_file',
                         type=argparse.FileType('r'),
-                        help='Configuration file, example is in config/es_loader.example.yml',
-                        nargs='?')
+                        help='Configuration file, example is in config/es_loader.example.yml')
     args = parser.parse_args()
 
     config = yaml.safe_load(args.config_file)['Config']
+    indices = yaml.safe_load(args.indices_file)['Indices']
 
     neo4j_driver = GraphDatabase.driver(
         config['neo4j_uri'],
@@ -91,12 +91,10 @@ def main():
 
     loader = ESLoader(
         es_host=config['es_host'],
-        neo4j_driver=neo4j_driver,
-        index_name=config['index_name'],
-        mapping=config['mapping'],
-        cypher_query=config['cypher_query']
+        neo4j_driver=neo4j_driver
     )
-    loader.load()
+    for index in indices:
+        loader.load(index['index_name'], index['mapping'], index['cypher_query'])
 
 if __name__ == '__main__':
     main()
