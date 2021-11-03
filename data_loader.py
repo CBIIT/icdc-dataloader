@@ -14,7 +14,7 @@ from bento.common.utils import get_host, DATETIME_FORMAT, reformat_date
 
 from neo4j import Driver
 
-from icdc_schema import ICDC_Schema
+from icdc_schema import ICDC_Schema, is_parent_pointer, get_list_values
 from bento.common.utils import get_logger, NODES_CREATED, RELATIONSHIP_CREATED, UUID, \
     RELATIONSHIP_TYPE, MULTIPLIER, ONE_TO_ONE, DEFAULT_MULTIPLIER, UPSERT_MODE, \
     NEW_MODE, DELETE_MODE, NODES_DELETED, RELATIONSHIP_DELETED, combined_dict_counters, \
@@ -68,7 +68,8 @@ def format_as_tuple(node_name, properties):
 
 def backup_neo4j(backup_dir, name, address, log):
     try:
-        restore_cmd = 'To restore DB from backup (to remove any changes caused by current data loading, run following commands:\n'
+        restore_cmd = 'To restore DB from backup (to remove any changes caused by current data loading, run ' \
+                      'following commands:\n '
         restore_cmd += '#' * 160 + '\n'
         neo4j_cmd = 'neo4j-admin restore --from={}/{} --force'.format(backup_dir, name)
         mkdir_cmd = [
@@ -114,8 +115,22 @@ def backup_neo4j(backup_dir, name, address, log):
         return False
 
 
+def check_encoding(file_name):
+    utf8 = 'utf-8'
+    windows1252 = 'windows-1252'
+    try:
+        with open(file_name, encoding=utf8) as file:
+            for _ in file.readlines():
+                pass
+        return utf8
+    except UnicodeDecodeError:
+        return windows1252
+
+
 class DataLoader:
-    def __init__(self, driver, schema, plugins=[]):
+    def __init__(self, driver, schema, plugins=None):
+        if plugins is None:
+            plugins = []
         if not schema or not isinstance(schema, ICDC_Schema):
             raise Exception('Invalid ICDC_Schema object')
         self.log = get_logger('Data Loader')
@@ -138,6 +153,15 @@ class DataLoader:
                 if not hasattr(plugin, 'relationships_created'):
                     raise ValueError('Invalid Plugin!')
         self.plugins = plugins
+        self.nodes_created = 0
+        self.relationships_created = 0
+        self.indexes_created = 0
+        self.nodes_deleted = 0
+        self.relationships_deleted = 0
+        self.nodes_stat = {}
+        self.relationships_stat = {}
+        self.nodes_deleted_stat = {}
+        self.relationships_deleted_stat = {}
 
     def check_files(self, file_list):
         if not file_list:
@@ -146,7 +170,7 @@ class DataLoader:
         elif file_list:
             for data_file in file_list:
                 if not os.path.isfile(data_file):
-                    self.log.error('File "{}" doesn\'t exist'.format(data_file))
+                    self.log.error('File "{}" does not exist'.format(data_file))
                     return False
             return True
 
@@ -257,7 +281,7 @@ class DataLoader:
             for txt in file_list:
                 self.load_relationships(tx, txt, loading_mode, split)
 
-    # Remove extra spaces at begining and end of the keys and values
+    # Remove extra spaces at beginning and end of the keys and values
     @staticmethod
     def cleanup_node(node):
         obj = {}
@@ -278,7 +302,7 @@ class DataLoader:
             for key, value in obj.items():
                 search_node_type = node_type
                 search_key = key
-                if self.schema.is_parent_pointer(key):
+                if is_parent_pointer(key):
                     search_node_type, search_key = key.split('.')
                 elif self.schema.is_relationship_property(key):
                     search_node_type, search_key = key.split(self.rel_prop_delimiter)
@@ -301,7 +325,7 @@ class DataLoader:
                             cleaned_value = None
                         else:
                             cleaned_value = int(value)
-                    except Exception:
+                    except ValueError:
                         cleaned_value = None
                     obj[key] = cleaned_value
                 elif key_type == 'Float':
@@ -310,28 +334,25 @@ class DataLoader:
                             cleaned_value = None
                         else:
                             cleaned_value = float(value)
-                    except Exception:
+                    except ValueError:
                         cleaned_value = None
                     obj[key] = cleaned_value
                 elif key_type == 'Array':
-                    items = self.schema.get_list_values(value)
+                    items = get_list_values(value)
                     # todo: need to transform items if item type is not string
                     obj[key] = json.dumps(items)
                 elif key_type == 'DateTime' or key_type == 'Date':
-                    try:
-                        if value is None:
-                            cleaned_value = None
-                        else:
-                            cleaned_value = reformat_date(value)
-                    except Exception:
+                    if value is None:
                         cleaned_value = None
+                    else:
+                        cleaned_value = reformat_date(value)
                     obj[key] = cleaned_value
 
         obj2 = {}
         for key, value in obj.items():
             obj2[key] = value
             # Add parent id field(s) into node
-            if obj[NODE_TYPE] in self.schema.props.save_parent_id and self.schema.is_parent_pointer(key):
+            if obj[NODE_TYPE] in self.schema.props.save_parent_id and is_parent_pointer(key):
                 header = key.split('.')
                 if len(header) > 2:
                     self.log.warning('Column header "{}" has multiple periods!'.format(key))
@@ -367,7 +388,7 @@ class DataLoader:
         result = []
         for key in sorted(node.keys()):
             value = node[key]
-            if not self.schema.is_parent_pointer(key):
+            if not is_parent_pointer(key):
                 result.append('{}: {}'.format(key, value))
         return '{{ {} }}'.format(', '.join(result))
 
@@ -377,7 +398,7 @@ class DataLoader:
             self.log.error('Invalid Neo4j Python Driver!')
             return False
         with self.driver.session() as session:
-            file_encoding = self.check_encoding(file_name)
+            file_encoding = check_encoding(file_name)
             with open(file_name, encoding=file_encoding) as in_file:
                 self.log.info('Validating relationships in file "{}" ...'.format(file_name))
                 reader = csv.DictReader(in_file, delimiter='\t')
@@ -392,7 +413,7 @@ class DataLoader:
                         case_id = obj[CASE_ID]
                         if not self.node_exists(session, CASE_NODE, CASE_ID, case_id):
                             self.log.error(
-                                'Invalid data at line {}: Parent (:{} {{ {}: "{}" }}) doesn\'t exist!'.format(
+                                'Invalid data at line {}: Parent (:{} {{ {}: "{}" }}) does not exist!'.format(
                                     line_num, CASE_NODE, CASE_ID, case_id))
                             validation_failed = True
                             violations += 1
@@ -402,12 +423,11 @@ class DataLoader:
 
     # Validate all parents exist in a data (TSV/TXT) file
     def validate_parents_exist_in_file(self, file_name, max_violations):
-        validation_failed = True
         if not self.driver or not isinstance(self.driver, Driver):
             self.log.error('Invalid Neo4j Python Driver!')
             return False
         with self.driver.session() as session:
-            file_encoding = self.check_encoding(file_name)
+            file_encoding = check_encoding(file_name)
             with open(file_name, encoding=file_encoding) as in_file:
                 self.log.info('Validating relationships in file "{}" ...'.format(file_name))
                 reader = csv.DictReader(in_file, delimiter='\t')
@@ -433,16 +453,16 @@ class DataLoader:
         return not validation_failed
 
     def get_node_properties(self, obj):
-        '''
+        """
         Generate a node with only node properties from input data
 
         :param obj: input data object (dict), may contain parent pointers, relationship properties etc.
         :return: an object (dict) that only contains properties on this node
-        '''
+        """
         node = {}
 
         for key, value in obj.items():
-            if self.schema.is_parent_pointer(key):
+            if is_parent_pointer(key):
                 continue
             elif self.schema.is_relationship_property(key):
                 continue
@@ -451,28 +471,16 @@ class DataLoader:
 
         return node
 
-    #Check encoding
-    def check_encoding(self, file_name):
-        utf8 = 'utf-8'
-        windows1252 = 'windows-1252'
-        try:
-            with open(file_name, encoding=utf8) as file:
-                for line in file.readlines():
-                    pass
-            return utf8
-        except UnicodeDecodeError:
-            return windows1252
-
     # Validate file
     def validate_file(self, file_name, max_violations):
-        file_encoding = self.check_encoding(file_name)
+        file_encoding = check_encoding(file_name)
         with open(file_name, encoding=file_encoding) as in_file:
             self.log.info('Validating file "{}" ...'.format(file_name))
             reader = csv.DictReader(in_file, delimiter='\t')
             line_num = 1
             validation_failed = False
             violations = 0
-            IDs = {}
+            ids = {}
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 props = self.get_node_properties(obj)
@@ -480,18 +488,21 @@ class DataLoader:
                 id_field = self.schema.get_id_field(obj)
                 node_id = self.schema.get_id(obj)
                 if node_id:
-                    if node_id in IDs:
-                        if props != IDs[node_id]['props']:
+                    if node_id in ids:
+                        if props != ids[node_id]['props']:
                             validation_failed = True
                             self.log.error(
-                                f'Invalid data at line {line_num}: duplicate {id_field}: {node_id}, found in line: {", ".join(IDs[node_id]["lines"])}')
-                            IDs[node_id]['lines'].append(str(line_num))
+                                f'Invalid data at line {line_num}: duplicate {id_field}: {node_id}, found in line: '
+                                '{", ".join(ids[node_id]["lines"])}')
+                            ids[node_id]['lines'].append(str(line_num))
                         else:
-                            # Same ID exists in same file, but properties are also same, probably it's pointing same object to multiple parents
+                            # Same ID exists in same file, but properties are also same, probably it's pointing same
+                            # object to multiple parents
                             self.log.debug(
-                                f'Duplicated data at line {line_num}: duplicate {id_field}: {node_id}, found in line: {", ".join(IDs[node_id]["lines"])}')
+                                f'Duplicated data at line {line_num}: duplicate {id_field}: {node_id}, found in line: '
+                                '{", ".join(ids[node_id]["lines"])}')
                     else:
-                        IDs[node_id] = {'props': props, 'lines': [str(line_num)]}
+                        ids[node_id] = {'props': props, 'lines': [str(line_num)]}
 
                 validate_result = self.schema.validate_node(obj[NODE_TYPE], obj)
                 if not validate_result['result']:
@@ -510,7 +521,7 @@ class DataLoader:
         for key in obj.keys():
             if key in excluded_fields:
                 continue
-            elif self.schema.is_parent_pointer(key):
+            elif is_parent_pointer(key):
                 continue
             elif self.schema.is_relationship_property(key):
                 continue
@@ -530,7 +541,7 @@ class DataLoader:
                 continue
             elif key == id_field:
                 continue
-            elif self.schema.is_parent_pointer(key):
+            elif is_parent_pointer(key):
                 continue
             elif self.schema.is_relationship_property(key):
                 continue
@@ -553,7 +564,7 @@ class DataLoader:
             n_deleted, r_deleted = self.delete_single_node(session, root)
             node_deleted += n_deleted
             relationship_deleted += r_deleted
-        return (node_deleted, relationship_deleted)
+        return node_deleted, relationship_deleted
 
     # Return children of node without other parents
     def get_children_with_single_parent(self, session, node):
@@ -585,7 +596,7 @@ class DataLoader:
         self.nodes_deleted_stat[node_type] = self.nodes_deleted_stat.get(node_type, 0) + nodes_deleted
         relationship_deleted = result.consume().counters.relationships_deleted
         self.relationships_deleted += relationship_deleted
-        return (nodes_deleted, relationship_deleted)
+        return nodes_deleted, relationship_deleted
 
     # load file
     def load_nodes(self, session, file_name, loading_mode, split=False):
@@ -599,7 +610,7 @@ class DataLoader:
             raise Exception('Wrong loading_mode: {}'.format(loading_mode))
         self.log.info('{} nodes from file: {}'.format(action_word, file_name))
 
-        file_encoding = self.check_encoding(file_name)
+        file_encoding = check_encoding(file_name)
         with open(file_name, encoding=file_encoding) as in_file:
             reader = csv.DictReader(in_file, delimiter='\t')
             nodes_created = 0
@@ -650,12 +661,11 @@ class DataLoader:
                 if split and transaction_counter >= BATCH_SIZE:
                     tx.commit()
                     tx = session.begin_transaction()
-                    self.log.info(f'{line_num -1} rows loaded ...')
+                    self.log.info(f'{line_num - 1} rows loaded ...')
                     transaction_counter = 0
             # commit last transaction
             if split:
                 tx.commit()
-
 
             if loading_mode == DELETE_MODE:
                 self.log.info('{} node(s) deleted'.format(nodes_deleted))
@@ -678,7 +688,7 @@ class DataLoader:
         provided_parents = 0
         relationship_properties = {}
         for key, value in obj.items():
-            if self.schema.is_parent_pointer(key):
+            if is_parent_pointer(key):
                 provided_parents += 1
                 other_node, other_id = key.split('.')
                 relationship = self.schema.get_relationship(node_type, other_node)
@@ -696,11 +706,13 @@ class DataLoader:
                             if plugin.should_run(other_node, MISSING_PARENT):
                                 if plugin.create_node(session, line_num, other_node, value, obj):
                                     int_node_created += 1
-                                    relationships.append({PARENT_TYPE: other_node, PARENT_ID_FIELD: other_id, PARENT_ID: value,
-                                                          RELATIONSHIP_TYPE: relationship_name, MULTIPLIER: multiplier})
+                                    relationships.append(
+                                        {PARENT_TYPE: other_node, PARENT_ID_FIELD: other_id, PARENT_ID: value,
+                                         RELATIONSHIP_TYPE: relationship_name, MULTIPLIER: multiplier})
                                 else:
                                     self.log.error(
-                                        'Line: {}: Couldn\'t create {} node automatically!'.format(line_num, other_node))
+                                        'Line: {}: Could not create {} node automatically!'.format(line_num,
+                                                                                                   other_node))
                     else:
                         self.log.warning(
                             'Line: {}: Parent node (:{} {{{}: "{}"}} not found in DB!'.format(line_num, other_node,
@@ -726,14 +738,14 @@ class DataLoader:
     def parent_already_has_child(self, session, node_type, node, relationship_name, parent_type, parent_id_field,
                                  parent_id):
         statement = 'MATCH (n:{})-[r:{}]->(m:{} {{ {}: $parent_id }}) return n'.format(node_type, relationship_name,
-                                                                                          parent_type, parent_id_field)
+                                                                                       parent_type, parent_id_field)
         result = session.run(statement, {"parent_id": parent_id})
         if result:
             child = result.single()
             if child:
                 find_current_node_statement = 'MATCH (n:{0} {{ {1}: ${1} }}) return n'.format(node_type,
-                                                                                                 self.schema.get_id_field(
-                                                                                                     node))
+                                                                                              self.schema.get_id_field(
+                                                                                                  node))
                 current_node_result = session.run(find_current_node_statement, node)
                 if current_node_result:
                     current_node = current_node_result.single()
@@ -750,8 +762,8 @@ class DataLoader:
         parent_id_field = relationship[PARENT_ID_FIELD]
 
         base_statement = 'MATCH (n:{0} {{ {1}: ${1} }})-[r:{2}]->(m:{3})'.format(node_type,
-                                                                                    self.schema.get_id_field(node),
-                                                                                    relationship_name, parent_type)
+                                                                                 self.schema.get_id_field(node),
+                                                                                 relationship_name, parent_type)
         statement = base_statement + ' return m.{} AS {}'.format(parent_id_field, PARENT_ID)
         result = session.run(statement, node)
         if result:
@@ -788,7 +800,7 @@ class DataLoader:
             raise Exception('Wrong loading_mode: {}'.format(loading_mode))
         self.log.info('{} relationships from file: {}'.format(action_word, file_name))
 
-        file_encoding = self.check_encoding(file_name)
+        file_encoding = check_encoding(file_name)
         with open(file_name, encoding=file_encoding) as in_file:
             reader = csv.DictReader(in_file, delimiter='\t')
             relationships_created = {}
@@ -837,7 +849,7 @@ class DataLoader:
                         prop_statement = ', '.join(self.get_relationship_prop_statements(properties))
                         statement = 'MATCH (m:{0} {{ {1}: ${1} }})'.format(parent_node, parent_id_field)
                         statement += ' MATCH (n:{0} {{ {1}: ${1} }})'.format(node_type,
-                                                                                self.schema.get_id_field(obj))
+                                                                             self.schema.get_id_field(obj))
                         statement += ' MERGE (n)-[r:{}]->(m)'.format(relationship_name)
                         statement += ' ON CREATE SET r.{} = datetime()'.format(CREATED)
                         statement += ', {}'.format(prop_statement) if prop_statement else ''
@@ -860,7 +872,7 @@ class DataLoader:
                 if split and transaction_counter >= BATCH_SIZE:
                     tx.commit()
                     tx = session.begin_transaction()
-                    self.log.info(f'{line_num -1} rows loaded ...')
+                    self.log.info(f'{line_num - 1} rows loaded ...')
                     transaction_counter = 0
             # commit last transaction
             if split:
@@ -944,4 +956,3 @@ class DataLoader:
             session.run(command)
             self.indexes_created += 1
             self.log.info("Index created for \"{}\" on property \"{}\"".format(node_name, node_property))
-

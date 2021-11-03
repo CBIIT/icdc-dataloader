@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 
-from collections import deque
 import csv
-from importlib import import_module
 import json
 import os
+from collections import deque
 
 from bento.common.sqs import Queue, VisibilityExtender
 from bento.common.utils import get_logger, get_uuid, LOG_PREFIX, UUID, get_time_stamp, removeTrailingSlash, load_plugin
@@ -23,7 +22,6 @@ if LOG_PREFIX not in os.environ:
 
 
 class FileLoader:
-
     GUID = 'GUID'
     MD5 = 'md5'
     SIZE = 'size'
@@ -60,14 +58,15 @@ class FileLoader:
     PREFIX = 'prefix'
     VERIFY_MD5 = 'verify_md5'
 
-    def __init__(self, mode, adapter_module=None, adapter_class=None, adapter_params=None, domain=None, bucket=None, prefix=None, pre_manifest=None, first=1, count=-1, job_queue=None, result_queue=None, retry=3, overwrite=False, dryrun=False, verify_md5=False):
+    def __init__(self, mode, adapter_module=None, adapter_class=None, adapter_params=None, domain=None, bucket=None,
+                 prefix=None, pre_manifest=None, first=1, count=-1, job_queue=None, result_queue=None, retry=3,
+                 overwrite=False, dryrun=False, verify_md5=False):
         """"
 
         :param bucket: string type
         :param pre_manifest: string type, holds path to pre-manifest
         :param first: first file of files to process, file 1 is in line 2 of pre-manifest
         :param count: number of files to process
-        :param adapter: any object that has following methods/properties defined in adapter_attrs
 
         """
         if mode not in Config.valid_modes:
@@ -95,7 +94,7 @@ class FileLoader:
                 raise ValueError(f'Invalid prefix: "{prefix}"')
 
             if not pre_manifest or not os.path.isfile(pre_manifest):
-                raise ValueError(f'Pre-manifest: "{pre_manifest}" dosen\'t exist')
+                raise ValueError(f'Pre-manifest: "{pre_manifest}" does not exist')
             self.pre_manifest = pre_manifest
 
             if not domain:
@@ -138,11 +137,6 @@ class FileLoader:
         self.files_failed = 0
 
     def _init_adapter(self, adapter_module, adapter_class, params):
-        """
-        Initialize different adapters base on given adapter_name
-        :param adapter_name:
-        :return:
-        """
         self.adapter = load_plugin(adapter_module, adapter_class, params)
 
         if not hasattr(self.adapter, 'filter_fields'):
@@ -191,20 +185,20 @@ class FileLoader:
 
     @staticmethod
     def _clean_up_field_names(headers):
-        '''
+        """
         Removes leading and trailing spaces from header names
         :param headers:
         :return:
-        '''
+        """
         return [header.strip() for header in headers]
 
     @staticmethod
     def _clean_up_record(record):
-        '''
+        """
         Removes leading and trailing spaces from keys in org_record
         :param record:
         :return:
-        '''
+        """
         return {key.strip(): value for key, value in record.items()}
 
     def _read_pre_manifest(self):
@@ -325,7 +319,6 @@ class FileLoader:
             self.log.debug(e)
             self.log.critical(f'Process files FAILED! Check debug log for detailed information.')
 
-
     # read result from result queue - master mode
     def read_result(self, num_files):
         if self.mode != MASTER_MODE:
@@ -345,19 +338,21 @@ class FileLoader:
 
                 count = 0
                 while count < num_files:
-                    self.log.info(f'Waiting for results on queue: {self.result_queue_name}, {num_files - count} files pending')
+                    self.log.info(f'Waiting for results on queue: {self.result_queue_name}, \
+                    {num_files - count} files pending')
                     for msg in self.result_queue.receiveMsgs(self.VISIBILITY_TIMEOUT):
                         self.log.info(f'Received a result!')
                         extender = None
                         try:
                             result = json.loads(msg.body)
                             # Make sure result is in correct format
-                            if (result and
-                                Copier.STATUS in result and
-                                Copier.MD5 in result and
-                                Copier.NAME in result and
-                                Copier.KEY in result and
-                                Copier.FIELDS in  result
+                            if (
+                                    result and
+                                    Copier.STATUS in result and
+                                    Copier.MD5 in result and
+                                    Copier.NAME in result and
+                                    Copier.KEY in result and
+                                    Copier.FIELDS in result
                             ):
                                 extender = VisibilityExtender(msg, self.VISIBILITY_TIMEOUT)
 
@@ -384,15 +379,14 @@ class FileLoader:
 
                         except Exception as e:
                             self.log.debug(e)
-                            self.log.critical(f'Something wrong happened while processing file! Check debug log for details.')
+                            self.log.critical(
+                                f'Something wrong happened while processing file! Check debug log for details.')
 
                         finally:
                             if extender:
                                 extender.stop()
-                                extender = None
 
         self.log.info(f'All {num_files} files finished!')
-
 
     # Use this method in slave mode
     def start_work(self):
@@ -402,7 +396,8 @@ class FileLoader:
 
         while True:
             try:
-                self.log.info(f'Waiting for jobs on queue: {self.job_queue_name}, {self.files_processed} files have been processed so far')
+                self.log.info(f'Waiting for jobs on queue: {self.job_queue_name}, '
+                              f'{self.files_processed} files have been processed so far')
                 for msg in self.job_queue.receiveMsgs(self.VISIBILITY_TIMEOUT):
                     self.log.info(f'Received a job!')
                     extender = None
@@ -412,14 +407,14 @@ class FileLoader:
                         self.log.debug(data)
                         # Make sure job is in correct format
                         if (
-                            self.ADAPTER_CONF in data and
-                            self.BUCKET in data and
-                            self.INFO in data and
-                            self.TTL in data and
-                            self.OVERWRITE in data and
-                            self.PREFIX in data and
-                            self.DRY_RUN in data and
-                            self.VERIFY_MD5 in data
+                                self.ADAPTER_CONF in data and
+                                self.BUCKET in data and
+                                self.INFO in data and
+                                self.TTL in data and
+                                self.OVERWRITE in data and
+                                self.PREFIX in data and
+                                self.DRY_RUN in data and
+                                self.VERIFY_MD5 in data
                         ):
                             extender = VisibilityExtender(msg, self.VISIBILITY_TIMEOUT)
                             dryrun = data[self.DRY_RUN]
@@ -446,7 +441,8 @@ class FileLoader:
                                 self.prefix = prefix
                                 self.copier.set_prefix(prefix)
 
-                            result = self.copier.copy_file(data[self.INFO], data[self.OVERWRITE], dryrun or self.dryrun, verify_md5)
+                            result = self.copier.copy_file(data[self.INFO], data[self.OVERWRITE], dryrun or self.dryrun,
+                                                           verify_md5)
 
                             if result[Copier.STATUS]:
                                 self.result_queue.sendMsgToQueue(result, f'{result[Copier.NAME]}_{get_time_stamp()}')
@@ -465,14 +461,14 @@ class FileLoader:
 
                     except Exception as e:
                         self.log.debug(e)
-                        self.log.critical(f'Something wrong happened while processing file! Check debug log for details.')
+                        self.log.critical(
+                            f'Something wrong happened while processing file! Check debug log for details.')
                         if data:
                             self._deal_with_failed_file_sqs(data)
 
                     finally:
                         if extender:
                             extender.stop()
-                            extender = None
 
             except KeyboardInterrupt:
                 self.log.info('Good bye!')
@@ -492,7 +488,6 @@ class FileLoader:
             self.start_work()
 
 
-
 def main():
     config = Config()
     if not config.validate():
@@ -500,6 +495,7 @@ def main():
 
     loader = FileLoader(**config.data)
     loader.run()
+
 
 if __name__ == '__main__':
     main()

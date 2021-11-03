@@ -1,16 +1,15 @@
 #!/user/bin/env python3
-import os
 import argparse
 
-from neo4j import GraphDatabase
+import yaml
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import streaming_bulk
-import yaml
-import tqdm
+from neo4j import GraphDatabase
 
 from bento.common.utils import get_logger
 
 logger = get_logger('ESLoader')
+
 
 class ESLoader:
     def __init__(self, es_host, neo4j_driver):
@@ -59,7 +58,7 @@ class ESLoader:
         # progress = tqdm.tqdm(unit="docs", total=number_of_docs)
         successes = 0
         total = 0
-        for ok, action in streaming_bulk(
+        for ok, _ in streaming_bulk(
                 client=self.es_client,
                 index=index_name,
                 actions=self.get_data(cypher_query, mapping.keys())
@@ -95,6 +94,7 @@ def main():
     )
     for index in indices:
         loader.load(index['index_name'], index['mapping'], index['cypher_query'])
+
 
 if __name__ == '__main__':
     main()

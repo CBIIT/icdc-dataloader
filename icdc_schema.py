@@ -35,20 +35,27 @@ EX_MIN = 'exclusiveMinimum'
 EX_MAX = 'exclusiveMaximum'
 
 
+def get_list_values(list_str):
+    return [item.strip() for item in list_str.split(LIST_DELIMITER) if item.strip()]
+
+
+def is_parent_pointer(field_name):
+    return re.fullmatch(r'\w+\.\w+', field_name) is not None
+
 
 class ICDC_Schema:
     def __init__(self, yaml_files, props):
-        assert isinstance(props, Props)
+        if not isinstance(props, Props):
+            raise AssertionError
         self.props = props
         self.rel_prop_delimiter = props.rel_prop_delimiter
 
         if not yaml_files:
-            raise Exception('File list is empty, couldn\'t initialize ICDC_Schema object!')
-            sys.exit(1)
+            raise Exception('File list is empty,could not initialize ICDC_Schema object!')
         else:
             for data_file in yaml_files:
                 if not os.path.isfile(data_file):
-                    raise Exception('File "{}" doesn\'t exist'.format(data_file))
+                    raise Exception('File "{}" does not exist'.format(data_file))
         self.log = get_logger('ICDC Schema')
         self.org_schema = {}
         for aFile in yaml_files:
@@ -89,22 +96,22 @@ class ICDC_Schema:
                     self.num_relationship += self.process_edges(key, value)
 
     def get_uuid_for_node(self, node_type, signature):
-        """Generate V5 UUID for a node
-        Arguments:
-            node_type - a string represents type of a node, e.g. case, study, file etc.
-            signature - a string that can uniquely identify a node within it's type, e.g. case_id, clinical_study_designation etc.
-                        or a long string with all properties and values concat together if no id available
+        """
+        Generate V5 UUID for a node Arguments: node_type - a string represents type of a node, e.g. case, study,
+        file etc. signature - a string that can uniquely identify a node within it's type, e.g. case_id,
+        clinical_study_designation etc. or a long string with all properties and values concat together if no id
+        available
 
         """
         return get_uuid(self.props.domain, node_type, signature)
 
     def _process_properties(self, desc):
-        '''
+        """
         Gather properties from description
 
         :param desc: description of properties
         :return: a dict with properties, required property list and private property list
-        '''
+        """
         props = {}
         required = set()
         private = set()
@@ -122,21 +129,20 @@ class ICDC_Schema:
 
         return {PROPERTIES: props, REQUIRED: required, PRIVATE: private}
 
-    def process_node(self, name, desc, isRelationship=False):
-        '''
+    def process_node(self, name, desc, is_relationship=False):
+        """
         Process input node/relationship properties and save it in self.nodes
 
         :param name: node/relationship name
         :param desc:
-        :param isRelationship: if input is a relationship
+        :param is_relationship: if input is a relationship
         :return:
-        '''
+        """
         properties = self._process_properties(desc)
-
 
         # All nodes and relationships that has properties will be save to self.nodes
         # Relationship without properties will be ignored
-        if properties[PROPERTIES] or not isRelationship:
+        if properties[PROPERTIES] or not is_relationship:
             self.nodes[name] = properties
 
     def process_edges(self, name, desc):
@@ -150,17 +156,19 @@ class ICDC_Schema:
         self.relationship_props[name] = properties
 
         if END_POINTS in desc:
-            for  end_points in desc[END_POINTS]:
+            for end_points in desc[END_POINTS]:
                 src = end_points[SRC]
                 dest = end_points[DEST]
                 if MULTIPLIER in end_points:
                     actual_multiplier = end_points[MULTIPLIER]
-                    self.log.debug('End point multiplier: "{}" overriding relationship multiplier: "{}"'.format(actual_multiplier, multiplier))
+                    self.log.debug(
+                        'End point multiplier: "{}" overriding relationship multiplier: "{}"'.format(actual_multiplier,
+                                                                                                     multiplier))
                 else:
                     actual_multiplier = multiplier
                 if src not in self.relationships:
                     self.relationships[src] = {}
-                self.relationships[src][dest] = { RELATIONSHIP_TYPE: name, MULTIPLIER: actual_multiplier }
+                self.relationships[src][dest] = {RELATIONSHIP_TYPE: name, MULTIPLIER: actual_multiplier}
 
                 count += 1
                 if src in self.nodes:
@@ -177,29 +185,37 @@ class ICDC_Schema:
 
     # Process singular/plural array/single value based on relationship multipliers like  many-to-many, many-to-one etc.
     # Return a relationship property to add into a node
-    def add_relationship_to_node(self, name, multiplier, relationship, otherNode, dest=False):
+    def add_relationship_to_node(self, name, multiplier, relationship, other_node, dest=False):
         node = self.nodes[name]
         if multiplier == 'many_to_one':
             if dest:
-                node[PROPERTIES][self.plural(otherNode)] = { PROP_TYPE: '[{}] @relation(name:"{}", direction:IN)'.format(otherNode, relationship) }
+                node[PROPERTIES][self.plural(other_node)] = {
+                    PROP_TYPE: '[{}] @relation(name:"{}", direction:IN)'.format(other_node, relationship)}
             else:
-                node[PROPERTIES][otherNode] = {PROP_TYPE: '{} @relation(name:"{}", direction:OUT)'.format(otherNode, relationship) }
+                node[PROPERTIES][other_node] = {
+                    PROP_TYPE: '{} @relation(name:"{}", direction:OUT)'.format(other_node, relationship)}
         elif multiplier == 'one_to_one':
             if relationship == NEXT_RELATIONSHIP:
                 if dest:
-                    node[PROPERTIES]['prior_' + otherNode] = {PROP_TYPE: '{} @relation(name:"{}", direction:IN)'.format(otherNode, relationship) }
+                    node[PROPERTIES]['prior_' + other_node] = {
+                        PROP_TYPE: '{} @relation(name:"{}", direction:IN)'.format(other_node, relationship)}
                 else:
-                    node[PROPERTIES]['next_' + otherNode] = {PROP_TYPE: '{} @relation(name:"{}", direction:OUT)'.format(otherNode, relationship) }
+                    node[PROPERTIES]['next_' + other_node] = {
+                        PROP_TYPE: '{} @relation(name:"{}", direction:OUT)'.format(other_node, relationship)}
             else:
                 if dest:
-                    node[PROPERTIES][otherNode] = {PROP_TYPE: '{} @relation(name:"{}", direction:IN)'.format(otherNode, relationship) }
+                    node[PROPERTIES][other_node] = {
+                        PROP_TYPE: '{} @relation(name:"{}", direction:IN)'.format(other_node, relationship)}
                 else:
-                    node[PROPERTIES][otherNode] = {PROP_TYPE: '{} @relation(name:"{}", direction:OUT)'.format(otherNode, relationship) }
+                    node[PROPERTIES][other_node] = {
+                        PROP_TYPE: '{} @relation(name:"{}", direction:OUT)'.format(other_node, relationship)}
         elif multiplier == 'many_to_many':
             if dest:
-                node[PROPERTIES][self.plural(otherNode)] = {PROP_TYPE: '[{}] @relation(name:"{}", direction:IN)'.format(otherNode, relationship) }
+                node[PROPERTIES][self.plural(other_node)] = {
+                    PROP_TYPE: '[{}] @relation(name:"{}", direction:IN)'.format(other_node, relationship)}
             else:
-                node[PROPERTIES][self.plural(otherNode)] = {PROP_TYPE: '[{}] @relation(name:"{}", direction:OUT)'.format(otherNode, relationship) }
+                node[PROPERTIES][self.plural(other_node)] = {
+                    PROP_TYPE: '[{}] @relation(name:"{}", direction:OUT)'.format(other_node, relationship)}
         else:
             self.log.warning('Unsupported relationship multiplier: "{}"'.format(multiplier))
 
@@ -218,14 +234,14 @@ class ICDC_Schema:
         return result
 
     def get_prop_type(self, node_type, prop):
-        if node_type in  self.nodes:
+        if node_type in self.nodes:
             node = self.nodes[node_type]
             if prop in node[PROPERTIES]:
                 return node[PROPERTIES][prop][PROP_TYPE]
         return DEFAULT_TYPE
 
     def get_type(self, name):
-        result = { PROP_TYPE: DEFAULT_TYPE }
+        result = {PROP_TYPE: DEFAULT_TYPE}
         if name in self.org_schema[PROP_DEFINITIONS]:
             prop = self.org_schema[PROP_DEFINITIONS][name]
             if PROP_TYPE in prop:
@@ -248,7 +264,8 @@ class ICDC_Schema:
                     if len(enum) > 0:
                         result[ENUM] = enum
                 else:
-                    self.log.debug('Property type: "{}" not supported, use default type: "{}"'.format(prop_desc, DEFAULT_TYPE))
+                    self.log.debug(
+                        'Property type: "{}" not supported, use default type: "{}"'.format(prop_desc, DEFAULT_TYPE))
 
                 # Add value boundary support
                 if MIN in prop:
@@ -294,7 +311,6 @@ class ICDC_Schema:
         unit_prop_name = self.get_unit_property_name(name)
         return self.get_default_value(node_name, unit_prop_name)
 
-
     def get_valid_values(self, node_name, name):
         prop = self.get_prop(node_name, name)
         if prop:
@@ -328,7 +344,7 @@ class ICDC_Schema:
                         if units:
                             enum = set(units)
                             unit_prop_name = self.get_unit_property_name(name)
-                            results[unit_prop_name] =  {PROP_TYPE: DEFAULT_TYPE, ENUM: enum, DEFAULT_VALUE: units[0]}
+                            results[unit_prop_name] = {PROP_TYPE: DEFAULT_TYPE, ENUM: enum, DEFAULT_VALUE: units[0]}
                             org_prop_name = self.get_original_value_property_name(name)
                             org_unit_prop_name = self.get_unit_property_name(org_prop_name)
                             results[org_prop_name] = prop_type
@@ -345,7 +361,7 @@ class ICDC_Schema:
 
     def validate_node(self, model_type, obj):
         if not model_type or model_type not in self.nodes:
-            return {'result': False, 'messages': ['Node type: "{}" doesn\'t exist!'.format(model_type)]}
+            return {'result': False, 'messages': ['Node type: "{}" does not exist!'.format(model_type)]}
         if not obj:
             return {'result': False, 'messages': ['Node is empty!']}
 
@@ -367,7 +383,7 @@ class ICDC_Schema:
         for key, value in obj.items():
             if key == NODE_TYPE:
                 continue
-            elif self.is_parent_pointer(key):
+            elif is_parent_pointer(key):
                 continue
             elif self.is_relationship_property(key):
                 rel_type, rel_prop = key.split(self.rel_prop_delimiter)
@@ -392,19 +408,20 @@ class ICDC_Schema:
                 prop_type = properties[key]
                 if not self._validate_type(prop_type, value):
                     result['result'] = False
-                    result['messages'].append('Property: "{}":"{}" is not a valid "{}" type!'.format(key, value, prop_type))
+                    result['messages'].append(
+                        'Property: "{}":"{}" is not a valid "{}" type!'.format(key, value, prop_type))
 
         return result
 
     @staticmethod
     def _validate_value_range(model_type, value):
-        '''
+        """
         Validate an int of float value, return whether value is in range
 
         :param model_type: dict specify value type and boundary/range
         :param value: value to be validated
         :return: boolean
-        '''
+        """
 
         if MIN in model_type:
             if value < model_type[MIN]:
@@ -443,7 +460,7 @@ class ICDC_Schema:
                     and not re.match(r'\bltf\b', str_value, re.IGNORECASE)):
                 return False
         elif model_type[PROP_TYPE] == 'Array':
-            for item in self.get_list_values(str_value):
+            for item in get_list_values(str_value):
                 if not self._validate_type(model_type[ITEM_TYPE], item):
                     return False
 
@@ -451,7 +468,7 @@ class ICDC_Schema:
             if not isinstance(str_value, dict):
                 return False
         elif model_type[PROP_TYPE] == 'String':
-            if  ENUM in model_type:
+            if ENUM in model_type:
                 if not isinstance(str_value, str):
                     return False
                 if str_value != '' and str_value not in model_type[ENUM]:
@@ -473,9 +490,6 @@ class ICDC_Schema:
             except ValueError:
                 return False
         return True
-
-    def get_list_values(self, list_str):
-        return [item.strip() for item in list_str.split(LIST_DELIMITER) if item.strip()]
 
     # Find relationship type from src to dest
     def get_relationship(self, src, dest):
@@ -499,9 +513,8 @@ class ICDC_Schema:
                     if rel[RELATIONSHIP_TYPE] == name:
                         return dest
         else:
-            self.log.error('Couldn\'t find any relationship from (:{})'.format(src))
+            self.log.error('Could not find any relationship from (:{})'.format(src))
         return None
-
 
     # Get type info from description
     def map_type(self, type_name):
@@ -545,7 +558,7 @@ class ICDC_Schema:
         if node_name in self.nodes:
             props = self.nodes[node_name][PROPERTIES].copy()
             for private_prop in self.nodes[node_name].get(PRIVATE, []):
-                del(props[private_prop])
+                del (props[private_prop])
                 self.log.info('Delete private property: "{}"'.format(private_prop))
             return props
         else:
@@ -575,9 +588,4 @@ class ICDC_Schema:
             return obj[id_field]
 
     def is_relationship_property(self, key):
-        return re.match(r'^.+\{}.+$'.format(self.rel_prop_delimiter), key)
-
-
-    def is_parent_pointer(self, field_name):
-        return re.fullmatch(r'\w+\.\w+', field_name) is not None
-
+        return re.match(r'^.+\\{}.+$'.format(self.rel_prop_delimiter), key)

@@ -1,7 +1,6 @@
-
 from icdc_schema import ICDC_Schema, NODE_TYPE
 from bento.common.utils import get_logger, NODE_LOADED
-from data_loader import CREATED, UPDATED
+from data_loader import CREATED
 from bento.common.utils import UUID
 
 REGISTRATION_NODE = 'registration'
@@ -54,7 +53,6 @@ class IndividualCreator:
                 msg = f"Line: {line_num}: More than one individuals associated with one dog!"
                 self.log.error(msg)
                 raise Exception(msg)
-
             elif len(individual_nodes) == 1:
                 individual = individual_nodes[0]
                 i_id = individual.id
@@ -68,12 +66,12 @@ class IndividualCreator:
 
             return individual_created
 
-
     def create_individual(self, session, uuid):
         id_field = self.schema.props.id_fields.get(INDIVIDUAL_NODE)
         statement = f'''
-            MATCH (i:{INDIVIDUAL_NODE}) WITH apoc.number.format(coalesce(max(toInteger(i.canine_individual_id)) + 1, 1), '0000') AS i_id
-            CREATE (i:{INDIVIDUAL_NODE} {{ {id_field}: i_id, {CREATED}: datetime(), {UUID}:${UUID} }})
+            MATCH (i:{INDIVIDUAL_NODE}) WITH apoc.number.format(coalesce(max(toInteger(i.canine_individual_id)) + 1, 
+            1), '0000') AS i_id CREATE (i:{INDIVIDUAL_NODE} {{ {id_field}: i_id, {CREATED}: datetime(), 
+            {UUID}:${UUID} }}) 
             RETURN id(i) AS node_id
             '''
         result = session.run(statement, {UUID: uuid})
@@ -101,4 +99,3 @@ class IndividualCreator:
             count = result.consume().counters.relationships_created
             self.relationships_created += count
             self.relationships_stat[relationship_name] = self.relationships_stat.get(relationship_name, 0) + count
-
