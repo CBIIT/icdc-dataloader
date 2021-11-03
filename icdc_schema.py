@@ -220,11 +220,13 @@ class ICDC_Schema:
             self.log.warning('Unsupported relationship multiplier: "{}"'.format(multiplier))
 
     def is_required_prop(self, name):
-        result = False
         if name in self.org_schema[PROP_DEFINITIONS]:
             prop = self.org_schema[PROP_DEFINITIONS][name]
             result = prop.get(REQUIRED, False)
-        return result
+            result = str(result).lower()
+            if result == "true" or result == "yes":
+                return True
+        return False
 
     def is_private_prop(self, name):
         result = False
