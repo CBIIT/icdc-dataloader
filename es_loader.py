@@ -8,6 +8,8 @@ from elasticsearch.helpers import streaming_bulk
 from neo4j import GraphDatabase
 
 from bento.common.utils import get_logger
+from icdc_schema import ICDC_Schema, PROPERTIES, ENUM, PROP_TYPE
+from props import Props
 
 logger = get_logger('ESLoader')
 
@@ -59,34 +61,73 @@ class ESLoader:
         self.recreate_index(index_name, mapping)
 
         logger.info('Indexing data from Neo4j')
-        # progress = tqdm.tqdm(unit="docs", total=number_of_docs)
+        self.bulk_load(index_name, self.get_data(cypher_query, mapping.keys()))
+
+    def bulk_load(self, index_name, data):
+        logger.info('Indexing data in bulk ...')
+
         successes = 0
         total = 0
         for ok, _ in streaming_bulk(
                 client=self.es_client,
                 index=index_name,
-                actions=self.get_data(cypher_query, mapping.keys())
+                actions=data
         ):
-            # progress.update(1)
             total += 1
             successes += 1 if ok else 0
         logger.info(f"Indexed {successes}/{total} documents")
 
     def load_about_page(self, index_name, mapping, file_name):
-        self.recreate_index(index_name, mapping)
-
-
         logger.info('Indexing content from about page')
         if not os.path.isfile(file_name):
             raise Exception(f'"{file_name} is not a file!')
+
+        self.recreate_index(index_name, mapping)
         with open(file_name) as file_obj:
             about_file = yaml.safe_load(file_obj)
             for page in about_file:
                 logger.info(f'Indexing about page "{page["page"]}"')
-                self.index_data(index_name, page)
+                self.index_data(index_name, page, f'page{page["page"]}')
 
-    def index_data(self, index_name, object):
-        self.es_client.index(index_name, body=object, id=f'page{object["page"]}')
+    def read_model(self, model_files, prop_file):
+        for file_name in model_files:
+            if not os.path.isfile(file_name):
+                raise Exception(f'"{file_name} is not a file!')
+        if not os.path.isfile(prop_file):
+            raise Exception(f'"{prop_file} is not a file!')
+
+        self.model = ICDC_Schema(model_files, Props(prop_file))
+
+    def load_model(self, index_name, mapping):
+        logger.info(f'Indexing data model')
+        if not self.model:
+            logger.warning(f'Data model is not loaded, {index_name} will not be loaded!')
+            return
+
+        self.recreate_index(index_name, mapping)
+        self.bulk_load(index_name, self.get_model_data())
+
+    def get_model_data(self):
+        nodes = self.model.nodes
+        for node_name, obj in nodes.items():
+            props = obj[PROPERTIES]
+            for prop_name, prop in props.items():
+                # Skip relationship based properties
+                if "@relation" in obj[PROPERTIES][prop_name][PROP_TYPE]:
+                    continue
+                if ENUM in prop:
+                    for value in prop[ENUM]:
+                        yield {
+                                "node": node_name,
+                                "node_name": node_name,
+                                "property": prop_name,
+                                "property_name": prop_name,
+                                "value": value,
+                                "value_name": value
+                        }
+
+    def index_data(self, index_name, object, id):
+        self.es_client.index(index_name, body=object, id=id)
 
 
 def main():
@@ -112,11 +153,26 @@ def main():
         es_host=config['es_host'],
         neo4j_driver=neo4j_driver
     )
+
+
+    load_model = False
+    if 'model_files' in config and config['model_files'] and 'prop_file' in config and config['prop_file']:
+        loader.read_model(config['model_files'], config['prop_file'])
+        load_model = True
+
     for index in indices:
         if 'type' not in index or index['type'] == 'neo4j':
             loader.load(index['index_name'], index['mapping'], index['cypher_query'])
         elif index['type'] == 'about_file':
-            loader.load_about_page(index['index_name'], index['mapping'], config['about_file'])
+            if 'about_file' in config:
+                loader.load_about_page(index['index_name'], index['mapping'], config['about_file'])
+            else:
+                logger.warning(f'"about_file" not set in configuration file, {index["index_name"]} will not be loaded!')
+        elif index['type'] == 'model':
+            if load_model:
+                loader.load_model(index['index_name'], index['mapping'])
+            else:
+                logger.warning(f'"model_files" not set in configuration file, {index["index_name"]} will not be loaded!')
         else:
             logger.error(f'Unknown index type: "{index["type"]}"')
             continue
