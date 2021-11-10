@@ -3,6 +3,7 @@ Indices:
   # First index
   # Name of the index to be created, existing index with same name will be deleted
   - index_name: dashboard
+    type: neo4j
     # type mapping for each property of the index
     mapping:
       programs:
@@ -73,9 +74,23 @@ Indices:
   # Second index
   # Name of the index to be created, existing index with same name will be deleted
   - index_name: subjects
+    type: neo4j
       # type mapping for each property of the index
     mapping:
       subject_id:
         type: keyword
     # Cypher query will be used to retrieve data from Neo4j, and index into Elasticsearch
     cypher_query: "MATCH (ss:study_subject) return ss.study_subject_id AS subject_id"
+
+    - index_name: about_page
+      type: about_file
+      # type mapping for each property of the index
+      mapping:
+        page:
+          type: search_as_you_type
+        title:
+          type: search_as_you_type
+        primaryContentImage:
+          type: text
+        content:
+          type: text

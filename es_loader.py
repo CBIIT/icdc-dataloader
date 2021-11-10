@@ -1,6 +1,7 @@
 #!/user/bin/env python3
 import argparse
 
+import os
 import yaml
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import streaming_bulk
@@ -45,7 +46,7 @@ class ESLoader:
                     doc[key] = record[key]
                 yield doc
 
-    def load(self, index_name, mapping, cypher_query):
+    def recreate_index(self, index_name, mapping):
         logger.info(f'Deleting old index "{index_name}"')
         result = self.delete_index(index_name)
         logger.info(result)
@@ -53,6 +54,9 @@ class ESLoader:
         logger.info(f'Creating index "{index_name}"')
         result = self.create_index(index_name, mapping)
         logger.info(result)
+
+    def load(self, index_name, mapping, cypher_query):
+        self.recreate_index(index_name, mapping)
 
         logger.info('Indexing data from Neo4j')
         # progress = tqdm.tqdm(unit="docs", total=number_of_docs)
@@ -67,6 +71,22 @@ class ESLoader:
             total += 1
             successes += 1 if ok else 0
         logger.info(f"Indexed {successes}/{total} documents")
+
+    def load_about_page(self, index_name, mapping, file_name):
+        self.recreate_index(index_name, mapping)
+
+
+        logger.info('Indexing content from about page')
+        if not os.path.isfile(file_name):
+            raise Exception(f'"{file_name} is not a file!')
+        with open(file_name) as file_obj:
+            about_file = yaml.safe_load(file_obj)
+            for page in about_file:
+                logger.info(f'Indexing about page "{page["page"]}"')
+                self.index_data(index_name, page)
+
+    def index_data(self, index_name, object):
+        self.es_client.index(index_name, body=object, id=f'page{object["page"]}')
 
 
 def main():
@@ -93,7 +113,13 @@ def main():
         neo4j_driver=neo4j_driver
     )
     for index in indices:
-        loader.load(index['index_name'], index['mapping'], index['cypher_query'])
+        if 'type' not in index or index['type'] == 'neo4j':
+            loader.load(index['index_name'], index['mapping'], index['cypher_query'])
+        elif index['type'] == 'about_file':
+            loader.load_about_page(index['index_name'], index['mapping'], config['about_file'])
+        else:
+            logger.error(f'Unknown index type: "{index["type"]}"')
+            continue
 
 
 if __name__ == '__main__':

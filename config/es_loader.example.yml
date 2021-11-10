@@ -7,3 +7,5 @@ Config:
   neo4j_password: neo4j_password
   # Elastic search host name or IP, without trailing slash
   es_host: localhost
+  # Path to about file
+  about_file: path_to_about_yaml_file
