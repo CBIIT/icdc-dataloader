@@ -7,3 +7,11 @@ Config:
   neo4j_password: neo4j_password
   # Elastic search host name or IP, without trailing slash
   es_host: localhost
+  # Path to about file
+  about_file: path_to_about_yaml_file
+
+  model_files:
+    - bento-model/model-desc/bento_tailorx_model_file.yaml
+    - bento-model/model-desc/bento_tailorx_model_properties.yaml
+
+  prop_file: config/props-bento-ext.yml
