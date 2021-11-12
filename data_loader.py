@@ -909,7 +909,7 @@ class DataLoader:
             tx = session.begin_transaction()
             try:
                 cleanup_db = f'MATCH (n) WITH n LIMIT {BATCH_SIZE} DETACH DELETE n'
-                result = session.run(cleanup_db).consume()
+                result = tx.run(cleanup_db).consume()
                 tx.commit()
                 deleted_nodes = result.counters.nodes_deleted
                 self.nodes_deleted += deleted_nodes
