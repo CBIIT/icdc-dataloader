@@ -1,0 +1,45 @@
+Properties:
+  domain: trialcommons.cancer.gov
+  rel_prop_delimiter: "$"
+
+  plurals:
+    ADVERSE_EVENTS: adverse_events
+    ENROLLMENT: enrollments
+    GERMLINE_VARIANT: germline_variants
+    LABORATORY: laboratories
+    SOMATIC_VARIANT: somatic_variants
+    SUBJECT: subjects
+    SURVIVAL: survivals
+    SITE: sites
+    STORAGE: storages
+    SURGERY_SUPPLEMENT: surgery_supplements
+    OFF_STUDY: off_studies
+    PRIOR_THERAPY_SUPPLEMENT: prior_therapy_supplements
+    PI_SIGNOFF: pi_signoffs
+    CONCOMITANT_MEASURES_MEDICATIONS: concomitant_measures_medications
+    CANCER_HISTORY: cancer_histories
+    MEDICAL_HISTORY: medical_histories
+    RADIATION_SUPPLEMENT: radiation_supplements
+    STORAGE_2: storages_2
+    FOLLOW_UP: follow_ups
+    PHYSICAL_EXAM_SCREENING: physical_exam_screenings
+    BASELINE_MEDICAL_HISTORY_2: baseline_medical_histories_2
+    FILE: files
+    FOLLOW_UP_THERAPY: follow_up_therapies
+    PRIOR_RADIATION_SUPPLEMENT: prior_radiation_supplements
+    PRIOR_SURGERY_SUPPLEMENT: prior_surgery_supplements
+
+    
+  type_mapping:
+    string: String
+    number: Float
+    integer: Int
+    boolean: Boolean
+    array: Array
+    object: Object
+    datetime: DateTime
+    date: Date
+    TBD: String
+
+  id_fields:
+    SUBJECT: PT_ID
