@@ -194,7 +194,7 @@ class Copier:
 
         t_config = TransferConfig(multipart_threshold=self.MULTI_PART_THRESHOLD,
                                   multipart_chunksize=chunk_size)
-        self.bucket.upload_file_obj(key, stream, t_config)
+        self.bucket._upload_file_obj(key, stream, t_config)
         self.files_copied += 1
         self.log.info(f'Copying file {key} SUCCEEDED!')
         return self.bucket.get_object_size(key)
