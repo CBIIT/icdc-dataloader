@@ -98,33 +98,43 @@ class ESLoader:
 
         self.model = ICDC_Schema(model_files, Props(prop_file))
 
-    def load_model(self, index_name, mapping):
+    def load_model(self, index_name, mapping, subtype):
         logger.info(f'Indexing data model')
         if not self.model:
             logger.warning(f'Data model is not loaded, {index_name} will not be loaded!')
             return
 
         self.recreate_index(index_name, mapping)
-        self.bulk_load(index_name, self.get_model_data())
+        self.bulk_load(index_name, self.get_model_data(subtype))
 
-    def get_model_data(self):
+    def get_model_data(self, subtype):
         nodes = self.model.nodes
         for node_name, obj in nodes.items():
             props = obj[PROPERTIES]
-            for prop_name, prop in props.items():
-                # Skip relationship based properties
-                if "@relation" in obj[PROPERTIES][prop_name][PROP_TYPE]:
-                    continue
-                if ENUM in prop:
-                    for value in prop[ENUM]:
+            if subtype == 'node':
+                yield {
+                    'node': node_name
+                }
+            else:
+                for prop_name, prop in props.items():
+                    # Skip relationship based properties
+                    if "@relation" in obj[PROPERTIES][prop_name][PROP_TYPE]:
+                        continue
+                    if subtype == 'property':
                         yield {
-                                "node": node_name,
-                                "node_name": node_name,
-                                "property": prop_name,
-                                "property_name": prop_name,
-                                "value": value,
-                                "value_name": value
+                            'node': node_name,
+                            'property': prop_name
                         }
+                    elif subtype == 'value' and ENUM in prop:
+                        for value in prop[ENUM]:
+                            yield {
+                                    "node": node_name,
+                                    "node_name": node_name,
+                                    "property": prop_name,
+                                    "property_name": prop_name,
+                                    "value": value,
+                                    "value_name": value
+                            }
 
     def index_data(self, index_name, object, id):
         self.es_client.index(index_name, body=object, id=id)
@@ -169,8 +179,8 @@ def main():
             else:
                 logger.warning(f'"about_file" not set in configuration file, {index["index_name"]} will not be loaded!')
         elif index['type'] == 'model':
-            if load_model:
-                loader.load_model(index['index_name'], index['mapping'])
+            if load_model and 'subtype' in index:
+                loader.load_model(index['index_name'], index['mapping'], index['subtype'])
             else:
                 logger.warning(f'"model_files" not set in configuration file, {index["index_name"]} will not be loaded!')
         else:
