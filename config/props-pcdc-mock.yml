@@ -1,0 +1,58 @@
+Properties:
+  domain: pcdc.cancer.gov
+  rel_prop_delimiter: "$"
+
+  plurals:
+    Program: Programs
+    Adverse_Events_Table: Adverse_Events_Tables
+    Biopsy_Surgical_Procedures_Table: Biopsy_Surgical_Procedures_Tables
+    Cellular_Immunotherapy_Table: Cellular_Immunotherapy_Tables
+    Concomitant_Medications_Table: Concomitant_Medications_Tables
+    Course_Timing_Table: Course_Timing_Tables
+    Cytology_Table: Cytology_Tables
+    Demographics_Table: Demographics_Tables
+    Disease_Characteristics_Table: Disease_Characteristics_Tables
+    Disease_Phase_Timing_Table: Disease_Phase_Timing_Tables
+    Echocardiogram_Table: Echocardiogram_Tables
+    File: Files
+    Growing_Teratoma_Syndrome_Table: Growing_Teratoma_Syndrome_Tables
+    Histology_Table: Histology_Tables
+    Immunohistochemistry_Table: Immunohistochemistry_Tables
+    Labs_Table: Labs_Tables
+    Medical_History_Table: Medical_History_Tables
+    Minimal_Residual_Disease_Table: Minimal_Residual_Disease_Tables
+    Molecular_Analysis_Table: Molecular_Analysis_Tables
+    Myeloid_Sarcoma_Involvement_Table: Myeloid_Sarcoma_Involvement_Tables
+    Non_Protocol_Therapy_Table: Non_Protocol_Therapy_Tables
+    Non_protocol_Therapy_Table_2: Non_protocol_Therapy_Table_2s
+    Off_Protocol_Therapy_Study_Table: Off_Protocol_Therapy_Study_Tables
+    Patient_Reported_Outcomes_Metadata_Table: Patient_Reported_Outcomes_Metadata_Tables
+    Program: Programs
+    Radiation_Therapy_Table: Radiation_Therapy_Tables
+    Secondary_Malignant_Neoplasm_Table: Secondary_Malignant_Neoplasm_Tables
+    Staging_Table: Staging_Tables
+    Stem_Cell_Transplant_Table: Stem_Cell_Transplant_Tables
+    Study: Studys
+    Subject_Characteristics_Table: Subject_Characteristics_Tables
+    Subject_Response_Table: Subject_Response_Tables
+    Survival_Characteristics_Table: Survival_Characteristics_Tables
+    Total_Dose_Table: Total_Dose_Tables
+    Transfusion_Medicine_Procedures_Table: Transfusion_Medicine_Procedures_Tables
+    Tumor_Assessment_Table: Tumor_Assessment_Tables
+    Vitals_Table: Vitals_Tables
+
+  type_mapping:
+    string: String
+    number: Float
+    integer: Int
+    boolean: Boolean
+    array: Array
+    object: Object
+    datetime: DateTime
+    date: Date
+    TBD: String
+
+  id_fields:
+    Program: PROGRAM_ID
+    Study: STUDY_ID
+    Subject_Characteristics_Table: PCDC_SUBJECT_ID
