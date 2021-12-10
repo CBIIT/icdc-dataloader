@@ -113,7 +113,8 @@ class ESLoader:
             props = obj[PROPERTIES]
             if subtype == 'node':
                 yield {
-                    'node': node_name
+                    'node': node_name,
+                    'node_kw': node_name
                 }
             else:
                 for prop_name, prop in props.items():
@@ -123,17 +124,16 @@ class ESLoader:
                     if subtype == 'property':
                         yield {
                             'node': node_name,
-                            'property': prop_name
+                            'property': prop_name,
+                            'property_kw': prop_name
                         }
                     elif subtype == 'value' and ENUM in prop:
                         for value in prop[ENUM]:
                             yield {
                                     "node": node_name,
-                                    "node_name": node_name,
                                     "property": prop_name,
-                                    "property_name": prop_name,
                                     "value": value,
-                                    "value_name": value
+                                    "value_kw": value
                             }
 
     def index_data(self, index_name, object, id):
