@@ -204,6 +204,7 @@ class Copier:
             file_path = _get_local_path(org_url)
             if not os.path.isfile(file_path):
                 self.log.error(f'"{file_path}" is not a file!')
+                self.files_not_found.add(org_url)
                 return False
             else:
                 return True
