@@ -14,6 +14,7 @@ PROPERTIES = 'Props'
 PROP_DEFINITIONS = 'PropDefinitions'
 DEFAULT_TYPE = 'String'
 PROP_TYPE = 'Type'
+PROP_ENUM = 'Enum'
 END_POINTS = 'Ends'
 SRC = 'Src'
 DEST = 'Dst'
@@ -246,8 +247,13 @@ class ICDC_Schema:
         result = {PROP_TYPE: DEFAULT_TYPE}
         if name in self.org_schema[PROP_DEFINITIONS]:
             prop = self.org_schema[PROP_DEFINITIONS][name]
+            key = None
             if PROP_TYPE in prop:
-                prop_desc = prop[PROP_TYPE]
+                key = PROP_TYPE
+            elif PROP_ENUM in prop:
+                key = PROP_ENUM
+            if key:
+                prop_desc = prop[key]
                 if isinstance(prop_desc, str):
                     result[PROP_TYPE] = self.map_type(prop_desc)
                 elif isinstance(prop_desc, dict):
