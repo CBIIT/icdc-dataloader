@@ -8,7 +8,7 @@ from elasticsearch.helpers import streaming_bulk
 from neo4j import GraphDatabase
 
 from bento.common.utils import get_logger
-from icdc_schema import ICDC_Schema, PROPERTIES, ENUM, PROP_TYPE, REQUIRED, DESCRIPTION
+from icdc_schema import ICDC_Schema, PROPERTIES, ENUM, PROP_ENUM, PROP_TYPE, REQUIRED, DESCRIPTION
 from props import Props
 
 logger = get_logger('ESLoader')
@@ -128,13 +128,16 @@ class ESLoader:
                             'property_kw': prop_name,
                             'property_description': prop.get(DESCRIPTION, ''),
                             'property_required': prop.get(REQUIRED, False),
-                            'property_type': prop[PROP_TYPE]
+                            'property_type': PROP_ENUM if ENUM in prop else prop[PROP_TYPE]
                         }
                     elif subtype == 'value' and ENUM in prop:
                         for value in prop[ENUM]:
                             yield {
                                     "node": node_name,
                                     "property": prop_name,
+                                    'property_description': prop.get(DESCRIPTION, ''),
+                                    'property_required': prop.get(REQUIRED, False),
+                                    'property_type': PROP_ENUM,
                                     "value": value,
                                     "value_kw": value
                             }
