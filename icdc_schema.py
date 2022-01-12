@@ -34,6 +34,7 @@ MIN = 'minimum'
 MAX = 'maximum'
 EX_MIN = 'exclusiveMinimum'
 EX_MAX = 'exclusiveMaximum'
+DESCRIPTION = 'Desc'
 
 
 def get_list_values(list_str):
@@ -247,6 +248,8 @@ class ICDC_Schema:
         result = {PROP_TYPE: DEFAULT_TYPE}
         if name in self.org_schema[PROP_DEFINITIONS]:
             prop = self.org_schema[PROP_DEFINITIONS][name]
+            result[DESCRIPTION] = prop.get(DESCRIPTION, '')
+            result[REQUIRED] = prop.get(REQUIRED, False)
             key = None
             if PROP_TYPE in prop:
                 key = PROP_TYPE
