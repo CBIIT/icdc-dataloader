@@ -5,6 +5,7 @@ import os
 import yaml
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import streaming_bulk
+from requests_aws4auth import AWS4Auth
 from neo4j import GraphDatabase
 
 from bento.common.utils import get_logger
@@ -17,7 +18,11 @@ logger = get_logger('ESLoader')
 class ESLoader:
     def __init__(self, es_host, neo4j_driver):
         self.neo4j_driver = neo4j_driver
-        self.es_client = Elasticsearch(hosts=[es_host])
+        if 'amazonaws.com' in es_host:
+            awsauth = AWS4Auth(region='', service='es')
+            self.es_client = Elasticsearch(hosts=[es_host], http_auth = awsauth)
+        else:
+            self.es_client = Elasticsearch(hosts=[es_host])
 
     def create_index(self, index_name, mapping):
         """Creates an index in Elasticsearch if one isn't already there."""

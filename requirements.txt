@@ -4,3 +4,4 @@ boto3
 requests
 elasticsearch
 tqdm
+requests_aws4auth
