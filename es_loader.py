@@ -6,6 +6,7 @@ import yaml
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import streaming_bulk
 from requests_aws4auth import AWS4Auth
+from botocore.session import Session
 from neo4j import GraphDatabase
 
 from bento.common.utils import get_logger
@@ -19,7 +20,7 @@ class ESLoader:
     def __init__(self, es_host, neo4j_driver):
         self.neo4j_driver = neo4j_driver
         if 'amazonaws.com' in es_host:
-            awsauth = AWS4Auth(region='us-east-1', service='es')
+            awsauth = AWS4Auth(refreshable_credentials=Session().get_credentials(), region='us-east-1', service='es')
             self.es_client = Elasticsearch(hosts=[es_host], http_auth = awsauth)
         else:
             self.es_client = Elasticsearch(hosts=[es_host])
