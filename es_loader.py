@@ -23,12 +23,15 @@ class ESLoader:
             awsauth = AWS4Auth(
                 refreshable_credentials=Session().get_credentials(),
                 region='us-east-1',
-                service='es',
+                service='es'
+            )
+            self.es_client = Elasticsearch(
+                hosts=[es_host],
+                http_auth = awsauth,
                 use_ssl = True,
                 verify_certs = True,
                 connection_class = RequestsHttpConnection
             )
-            self.es_client = Elasticsearch(hosts=[es_host], http_auth = awsauth)
         else:
             self.es_client = Elasticsearch(hosts=[es_host])
 
