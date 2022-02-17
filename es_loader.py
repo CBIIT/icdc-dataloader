@@ -65,7 +65,7 @@ class ESLoader:
                 yield doc
 
     def recreate_index(self, index_name, mapping):
-        logger.info(f'Deleting old index {index_name}')
+        logger.info(f'Deleting old index "{index_name}"')
         result = self.delete_index(index_name)
         logger.info(result)
 
