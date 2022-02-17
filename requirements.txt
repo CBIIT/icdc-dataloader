@@ -2,6 +2,6 @@ pyyaml
 neo4j==4.2.*
 boto3
 requests
-elasticsearch
+elasticsearch==7.*
 tqdm
 requests_aws4auth
