@@ -65,11 +65,11 @@ class ESLoader:
                 yield doc
 
     def recreate_index(self, index_name, mapping):
-        logger.info(f'Deleting old index %s', index_name)
+        logger.info(f'Deleting old index {index_name}')
         result = self.delete_index(index_name)
         logger.info(result)
 
-        logger.info(f'Creating index %s', index_name)
+        logger.info(f'Creating index "{index_name}"')
         result = self.create_index(index_name, mapping)
         logger.info(result)
 
@@ -91,18 +91,18 @@ class ESLoader:
         ):
             total += 1
             successes += 1 if ok else 0
-        logger.info(f"Indexed %s/%s documents", successes,total)
+        logger.info(f"Indexed {successes}/{total} documents")
 
     def load_about_page(self, index_name, mapping, file_name):
         logger.info('Indexing content from about page')
         if not os.path.isfile(file_name):
-            raise Exception(f'"%s is not a file!', file_name)
+            raise Exception(f'"{file_name} is not a file!')
 
         self.recreate_index(index_name, mapping)
         with open(file_name) as file_obj:
             about_file = yaml.safe_load(file_obj)
             for page in about_file:
-                logger.info(f'Indexing about page %s', page["page"])
+                logger.info(f'Indexing about page "{page["page"]}"')
                 self.index_data(index_name, page, f'page{page["page"]}')
 
     def read_model(self, model_files, prop_file):
