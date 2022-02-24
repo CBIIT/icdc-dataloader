@@ -493,14 +493,14 @@ class DataLoader:
                             validation_failed = True
                             self.log.error(
                                 f'Invalid data at line {line_num}: duplicate {id_field}: {node_id}, found in line: '
-                                '{", ".join(ids[node_id]["lines"])}')
+                                f'{", ".join(ids[node_id]["lines"])}')
                             ids[node_id]['lines'].append(str(line_num))
                         else:
                             # Same ID exists in same file, but properties are also same, probably it's pointing same
                             # object to multiple parents
                             self.log.debug(
                                 f'Duplicated data at line {line_num}: duplicate {id_field}: {node_id}, found in line: '
-                                '{", ".join(ids[node_id]["lines"])}')
+                                f'{", ".join(ids[node_id]["lines"])}')
                     else:
                         ids[node_id] = {'props': props, 'lines': [str(line_num)]}
 
