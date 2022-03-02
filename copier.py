@@ -189,8 +189,8 @@ class Copier:
                 os.remove(local_file)
 
     def _upload_obj(self, stream, key, org_size):
-        parts = org_size // self.MULTI_PART_CHUNK_SIZE
-        chunk_size = self.MULTI_PART_CHUNK_SIZE if parts < self.PARTS_LIMIT else org_size // self.PARTS_LIMIT
+        parts = int(org_size) // self.MULTI_PART_CHUNK_SIZE
+        chunk_size = self.MULTI_PART_CHUNK_SIZE if parts < self.PARTS_LIMIT else int(org_size) // self.PARTS_LIMIT
 
         t_config = TransferConfig(multipart_threshold=self.MULTI_PART_THRESHOLD,
                                   multipart_chunksize=chunk_size)
