@@ -9,7 +9,7 @@ from requests_aws4auth import AWS4Auth
 from botocore.session import Session
 from neo4j import GraphDatabase
 
-from bento.common.utils import get_logger
+from bento.common.utils import get_logger, print_config
 from icdc_schema import ICDC_Schema, PROPERTIES, ENUM, PROP_ENUM, PROP_TYPE, REQUIRED, DESCRIPTION
 from props import Props
 
@@ -162,6 +162,7 @@ class ESLoader:
         self.es_client.index(index_name, body=object, id=id)
 
 
+
 def main():
     parser = argparse.ArgumentParser(description='Load data from Neo4j to Elasticsearch')
     parser.add_argument('indices_file',
@@ -174,6 +175,7 @@ def main():
 
     config = yaml.safe_load(args.config_file)['Config']
     indices = yaml.safe_load(args.indices_file)['Indices']
+    print_config(logger, config)
 
     neo4j_driver = GraphDatabase.driver(
         config['neo4j_uri'],

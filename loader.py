@@ -11,7 +11,7 @@ from neo4j.exceptions import AuthError
 from icdc_schema import ICDC_Schema
 from props import Props
 from bento.common.utils import get_logger, removeTrailingSlash, check_schema_files, UPSERT_MODE, NEW_MODE, DELETE_MODE, \
-    get_log_file, LOG_PREFIX, APP_NAME, load_plugin
+    get_log_file, LOG_PREFIX, APP_NAME, load_plugin, print_config
 
 if LOG_PREFIX not in os.environ:
     os.environ[LOG_PREFIX] = 'Data_Loader'
@@ -187,6 +187,7 @@ def main():
     log = get_logger('Loader')
     log_file = get_log_file()
     config = process_arguments(parse_arguments(), log)
+    print_config(log, config)
 
     if not check_schema_files(config.schema_files, log):
         return
