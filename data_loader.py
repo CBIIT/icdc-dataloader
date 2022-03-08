@@ -18,7 +18,7 @@ from icdc_schema import ICDC_Schema, is_parent_pointer, get_list_values
 from bento.common.utils import get_logger, NODES_CREATED, RELATIONSHIP_CREATED, UUID, \
     RELATIONSHIP_TYPE, MULTIPLIER, ONE_TO_ONE, DEFAULT_MULTIPLIER, UPSERT_MODE, \
     NEW_MODE, DELETE_MODE, NODES_DELETED, RELATIONSHIP_DELETED, combined_dict_counters, \
-    MISSING_PARENT, NODE_LOADED
+    MISSING_PARENT, NODE_LOADED, get_string_md5
 
 NODE_TYPE = 'type'
 PROP_TYPE = 'Type'
@@ -125,6 +125,16 @@ def check_encoding(file_name):
         return utf8
     except UnicodeDecodeError:
         return windows1252
+
+
+# Mask all relationship properties, so they won't participate in property comparison
+def get_props_signature(props):
+    clean_props = props
+    for key in clean_props.keys():
+        if '$' in key:
+            clean_props[key] = ''
+    signature = get_string_md5(str(clean_props))
+    return signature
 
 
 class DataLoader:
@@ -489,7 +499,7 @@ class DataLoader:
                 node_id = self.schema.get_id(obj)
                 if node_id:
                     if node_id in ids:
-                        if props != ids[node_id]['props']:
+                        if get_props_signature(props) != ids[node_id]['props']:
                             validation_failed = True
                             self.log.error(
                                 f'Invalid data at line {line_num}: duplicate {id_field}: {node_id}, found in line: '
@@ -502,7 +512,7 @@ class DataLoader:
                                 f'Duplicated data at line {line_num}: duplicate {id_field}: {node_id}, found in line: '
                                 f'{", ".join(ids[node_id]["lines"])}')
                     else:
-                        ids[node_id] = {'props': props, 'lines': [str(line_num)]}
+                        ids[node_id] = {'props': get_props_signature(props), 'lines': [str(line_num)]}
 
                 validate_result = self.schema.validate_node(obj[NODE_TYPE], obj)
                 if not validate_result['result']:
