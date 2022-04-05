@@ -11,8 +11,7 @@ Properties:
     specimen: specimens
     sample: samples
     file: files
-    genomic_details: genomic_details
-    submission: submissions
+    genomic_info: genomic_info
 
 
   type_mapping:
@@ -28,12 +27,10 @@ Properties:
 
   id_fields:
     study: phs_accession
-    #study_admin:
     participant: participant_id
     diagnosis: diagnosis_id
     treatment: treatment_id
     specimen: specimen_id
     sample: sample_id
     file: file_id
-    #genomic_details:
-    #submission:
+    #genomic_info:
