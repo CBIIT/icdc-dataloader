@@ -1,4 +1,4 @@
-pyyaml
+pyyaml>=5.4
 neo4j==4.2.*
 boto3
 requests
