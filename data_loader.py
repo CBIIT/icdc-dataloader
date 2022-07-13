@@ -736,7 +736,6 @@ class DataLoader:
                             'Line: {}: Parent node (:{} {{{}: "{}"}} not found in DB!'.format(line_num, other_node,
                                                                                               other_id,
                                                                                               value))
-                    
                 else:
                     if multiplier == ONE_TO_ONE and self.parent_already_has_child(session, node_type, obj,
                                                                                   relationship_name, other_node,
