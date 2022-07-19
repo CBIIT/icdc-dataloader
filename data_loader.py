@@ -697,6 +697,7 @@ class DataLoader:
         int_node_created = 0
         provided_parents = 0
         relationship_properties = {}
+        #print(obj.items())
         for key, value in obj.items():
             if is_parent_pointer(key):
                 provided_parents += 1
@@ -711,9 +712,11 @@ class DataLoader:
                     self.log.error('Line: {}: Relationship not found!'.format(line_num))
                     raise Exception('Undefined relationship, abort loading!')
                 if not self.node_exists(session, other_node, other_id, value):
+                    create_parent = False
                     if create_intermediate_node:
                         for plugin in self.plugins:
                             if plugin.should_run(other_node, MISSING_PARENT):
+                                create_parent = True
                                 if plugin.create_node(session, line_num, other_node, value, obj):
                                     int_node_created += 1
                                     relationships.append(
@@ -724,6 +727,11 @@ class DataLoader:
                                         'Line: {}: Could not create {} node automatically!'.format(line_num,
                                                                                                    other_node))
                     else:
+                        self.log.warning(
+                            'Line: {}: Parent node (:{} {{{}: "{}"}} not found in DB!'.format(line_num, other_node,
+                                                                                              other_id,
+                                                                                              value))
+                    if not create_parent:
                         self.log.warning(
                             'Line: {}: Parent node (:{} {{{}: "{}"}} not found in DB!'.format(line_num, other_node,
                                                                                               other_id,
@@ -837,7 +845,6 @@ class DataLoader:
                 if provided_parents > 0:
                     if len(relationships) == 0:
                         raise Exception('Line: {}: No parents found, abort loading!'.format(line_num))
-
                     for relationship in relationships:
                         relationship_name = relationship[RELATIONSHIP_TYPE]
                         multiplier = relationship[MULTIPLIER]
