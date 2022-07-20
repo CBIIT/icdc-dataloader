@@ -893,7 +893,7 @@ class DataLoader:
             if split:
                 tx.commit()
            
-            if provided_parents > 0:
+            if provided_parents == 0:
                     self.log.warning('there is no parent mapping columns in the node {}'.format(node_type))
             
             for rel, count in relationships_created.items():
