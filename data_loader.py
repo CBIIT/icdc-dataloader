@@ -828,7 +828,6 @@ class DataLoader:
             # Use transactions in split-transactions mode
             if split:
                 tx = session.begin_transaction()
-            
             for org_obj in reader:
                 line_num += 1
                 transaction_counter += 1
