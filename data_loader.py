@@ -893,7 +893,6 @@ class DataLoader:
                 tx.commit()
             if provided_parents == 0:
                     self.log.warning('there is no parent mapping columns in the node {}'.format(node_type))
-            
             for rel, count in relationships_created.items():
                 self.log.info('{} {} relationship(s) loaded'.format(count, rel))
             if int_nodes_created > 0:
