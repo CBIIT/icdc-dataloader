@@ -40,7 +40,6 @@ BATCH_SIZE = 1000
 def get_indexes(session):
     """
     Queries the database to get all existing indexes
-
     :param session: the current neo4j transaction session
     :return: A set of tuples representing all existing indexes in the database
     """
@@ -55,7 +54,6 @@ def get_indexes(session):
 def format_as_tuple(node_name, properties):
     """
     Format index info as a tuple
-
     :param node_name: The name of the node type for the index
     :param properties: The list of node properties being used by the index
     :return: A tuple containing the index node_name followed by the index properties in alphabetical order
@@ -465,7 +463,6 @@ class DataLoader:
     def get_node_properties(self, obj):
         """
         Generate a node with only node properties from input data
-
         :param obj: input data object (dict), may contain parent pointers, relationship properties etc.
         :return: an object (dict) that only contains properties on this node
         """
@@ -831,7 +828,6 @@ class DataLoader:
             # Use transactions in split-transactions mode
             if split:
                 tx = session.begin_transaction()
-
             for org_obj in reader:
                 line_num += 1
                 transaction_counter += 1
@@ -891,10 +887,12 @@ class DataLoader:
                     tx = session.begin_transaction()
                     self.log.info(f'{line_num - 1} rows loaded ...')
                     transaction_counter = 0
+
             # commit last transaction
             if split:
                 tx.commit()
-
+            if provided_parents == 0:
+                    self.log.warning('there is no parent mapping columns in the node {}'.format(node_type))
             for rel, count in relationships_created.items():
                 self.log.info('{} {} relationship(s) loaded'.format(count, rel))
             if int_nodes_created > 0:
@@ -947,7 +945,6 @@ class DataLoader:
         """
         Creates indexes, if they do not already exist, for all entries in the "id_fields" and "indexes" sections of the
         properties file
-
         :param session: the current neo4j transaction session
         """
         existing = get_indexes(session)
