@@ -478,6 +478,21 @@ class DataLoader:
 
         return node
 
+    # Validate the field names
+    def validate_field_name(self, reader):
+        row = next(reader)
+        row = self.cleanup_node(row)
+        row_prepare_node = self.prepare_node(row)
+        parent_pointer = []
+        for key in row_prepare_node.keys():
+            if is_parent_pointer(key):
+                parent_pointer.append(key)
+        error_list = []
+        for key in row.keys():
+            if key not in self.schema.get_public_props_for_node(row['type']) and key != 'type' and key not in parent_pointer:
+                error_list.append(key)
+        return error_list
+
     # Validate file
     def validate_file(self, file_name, max_violations):
         file_encoding = check_encoding(file_name)
@@ -488,12 +503,17 @@ class DataLoader:
             validation_failed = False
             violations = 0
             ids = {}
+            error_list = self.validate_field_name(reader)
+            if len(error_list) > 0:
+                for error_field_name in error_list:
+                    self.log.warning('Property: "{}" not found in data model'.format(error_field_name))
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 props = self.get_node_properties(obj)
                 line_num += 1
                 id_field = self.schema.get_id_field(obj)
                 node_id = self.schema.get_id(obj)
+
                 if node_id:
                     if node_id in ids:
                         if get_props_signature(props) != ids[node_id]['props']:
