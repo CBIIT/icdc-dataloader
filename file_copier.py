@@ -260,17 +260,22 @@ class FileLoader:
                     job = file_queue.popleft()
                     job[self.TTL] -= 1
                     file_info = job[self.INFO]
+                    if 'size_field' in self.adapter_config['adapter_params'].keys():
+                        file_path = os.path.join(self.adapter_config['adapter_params']['data_dir'], file_info['file_name'])
+                        file_size = os.path.getsize(file_path)
+                        file_size_field = self.adapter_config['adapter_params']['size_field']
+                        if file_info[file_size_field] != '':
+                            if file_size != int(file_info[file_size_field]):
+                                self.log.warning('Line {}: file "{}" file size validation failed: expected file size {} bytes, actual file size: {}'.format(job[self.LINE], file_info['file_name'], file_info[file_size_field], file_size))
                     try:
                         result = self.copier.copy_file(file_info, self.overwrite, self.dryrun, self.verify_md5)
+
                         if result[Copier.STATUS]:
                             indexd_record = {}
                             self.populate_indexd_record(indexd_record, result)
                             indexd_writer.writerow(indexd_record)
                             neo4j_record = result[Copier.FIELDS]
                             self.populate_neo4j_record(neo4j_record, result)
-                            if file_info['original_file_size'] != '':
-                                if result[Copier.SIZE] != int(file_info['original_file_size']):
-                                    self.log.warning('Line {}: file "{}" file size validation failed: expected file size {} bytes, actual file size: {}'.format(job[self.LINE], file_info['file_name'], file_info['original_file_size'], result[Copier.SIZE]))
                             neo4j_writer.writerow(neo4j_record)
                         else:
                             self._deal_with_failed_file(job, file_queue)
