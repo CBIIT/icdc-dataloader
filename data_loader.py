@@ -491,6 +491,8 @@ class DataLoader:
         for key in row.keys():
             if key not in self.schema.get_public_props_for_node(row['type']) and key != 'type' and key not in parent_pointer:
                 error_list.append(key)
+            elif key in parent_pointer and key.split('.')[1] not in self.schema.get_public_props_for_node(key.split('.')[0]):
+                error_list.append(key)
         return error_list
 
     # Validate file
@@ -532,13 +534,16 @@ class DataLoader:
                         ids[node_id] = {'props': get_props_signature(props), 'lines': [str(line_num)]}
 
                 validate_result = self.schema.validate_node(obj[NODE_TYPE], obj)
-                if not validate_result['result']:
+                if not validate_result['result'] and not validate_result['warning']:
                     for msg in validate_result['messages']:
                         self.log.error('Invalid data at line {}: "{}"!'.format(line_num, msg))
                     validation_failed = True
                     violations += 1
                     if violations >= max_violations:
                         return False
+                elif not validate_result['result'] and validate_result['warning']:
+                    for msg in validate_result['messages']:
+                        self.log.warning('Invalid data at line {}: "{}"!'.format(line_num, msg))
             return not validation_failed
 
     def get_new_statement(self, node_type, obj):
