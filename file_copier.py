@@ -260,29 +260,33 @@ class FileLoader:
                     job = file_queue.popleft()
                     job[self.TTL] -= 1
                     file_info = job[self.INFO]
+                    file_skip = False
                     if 'size_field' in self.adapter_config['adapter_params'].keys():
                         file_path = os.path.join(self.adapter_config['adapter_params']['data_dir'], file_info['file_name'])
                         file_size = os.path.getsize(file_path)
                         file_size_field = self.adapter_config['adapter_params']['size_field']
                         if file_info[file_size_field] != '':
                             if file_size != int(file_info[file_size_field]):
-                                self.log.warning('Line {}: file "{}" file size validation failed: expected file size {} bytes, actual file size: {}'.format(job[self.LINE], file_info['file_name'], file_info[file_size_field], file_size))
-                    try:
-                        result = self.copier.copy_file(file_info, self.overwrite, self.dryrun, self.verify_md5)
+                                self.log.error('Line {}: file "{}" file size validation failed: expected file size {} bytes, actual file size: {}, file skiped!'.format(job[self.LINE], file_info['file_name'], file_info[file_size_field], file_size))
+                                file_skip = True
+                    if file_skip == False:
+                        try:
+                            result = self.copier.copy_file(file_info, self.overwrite, self.dryrun, self.verify_md5)
 
-                        if result[Copier.STATUS]:
-                            indexd_record = {}
-                            self.populate_indexd_record(indexd_record, result)
-                            indexd_writer.writerow(indexd_record)
-                            neo4j_record = result[Copier.FIELDS]
-                            self.populate_neo4j_record(neo4j_record, result)
-                            neo4j_writer.writerow(neo4j_record)
-                        else:
+                            if result[Copier.STATUS]:
+                                indexd_record = {}
+                                self.populate_indexd_record(indexd_record, result)
+                                indexd_writer.writerow(indexd_record)
+                                neo4j_record = result[Copier.FIELDS]
+                                self.populate_neo4j_record(neo4j_record, result)
+                                neo4j_writer.writerow(neo4j_record)
+                            else:
+                                self._deal_with_failed_file(job, file_queue)
+                        except Exception as e:
+                            self.log.debug(e)
                             self._deal_with_failed_file(job, file_queue)
-                    except Exception as e:
-                        self.log.debug(e)
-                        self._deal_with_failed_file(job, file_queue)
-
+                    else:
+                        self.files_skipped += 1
                 if self.files_skipped > 0:
                     self.log.info(f'Files skipped: {self.files_skipped}')
                 self.log.info(f'Files processed: {self.files_processed}')
