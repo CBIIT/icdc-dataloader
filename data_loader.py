@@ -478,6 +478,28 @@ class DataLoader:
 
         return node
 
+    # Validate the field names
+    def validate_field_name(self, reader):
+        row = next(reader)
+        row = self.cleanup_node(row)
+        row_prepare_node = self.prepare_node(row)
+        parent_pointer = []
+        for key in row_prepare_node.keys():
+            if is_parent_pointer(key):
+                parent_pointer.append(key)
+        error_list = []
+        parent_error_list = []
+        for key in row.keys():
+            if key not in self.schema.get_public_props_for_node(row['type']) and key != 'type' and key not in parent_pointer:
+                error_list.append(key)
+            elif key in parent_pointer:
+                try:
+                    if key.split('.')[1] not in self.schema.get_public_props_for_node(key.split('.')[0]):
+                        parent_error_list.append(key)
+                except:
+                    parent_error_list.append(key)
+        return error_list, parent_error_list
+
     # Validate file
     def validate_file(self, file_name, max_violations):
         file_encoding = check_encoding(file_name)
@@ -488,12 +510,22 @@ class DataLoader:
             validation_failed = False
             violations = 0
             ids = {}
+            error_list, parent_error_list = self.validate_field_name(reader)
+            if len(error_list) > 0:
+                for error_field_name in error_list:
+                    self.log.warning('Property: "{}" not found in data model'.format(error_field_name))
+            if len(parent_error_list) > 0:
+                for parent_error_field_name in parent_error_list:
+                    self.log.error('Parent pointer: "{}" not found in data model'.format(parent_error_field_name))
+                self.log.error('Parent pointer not found in the data model, abort loading!')
+                return False
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 props = self.get_node_properties(obj)
                 line_num += 1
                 id_field = self.schema.get_id_field(obj)
                 node_id = self.schema.get_id(obj)
+
                 if node_id:
                     if node_id in ids:
                         if get_props_signature(props) != ids[node_id]['props']:
@@ -512,13 +544,16 @@ class DataLoader:
                         ids[node_id] = {'props': get_props_signature(props), 'lines': [str(line_num)]}
 
                 validate_result = self.schema.validate_node(obj[NODE_TYPE], obj)
-                if not validate_result['result']:
+                if not validate_result['result'] and not validate_result['warning']:
                     for msg in validate_result['messages']:
                         self.log.error('Invalid data at line {}: "{}"!'.format(line_num, msg))
                     validation_failed = True
                     violations += 1
                     if violations >= max_violations:
                         return False
+                elif not validate_result['result'] and validate_result['warning']:
+                    for msg in validate_result['messages']:
+                        self.log.warning('Invalid data at line {}: "{}"!'.format(line_num, msg))
             return not validation_failed
 
     def get_new_statement(self, node_type, obj):
