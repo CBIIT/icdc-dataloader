@@ -375,15 +375,15 @@ class ICDC_Schema:
 
     def validate_node(self, model_type, obj):
         if not model_type or model_type not in self.nodes:
-            return {'result': False, 'messages': ['Node type: "{}" does not exist!'.format(model_type)], 'warning': True}
+            return {'result': False, 'messages': ['Node type: "{}" does not exist!'.format(model_type)]}
         if not obj:
-            return {'result': False, 'messages': ['Node is empty!'], 'warning': False}
+            return {'result': False, 'messages': ['Node is empty!']}
 
         if not isinstance(obj, dict):
-            return {'result': False, 'messages': ['Node is not a dict!'], 'warning': False}
+            return {'result': False, 'messages': ['Node is not a dict!']}
 
         # Make sure all required properties exist, and are not empty
-        result = {'result': True, 'messages': [], 'warning': False}
+        result = {'result': True, 'messages': []}
         for prop in self.nodes[model_type].get(REQUIRED, set()):
             if prop not in obj:
                 result['result'] = False

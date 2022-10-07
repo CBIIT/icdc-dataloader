@@ -267,11 +267,12 @@ class FileLoader:
                         file_size_field = self.adapter_config['adapter_params']['size_field']
                         if file_info[file_size_field] != '':
                             if file_size != int(file_info[file_size_field]):
-                                self.log.error('Line {}: file "{}" file size validation failed: expected file size {} bytes, actual file size: {}, file skipped!'.format(job[self.LINE], file_info['file_name'], file_info[file_size_field], file_size))
+                                self.log.error('Line {}: file "{}" file size validation failed: expected file size {} bytes, actual file size: {}, file skiped!'.format(job[self.LINE], file_info['file_name'], file_info[file_size_field], file_size))
                                 file_skip = True
                     if file_skip == False:
                         try:
                             result = self.copier.copy_file(file_info, self.overwrite, self.dryrun, self.verify_md5)
+
                             if result[Copier.STATUS]:
                                 indexd_record = {}
                                 self.populate_indexd_record(indexd_record, result)
