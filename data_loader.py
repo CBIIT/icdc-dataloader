@@ -518,7 +518,7 @@ class DataLoader:
                 for parent_error_field_name in parent_error_list:
                     self.log.error('Parent pointer: "{}" not found in data model'.format(parent_error_field_name))
                 self.log.error('Parent pointer not found in the data model, abort loading!')
-                sys.exit(1)
+                return False
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 props = self.get_node_properties(obj)
