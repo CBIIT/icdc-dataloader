@@ -375,7 +375,7 @@ class ICDC_Schema:
 
     def validate_node(self, model_type, obj):
         if not model_type or model_type not in self.nodes:
-            return {'result': False, 'messages': ['Node type: "{}" does not exist!'.format(model_type)], 'warning': True}
+            return {'result': False, 'messages': ['Node type: "{}" not found in data model'.format(model_type)], 'warning': False}
         if not obj:
             return {'result': False, 'messages': ['Node is empty!'], 'warning': False}
 

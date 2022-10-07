@@ -490,9 +490,13 @@ class DataLoader:
         error_list = []
         parent_error_list = []
         for key in row.keys():
-            if key not in self.schema.get_public_props_for_node(row['type']) and key != 'type' and key not in parent_pointer:
-                error_list.append(key)
-            elif key in parent_pointer:
+            if key not in parent_pointer:
+                try:
+                    if key not in self.schema.get_public_props_for_node(row['type']) and key != 'type':
+                        error_list.append(key)
+                except:
+                    error_list.append(key)
+            else:
                 try:
                     if key.split('.')[1] not in self.schema.get_public_props_for_node(key.split('.')[0]):
                         parent_error_list.append(key)
