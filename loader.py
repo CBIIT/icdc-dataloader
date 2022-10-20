@@ -201,11 +201,11 @@ def main():
         if file_list:
             if config.wipe_db and not config.yes:
                 if not confirm_deletion('Wipe out entire Neo4j database before loading?'):
-                    sys.exit()
+                    sys.exit(1)
 
             if config.loading_mode == DELETE_MODE and not config.yes:
                 if not confirm_deletion('Delete all nodes and child nodes from data file?'):
-                    sys.exit()
+                    sys.exit(1)
 
             prop_path = os.path.join(config.dataset, config.prop_file)
             if os.path.isfile(prop_path):
