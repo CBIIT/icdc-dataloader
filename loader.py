@@ -226,14 +226,16 @@ def main():
                     plugins.append(prepare_plugin(plugin_config, schema))
             loader = DataLoader(driver, schema, plugins)
 
-            loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db,
+            load_result = loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db,
                         config.max_violations, split=config.split_transactions,
                         no_backup=config.no_backup, neo4j_uri=config.neo4j_uri, backup_folder=config.backup_folder)
-
             if driver:
                 driver.close()
             if restore_cmd:
                 log.info(restore_cmd)
+            if load_result == False:
+                log.error('Data files upload failed')
+                sys.exit(1)
         else:
             log.info('No files to load.')
 
