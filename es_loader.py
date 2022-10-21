@@ -130,6 +130,7 @@ class ESLoader:
             if subtype == 'node':
                 yield {
                     'type': 'node',
+                    'node': node_name,
                     'node_name': node_name,
                     'node_kw': node_name
                 }
@@ -141,7 +142,9 @@ class ESLoader:
                     if subtype == 'property':
                         yield {
                             'type': 'property',
+                            'node': node_name,
                             'node_name': node_name,
+                            'property': prop_name,
                             'property_name': prop_name,
                             'property_kw': prop_name,
                             'property_description': prop.get(DESCRIPTION, ''),
@@ -152,7 +155,9 @@ class ESLoader:
                         for value in prop[ENUM]:
                             yield {
                                     'type': 'value',
+                                    "node": node_name,
                                     "node_name": node_name,
+                                    "property": prop_name,
                                     "property_name": prop_name,
                                     'property_description': prop.get(DESCRIPTION, ''),
                                     'property_required': prop.get(REQUIRED, False),
