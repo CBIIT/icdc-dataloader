@@ -1,9 +1,8 @@
 Properties:
-  domain: pcdc.cancer.gov
+  domain: c3dc.cancer.gov
   rel_prop_delimiter: "$"
 
   plurals:
-    Program: Programs
     Adverse_Events_Table: Adverse_Events_Tables
     Biopsy_Surgical_Procedures_Table: Biopsy_Surgical_Procedures_Tables
     Cellular_Immunotherapy_Table: Cellular_Immunotherapy_Tables
