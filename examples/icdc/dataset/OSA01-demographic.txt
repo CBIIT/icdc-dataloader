@@ -1,0 +1,61 @@
+type	case.case_id	breed	patient_age_at_enrollment	date_of_birth	sex	neutered_indicator	weight
+demographic	OSA01-WLOS_0001	Great Pyrenees	9		Male	Yes	
+demographic	OSA01-WLOS_0002	Great Dane	7		Female	Yes	
+demographic	OSA01-WLOS_0003	Labrador Retriever	6		Male	Yes	
+demographic	OSA01-WLOS_0004	Great Dane	5.5		Female	Yes	
+demographic	OSA01-WLOS_0005	Mixed Breed	7		Male	Yes	
+demographic	OSA01-WLOS_0006	Great Dane	4		Female	Yes	
+demographic	OSA01-WLOS_0007	Old English Sheepdog	8		Male	Yes	
+demographic	OSA01-WLOS_0008	Mixed Breed	9		Male	Yes	
+demographic	OSA01-WLOS_0009	Great Dane	6		Male	Yes	
+demographic	OSA01-WLOS_0010	Mixed Breed	10		Male	Yes	
+demographic	OSA01-WLOS_0011	Golden Retriever	8		Female	Yes	
+demographic	OSA01-WLOS_0012	Mixed Breed	11		Female	Yes	
+demographic	OSA01-WLOS_0013	Mastiff	6		Female	Yes	
+demographic	OSA01-WLOS_0014	Labrador Retriever	11.5		Male	Yes	
+demographic	OSA01-WLOS_0015	Greyhound	12		Female	Yes	
+demographic	OSA01-WLOS_0016	Old English Sheepdog	9		Female	Yes	
+demographic	OSA01-WLOS_0017	Mixed Breed	9		Male	No	
+demographic	OSA01-WLOS_0018	Golden Retriever	6		Male	Yes	
+demographic	OSA01-WLOS_0019	Bullmastiff	6		Female	Yes	
+demographic	OSA01-WLOS_0020	Newfoundland	6		Male	Yes	
+demographic	OSA01-WLOS_0021	Doberman Pinscher	6		Male	Yes	
+demographic	OSA01-WLOS_0022	Golden Retriever	11		Male	Yes	
+demographic	OSA01-WLOS_0023	Saint Bernard	5.5		Female	Yes	
+demographic	OSA01-WLOS_0024	Rottweiler	9		Male	Yes	
+demographic	OSA01-WLJ_001	Greyhound	7		Male	Yes	
+demographic	OSA01-WLJ_002	Greyhound	7		Male	Yes	
+demographic	OSA01-WLJ_007	Golden Retriever	1		Female	No	
+demographic	OSA01-WLJ_008	Greyhound	6		Male	Yes	
+demographic	OSA01-WLJ_0010	Great Pyrenees	8		Male	Yes	
+demographic	OSA01-WLJ_0013	Labrador Retriever	10		Female	Yes	
+demographic	OSA01-WLJ_015	Golden Retriever	6		Female	Yes	
+demographic	OSA01-WLJ_026	Labrador Retriever	7		Male	Yes	
+demographic	OSA01-WLJ_027	German Shepherd Dog	5		Female	No	
+demographic	OSA01-WLJ_029	Newfoundland	5		Female	Yes	
+demographic	OSA01-WLJ_030	Great Dane	7		Male	Yes	
+demographic	OSA01-WLJ_047	Doberman Pinscher	6.5		Male	Yes	
+demographic	OSA01-WLJ_050	German Shepherd Dog	8		Female	Yes	
+demographic	OSA01-WLJ_054	Mixed Breed	12		Male	Yes	
+demographic	OSA01-WLJ_055	Mixed Breed	10		Female	Yes	
+demographic	OSA01-WLJ_056	Rottweiler	8		Female	Yes	
+demographic	OSA01-WLJ_059	Rottweiler	10		Female	Yes	
+demographic	OSA01-WLJ_106	Great Pyrenees	10		Male	Yes	
+demographic	OSA01-E1	Golden Retriever	8.2		Female	Yes	
+demographic	OSA01-E2	Greyhound	9.8		Male	Yes	
+demographic	OSA01-E3	Golden Retriever	10.4		Male	Yes	
+demographic	OSA01-E4	Mixed Breed	9		Male	Yes	
+demographic	OSA01-E5	Greyhound	7		Male	Yes	
+demographic	OSA01-E6	Old English Sheepdog	6.5		Male	No	
+demographic	OSA01-E8	Labrador Retriever	8.9		Male	Yes	
+demographic	OSA01-E12	Great Pyrenees	7.7		Female	Yes	
+demographic	OSA01-E13	Golden Retriever	9		Male	Yes	
+demographic	OSA01-E14	Mixed Breed	9.7		Female	Yes	
+demographic	OSA01-E41	Mixed Breed	3		Female	Yes	
+demographic	OSA01-E44	Greyhound	7		Female	Yes	
+demographic	OSA01-E45	Rottweiler	7		Male	Yes	
+demographic	OSA01-E51	Great Pyrenees	2		Female	No	
+demographic	OSA01-E52	Great Pyrenees	8		Female	Yes	
+demographic	OSA01-E53	Greyhound	6		Female	Yes	
+demographic	OSA01-E54	Greyhound	7		Female	Yes	
+demographic	OSA01-K9Ob	Unknown			Unknown	Unknown	

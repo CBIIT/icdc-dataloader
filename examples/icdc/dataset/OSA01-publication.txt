@@ -1,0 +1,2 @@
+type	 study.clinical_study_designation	publication_title	authorship	year_of_publication	journal_citation	digital_object_id	pubmed_id
+publication	OSA01	Canine osteosarcoma genome sequencing identifies recurrent mutations in DMD and the histone methyltransferase gene SETD2	Heather L. Gardner et al	2019	Commun Biol 2:266	10.1038/s42003-019-0487-2	31341965
