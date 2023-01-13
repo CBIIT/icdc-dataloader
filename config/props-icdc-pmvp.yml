@@ -62,6 +62,7 @@ Properties:
     file: uuid
     canine_individual: canine_individual_id
     publication: publication_title
+    image_collection: image_collection_name
 
   save_parent_id:
     - demographic
@@ -70,4 +71,3 @@ Properties:
     vital_signs: date_of_vital_signs
     physical_exam: date_of_examination
     disease_extent: date_of_evaluation
-
