@@ -33,4 +33,4 @@ Properties:
     specimen: specimen_id
     sample: sample_id
     file: file_id
-    #genomic_info:
+    genomic_info: genomic_info_id
