@@ -47,7 +47,9 @@ def get_indexes(session):
     result = session.run(command)
     indexes = set()
     for r in result:
-        indexes.add(format_as_tuple(r["labelsOrTypes"][0], r["properties"]))
+        continue
+        # print(r)
+        # indexes.add(format_as_tuple(r["labelsOrTypes"][0], r["properties"]))
     return indexes
 
 
