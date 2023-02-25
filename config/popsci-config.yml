@@ -17,11 +17,11 @@ Config:
 
   # Plugin can be used to create additional nodes and relationships
   plugins:
-    - module: loader_plugins.visit_creator
-      class: VisitCreator
-
-    - module: loader_plugins.individual_creator
-      class: IndividualCreator
+{#    - module: loader_plugins.visit_creator#}
+{#      class: VisitCreator#}
+{##}
+{#    - module: loader_plugins.individual_creator#}
+{#      class: IndividualCreator#}
 
   # Property file location, props-icdc.yml, props-ctdc.yml etc. can be overridden by --prop-file argument
   prop_file: config/props-popsci.yml
