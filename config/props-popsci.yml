@@ -3,28 +3,59 @@ Properties:
   rel_prop_delimiter: "$"
 
   plurals:
-    breast_case: breast_cases
-    breast_diag: breast_diags
-    colo_case: colo_cases
-    colo_diag: colo_diags
-    colo_screen: colo_screens
-    colo_treat: colo_treats
+    clinical_trial: clinical_trials
     cohort: cohorts
     demo: demos
-    lung_case: lung_cases
-    lung_diag: lung_diags
-    lung_screen: lung_screens
-    lung_treat: lung_treats
-    ovar_case: ovar_cases
-    ovar_diag: ovar_diags
-    ovar_screen: ovar_screens
-    ovar_treat: ovar_treats
-    pros_case: pros_cases
-    pros_diag: pros_diags
-    pros_screen: pros_screens
-    pros_treat: pros_treats
+    case: cases
+    breast_elig: breast_eligs
+    colo_elig: colo_eligs
+    lung_elig: lung_eligs
+    ovar_elig: ovar_eligs
+    pros_elig: pros_eligs
+    mort: morts
+    comp: comps
+    risk: risks
+    nsaid_use: nsaid_uses
+    health_cond: health_conds
+    fem_health_cond: fem_health_conds
+    male_health_cond: male_health_conds
     visit: visits
-
+    breast_exit: breast_exits
+    breast_regn: breast_regns
+    breast_diag: breast_diags
+    breast_mort: breast_morts
+    breast_hist: breast_hists
+    colo_exit: colo_exits
+    colo_regn: colo_regns
+    colo_screen: colo_screens
+    colo_diag: colo_diags
+    colo_treat: colo_treats
+    colo_mort: colo_morts
+    colo_hist: colo_hists
+    lung_exit: lung_exits
+    lung_regn: lung_regns
+    lung_screen: lung_screens
+    lung_diag: lung_diags
+    lung_treat: lung_treats
+    lung_mort: lung_morts
+    lung_hist: lung_hists
+    ovar_exit: ovar_exits
+    ovar_regn: ovar_regns
+    ovar_screen: ovar_screens
+    ovar_diag: ovar_diags
+    ovar_treat: ovar_treats
+    ovar_mort: ovar_morts
+    ovar_hist: ovar_hists
+    pros_exit: pros_exits
+    pros_regn: pros_regns
+    pros_screen: pros_screens
+    pros_diag: pros_diags
+    pros_treat: pros_treat
+    pros_mort: pros_morts
+    pros_hist: pros_hists
+    dhq: dhqs
+    dqx: dqxs
+    sqx: sqxs
 
   type_mapping:
     string: String
