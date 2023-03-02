@@ -70,7 +70,7 @@ Properties:
     TBD: String
 
   id_fields:
-    breast_case: breast_case_id
+    case: case_id
     breast_diag: breast_diag_id
     breast_elig: breast_elig_id
     breast_exit: breast_exit_id
@@ -79,7 +79,6 @@ Properties:
     breast_regn: breast_regn_id
     clinical_trial: clinical_trial_id
     cohort: cohort_id
-    colo_case: colo_case_id
     colo_diag: colo_diag_id
     colo_elig: colo_elig_id
     colo_exit: colo_exit_id
@@ -94,7 +93,6 @@ Properties:
     dqx: dqx_id
     fem_health_cond: fem_health_cond_id
     health_cond: health_cond_id
-    lung_case: lung_case_id
     lung_diag: lung_diag_id
     lung_elig: lung_elig_id
     lung_exit: lung_exit_id
@@ -106,7 +104,6 @@ Properties:
     male_health_cond: male_health_id
     mort: mort_id
     nsaid_use: nsaid_use_id
-    ovar_case: ovar_case_id
     ovar_diag: ovar_diag_id
     ovar_elig: ovar_elig_id
     ovar_exit: ovar_exit_id
@@ -115,7 +112,6 @@ Properties:
     ovar_regn: ovar_regn_id
     ovar_screen: ovar_screen_id
     ovar_treat: ovar_treat_id
-    pros_case: pros_case_id
     pros_diag: pros_diag_id
     pros_elig: pros_elig_id
     pros_exit: pros_exit_id
