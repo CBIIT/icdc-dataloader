@@ -7,6 +7,7 @@ Properties:
     cohort: cohorts
     demo: demos
     case: cases
+    file: files
     breast_elig: breast_eligs
     colo_elig: colo_eligs
     lung_elig: lung_eligs
@@ -92,6 +93,7 @@ Properties:
     dhq: dhq_id
     dqx: dqx_id
     fem_health_cond: fem_health_cond_id
+    file: file_id
     health_cond: health_cond_id
     lung_diag: lung_diag_id
     lung_elig: lung_elig_id
