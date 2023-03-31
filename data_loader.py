@@ -48,6 +48,7 @@ def get_indexes(session):
     indexes = set()
     for r in result:
         indexes.add(format_as_tuple(r["labelsOrTypes"][0], r["properties"]))
+        # continue
     return indexes
 
 
@@ -285,9 +286,9 @@ class DataLoader:
             self.wipe_db(tx, split)
         for txt in file_list:
             self.load_nodes(tx, txt, loading_mode, split)
-        if loading_mode != DELETE_MODE:
-            for txt in file_list:
-                self.load_relationships(tx, txt, loading_mode, split)
+        # if loading_mode != DELETE_MODE:
+        #     for txt in file_list:
+        #         self.load_relationships(tx, txt, loading_mode, split)
 
     # Remove extra spaces at beginning and end of the keys and values
     @staticmethod
@@ -563,6 +564,8 @@ class DataLoader:
     def get_new_statement(self, node_type, obj):
         # statement is used to create current node
         prop_stmts = []
+        prop_stmts2 = []
+        ii=0
 
         for key in obj.keys():
             if key in excluded_fields:
@@ -573,8 +576,16 @@ class DataLoader:
                 continue
 
             prop_stmts.append('{0}: ${0}'.format(key))
+            prop_stmts2.append('{0}: line[{1}]'.format(key,str(ii)))
+            ii=ii+1
 
+        # statement = 'CREATE (:{0} {{ {1} }})'.format(node_type, ' ,'.join(prop_stmts))
         statement = 'CREATE (:{0} {{ {1} }})'.format(node_type, ' ,'.join(prop_stmts))
+        statement2 = 'LOAD CSV FROM \"file:///temp.txt\" AS line FIELDTERMINATOR \'\\t\' CREATE (:{0} {{ {1} }})'.format(node_type, ' ,'.join(prop_stmts2))
+        # print(statement)
+        f = open('test/demofile2_'+'.txt', "w")
+        f.write(statement2)
+        f.close()
         return statement
 
     def get_upsert_statement(self, node_type, id_field, obj):
@@ -597,6 +608,7 @@ class DataLoader:
         statement += 'MERGE (n:{0} {{ {1}: ${1} }})'.format(node_type, id_field)
         statement += ' ON CREATE ' + 'SET n.{} = datetime(), '.format(CREATED) + ' ,'.join(prop_stmts)
         statement += ' ON MATCH ' + 'SET n.{} = datetime(), '.format(UPDATED) + ' ,'.join(prop_stmts)
+        # print(statement)
         return statement
 
     # Delete a node and children with no other parents recursively
@@ -644,6 +656,15 @@ class DataLoader:
         self.relationships_deleted += relationship_deleted
         return nodes_deleted, relationship_deleted
 
+    def import_dir(tx):  
+        result = tx.run(
+            "Call dbms.listConfig() YIELD name, value WHERE name='dbms.directories.neo4j_home' RETURN value"
+        )
+        records = list(result)
+        summary = result.consume()
+        # print(summary)
+        return records, summary
+
     # load file
     def load_nodes(self, session, file_name, loading_mode, split=False):
         if loading_mode == NEW_MODE:
@@ -682,7 +703,8 @@ class DataLoader:
                     raise Exception('Line:{}: No ids found!'.format(line_num))
                 id_field = self.schema.get_id_field(obj)
                 if loading_mode == UPSERT_MODE:
-                    statement = self.get_upsert_statement(node_type, id_field, obj)
+                    # statement = self.get_upsert_statement(node_type, id_field, obj)
+                    statement = self.get_new_statement(node_type, obj)
                 elif loading_mode == NEW_MODE:
                     if self.node_exists(tx, node_type, id_field, node_id):
                         raise Exception(
