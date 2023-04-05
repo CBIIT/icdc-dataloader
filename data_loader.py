@@ -479,30 +479,42 @@ class DataLoader:
         return node
 
     # Validate the field names
-    def validate_field_name(self, reader):
-        row = next(reader)
-        row = self.cleanup_node(row)
-        row_prepare_node = self.prepare_node(row)
-        parent_pointer = []
-        for key in row_prepare_node.keys():
-            if is_parent_pointer(key):
-                parent_pointer.append(key)
-        error_list = []
-        parent_error_list = []
-        for key in row.keys():
-            if key not in parent_pointer:
-                try:
-                    if key not in self.schema.get_props_for_node(row['type']) and key != 'type':
+    def validate_field_name(self, file_name):
+        file_encoding = check_encoding(file_name)
+        with open(file_name, encoding=file_encoding) as in_file:
+            reader = csv.DictReader(in_file, delimiter='\t')
+
+            row = next(reader)
+            row = self.cleanup_node(row)
+            row_prepare_node = self.prepare_node(row)
+            parent_pointer = []
+            for key in row_prepare_node.keys():
+                if is_parent_pointer(key):
+                    parent_pointer.append(key)
+            error_list = []
+            parent_error_list = []
+            for key in row.keys():
+                if key not in parent_pointer:
+                    try:
+                        if key not in self.schema.get_props_for_node(row['type']) and key != 'type':
+                            error_list.append(key)
+                    except:
                         error_list.append(key)
-                except:
-                    error_list.append(key)
-            else:
-                try:
-                    if key.split('.')[1] not in self.schema.get_props_for_node(key.split('.')[0]):
+                else:
+                    try:
+                        if key.split('.')[1] not in self.schema.get_props_for_node(key.split('.')[0]):
+                            parent_error_list.append(key)
+                    except:
                         parent_error_list.append(key)
-                except:
-                    parent_error_list.append(key)
-        return error_list, parent_error_list
+            if len(error_list) > 0:
+                for error_field_name in error_list:
+                    self.log.warning('Property: "{}" not found in data model'.format(error_field_name))
+            if len(parent_error_list) > 0:
+                for parent_error_field_name in parent_error_list:
+                    self.log.error('Parent pointer: "{}" not found in data model'.format(parent_error_field_name))
+                self.log.error('Parent pointer not found in the data model, abort loading!')
+                return False
+        return True
 
     # Validate file
     def validate_file(self, file_name, max_violations):
@@ -514,15 +526,9 @@ class DataLoader:
             validation_failed = False
             violations = 0
             ids = {}
-            error_list, parent_error_list = self.validate_field_name(reader)
-            if len(error_list) > 0:
-                for error_field_name in error_list:
-                    self.log.warning('Property: "{}" not found in data model'.format(error_field_name))
-            if len(parent_error_list) > 0:
-                for parent_error_field_name in parent_error_list:
-                    self.log.error('Parent pointer: "{}" not found in data model'.format(parent_error_field_name))
-                self.log.error('Parent pointer not found in the data model, abort loading!')
+            if not self.validate_field_name(file_name):
                 return False
+
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 props = self.get_node_properties(obj)
