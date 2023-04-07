@@ -47,8 +47,8 @@ def get_indexes(session):
     result = session.run(command)
     indexes = set()
     for r in result:
-        indexes.add(format_as_tuple(r["labelsOrTypes"][0], r["properties"]))
-        # continue
+        # indexes.add(format_as_tuple(r["labelsOrTypes"][0], r["properties"]))
+        continue
     return indexes
 
 
@@ -285,7 +285,7 @@ class DataLoader:
         if wipe_db:
             self.wipe_db(tx, split)
         for txt in file_list:
-            self.load_nodes(tx, txt, loading_mode, split)
+            self.load_nodes_test(tx, txt, loading_mode, split)
         # if loading_mode != DELETE_MODE:
         #     for txt in file_list:
         #         self.load_relationships(tx, txt, loading_mode, split)
@@ -390,8 +390,17 @@ class DataLoader:
                     obj2[UUID] = self.schema.get_uuid_for_node(node_type, id_value)
             else:
                 raise Exception('No "type" property in node')
+            # with open('test/data.json', 'w', encoding='utf-8') as f:
+            #     json.dump(obj2, f, ensure_ascii=False, indent=4)
 
         return obj2
+    
+    def gen_temp_tsv(file_name, obj2):
+        file_encoding = check_encoding(file_name)
+        with open(file_name, encoding=file_encoding) as temp_file:
+            a=1
+
+    
 
     def get_signature(self, node):
         result = []
@@ -561,12 +570,15 @@ class DataLoader:
                         self.log.warning('Invalid data at line {}: "{}"!'.format(line_num, msg))
             return not validation_failed
 
-    def get_new_statement(self, node_type, obj):
+    def get_new_statement(self, node_type, obj,file_encoding, temp_file_location):
         # statement is used to create current node
         prop_stmts = []
         prop_stmts2 = []
-        ii=0
+        ii=1
 
+        f2 = open(temp_file_location+'/import/temp.txt','r+',encoding=file_encoding)
+        s_text =""
+        f2_old = f2.read()
         for key in obj.keys():
             if key in excluded_fields:
                 continue
@@ -578,15 +590,20 @@ class DataLoader:
             prop_stmts.append('{0}: ${0}'.format(key))
             prop_stmts2.append('{0}: line[{1}]'.format(key,str(ii)))
             ii=ii+1
-
+            # print(obj[key])
+            s_text = s_text + '\t'+str(obj[key])
+        # f2.write(f2_old + s_text + "\n")
+        f2.write(s_text + "\n")
+        f2.close()
         # statement = 'CREATE (:{0} {{ {1} }})'.format(node_type, ' ,'.join(prop_stmts))
         statement = 'CREATE (:{0} {{ {1} }})'.format(node_type, ' ,'.join(prop_stmts))
         statement2 = 'LOAD CSV FROM \"file:///temp.txt\" AS line FIELDTERMINATOR \'\\t\' CREATE (:{0} {{ {1} }})'.format(node_type, ' ,'.join(prop_stmts2))
-        # print(statement)
-        f = open('test/demofile2_'+'.txt', "w")
-        f.write(statement2)
-        f.close()
-        return statement
+        # print(obj)
+        # exit()
+        # f = open('test/demofile2_'+'.txt', "w")
+        # f.write(statement)
+        # f.close()
+        return statement2
 
     def get_upsert_statement(self, node_type, id_field, obj):
         # statement is used to create current node
@@ -656,7 +673,8 @@ class DataLoader:
         self.relationships_deleted += relationship_deleted
         return nodes_deleted, relationship_deleted
 
-    def import_dir(tx):  
+    # Get dir for the import folder in the database currently only works with local database
+    def import_dir_query(self, tx):  
         result = tx.run(
             "Call dbms.listConfig() YIELD name, value WHERE name='dbms.directories.neo4j_home' RETURN value"
         )
@@ -664,8 +682,86 @@ class DataLoader:
         summary = result.consume()
         # print(summary)
         return records, summary
+    
+    def import_dir(self,driver):
+        with driver.session() as session:
+            records, summary= session.execute_read(self.import_dir_query)
+        return records[0].data()['value']
 
     # load file
+    def load_nodes_test(self, session, file_name, loading_mode, split=False):
+        if loading_mode == NEW_MODE:
+            action_word = 'Loading new'
+        elif loading_mode == UPSERT_MODE:
+            action_word = 'Loading'
+        elif loading_mode == DELETE_MODE:
+            action_word = 'Deleting'
+        else:
+            raise Exception('Wrong loading_mode: {}'.format(loading_mode))
+        self.log.info('{} nodes from file: {}'.format(action_word, file_name))
+
+        file_encoding = check_encoding(file_name).replace('\\','/')
+        
+        temp_file_location = self.import_dir(self.driver)
+        temp_file = open(temp_file_location+'/import/temp.txt','w')
+        temp_file.write('')
+        temp_file.close()
+
+        with open(file_name, encoding=file_encoding) as in_file:
+            reader = csv.DictReader(in_file, delimiter='\t')
+            nodes_created = 0
+            nodes_deleted = 0
+            node_type = 'UNKNOWN'
+            relationship_deleted = 0
+            line_num = 1
+            transaction_counter = 0
+
+            # Use session in one transaction mode
+            tx = session
+            # Use transactions in split-transactions mode
+            if split:
+                tx = session.begin_transaction()
+
+            for org_obj in reader:
+                line_num += 1
+                transaction_counter += 1
+                obj = self.prepare_node(org_obj)
+                node_type = obj[NODE_TYPE]
+                node_id = self.schema.get_id(obj)
+                if not node_id:
+                    raise Exception('Line:{}: No ids found!'.format(line_num))
+                id_field = self.schema.get_id_field(obj)
+                if loading_mode == UPSERT_MODE:
+                    # statement = self.get_upsert_statement(node_type, id_field, obj)
+                    statement = self.get_new_statement(node_type, obj,file_encoding, temp_file_location)
+                elif loading_mode == NEW_MODE:
+                    if self.node_exists(tx, node_type, id_field, node_id):
+                        raise Exception(
+                            'Line: {}: Node (:{} {{ {}: {} }}) exists! Abort loading!'.format(line_num, node_type,
+                                                                                              id_field, node_id))
+                    else:
+                        statement = self.get_new_statement(node_type, obj,file_name)
+                elif loading_mode == DELETE_MODE:
+                    n_deleted, r_deleted = self.delete_node(tx, obj)
+                    nodes_deleted += n_deleted
+                    relationship_deleted += r_deleted
+                else:
+                    raise Exception('Wrong loading_mode: {}'.format(loading_mode))
+
+            if loading_mode != DELETE_MODE:
+                result = tx.run(statement)
+                    
+                # commit and restart a transaction when batch size reached
+            # commit last transaction
+            if split:
+                tx.commit()
+
+            if loading_mode == DELETE_MODE:
+                self.log.info('{} node(s) deleted'.format(nodes_deleted))
+                self.log.info('{} relationship(s) deleted'.format(relationship_deleted))
+            else:
+                self.log.info('{} (:{}) node(s) loaded'.format(nodes_created, node_type))
+    
     def load_nodes(self, session, file_name, loading_mode, split=False):
         if loading_mode == NEW_MODE:
             action_word = 'Loading new'
@@ -704,14 +800,14 @@ class DataLoader:
                 id_field = self.schema.get_id_field(obj)
                 if loading_mode == UPSERT_MODE:
                     # statement = self.get_upsert_statement(node_type, id_field, obj)
-                    statement = self.get_new_statement(node_type, obj)
+                    statement = self.get_new_statement(node_type, obj,file_encoding)
                 elif loading_mode == NEW_MODE:
                     if self.node_exists(tx, node_type, id_field, node_id):
                         raise Exception(
                             'Line: {}: Node (:{} {{ {}: {} }}) exists! Abort loading!'.format(line_num, node_type,
                                                                                               id_field, node_id))
                     else:
-                        statement = self.get_new_statement(node_type, obj)
+                        statement = self.get_new_statement(node_type, obj,file_name)
                 elif loading_mode == DELETE_MODE:
                     n_deleted, r_deleted = self.delete_node(tx, obj)
                     nodes_deleted += n_deleted
