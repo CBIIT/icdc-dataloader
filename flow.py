@@ -3,7 +3,7 @@ from jinja2 import Environment, FileSystemLoader
 from prefect.blocks.system import Secret
 import subprocess
 import loader as neo4j_loader
-from bento.common.utils import UPSERT_MODE
+
 # Hardcoding Vars Temporarily
 neo4j_ip='localhost'
 neo4j_password=Secret.load("neo4j-password-dev").get()
@@ -38,16 +38,18 @@ def data_loader_wrapper(environment='dev',project_name='icdc',s3_folder='',wipe_
     with open(filename, mode="w", encoding="utf-8") as message:
         message.write(content)
         print(f"... wrote {filename}")  
-    # Run a shell command to import submodules recursively      
+         
     subprocess.Popen('git submodule update --init --recursive', shell=True)
+    
     args=populate_args(environment,project_name,s3_folder,wipe_db,cheat_mode,split_transactions,flush_redis)
+    
     neo4j_loader.main(args)
     
     pass
 
 # This function is required to populate the args object to pass to the main method in loader.py
 def populate_args(environment='dev',project_name='icdc',s3_folder='',wipe_db='false',cheat_mode='false',split_transactions='false', flush_redis='true'):
-
+    from bento.common.utils import UPSERT_MODE
     args = ArgsObjects
     args.uri='bolt://'+ neo4j_ip+ ':7687'
     args.config_file='config/config.yml'
