@@ -41,6 +41,8 @@ def data_loader_wrapper(environment='dev',project_name='icdc',s3_folder='',wipe_
          
     p=subprocess.Popen('git submodule update --init --recursive', shell=True)
     print("Imported Submodules")
+    time.sleep(10)
+    
     #Wait for the submodule import to finish
     if p is not None:
         import loader as neo4j_loader
