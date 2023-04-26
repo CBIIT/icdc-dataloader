@@ -3,7 +3,7 @@ from jinja2 import Environment, FileSystemLoader
 from prefect.blocks.system import Secret
 import subprocess
 import loader as neo4j_loader
-
+from bento.common.utils import UPSERT_MODE
 # Hardcoding Vars Temporarily
 neo4j_ip='localhost'
 neo4j_password=Secret.load("neo4j-password-dev").get()
@@ -68,7 +68,7 @@ def populate_args(environment='dev',project_name='icdc',s3_folder='',wipe_db='fa
     args.mode=None
     args.max_violations=10
     args.yes=None
-    args.loading_mode='upsert'
+    args.loading_mode= UPSERT_MODE
     return args
 
 
