@@ -39,15 +39,13 @@ def data_loader_wrapper(environment='dev',project_name='icdc',s3_folder='',wipe_
         message.write(content)
         print(f"... wrote {filename}")  
          
-    p=subprocess.Popen('git submodule update --init --recursive', shell=True)
-    print("Imported Submodules")
-    time.sleep(10)
+    subprocess.call('git submodule update --init --recursive', timeout=15, shell=True)
     
-    #Wait for the submodule import to finish
-    if p is not None:
-        import loader as neo4j_loader
-        args=populate_args(environment,project_name,s3_folder,wipe_db,cheat_mode,split_transactions,flush_redis)
-        neo4j_loader.main(args)
+    print("Imported Submodules")
+    #time.sleep(10)
+    import loader as neo4j_loader
+    args=populate_args(environment,project_name,s3_folder,wipe_db,cheat_mode,split_transactions,flush_redis)
+    neo4j_loader.main(args)
     
     pass
 
@@ -78,5 +76,9 @@ def populate_args(environment='dev',project_name='icdc',s3_folder='',wipe_db='fa
     return args
 
 
+if __name__ == "main":
+    data_loader_wrapper()
+
 #neo4j_loader.main()
-data_loader_wrapper('dev','icdc','',wipe_db='false',cheat_mode='false',split_transactions='false', flush_redis='true')
+if __name__ == "__main__":
+    data_loader_wrapper('dev','icdc','',wipe_db='false',cheat_mode='false',split_transactions='false', flush_redis='true')
