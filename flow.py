@@ -39,7 +39,7 @@ def data_loader_wrapper(environment='dev',project_name='icdc',s3_folder='',wipe_
         message.write(content)
         print(f"... wrote {filename}")  
          
-    subprocess.call('git submodule update --init --recursive', timeout=15, shell=True)
+    subprocess.call('git submodule update --init --recursive', timeout=60, shell=True)
     
     print("Imported Submodules")
     #time.sleep(10)
