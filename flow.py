@@ -3,7 +3,7 @@ from jinja2 import Environment, FileSystemLoader
 from prefect.blocks.system import Secret
 import subprocess
 import loader as neo4j_loader
-
+import time
 # Hardcoding Vars Temporarily
 neo4j_ip='localhost'
 neo4j_password=Secret.load("neo4j-password-dev").get()
@@ -39,11 +39,12 @@ def data_loader_wrapper(environment='dev',project_name='icdc',s3_folder='',wipe_
         message.write(content)
         print(f"... wrote {filename}")  
          
-    subprocess.Popen('git submodule update --init --recursive', shell=True)
-    
-    args=populate_args(environment,project_name,s3_folder,wipe_db,cheat_mode,split_transactions,flush_redis)
-    
-    neo4j_loader.main(args)
+    p=subprocess.Popen('git submodule update --init --recursive', shell=True)
+    print("Imported Submodules")
+    #Wait for the submodule import to finish
+    if p is not None:
+        args=populate_args(environment,project_name,s3_folder,wipe_db,cheat_mode,split_transactions,flush_redis)
+        neo4j_loader.main(args)
     
     pass
 
