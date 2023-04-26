@@ -17,6 +17,7 @@ if LOG_PREFIX not in os.environ:
     os.environ[LOG_PREFIX] = 'Data_Loader'
 
 os.environ[APP_NAME] = 'Data_Loader'
+USE_PREFECT=True
 
 from config import BentoConfig
 from data_loader import DataLoader
@@ -183,10 +184,15 @@ def prepare_plugin(config, schema):
 # Data loader will try to load all TSV(.TXT) files from given directory into Neo4j
 # optional arguments includes:
 # -i or --uri followed by Neo4j server address and port in format like bolt://12.34.56.78:7687
-def main():
+def main(args=None):
+    
     log = get_logger('Loader')
     log_file = get_log_file()
-    config = process_arguments(parse_arguments(), log)
+    print('USE PREFECT is:'+str(USE_PREFECT))
+    if(USE_PREFECT):
+        config = process_arguments(args, log)
+    else:
+        config = process_arguments(parse_arguments(), log)
     print_config(log, config)
 
     if not check_schema_files(config.schema_files, log):
@@ -271,4 +277,5 @@ def confirm_deletion(message):
 
 
 if __name__ == '__main__':
+    USE_PREFECT=False
     main()

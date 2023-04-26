@@ -652,6 +652,9 @@ class DataLoader:
 
     # load file
     def load_nodes(self, session, file_name, loading_mode, split=False):
+        print('LOADING MODE: '+loading_mode)
+        #HARD CODE
+        loading_mode = UPSERT_MODE
         if loading_mode == NEW_MODE:
             action_word = 'Loading new'
         elif loading_mode == UPSERT_MODE:
@@ -852,6 +855,8 @@ class DataLoader:
                 self.log.error('Delete old relationship failed!')
 
     def load_relationships(self, session, file_name, loading_mode, split=False):
+        #HARD CODE
+        loading_mode = UPSERT_MODE
         if loading_mode == NEW_MODE:
             action_word = 'Loading new'
         elif loading_mode == UPSERT_MODE:
