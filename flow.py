@@ -2,7 +2,7 @@ from prefect import flow
 from jinja2 import Environment, FileSystemLoader
 from prefect.blocks.system import Secret
 import subprocess
-import loader as neo4j_loader
+
 import time
 # Hardcoding Vars Temporarily
 neo4j_ip='localhost'
@@ -43,6 +43,7 @@ def data_loader_wrapper(environment='dev',project_name='icdc',s3_folder='',wipe_
     print("Imported Submodules")
     #Wait for the submodule import to finish
     if p is not None:
+        import loader as neo4j_loader
         args=populate_args(environment,project_name,s3_folder,wipe_db,cheat_mode,split_transactions,flush_redis)
         neo4j_loader.main(args)
     
