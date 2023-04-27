@@ -37,12 +37,15 @@ def data_loader_wrapper(environment='dev',project_name='icdc',s3_folder='',wipe_
     filename='config/config.yml'
     with open(filename, mode="w", encoding="utf-8") as message:
         message.write(content)
-        print(f"... wrote {filename}")  
-         
+        print(f"... wrote {filename}") 
+
+    subprocess.call('pwd', timeout=60, shell=True)     
     subprocess.call('git submodule update --init --recursive', timeout=60, shell=True)
-    
+    subprocess.call('pwd', timeout=60, shell=True) 
+    subprocess.call('ls -l', timeout=60, shell=True)
     print("Imported Submodules")
     #time.sleep(10)
+    #import loader as neo4j_loader
     import loader as neo4j_loader
     args=populate_args(environment,project_name,s3_folder,wipe_db,cheat_mode,split_transactions,flush_redis)
     neo4j_loader.main(args)
