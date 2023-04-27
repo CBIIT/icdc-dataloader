@@ -2,7 +2,7 @@ from prefect import flow
 from jinja2 import Environment, FileSystemLoader
 from prefect.blocks.system import Secret
 import subprocess
-
+from prefect.utilities.importtools import import_object
 import time
 # Hardcoding Vars Temporarily
 neo4j_ip='localhost'
@@ -43,10 +43,14 @@ def data_loader_wrapper(environment='dev',project_name='icdc',s3_folder='',wipe_
     subprocess.call('git submodule update --init --recursive', timeout=60, shell=True)
     subprocess.call('pwd', timeout=60, shell=True) 
     subprocess.call('ls -l', timeout=60, shell=True)
+    subprocess.call('ls -l bento/', timeout=60, shell=True)
     print("Imported Submodules")
     #time.sleep(10)
     #import loader as neo4j_loader
+    from bento.common.utils import UPSERT_MODE
     import loader as neo4j_loader
+    
+    #neo4j_loader = import_object("loader")
     args=populate_args(environment,project_name,s3_folder,wipe_db,cheat_mode,split_transactions,flush_redis)
     neo4j_loader.main(args)
     
