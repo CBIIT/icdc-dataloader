@@ -47,6 +47,8 @@ def data_loader_wrapper(environment='dev',project_name='icdc',s3_folder='',wipe_
     print("Imported Submodules")
     #time.sleep(10)
     #import loader as neo4j_loader
+    from loader import main
+    time.sleep(30)
     from bento.common.utils import UPSERT_MODE
     import loader as neo4j_loader
     
