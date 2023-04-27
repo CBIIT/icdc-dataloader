@@ -199,7 +199,7 @@ class FileLoader:
         :param record:
         :return:
         """
-        return {key.strip(): value for key, value in record.items()}
+        return {key.strip(): value.strip() for key, value in record.items()}
 
     def _read_pre_manifest(self):
         files = []
