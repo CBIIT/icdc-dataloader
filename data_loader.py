@@ -250,9 +250,9 @@ class DataLoader:
             # Split Transactions Disabled
             else:
                 # Data updates transaction
-                tx = session.begin_transaction()
+                # tx = session.begin_transaction()
                 try:
-                    self._load_all(tx, file_list, loading_mode, split, wipe_db)
+                    self._load_all(session, file_list, loading_mode, split, wipe_db)
                     tx.commit()
                 except Exception as e:
                     tx.rollback()
@@ -717,12 +717,14 @@ class DataLoader:
             transaction_counter = 0
 
             # Use session in one transaction mode
-            tx = session
+            tx = session.begin_transaction()
             # Use transactions in split-transactions mode
             if split:
                 tx = session.begin_transaction()
 
+            temp_line = 0
             for org_obj in reader:
+                print(line_num)
                 line_num += 1
                 transaction_counter += 1
                 obj = self.prepare_node(org_obj)
@@ -747,6 +749,16 @@ class DataLoader:
                     relationship_deleted += r_deleted
                 else:
                     raise Exception('Wrong loading_mode: {}'.format(loading_mode))
+                
+                if temp_line >= 100000:
+                    result = tx.run(statement)
+                    tx.commit()
+                    temp_line = 0
+                    temp_file = open(temp_file_location+'/import/temp.txt','w')
+                    temp_file.write('')
+                    temp_file.close()
+                    tx = session.begin_transaction()
+
 
             if loading_mode != DELETE_MODE:
                 result = tx.run(statement)
