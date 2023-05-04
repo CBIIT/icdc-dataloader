@@ -292,10 +292,7 @@ class DataLoader:
     # Remove extra spaces at beginning and end of the keys and values
     @staticmethod
     def cleanup_node(node):
-        obj = {}
-        for key, value in node.items():
-            obj[key.strip()] = value.strip()
-        return obj
+        return {key if not key else key.strip(): value if not value else value.strip() for key, value in node.items()}
 
     # Cleanup values for Boolean, Int and Float types
     # Add uuid to nodes if one not exists
