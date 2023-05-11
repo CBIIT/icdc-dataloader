@@ -37,19 +37,19 @@ RELATIONSHIP_PROPS = 'relationship_properties'
 BATCH_SIZE = 1000
 
 
-def get_indexes(session):
+def get_btree_indexes(session):
     """
     Queries the database to get all existing indexes
     :param session: the current neo4j transaction session
     :return: A set of tuples representing all existing indexes in the database
     """
-    command = "call db.indexes()"
+    command = "SHOW INDEXES"
     result = session.run(command)
     indexes = set()
     for r in result:
-        indexes.add(format_as_tuple(r["labelsOrTypes"][0], r["properties"]))
+        if r["type"] == "BTREE":
+            indexes.add(format_as_tuple(r["labelsOrTypes"][0], r["properties"]))
     return indexes
-
 
 def format_as_tuple(node_name, properties):
     """
@@ -989,7 +989,7 @@ class DataLoader:
         properties file
         :param session: the current neo4j transaction session
         """
-        existing = get_indexes(session)
+        existing = get_btree_indexes(session)
         # Create indexes from "id_fields" section of the properties file
         ids = self.schema.props.id_fields
         for node_name in ids:
