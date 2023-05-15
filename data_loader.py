@@ -47,8 +47,7 @@ def get_indexes(session):
     result = session.run(command)
     indexes = set()
     for r in result:
-        # indexes.add(format_as_tuple(r["labelsOrTypes"][0], r["properties"]))
-        continue
+        indexes.add(format_as_tuple(r["labelsOrTypes"][0], r["properties"]))
     return indexes
 
 
@@ -235,7 +234,7 @@ class DataLoader:
         with self.driver.session() as session:
             tx = session.begin_transaction()
             try:
-                self.create_indexes(tx)
+                # self.create_indexes(tx)
                 tx.commit()
             except Exception as e:
                 tx.rollback()
@@ -251,13 +250,13 @@ class DataLoader:
             else:
                 # Data updates transaction
                 # tx = session.begin_transaction()
-                try:
-                    self._load_all(session, file_list, loading_mode, split, wipe_db)
-                    tx.commit()
-                except Exception as e:
-                    tx.rollback()
-                    self.log.exception(e)
-                    return False
+                # try:
+                self._load_all(session, file_list, loading_mode, split, wipe_db)
+                    # tx.commit()
+                # except Exception as e:
+                #     tx.rollback()
+                #     self.log.exception(e)
+                #     return False
 
         # End the timer
         end = timer()
@@ -578,7 +577,6 @@ class DataLoader:
 
         f2 = open(temp_file_location+'/import/temp.txt','r+',encoding=file_encoding)
         s_text =""
-        f2_old = f2.read()
         for key in obj.keys():
             if key in excluded_fields:
                 continue
@@ -605,11 +603,21 @@ class DataLoader:
         # f.close()
         return statement2
 
-    def get_upsert_statement(self, node_type, id_field, obj):
+    # def get_upsert_statement(self, node_type, id_field, obj):
+    def get_upsert_statement(self, node_type,id_field, obj,file_encoding, temp_file_location):
+
         # statement is used to create current node
         statement = ''
         prop_stmts = []
+        prop_stmts2=[]
 
+        ii=1
+
+        f2 = open(temp_file_location+'/import/temp.txt','r+',encoding=file_encoding)
+        # s_text = ""
+        s_text = id_field
+        print(id_field)
+        # quit()
         for key in obj.keys():
             if key in excluded_fields:
                 continue
@@ -621,12 +629,25 @@ class DataLoader:
                 continue
 
             prop_stmts.append('n.{0} = ${0}'.format(key))
+            prop_stmts2.append(' n.{0} =  line[{1}]'.format(key,str(ii)))
+            s_text = s_text + '\t'+str(obj[key])
 
-        statement += 'MERGE (n:{0} {{ {1}: ${1} }})'.format(node_type, id_field)
-        statement += ' ON CREATE ' + 'SET n.{} = datetime(), '.format(CREATED) + ' ,'.join(prop_stmts)
-        statement += ' ON MATCH ' + 'SET n.{} = datetime(), '.format(UPDATED) + ' ,'.join(prop_stmts)
-        # print(statement)
-        return statement
+            ii=ii+1
+
+        statement += 'MERGE (n:{0} {{ {1}: line[1]}})'.format(node_type, id_field)
+        # MERGE (n:diagnosis { diagnosis_id: line[1]}) 
+        # statement += 'MERGE (n:{0} )'
+        # statement += ' ON CREATE ' + 'SET n.{} = datetime(), '.format(CREATED) + ' ,'.join(prop_stmts2)
+        statement += ' ON CREATE ' + 'SET '+' ,'.join(prop_stmts2)
+        # statement += ' ON MATCH ' + 'SET n.{} = datetime(), '.format(UPDATED) + ' ,'.join(prop_stmts2)
+        statement += ' ON MATCH ' + 'SET '+' ,'.join(prop_stmts2)
+        loadcsv_statement = 'LOAD CSV FROM \"file:///temp.txt\" AS line FIELDTERMINATOR \'\\t\' ' + statement
+
+        f2.write(s_text + "\n")
+        f2.close()
+        print(loadcsv_statement)
+        # quit()
+        return loadcsv_statement
 
     # Delete a node and children with no other parents recursively
     def delete_node(self, session, node):
@@ -719,8 +740,6 @@ class DataLoader:
             # Use session in one transaction mode
             tx = session.begin_transaction()
             # Use transactions in split-transactions mode
-            if split:
-                tx = session.begin_transaction()
 
             temp_line = 0
             for org_obj in reader:
@@ -734,8 +753,9 @@ class DataLoader:
                     raise Exception('Line:{}: No ids found!'.format(line_num))
                 id_field = self.schema.get_id_field(obj)
                 if loading_mode == UPSERT_MODE:
-                    # statement = self.get_upsert_statement(node_type, id_field, obj)
-                    statement = self.get_new_statement(node_type, obj,file_encoding, temp_file_location)
+                    statement = self.get_upsert_statement(node_type, id_field, obj, file_encoding, temp_file_location)
+                    # statement = self.get_new_statement(node_type, obj,file_encoding, temp_file_location)
+                    # statement = self.get_upsert_statement(node_type, id_field, obj,file_encoding, temp_file_location)
                 elif loading_mode == NEW_MODE:
                     if self.node_exists(tx, node_type, id_field, node_id):
                         raise Exception(
@@ -765,8 +785,8 @@ class DataLoader:
                     
                 # commit and restart a transaction when batch size reached
             # commit last transaction
-            if split:
-                tx.commit()
+    # if split: 
+            tx.commit()
 
             if loading_mode == DELETE_MODE:
                 self.log.info('{} node(s) deleted'.format(nodes_deleted))
