@@ -234,7 +234,7 @@ class DataLoader:
         with self.driver.session() as session:
             tx = session.begin_transaction()
             try:
-                # self.create_indexes(tx)
+                self.create_indexes(tx)
                 tx.commit()
             except Exception as e:
                 tx.rollback()
@@ -569,14 +569,14 @@ class DataLoader:
                         self.log.warning('Invalid data at line {}: "{}"!'.format(line_num, msg))
             return not validation_failed
 
-    def get_new_statement(self, node_type, obj,file_encoding, temp_file_location):
+    def get_new_statement(self, node_type, obj,s_text):
         # statement is used to create current node
         prop_stmts = []
         prop_stmts2 = []
         ii=1
 
-        f2 = open(temp_file_location+'/import/temp.txt','r+',encoding=file_encoding)
-        s_text =""
+
+        s_line = ""
         for key in obj.keys():
             if key in excluded_fields:
                 continue
@@ -589,10 +589,11 @@ class DataLoader:
             prop_stmts2.append('{0}: line[{1}]'.format(key,str(ii)))
             ii=ii+1
             # print(obj[key])
-            s_text = s_text + '\t'+str(obj[key])
+            s_line = s_line + '\t'+str(obj[key])
         # f2.write(f2_old + s_text + "\n")
-        f2.write(s_text + "\n")
-        f2.close()
+        # print(s_text)
+        s_text = s_text + s_line+"\n"
+
         # statement = 'CREATE (:{0} {{ {1} }})'.format(node_type, ' ,'.join(prop_stmts))
         statement = 'CREATE (:{0} {{ {1} }})'.format(node_type, ' ,'.join(prop_stmts))
         statement2 = 'LOAD CSV FROM \"file:///temp.txt\" AS line FIELDTERMINATOR \'\\t\' CREATE (:{0} {{ {1} }})'.format(node_type, ' ,'.join(prop_stmts2))
@@ -601,10 +602,10 @@ class DataLoader:
         # f = open('test/demofile2_'+'.txt', "w")
         # f.write(statement)
         # f.close()
-        return statement2
+        return [statement2, s_text]
 
     # def get_upsert_statement(self, node_type, id_field, obj):
-    def get_upsert_statement(self, node_type,id_field, obj,file_encoding, temp_file_location):
+    def get_upsert_statement(self, node_type,id_field, obj, s_text):
 
         # statement is used to create current node
         statement = ''
@@ -613,11 +614,7 @@ class DataLoader:
 
         ii=1
 
-        f2 = open(temp_file_location+'/import/temp.txt','r+',encoding=file_encoding)
-        # s_text = ""
-        s_text = id_field
-        print(id_field)
-        # quit()
+        s_line = ""
         for key in obj.keys():
             if key in excluded_fields:
                 continue
@@ -630,24 +627,18 @@ class DataLoader:
 
             prop_stmts.append('n.{0} = ${0}'.format(key))
             prop_stmts2.append(' n.{0} =  line[{1}]'.format(key,str(ii)))
-            s_text = s_text + '\t'+str(obj[key])
+            s_line = s_line + '\t'+str(obj[key])
 
             ii=ii+1
 
         statement += 'MERGE (n:{0} {{ {1}: line[1]}})'.format(node_type, id_field)
-        # MERGE (n:diagnosis { diagnosis_id: line[1]}) 
-        # statement += 'MERGE (n:{0} )'
-        # statement += ' ON CREATE ' + 'SET n.{} = datetime(), '.format(CREATED) + ' ,'.join(prop_stmts2)
-        statement += ' ON CREATE ' + 'SET '+' ,'.join(prop_stmts2)
-        # statement += ' ON MATCH ' + 'SET n.{} = datetime(), '.format(UPDATED) + ' ,'.join(prop_stmts2)
-        statement += ' ON MATCH ' + 'SET '+' ,'.join(prop_stmts2)
+        statement += ' ON CREATE ' + 'SET n.{} = datetime(), '.format(CREATED) + ' ,'.join(prop_stmts2)
+        statement += ' ON MATCH ' + 'SET n.{} = datetime(), '.format(UPDATED) + ' ,'.join(prop_stmts2)
         loadcsv_statement = 'LOAD CSV FROM \"file:///temp.txt\" AS line FIELDTERMINATOR \'\\t\' ' + statement
 
-        f2.write(s_text + "\n")
-        f2.close()
-        print(loadcsv_statement)
-        # quit()
-        return loadcsv_statement
+        s_text = s_text + s_line+"\n"
+
+        return [loadcsv_statement, s_text]
 
     # Delete a node and children with no other parents recursively
     def delete_node(self, session, node):
@@ -728,6 +719,10 @@ class DataLoader:
         temp_file.write('')
         temp_file.close()
 
+        f2 = open(temp_file_location+'/import/temp.txt','r+',encoding=file_encoding)
+        # s_text_2 =f2.read()
+        s_text =f2.read()
+
         with open(file_name, encoding=file_encoding) as in_file:
             reader = csv.DictReader(in_file, delimiter='\t')
             nodes_created = 0
@@ -753,8 +748,10 @@ class DataLoader:
                     raise Exception('Line:{}: No ids found!'.format(line_num))
                 id_field = self.schema.get_id_field(obj)
                 if loading_mode == UPSERT_MODE:
-                    statement = self.get_upsert_statement(node_type, id_field, obj, file_encoding, temp_file_location)
-                    # statement = self.get_new_statement(node_type, obj,file_encoding, temp_file_location)
+                    statement_int = self.get_upsert_statement(node_type, id_field, obj, s_text)
+                    # statement_int = self.get_new_statement(node_type, obj,s_text)
+                    statement = statement_int[0]
+                    s_text = statement_int[1]
                     # statement = self.get_upsert_statement(node_type, id_field, obj,file_encoding, temp_file_location)
                 elif loading_mode == NEW_MODE:
                     if self.node_exists(tx, node_type, id_field, node_id):
@@ -762,7 +759,9 @@ class DataLoader:
                             'Line: {}: Node (:{} {{ {}: {} }}) exists! Abort loading!'.format(line_num, node_type,
                                                                                               id_field, node_id))
                     else:
-                        statement = self.get_new_statement(node_type, obj,file_name)
+                        statement_int = self.get_new_statement(node_type, obj,file_name)
+                        statement = statement_int[0]
+                        s_text = statement_int[1]
                 elif loading_mode == DELETE_MODE:
                     n_deleted, r_deleted = self.delete_node(tx, obj)
                     nodes_deleted += n_deleted
@@ -770,15 +769,17 @@ class DataLoader:
                 else:
                     raise Exception('Wrong loading_mode: {}'.format(loading_mode))
                 
-                if temp_line >= 100000:
-                    result = tx.run(statement)
-                    tx.commit()
-                    temp_line = 0
-                    temp_file = open(temp_file_location+'/import/temp.txt','w')
-                    temp_file.write('')
-                    temp_file.close()
-                    tx = session.begin_transaction()
+                # if temp_line >= 100000:
+                #     result = tx.run(statement)
+                #     tx.commit()
+                #     temp_line = 0
+                #     temp_file = open(temp_file_location+'/import/temp.txt','w')
+                #     temp_file.write('')
+                #     temp_file.close()
+                #     tx = session.begin_transaction()
 
+            f2.write(statement_int[1])
+            f2.close()
 
             if loading_mode != DELETE_MODE:
                 result = tx.run(statement)
