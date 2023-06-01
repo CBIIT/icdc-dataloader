@@ -135,7 +135,7 @@ class Copier:
                 self.log.info(f'Downloading file and verifying MD5 locally...')
                 local_file = f'tmp/{file_name}'
                 local_md5 = _get_org_md5(org_url, local_file)
-                if local_md5 != org_md5:
+                if local_md5.lower() != org_md5.lower():
                     self.log.error(f'MD5 verify failed! Original MD5: {org_md5}, local MD5: {local_md5}')
                     return {self.STATUS: False}
                 self.log.info(f'MD5 verified!')
