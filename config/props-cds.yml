@@ -27,8 +27,8 @@ Properties:
 
   id_fields:
     study: phs_accession
-    participant: participant_id
-    diagnosis: diagnosis_id
+    participant: study_participant_id
+    diagnosis: study_diagnosis_id
     treatment: treatment_id
     specimen: specimen_id
     sample: sample_id
