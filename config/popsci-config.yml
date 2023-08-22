@@ -45,7 +45,7 @@ Config:
   s3_bucket:
   # S3 folder for dataset, will be overridden by --s3-folder argument
   s3_folder:
-  # Loading mode, can be UPSERT_MODE, NEW_MODE or DELETE_MODE, default is UPSERT_MODE, can be overridden by -m/--mode argument
-  loading_mode: UPSERT_MODE
+  # Loading mode, can be "upsert", "new" or "delete", default is "upsert", can be overridden by -m/--mode argument
+  loading_mode: upsert
   # Location of dataset, can be overridden by --dataset argument
   dataset: '/data'
