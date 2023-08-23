@@ -902,7 +902,7 @@ class DataLoader:
                         else:
                             self.log.debug('Multiplier: {}, no action needed!'.format(multiplier))
                         prop_statement = ', '.join(self.get_relationship_prop_statements(properties))
-                        statement = 'MATCH (m:{0} {{ {1}: ${1} }})'.format(parent_node, parent_id_field)
+                        statement = 'MATCH (m:{0} {{ {1}: $__parentID__ }})'.format(parent_node, parent_id_field)
                         statement += ' MATCH (n:{0} {{ {1}: ${1} }})'.format(node_type,
                                                                              self.schema.get_id_field(obj))
                         statement += ' MERGE (n)-[r:{}]->(m)'.format(relationship_name)
@@ -911,7 +911,7 @@ class DataLoader:
                         statement += ' ON MATCH SET r.{} = datetime()'.format(UPDATED)
                         statement += ', {}'.format(prop_statement) if prop_statement else ''
 
-                        result = tx.run(statement, {**obj, parent_id_field: parent_id, **properties})
+                        result = tx.run(statement, {**obj, "__parentID__": parent_id, **properties})
                         count = result.consume().counters.relationships_created
                         self.relationships_created += count
                         relationship_pattern = '(:{})->[:{}]->(:{})'.format(node_type, relationship_name, parent_node)

@@ -152,7 +152,7 @@ All of command line arguments can be specified in the configuration file. If an 
     * The loading mode, valid inputs are ````upsert````, ````new````, ````delete````
     * Command : ````-m/--mode <mode>````
     * Not Required
-    * Default Value : ````UPSERT_MODE````
+    * Default Value : ````upsert````
 * **Enable No Parent IDs Mode**
     * Does not save parent node IDs in children nodes
     * Command : ````--no-parents````
