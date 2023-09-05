@@ -20,7 +20,7 @@ os.environ[APP_NAME] = 'Data_Loader'
 
 from config import BentoConfig
 from data_loader import DataLoader
-from bento.common.s3 import S3Bucket
+from bento.common.s3 import S3Bucket, upload_log_file
 
 
 def parse_arguments():
@@ -166,12 +166,12 @@ def process_arguments(args, log):
 
     return config
 
-
-def upload_log_file(bucket_name, folder, file_path):
-    base_name = os.path.basename(file_path)
-    s3 = S3Bucket(bucket_name)
-    key = f'{folder}/{base_name}'
-    return s3.upload_file(key, file_path)
+# use util function imported
+# def upload_log_file(bucket_name, folder, file_path):
+#     base_name = os.path.basename(file_path)
+#     s3 = S3Bucket(bucket_name)
+#     key = f'{folder}/{base_name}'
+#     return s3.upload_file(key, file_path)
 
 def prepare_plugin(config, schema):
     if not config.params:
@@ -235,7 +235,8 @@ def main():
                 log.info(restore_cmd)
             if load_result == False:
                 log.error('Data files upload failed')
-                sys.exit(1)
+                #need to diable exit to allow log maximun errors configured.
+                #sys.exit(1)
         else:
             log.info('No files to load.')
 
@@ -255,13 +256,18 @@ def main():
         if restore_cmd:
             log.info(restore_cmd)
 
-    if config.s3_bucket and config.s3_folder:
-        result = upload_log_file(config.s3_bucket, f'{config.s3_folder}/logs', log_file)
-        if result:
-            log.info(f'Uploading log file {log_file} succeeded!')
-        else:
-            log.error(f'Uploading log file {log_file} failed!')
-
+    log_file = get_log_file()
+    #set default log file upload dir
+    dest_log_dir = f's3://{config.s3_bucket}/{config.s3_folder}/logs'
+    #check if uploaded dir is configured
+    if config.upload_log_dir:
+        dest_log_dir = config.upload_log_dir
+    try:
+        upload_log_file(dest_log_dir, log_file)
+        log.info(f'Uploading log file {log_file} succeeded!')
+    except Exception as e:
+        log.debug(e)
+        log.error('Copy file failed! Check debug log for detailed information')
 
 def confirm_deletion(message):
     print(message)

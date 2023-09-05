@@ -1,0 +1,193 @@
+Handle: CDS
+Nodes:
+  program:
+    Props:
+      - program_name
+      - program_acronym
+      - program_short_description
+      - program_full_description
+      - program_external_url
+      - program_sort_order
+  study:
+    Props:
+      - study_name
+      - study_acronym
+      - study_description
+      - short_description
+      - study_external_url
+      - primary_investigator_name
+      - primary_investigator_email
+      - co_investigator_name
+      - co_investigator_email
+      - phs_accession
+      - bioproject_accession
+      - index_date # what are relative dates relative to? dx date, collection date, etc.
+      - cds_requestor
+      - funding_agency
+      - funding_source_program_name
+      - grant_id
+      - clinical_trial_system
+      - clinical_trial_identifier
+      - clinical_trial_arm
+      - organism_species
+      - adult_or_childhood_study # adult, pediatric
+      - data_types # list from enumerated values
+      - file_types # list from enumerated values
+      - data_access_level
+      - cds_primary_bucket
+      - cds_secondary_bucket
+      - cds_tertiary_bucket      
+      - number_of_participants
+      - number_of_samples
+      - study_data_types
+      - experimental_strategy_and_data_subtypes
+      - file_types_and_format
+      - size_of_data_being_uploaded
+      - acl
+  participant:
+    Props:
+      - participant_id
+      - race
+      - gender
+      - ethnicity
+      #  - vital_status
+      - dbGaP_subject_id
+      
+  diagnosis: # may have multiple dxs for multiple timepoints?
+    Props:
+      - diagnosis_id
+      - disease_type
+      - vital_status
+      - primary_diagnosis
+      - primary_site
+      - age_at_diagnosis
+      - tumor_grade
+      - tumor_stage_clinical_m
+      - tumor_stage_clinical_n
+      - tumor_stage_clinical_t
+      - morphology
+      - incidence_type # primary, metastatic, recurrence, progression
+      - progression_or_recurrence
+      - days_to_recurrence
+      - days_to_last_followup
+      - last_known_disease_status
+      - days_to_last_known_status
+  treatment:
+    Props:
+      - treatment_id
+      - treatment_type
+      - treatment_outcome
+      - days_to_treatment
+      - therapeutic_agents
+  specimen:
+    Props:
+      - specimen_id
+  sample: # aka subspecimen (CMB)
+    Props:
+      - sample_id
+      - sample_type
+      - sample_tumor_status # tumor or normal
+      - sample_anatomic_site
+      - sample_age_at_collection
+      - derived_from_specimen
+      - biosample_accession
+      
+  file:
+    Props:
+      - file_id
+      - file_name
+      - file_type
+      - file_description
+      - file_size
+      - md5sum
+      - file_url_in_cds
+
+  genomic_info:
+    Props:
+      - library_id
+      - bases
+      - number_of_reads
+      - avg_read_length
+      - coverage
+      - reference_genome_assembly
+      - custom_assembly_fasta_file_for_alignment
+      - design_description
+      - library_strategy
+      - library_layout
+      - library_source
+      - library_selection
+      - platform
+      - instrument_model
+      - sequence_alignment_software
+      
+  methylation:
+    Props:
+      - reporter_label
+      - methylation_platform
+Relationships:
+  of_program:
+    Props: null
+    Mul: many_to_one
+    Ends:
+      - Src: study
+        Dst: program
+  of_study:
+    Props: null
+    Mul: many_to_one
+    Ends:
+      - Src: participant
+        Dst: study
+  of_participant:
+    Props: null
+    Mul: many_to_one
+    Ends:
+      - Src: diagnosis
+        Dst: participant
+      - Src: specimen
+        Dst: participant
+      - Src: sample
+        Dst: participant
+  of_specimen:
+    Props: null
+    Mul: many_to_one
+    Ends:
+      - Src: sample
+        Dst: specimen
+  from_sample:
+    Props: null
+    Mul: many_to_many
+    Ends:
+      - Src: file
+        Dst: sample
+  from_genomic_info:
+    Props: null
+    Mul: many_to_many
+    Ends:
+      - Src: file
+        Dst: genomic_info
+  in_genomic_info:
+    Props: null
+    Mul: many_to_many
+    Ends:
+      - Src: sample
+        Dst: genomic_info
+  of_file:
+    Props: null
+    Mul: one_to_one
+    Ends:
+      - Src: genomic_info
+        Dst: file
+      - Src: methylation
+        Dst: file
+  from_methylation:
+    Props: null
+    Mul: many_to_many
+    Ends:
+      - Src: file
+        Dst: methylation
+  in_methylation:
+    Props: null
+    Mul: many_to_many
+    Ends:
+      - Src: sample
+        Dst: methylation

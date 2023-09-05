@@ -1,0 +1,640 @@
+PropDefinitions:
+  # file
+  file_id:
+    Desc: File identifier
+    Type: string
+    Req: true
+  file_url_in_cds:
+    Desc: Location of the file on the CDS cloud, using AWS S3 protocol
+    Type: string
+    Req: true
+  file_description:
+    Desc: Human-readable description of file
+    Type: string
+    Req: Preferred
+  file_name:
+    Desc: Name of file
+    Type: string
+    Req: true
+  file_size:
+    Desc: File size in bytes
+    Type: integer
+    Req: false
+  file_type:
+    Desc: File type from enumerated list
+    Enum:
+      - bam
+      - bai
+      - fastq
+    Req: true
+  md5sum:
+    Desc: MD5 hex digest for this file
+    Type:
+      pattern: "^[0-9a-fA-F]{32}$"
+    Req: true
+
+  # participant
+  ethnicity:
+    Desc: OMB Ethinicity designator
+    Enum:
+      - not reported
+    Req: true
+  gender:
+    Desc: Biological gender at birth
+    Enum:
+      - Male
+      - Female
+      - Unknown
+    Req: true
+  race:
+    Desc: OMB Race designator
+    Type:
+      value_type: list
+      item_type:
+        - TBD
+    Req: true
+  participant_id:
+    Desc: |
+      A number or a string that may contain metadata information, for a participant
+      who has taken part in the investigation or study.
+    Type: string
+    Req: true
+  vital_status:
+    Desc: Vital status as of last known follow up
+    Enum:
+      - Alive
+      - Deceased
+      - Unknown
+  dbGaP_subject_id: 
+    Desc: Identifier for the participant as assigned by dbGaP 
+    Type: string
+    Req: Preferred
+  # diagnosis
+  diagnosis_id:
+    Desc: Internal identifier
+    Type: string
+  disease_type:
+    Desc: Type of disease [?]
+    Type: string
+  age_at_diagnosis:
+    Desc: Participant age at relevant diagnosis
+    Type: integer
+  days_to_last_known_status:
+    Desc: Days to last known status of participant, relative to study index date
+    Type: integer
+  days_to_last_followup:
+    Desc: Days to last participant followup, relative to study index date
+    Type: integer
+  days_to_recurrence:
+    Desc: Days to disease recurrence, relative to study index date
+    Type: integer
+  incidence_type:
+    Desc: For this diagnosis, disease incidence relative to prior status of subject
+    Enum:
+      - primary
+      - progression
+      - recurrence
+      - metastasis
+      - remission
+      - no_disease
+  last_known_disease_status:
+    Desc: Last known disease incidence for this subject and diagnosis
+    Enum:
+      - primary
+      - progression
+      - recurrence
+      - metastasis
+      - remission
+      - no_disease
+  primary_diagnosis:
+    Desc: Primary disease diagnosed for this diagnosis and subject
+    Enum:
+      # reuse ICD-O-3 value_set
+      - TBD
+  primary_site:
+    Desc: Anatomical site of disease in primary diagnosis for this diagnosis
+    Enum:
+      # reuse GDC anatomical site list
+      - TBD
+  morphology:
+    Desc: ICD-O-3 Morphology term associated with this diagnosis
+    Enum:
+      # ICD-O-3 M
+      - TBD
+  tumor_grade:
+    Desc: Numeric value to express the degree of abnormality of cancer cells, a measure of differentiation and aggressiveness.
+    Enum:
+      - TBD
+  tumor_stage_clinical_t:
+    Desc: Extent of the primary cancer based on evidence obtained from clinical assessment parameters determined prior to treatment.
+    Enum:
+      - TBD
+  tumor_stage_clinical_n:
+    Desc: Extent of the regional lymph node involvement for the cancer based on evidence obtained from clinical assessment parameters determined prior to treatment.
+    Enum:
+      - TBD
+  tumor_stage_clinical_m:
+    Desc: Extent of the distant metastasis for the cancer based on evidence obtained from clinical assessment parameters determined prior to treatment.
+    Enum:
+      - TBD
+  progression_or_recurrence:
+    Desc: Yes/No/Unknown indicator to identify whether a patient has had a new tumor event after initial treatment.
+    Enum:
+      - 'Yes'
+      - 'No'
+      - Unknown
+  # study
+  bioproject_accession:
+    Desc: NCBI BioProject accession ID
+    Type:
+      pattern: "^PRJNA[0-9]+$"
+    Req: 'Preferred'
+  index_date:
+    Desc: Index date (Day 0) to which all dates are relative, for this study
+    Enum:
+      - date_of_diagnosis
+      - date_of_enrollment
+      - date_of_collection
+      - date_of_birth
+  phs_accession:
+    Desc: PHS accession number (a.k.a dbGaP accession)
+    Req: true
+    Type:
+      pattern: "^phs[0-9]+([.]v[0-9]+)*$"
+  study_acronym:
+    Desc: Short acronym or other study desginator
+    Type: string
+  study_description:
+    Desc: Human-readable study description
+    Type: string
+  short_description:
+    Desc: |
+      Short description that will identify the dataset on public pages
+      A clear and concise formula for the title would be like:
+      {methodology} of {organism}: {sample info}
+    Type: string
+    Req: 'Yes'
+  study_external_url:
+    Desc: Website or other url relevant to study
+    Type: url
+  study_name:
+    Desc: Official name of study
+    Type: string
+    Req: 'Yes'
+  primary_investigator_name:
+    Desc: Name of principal investigator
+    Type: string
+    Req: Preferred
+  acl:
+    Desc: open or restricted access to data
+    Enum:
+      - open
+      - controlled
+  primary_investigator_email:
+    Desc: Email of principal investigator
+    Type: string
+    Req: Preferred 
+  co_investigator_name:
+    Desc: Name of co-principal investigator
+    Type: string
+  co_investigator_email:
+    Desc: Email of co-principal investigator
+    Type: string
+  cds_primary_bucket:
+    Desc: The primary bucket for depositing data
+    Type: string
+    Req: Preferred
+  cds_secondary_bucket:
+    Desc: Secondary bucket for depositing data (non-sequence files)
+    Type: string
+  cds_tertiary_bucket:
+    Desc: Secondary bucket for depositing data (non-sequence files)
+    Type: string
+
+  # sample
+  biosample_accession:
+    Desc: NCBI BioSample accession ID (SAMN) for this sample
+    Type:
+      pattern: "^SAMN[0-9]+$"
+    Req: Preferred
+  sample_age_at_collection:
+    Desc: Number of days to collection, relative to index date
+    Type: integer
+  sample_anatomic_site:
+    Desc: Anatomic site from which sample was collected
+    Enum:
+      # use GDC anatomic site list
+      - Bone marrow
+      - post mortem blood
+      - post mortem liver
+      - Frontal Lobe
+      - Peripheral blood
+      - Lung
+      - tumor
+      - post mortem liver tumor
+      - Left Bone marrow
+      - Right Bone marrow
+      - Left thigh
+      - Lung/pleura
+      - R. femur/rib/verebra
+      - Femur
+      - Paraspinal mass
+      - Abdominal mass
+      - Kidney
+      - Brain stem
+      - Cerebrum
+      - Cerebellum
+      - R. Buttock
+      - Shoulder
+      - L. Kidney
+      - R. Kidney
+      - Ventricular mass
+      - Bilateral
+      - Retroperitoneal mass
+      - Adrenal mass
+      - R. Breast metastasis
+      - Paracaval Lymph Node metastasis
+      - Transverse Colon
+      - Lymph Node met
+      - Orbit
+      - Lung met
+      - Liver
+      - 4th ventricle
+      - L. Occipital mass
+      - Posterior mediastil mass (mediastinum)
+      - R. Proximal Ulna
+      - R. Sylvian Fissure
+      - Lung metastasis
+      - Liver metastasis
+      - R. Parietal Lobe
+      - Tibia
+      - Humerus
+      - Lung mass
+      - R. Distal Femur
+      - R. Humerus
+      - L. Femur
+      - Distal femur
+      - L. Distal Femur
+      - Os frontalis
+      - L. Proximal Tibia
+      - Arm
+      - Perineum
+      - Bone Marrow metastasis
+      - Paratesticular
+      - Cervical node
+      - R. Neck mass
+      - Pleural effusion met
+      - not reported
+
+  sample_id:
+    Desc: Sample identifier as submitted by requestor
+    Type: string
+    Req: 'Yes'
+  sample_tumor_status:
+    Desc: Tumor or normal status
+    Enum:
+      - tumor
+      - normal
+  sample_type:
+    Desc: Tissue type of this sample
+    Enum:
+      # use GDC list of tissue types
+      - DNA_and_RNA
+      - DNA
+      - RNA
+    Req: 'Yes'
+  derived_from_specimen:
+    Desc: Identier of the parent specimen of this sample
+    Type: string
+  # treatment
+  treatment_id:
+    Desc: Internal identifier
+    Type: string
+  days_to_treatment:
+    Desc: Days to start of treatment, relative to index date
+    Type: integer
+  treatment_outcome:
+    Desc: Text term that describes the patient\'s final outcome after the treatment was administered
+    Enum:
+      # use GDC outcome list?
+      - TBD
+  treatment_type:
+    Desc: Text term that describes the kind of treatment administered
+    Enum:
+      # use CMB list?
+      - TBD
+  therapeutic_agents:
+    Desc: Text identification of the individual agent(s) used as part of a treatment regimen.
+    Type:
+      value_type: list
+      item_type: string
+
+  #genomic_info
+  reference_genome_assembly:
+    Desc: Accession or name of genome reference or assembly used for alignment
+    Type: string
+    Req: 'Yes'
+  avg_read_length:
+    Desc: Average sequence read length
+    Type: number
+    Req: Preferred
+  coverage:
+    Desc: Average depth of coverage on reference used
+    Type: number
+    Req: Preferred
+  bases:
+    Desc: Total number of unique bases read
+    Type: integer
+    Req: Preferred
+  number_of_reads:
+    Desc: Total number of reads performed
+    Type: integer
+    Req: Preferred
+  design_description:
+    Desc: Human-readable description of methods used to create sequencing library
+    Type: string
+    Req: Preferred
+  platform:
+    Desc: Instrument platform or manufacturer
+    Req: 'Yes'
+    Enum:
+      - LS454
+      - ILLUMINA
+      - HELICOS
+      - ABI_SOLID
+      - COMPLETE_GENOMICS
+      - PACBIO_SMRT
+      - ION_TORRENT
+      - CAPILLARY
+      - OXFORD_NANOPORE
+      - BGISEQ
+  instrument_model:
+    Desc: Instrument model
+    Req: Preferred
+    Enum:
+      - 454 GS
+      - 454 GS 20
+      - 454 GS FLX
+      - 454 GS FLX+
+      - 454 GS FLX Titanium
+      - 454 GS Junior
+      - HiSeq X Five
+      - HiSeq X Ten
+      - Illumina Genome Analyzer
+      - Illumina Genome Analyzer II
+      - Illumina Genome Analyzer IIx
+      - Illumina HiScanSQ
+      - Illumina HiSeq 1000
+      - Illumina HiSeq 1500
+      - Illumina HiSeq 2000
+      - Illumina HiSeq 2500
+      - Illumina HiSeq 3000
+      - Illumina HiSeq 4000
+      - Illumina iSeq 100
+      - Illumina NovaSeq 6000
+      - Illumina MiniSeq
+      - Illumina MiSeq
+      - NextSeq 500
+      - NextSeq 550
+      - Helicos HeliScope
+      - AB 5500 Genetic Analyzer
+      - AB 5500xl Genetic Analyzer
+      - AB 5500x-Wl Genetic Analyzer
+      - AB SOLiD 3 Plus System
+      - AB SOLiD 4 System
+      - AB SOLiD 4hq System
+      - AB SOLiD PI System
+      - AB SOLiD System
+      - AB SOLiD System 2.0
+      - AB SOLiD System 3.0
+      - Complete Genomics
+      - PacBio RS
+      - PacBio RS II
+      - PacBio Sequel
+      - PacBio Sequel II
+      - Ion Torrent PGM
+      - Ion Torrent Proton
+      - Ion Torrent S5 XL
+      - Ion Torrent S5
+      - AB 310 Genetic Analyzer
+      - AB 3130 Genetic Analyzer
+      - AB 3130xL Genetic Analyzer
+      - AB 3500 Genetic Analyzer
+      - AB 3500xL Genetic Analyzer
+      - AB 3730 Genetic Analyzer
+      - AB 3730xL Genetic Analyzer
+      - GridION
+      - MinION
+      - PromethION
+      - BGISEQ-500
+      - DNBSEQ-G400
+      - DNBSEQ-T7
+      - DNBSEQ-G50
+      - MGISEQ-2000RS      
+  library_id:
+    Desc: Library identifier as submitted by requestor
+    Type: string
+    Req: 'Yes'
+  library_layout:
+    Desc: Library layout as submitted by requestor
+    Req: 'Yes'
+    Enum:
+      - Paired-end
+      - Single-end
+  library_source:
+    Desc: Source material used to create library
+    Req: 'Yes'
+    Enum:
+      - GENOMIC
+      - TRANSCRIPTOMIC
+      - METAGENOMIC
+      - METATRANSCRIPTOMIC
+      - SYNTHETIC
+      - VIRAL RNA
+      - GENOMIC SINGLE CELL
+      - TRANSCRIPTOMIC SINGLE CELL
+      - OTHER        
+  library_selection:
+    Desc: Library selection method
+    Type: string
+    Req: Preferred
+  library_strategy:
+    Desc: Nucleic acid capture or processing strategy for this library
+    Req: Preferred
+    Enum:
+      - WGA
+      - WGS
+      - WXS
+      - RNA-Seq
+      - miRNA-Seq
+      - WCS
+      - CLONE
+      - POOLCLONE
+      - AMPLICON
+      - CLONEEND
+      - FINISHING
+      - ChIP-Seq
+      - MNase-Seq
+      - DNase-Hypersensitivity
+      - Bisulfite-Seq
+      - Tn-Seq
+      - EST
+      - FL-cDNA
+      - CTS
+      - MRE-Seq
+      - MeDIP-Seq
+      - MBD-Seq
+      - Synthetic-Long-Read
+      - ATAC-seq
+      - ChIA-PET
+      - FAIRE-seq
+      - Hi-C
+      - ncRNA-Seq
+      - RAD-Seq
+      - RIP-Seq
+      - SELEX
+      - ssRNA-seq
+      - Targeted-Capture
+      - Tethered Chromatin Conformation Capture
+      - OTHER        
+  sequence_alignment_software:
+    Desc: Name of software program used to align nucleotide sequence data
+    Type: string
+    Req: Preferred
+  custom_assembly_fasta_file_for_alignment:
+    Desc: File name of any custom assembly fasta file used during alignment
+    Type: string
+    Req: Preferred
+    
+  # cds requestor
+  cds_requestor:
+    Desc: Identifies the user requesting storage in CDS
+    Type: string
+  data_access_level:
+    Desc: Is data open, controlled, or mixed?
+    Enum:
+      - open
+      - controlled
+      - mixed
+  data_types:
+    Desc: Data types for storage
+    Type:
+      value_type: list
+      item_type: string
+  file_types:
+    Desc: File types for storage
+    Type:
+      value_type: list
+      item_type: string
+  funding_agency:
+    Desc: Funding agency of the requestor study
+    Type: string
+    Req: 'Preferred'
+  funding_source_program_name:
+    Desc: The funding source organization/sponsor
+    Type: string
+    Req: 'Preferred'
+  grant_id:
+    Desc: Grant or contract identifier
+    Type: string
+    Req: 'Preferred'
+  clinical_trial_system:
+    Desc: |
+      Organization that provides clinical trial identifier (if study
+      is a clinical trial)
+    Type: string
+  clinical_trial_identifier:
+    Desc: |
+      Study identifier in the given clinical trial system
+    Type: string
+  clinical_trial_arm:
+    Desc: Arm of clinical trial, if appropriate
+    Type: string
+  organism_species:
+    Desc: Species binomial of study participants
+    Type: string
+    Req: Preferred
+  adult_or_childhood_study:
+    Desc: Study participants are adult, pediatric, or other
+    Req: Preferred
+    Enum:
+      - Adult
+      - Pediatric
+      - Other
+  specimen_id:
+    Desc: Identifier for specimen (parent of sample) as provided by requestor
+    Type: string
+  number_of_participants:
+    Desc: How many participants in the study
+    Type: number
+    Req: 'Yes'
+  number_of_samples:
+    Desc: How many total samples in the study
+    Type: number
+    Req: 'Yes'
+  study_data_types:
+    Desc: Types of scientific data in the study
+    Type:
+      value_type: list
+      item_type: string
+    Req: 'Yes'
+  experimental_strategy_and_data_subtypes:
+    Desc: |
+      What is the experimental strategy used for the study (or what
+      type of data subtypes exist in the study)?
+    Type:
+      value_type: list
+      item_type: string
+    Req: 'Yes'
+  file_types_and_format:
+    Desc: |
+      Specific kinds of files in the dataset that will be uploaded to CDS
+    Type:
+      value_type: list
+      item_type: string
+    Req: 'Yes'
+  size_of_data_being_uploaded:
+    Desc: Size of the data being uploaded to CDS
+    Type:
+      value_type: number
+      units: [ 'GB', 'TB', 'PB' ]
+    Req: Preferred
+
+  # program props
+  program_acronym:
+    Desc: The name of the program under which related studies will be grouped, expressed in the form of the acronym by which it will identified within the UI. <br>This property is used as the key via which study records can be associated with the appropriate program during data loading, and to identify the correct records during data updates.
+    Src: Internally-curated
+    Type: string
+    Req: 'Yes'
+    Key: true
+  program_external_url:
+    Desc: The external url to which users should be directed in order to learn more about the program.
+    Src: Internally-curated 
+    Type: string
+    Req: Preferred
+  program_full_description:
+    Desc: A more detailed, multiple sentence description of the program.
+    Src: Internally-curated
+    Type: string
+    Req: 'No'
+  program_name:
+    Desc: The name of the program under which related studies will be grouped, in full text and unabbreviated form, exactly as it will be displayed within the UI.
+    Src: Internally-curated
+    Type: string
+    Req: 'Yes'
+  program_short_description:
+    Desc: An abbreviated, single sentence description of the program.
+    Src: Internally-curated
+    Type: string
+    Req: Preferred
+  program_sort_order:
+    Desc: An arbitrarily-assigned value used to dictate the order in which programs are displayed within the application's UI.
+    Src: Internally-curated
+    Type: integer
+    Req: 'No'
+  reporter_label:
+    Desc: Needs description
+    Type: string
+  methylation_platform:
+    Desc: Need description and type enumeration
+    Type: string
