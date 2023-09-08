@@ -1,0 +1,52 @@
+Properties:
+  domain: trialcommons.cancer.gov
+  rel_prop_delimiter: "$"
+
+  plurals:
+    specimen: specimens
+    study: studies
+    project: projects
+    program: programs
+    associated_link: associated_links
+    image_collection: image_collections
+    subject: subjects
+    demographic: demographics
+    exposure: exposures
+    diagnosis: diagnoses
+    targeted_therapy: targeted_therapies
+    therapy: therapies
+    surgical_procedure: surgical_procedures
+    radiological_procedure: radiological_procedures
+    subject_status: subject_status
+    data_file: data_files
+    principal_investigator:  principal_investigators
+
+  type_mapping:
+    string: String
+    number: Float
+    integer: Int
+    boolean: Boolean
+    array: Array
+    object: Object
+    datetime: DateTime
+    date: Date
+    TBD: String
+
+  id_fields:
+    specimen: specimen_id
+    study: study_id
+    project: project_name
+    program: program_name
+    associated_link: associated_link_name
+    image_collection: image_collection_name
+    subject: subject_id
+    demographic: demographic_id
+    exposure: exposure_id
+    diagnosis: diagnosis_id
+    targeted_therapy: targeted_therapy_id
+    therapy: therapy_id
+    surgical_procedure: surgical_procedure_id
+    radiological_procedure: radiological_procedure_id
+    subject_status: subject_status_id
+    data_file: data_file_uuid
+    principal_investigator:  principal_investigator_orcid_id
