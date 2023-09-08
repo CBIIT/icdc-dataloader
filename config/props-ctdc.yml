@@ -35,20 +35,19 @@ Properties:
 
   id_fields:
     specimen: specimen_id
-    ihc_assay_report: ihc_assay_id
-    nucleic_acid: aliquot_id
-    sequencing_assay: sequencing_assay_id
-    snv_variant: variant_id
-    delins_variant: variant_id
-    indel_variant: variant_id
-    copy_number_variant: variant_id
-    variant_report: variant_report_id
-    gene_fusion_variant: variant_id
-    assignment_report: assignment_report_id
-    arm: arm_id
-    case: case_id
-    file: uuid
-    clinical_trial: clinical_trial_id
-    metastatic_site: met_site_id
-    disease_eligibility_criterion: disease_eligibility_criterion_id
-    drug_eligibility_criterion: drug_eligibility_criterion_id
+    study: study_id
+    project: project_name
+    program: program_name
+    associated_link: associated_link_name
+    image_collection: image_collection_name
+    subject: subject_id
+    demographic: demographic_id
+    exposure: exposure_id
+    diagnosis: diagnosis_id
+    targeted_therapy: targeted_therapy_id
+    therapy: therapy_id
+    surgical_procedure: surgical_procedure_id
+    radiological_procedure: radiological_procedure_id
+    subject_status: subject_staus_id
+    data_file: data_file_uuid
+    principal_investigator:  principal_investigator_orcid_id
