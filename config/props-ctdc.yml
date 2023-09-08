@@ -48,6 +48,6 @@ Properties:
     therapy: therapy_id
     surgical_procedure: surgical_procedure_id
     radiological_procedure: radiological_procedure_id
-    subject_status: subject_staus_id
+    subject_status: subject_status_id
     data_file: data_file_uuid
     principal_investigator:  principal_investigator_orcid_id
