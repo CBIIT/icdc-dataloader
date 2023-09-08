@@ -4,23 +4,22 @@ Properties:
 
   plurals:
     specimen: specimens
-    nucleic_acid: nucleic_acids
-    sequencing_assay: sequencing_assays
-    variant_report: variant_reports
-    snv_variant: snv_variants
-    delins_variant: delins_variants
-    indel_variant: indel_variants
-    copy_number_variant: copy_number_variants
-    gene_fusion_variant: gene_fusion_variants
-    assignment_report: assignment_reports
-    ihc_assay_report: ihc_assay_reports
-    arm: arms
-    file: files
-    case: cases
-    clinical_trial: clinical_trials
-    metastatic_site: metastatic_sites
-    disease_eligibility_criterion: disease_eligibility_criterions
-    drug_eligibility_criterion: drug_eligibility_criterions
+    study: studies
+    project: projects
+    program: programs
+    associated_link: associated_links
+    image_collection: image_collections
+    subject: subjects
+    demographic: demographics
+    exposure: exposures
+    diagnosis: diagnoses
+    targeted_therapy: targeted_therapies
+    therapy: therapies
+    surgical_procedure: surgical_procedures
+    radiological_procedure: radiological_procedures
+    subject_status: subject_status
+    data_file: data_files
+    principal_investigator:  principal_investigators
 
   type_mapping:
     string: String
