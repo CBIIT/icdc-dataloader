@@ -166,13 +166,6 @@ def process_arguments(args, log):
 
     return config
 
-# use util function imported
-# def upload_log_file(bucket_name, folder, file_path):
-#     base_name = os.path.basename(file_path)
-#     s3 = S3Bucket(bucket_name)
-#     key = f'{folder}/{base_name}'
-#     return s3.upload_file(key, file_path)
-
 def prepare_plugin(config, schema):
     if not config.params:
         config.params = {}
@@ -257,11 +250,15 @@ def main():
             log.info(restore_cmd)
 
     log_file = get_log_file()
-    #set default log file upload dir
-    dest_log_dir = f's3://{config.s3_bucket}/{config.s3_folder}/logs'
+    
     #check if uploaded dir is configured
     if config.upload_log_dir:
         dest_log_dir = config.upload_log_dir
+    else:
+        if config.s3_bucket and config.s3_folder: 
+            dest_log_dir = f's3://{config.s3_bucket}/{config.s3_folder}/logs'
+        else:
+            return #skip log.
     try:
         upload_log_file(dest_log_dir, log_file)
         log.info(f'Uploading log file {log_file} succeeded!')

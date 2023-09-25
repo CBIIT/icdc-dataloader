@@ -302,7 +302,7 @@ class FileLoader:
         if self.upload_log_dir:
             try:
                 upload_log_file(self.upload_log_dir, ori_log_file)
-                self.log.error(f'Uploading log file {ori_log_file} succeeded!')
+                self.log.info(f'Uploading log file {ori_log_file} succeeded!')
             except Exception as e:
                 self.log.debug(e)
                 self.log.error(f'Uploading log file {ori_log_file} failed!')
