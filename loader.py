@@ -187,6 +187,7 @@ def main():
 
     driver = None
     restore_cmd = ''
+    load_result = ''
     try:
         txt_files = glob.glob('{}/*.txt'.format(config.dataset))
         tsv_files = glob.glob('{}/*.tsv'.format(config.dataset))
@@ -222,14 +223,9 @@ def main():
             load_result = loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db,
                         config.max_violations, split=config.split_transactions,
                         no_backup=config.no_backup, neo4j_uri=config.neo4j_uri, backup_folder=config.backup_folder)
-            if driver:
-                driver.close()
-            if restore_cmd:
-                log.info(restore_cmd)
+            
             if load_result == False:
                 log.error('Data files upload failed')
-                #need to diable exit to allow log maximun errors configured.
-                #sys.exit(1)
         else:
             log.info('No files to load.')
 
@@ -250,21 +246,25 @@ def main():
             log.info(restore_cmd)
 
     log_file = get_log_file()
-    
+    dest_log_dir = ''
     #check if uploaded dir is configured
     if config.upload_log_dir:
         dest_log_dir = config.upload_log_dir
     else:
+        #check if s3 bucket/folder are set.
         if config.s3_bucket and config.s3_folder: 
             dest_log_dir = f's3://{config.s3_bucket}/{config.s3_folder}/logs'
-        else:
-            return #skip log.
-    try:
-        upload_log_file(dest_log_dir, log_file)
-        log.info(f'Uploading log file {log_file} succeeded!')
-    except Exception as e:
-        log.debug(e)
-        log.exception('Copy file failed! Check debug log for detailed information')
+
+    if dest_log_dir:
+        try:
+            upload_log_file(dest_log_dir, log_file)
+            log.info(f'Uploading log file {log_file} succeeded!')
+        except Exception as e:
+            log.debug(e)
+            log.exception('Copy file failed! Check debug log for detailed information')
+
+    if load_result == False:
+        sys.exit(1)
 
 def confirm_deletion(message):
     print(message)

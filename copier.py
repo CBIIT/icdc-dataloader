@@ -123,6 +123,15 @@ class Copier:
             if not org_size:
                 self.log.error(f'Could not get original size for {org_url}')
                 return {self.STATUS: False}
+            if _is_local(org_url): #validate org_file_size against real local file size
+                file_path = _get_local_path(org_url)
+                real_file_size = os.path.getsize(file_path)
+                if org_size == real_file_size:
+                    self.log.info(f'file size verified')
+                else:
+                    self.log.error(f'file verify failed! Original file size: {org_size}, local file size: {real_file_size}')
+                    return {self.STATUS: False}
+                
             self.log.info(f'Original file size: {format_bytes(org_size)}.')
 
             file_name = self.adapter.get_file_name()
@@ -152,17 +161,6 @@ class Copier:
                        }
 
             if dryrun:
-                if verify_md5:  #assume validate file if verify_md5 is true and dryrun is true
-                    if _is_local(org_url): #validate org_file_size against real local file size
-                        file_path = _get_local_path(org_url)
-                        real_file_size = os.path.getsize(file_path)
-                        if org_size == real_file_size:
-                            self.log.info(f'file size verified')
-                            return succeed
-                        else:
-                            self.log.error(f'file verify failed! Original file size: {org_size}, local file size: {real_file_size}')
-                            return {self.STATUS: False}
-                               
                 self.log.info(f'Copying file {key} skipped (dry run)')
                 return succeed
             
