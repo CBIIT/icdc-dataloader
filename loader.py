@@ -187,7 +187,7 @@ def main():
 
     driver = None
     restore_cmd = ''
-    load_result = ''
+    load_result = None
     try:
         txt_files = glob.glob('{}/*.txt'.format(config.dataset))
         tsv_files = glob.glob('{}/*.tsv'.format(config.dataset))
@@ -246,7 +246,7 @@ def main():
             log.info(restore_cmd)
 
     log_file = get_log_file()
-    dest_log_dir = ''
+    dest_log_dir = None
     #check if uploaded dir is configured
     if config.upload_log_dir:
         dest_log_dir = config.upload_log_dir
