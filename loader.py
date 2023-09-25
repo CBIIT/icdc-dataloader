@@ -20,7 +20,7 @@ os.environ[APP_NAME] = 'Data_Loader'
 
 from config import BentoConfig
 from data_loader import DataLoader
-from bento.common.s3 import S3Bucket
+from bento.common.s3 import S3Bucket, upload_log_file
 
 
 def parse_arguments():
@@ -165,13 +165,6 @@ def process_arguments(args, log):
 
     return config
 
-
-def upload_log_file(bucket_name, folder, file_path):
-    base_name = os.path.basename(file_path)
-    s3 = S3Bucket(bucket_name)
-    key = f'{folder}/{base_name}'
-    return s3.upload_file(key, file_path)
-
 def prepare_plugin(config, schema):
     if not config.params:
         config.params = {}
@@ -193,6 +186,7 @@ def main():
 
     driver = None
     restore_cmd = ''
+    load_result = None
     try:
         txt_files = glob.glob('{}/*.txt'.format(config.dataset))
         tsv_files = glob.glob('{}/*.tsv'.format(config.dataset))
@@ -228,13 +222,9 @@ def main():
             load_result = loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db,
                         config.max_violations, split=config.split_transactions,
                         no_backup=config.no_backup, neo4j_uri=config.neo4j_uri, backup_folder=config.backup_folder)
-            if driver:
-                driver.close()
-            if restore_cmd:
-                log.info(restore_cmd)
+            
             if load_result == False:
                 log.error('Data files upload failed')
-                sys.exit(1)
         else:
             log.info('No files to load.')
 
@@ -254,13 +244,26 @@ def main():
         if restore_cmd:
             log.info(restore_cmd)
 
-    if config.s3_bucket and config.s3_folder:
-        result = upload_log_file(config.s3_bucket, f'{config.s3_folder}/logs', log_file)
-        if result:
-            log.info(f'Uploading log file {log_file} succeeded!')
-        else:
-            log.error(f'Uploading log file {log_file} failed!')
+    log_file = get_log_file()
+    dest_log_dir = None
+    #check if uploaded dir is configured
+    if config.upload_log_dir:
+        dest_log_dir = config.upload_log_dir
+    else:
+        #check if s3 bucket/folder are set.
+        if config.s3_bucket and config.s3_folder: 
+            dest_log_dir = f's3://{config.s3_bucket}/{config.s3_folder}/logs'
 
+    if dest_log_dir:
+        try:
+            upload_log_file(dest_log_dir, log_file)
+            log.info(f'Uploading log file {log_file} succeeded!')
+        except Exception as e:
+            log.debug(e)
+            log.exception('Copy file failed! Check debug log for detailed information')
+
+    if load_result == False:
+        sys.exit(1)
 
 def confirm_deletion(message):
     print(message)

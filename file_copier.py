@@ -6,9 +6,10 @@ import os
 from collections import deque
 
 from bento.common.sqs import Queue, VisibilityExtender
-from bento.common.utils import get_logger, get_uuid, LOG_PREFIX, UUID, get_time_stamp, removeTrailingSlash, load_plugin
+from bento.common.utils import get_logger, get_log_file, get_uuid, LOG_PREFIX, UUID, get_time_stamp, removeTrailingSlash, load_plugin
 from copier import Copier
 from file_copier_config import MASTER_MODE, SLAVE_MODE, SOLO_MODE, Config
+from bento.common.s3 import upload_log_file
 
 if LOG_PREFIX not in os.environ:
     os.environ[LOG_PREFIX] = 'File_Loader'
@@ -57,10 +58,11 @@ class FileLoader:
     BUCKET = 'bucket'
     PREFIX = 'prefix'
     VERIFY_MD5 = 'verify_md5'
+    LOG_UPLOAD_DIR = 'upload_log_dir'
 
     def __init__(self, mode, adapter_module=None, adapter_class=None, adapter_params=None, domain=None, bucket=None,
                  prefix=None, pre_manifest=None, first=1, count=-1, job_queue=None, result_queue=None, retry=3,
-                 overwrite=False, dryrun=False, verify_md5=False):
+                 overwrite=False, dryrun=False, verify_md5=False, upload_log_dir = None):
         """"
 
         :param bucket: string type
@@ -128,6 +130,7 @@ class FileLoader:
             raise TypeError(f'Invalid dryrun value: {dryrun}')
         self.dryrun = dryrun
         self.verify_md5 = verify_md5
+        self.upload_log_dir = upload_log_dir
 
         self.log = get_logger('FileLoader')
 
@@ -293,6 +296,16 @@ class FileLoader:
                 self.log.info(f'Files copied: {self.copier.files_copied}')
                 self.log.info(f'Files exist at destination: {self.copier.files_exist_at_dest}')
                 self.log.info(f'Files failed: {self.files_failed}')
+
+        #upload log file into configured upload_log_dir
+        ori_log_file = get_log_file()
+        if self.upload_log_dir:
+            try:
+                upload_log_file(self.upload_log_dir, ori_log_file)
+                self.log.info(f'Uploading log file {ori_log_file} succeeded!')
+            except Exception as e:
+                self.log.debug(e)
+                self.log.exception(f'Uploading log file {ori_log_file} failed!')
 
     def _deal_with_failed_file(self, job, queue):
         if job[self.TTL] > 0:
