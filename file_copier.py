@@ -305,7 +305,7 @@ class FileLoader:
                 self.log.info(f'Uploading log file {ori_log_file} succeeded!')
             except Exception as e:
                 self.log.debug(e)
-                self.log.error(f'Uploading log file {ori_log_file} failed!')
+                self.log.exception(f'Uploading log file {ori_log_file} failed!')
 
     def _deal_with_failed_file(self, job, queue):
         if job[self.TTL] > 0:

@@ -264,7 +264,7 @@ def main():
         log.info(f'Uploading log file {log_file} succeeded!')
     except Exception as e:
         log.debug(e)
-        log.error('Copy file failed! Check debug log for detailed information')
+        log.exception('Copy file failed! Check debug log for detailed information')
 
 def confirm_deletion(message):
     print(message)
