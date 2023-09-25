@@ -34,11 +34,11 @@ Properties:
 
   id_fields:
     specimen: specimen_id
-    study: study_id
-    project: project_name
-    program: program_name
+    study: study_short_name
+    project: project_short_name
+    program: program_short_name
     associated_link: associated_link_name
-    image_collection: image_collection_name
+    image_collection: image_collection_id
     subject: subject_id
     demographic: demographic_id
     exposure: exposure_id
