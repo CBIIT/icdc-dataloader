@@ -14,6 +14,8 @@ class IndividualCreator:
         self.schema = schema
         self.log = get_logger('VisitCreator')
         self.nodes_created = 0
+        self.nodes_updated = 0
+        self.node_
         self.relationships_created = 0
         self.nodes_stat = {}
         self.relationships_stat = {}
@@ -79,6 +81,11 @@ class IndividualCreator:
             i_id = result.single()
             count = result.consume().counters.nodes_created
             self.nodes_created += count
+            # count the updated nodes
+            update_count = 0
+            if result.consume().counters.nodes_created == 0 and result.consume().counters._contains_updates:
+                update_count = 1
+            self.nodes_updated += update_count
             self.nodes_stat[INDIVIDUAL_NODE] = self.nodes_stat.get(INDIVIDUAL_NODE, 0) + count
             return i_id[0]
         else:

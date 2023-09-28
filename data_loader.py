@@ -17,7 +17,7 @@ from neo4j import Driver
 from icdc_schema import ICDC_Schema, is_parent_pointer, get_list_values
 from bento.common.utils import get_logger, NODES_CREATED, RELATIONSHIP_CREATED, UUID, \
     RELATIONSHIP_TYPE, MULTIPLIER, ONE_TO_ONE, DEFAULT_MULTIPLIER, UPSERT_MODE, \
-    NEW_MODE, DELETE_MODE, NODES_DELETED, RELATIONSHIP_DELETED, combined_dict_counters, \
+    NEW_MODE, DELETE_MODE, NODES_DELETED, RELATIONSHIP_DELETED, NODES_UPDATED, combined_dict_counters, \
     MISSING_PARENT, NODE_LOADED, get_string_md5
 
 NODE_TYPE = 'type'
@@ -162,6 +162,7 @@ class DataLoader:
                     raise ValueError('Invalid Plugin!')
         self.plugins = plugins
         self.nodes_created = 0
+        self.nodes_updated = 0
         self.relationships_created = 0
         self.indexes_created = 0
         self.nodes_deleted = 0
@@ -218,6 +219,7 @@ class DataLoader:
             return {NODES_CREATED: 0, RELATIONSHIP_CREATED: 0}
 
         self.nodes_created = 0
+        self.nodes_updated = 0
         self.relationships_created = 0
         self.indexes_created = 0
         self.nodes_deleted = 0
@@ -266,6 +268,7 @@ class DataLoader:
             combined_dict_counters(self.nodes_stat, plugin.nodes_stat)
             combined_dict_counters(self.relationships_stat, plugin.relationships_stat)
             self.nodes_created += plugin.nodes_created
+            self.nodes_updated += plugin.nodes_updated
             self.relationships_created += plugin.relationships_created
         for node in sorted(self.nodes_stat.keys()):
             count = self.nodes_stat[node]
@@ -276,9 +279,10 @@ class DataLoader:
         self.log.info('{} new indexes created!'.format(self.indexes_created))
         self.log.info('{} nodes and {} relationships loaded!'.format(self.nodes_created, self.relationships_created))
         self.log.info('{} nodes and {} relationships deleted!'.format(self.nodes_deleted, self.relationships_deleted))
+        self.log.info('{} nodes updated!'.format(self.nodes_updated, self.relationships_deleted))
         self.log.info('Loading time: {:.2f} seconds'.format(end - start))  # Time in seconds, e.g. 5.38091952400282
         return {NODES_CREATED: self.nodes_created, RELATIONSHIP_CREATED: self.relationships_created,
-                NODES_DELETED: self.nodes_deleted, RELATIONSHIP_DELETED: self.relationships_deleted}
+                NODES_DELETED: self.nodes_deleted, RELATIONSHIP_DELETED: self.relationships_deleted, NODES_UPDATED: self.nodes_updated}
 
     def _load_all(self, tx, file_list, loading_mode, split, wipe_db):
         if wipe_db:
@@ -663,6 +667,7 @@ class DataLoader:
         with open(file_name, encoding=file_encoding) as in_file:
             reader = csv.DictReader(in_file, delimiter='\t')
             nodes_created = 0
+            nodes_updated = 0
             nodes_deleted = 0
             node_type = 'UNKNOWN'
             relationship_deleted = 0
@@ -703,8 +708,14 @@ class DataLoader:
                 if loading_mode != DELETE_MODE:
                     result = tx.run(statement, obj)
                     count = result.consume().counters.nodes_created
+                    #count the updated nodes
+                    update_count = 0
+                    if result.consume().counters.nodes_created == 0 and result.consume().counters._contains_updates:
+                        update_count = 1
                     self.nodes_created += count
+                    self.nodes_updated += update_count
                     nodes_created += count
+                    nodes_updated += update_count
                     self.nodes_stat[node_type] = self.nodes_stat.get(node_type, 0) + count
                 # commit and restart a transaction when batch size reached
                 if split and transaction_counter >= BATCH_SIZE:
@@ -721,6 +732,8 @@ class DataLoader:
                 self.log.info('{} relationship(s) deleted'.format(relationship_deleted))
             else:
                 self.log.info('{} (:{}) node(s) loaded'.format(nodes_created, node_type))
+                self.log.info('{} (:{}) node(s) updated'.format(nodes_updated, node_type))
+
 
     def node_exists(self, session, label, prop, value):
         statement = 'MATCH (m:{0} {{ {1}: ${1} }}) return m'.format(label, prop)
