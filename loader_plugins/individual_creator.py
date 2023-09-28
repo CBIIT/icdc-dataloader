@@ -15,7 +15,6 @@ class IndividualCreator:
         self.log = get_logger('VisitCreator')
         self.nodes_created = 0
         self.nodes_updated = 0
-        self.node_
         self.relationships_created = 0
         self.nodes_stat = {}
         self.relationships_stat = {}
