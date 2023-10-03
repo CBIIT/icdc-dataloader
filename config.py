@@ -43,7 +43,7 @@ class BentoConfig:
             self.dataset = None
             self.no_parents = None
             self.split_transactions = None
-            self.upload_log_dir = None
+            self.upload-log-dir = None
         else:
             if os.path.isfile(config_file):
                 with open(config_file) as c_file:
@@ -102,7 +102,7 @@ class BentoConfig:
                     self.dataset = config.get('dataset')
                     self.no_parents = config.get('no_parents')
                     self.split_transactions = config.get('split_transactions')
-                    self.upload_log_dir = config.get('upload_log_dir')
+                    self.upload-log-dir = config.get('upload-log-dir')
             else:
                 msg = f'Can NOT open configuration file "{config_file}"!'
                 self.log.error(msg)

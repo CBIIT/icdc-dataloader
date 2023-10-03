@@ -46,7 +46,7 @@ def parse_arguments():
     parser.add_argument('--dataset', help='Dataset directory')
     parser.add_argument('--split-transactions', help='Creates a separate transaction for each file',
                         action='store_true')
-    parser.add_argument('--upload_log_dir', help='Upload destination dir for log file,  if dir in s3, use the format, s3://[bucket]/[prefix]')
+    parser.add_argument('--upload-log-dir', help='Upload destination dir for log file,  if dir in s3, use the format, s3://[bucket]/[prefix]')
     return parser.parse_args()
 
 
@@ -248,8 +248,8 @@ def main():
     log_file = get_log_file()
     dest_log_dir = None
     #check if uploaded dir is configured
-    if config.upload_log_dir:
-        dest_log_dir = config.upload_log_dir
+    if config.upload-log-dir:
+        dest_log_dir = config.upload-log-dir
     else:
         #check if s3 bucket/folder are set.
         if config.s3_bucket and config.s3_folder: 

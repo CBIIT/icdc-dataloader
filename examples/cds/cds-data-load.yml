@@ -55,4 +55,4 @@ Config:
   dataset: ../../testdata/cds_data_2023-8-31-August
   # destination dir to upload log file. Two options: 1) local dir 2) s3 bucket dir start with 's3://''
   # s3://[bucket]/[folder1/forlder2/...]
-  upload_log_dir: s3://dhloadertest/00002/matedata/log
+  upload-log-dir: s3://dhloadertest/00002/matedata/log
