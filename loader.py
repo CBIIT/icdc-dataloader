@@ -46,6 +46,7 @@ def parse_arguments():
     parser.add_argument('--dataset', help='Dataset directory')
     parser.add_argument('--split-transactions', help='Creates a separate transaction for each file',
                         action='store_true')
+    parser.add_argument('--upload_log_dir', help='Upload destination dir for log file,  if dir in s3, use the format, s3://[bucket]/[prefix]')
     return parser.parse_args()
 
 
