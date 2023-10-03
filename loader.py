@@ -248,8 +248,8 @@ def main():
     log_file = get_log_file()
     dest_log_dir = None
     #check if uploaded dir is configured
-    if config.upload-log-dir:
-        dest_log_dir = config.upload-log-dir
+    if config.upload_log_dir:
+        dest_log_dir = config.upload_log_dir
     else:
         #check if s3 bucket/folder are set.
         if config.s3_bucket and config.s3_folder: 

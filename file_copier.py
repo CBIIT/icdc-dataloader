@@ -58,11 +58,11 @@ class FileLoader:
     BUCKET = 'bucket'
     PREFIX = 'prefix'
     VERIFY_MD5 = 'verify_md5'
-    LOG_UPLOAD_DIR = 'upload-log-dir'
+    LOG_UPLOAD_DIR = 'upload_log_dir'
 
     def __init__(self, mode, adapter_module=None, adapter_class=None, adapter_params=None, domain=None, bucket=None,
                  prefix=None, pre_manifest=None, first=1, count=-1, job_queue=None, result_queue=None, retry=3,
-                 overwrite=False, dryrun=False, verify_md5=False, upload-log-dir = None):
+                 overwrite=False, dryrun=False, verify_md5=False, upload_log_dir = None):
         """"
 
         :param bucket: string type
@@ -130,7 +130,7 @@ class FileLoader:
             raise TypeError(f'Invalid dryrun value: {dryrun}')
         self.dryrun = dryrun
         self.verify_md5 = verify_md5
-        self.upload-log-dir = upload-log-dir
+        self.upload_log_dir = upload_log_dir
 
         self.log = get_logger('FileLoader')
 
@@ -299,9 +299,9 @@ class FileLoader:
 
         #upload log file into configured upload-log-dir
         ori_log_file = get_log_file()
-        if self.upload-log-dir:
+        if self.upload_log_dir:
             try:
-                upload_log_file(self.upload-log-dir, ori_log_file)
+                upload_log_file(self.upload_log_dir, ori_log_file)
                 self.log.info(f'Uploading log file {ori_log_file} succeeded!')
             except Exception as e:
                 self.log.debug(e)
