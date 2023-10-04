@@ -1,0 +1,160 @@
+Handle: CDS
+Nodes:
+  program:
+    Props:
+      - program_name
+      - program_acronym
+      - program_short_description
+      - program_full_description
+      - program_external_url
+      - program_sort_order
+      - institution
+  study:
+    Props:
+      - study_name
+      - study_acronym
+      - study_description
+      - short_description
+      - study_external_url
+      - primary_investigator_name
+      - primary_investigator_email
+      - co_investigator_name
+      - co_investigator_email
+      - phs_accession
+      - bioproject_accession
+      - index_date # what are relative dates relative to? dx date, collection date, etc.
+      - cds_requestor
+      - funding_agency
+      - funding_source_program_name
+      - grant_id
+      - clinical_trial_system
+      - clinical_trial_identifier
+      - clinical_trial_arm
+      - organism_species
+      - adult_or_childhood_study # adult, pediatric
+      - data_types # list from enumerated values
+      - file_types # list from enumerated values
+      - data_access_level
+      - cds_primary_bucket
+      - cds_secondary_bucket
+      - cds_tertiary_bucket
+      - number_of_participants
+      - number_of_samples
+      - study_data_types
+      - file_types_and_format
+      - size_of_data_being_uploaded
+      - acl
+      - study_access
+      - authz
+  participant:
+    Props:
+      - study_participant_id
+      - participant_id
+      - race
+      - gender
+      - ethnicity
+      #  - vital_status
+      - dbGaP_subject_id
+
+  diagnosis: # may have multiple dxs for multiple timepoints?
+    Props:
+      - study_diagnosis_id
+      - diagnosis_id
+      - disease_type
+      - vital_status
+      - primary_diagnosis
+      - primary_site
+      - age_at_diagnosis
+      - tumor_grade
+      - tumor_stage_clinical_m
+      - tumor_stage_clinical_n
+      - tumor_stage_clinical_t
+      - morphology
+      - incidence_type # primary, metastatic, recurrence, progression
+      - progression_or_recurrence
+      - days_to_recurrence
+      - days_to_last_followup
+      - last_known_disease_status
+      - days_to_last_known_status
+  treatment:
+    Props:
+      - treatment_id
+      - treatment_type
+      - treatment_outcome
+      - days_to_treatment
+      - therapeutic_agents
+  sample: # aka subspecimen (CMB)
+    Props:
+      - sample_id
+      - sample_type
+      - sample_tumor_status # tumor or normal
+      - sample_anatomic_site
+      - sample_age_at_collection
+      - derived_from_specimen
+      - biosample_accession
+
+  file:
+    Props:
+      - file_id
+      - file_name
+      - file_type
+      - file_description
+      - file_size
+      - md5sum
+      - file_url_in_cds
+      - experimental_strategy_and_data_subtypes
+      #- file_access
+
+  genomic_info:
+    Props:
+      - genomic_info_id
+      - library_id
+      - bases
+      - number_of_reads
+      - avg_read_length
+      - coverage
+      - reference_genome_assembly
+      - custom_assembly_fasta_file_for_alignment
+      - design_description
+      - library_strategy
+      - library_layout
+      - library_source
+      - library_selection
+      - platform
+      - instrument_model
+      - sequence_alignment_software
+Relationships:
+  of_program:
+    Props: null
+    Mul: many_to_one
+    Ends:
+      - Src: study
+        Dst: program
+  of_study:
+    Props: null
+    Mul: many_to_one
+    Ends:
+      - Src: participant
+        Dst: study
+      - Src: file
+        Dst: study
+  of_participant:
+    Props: null
+    Mul: many_to_one
+    Ends:
+      - Src: diagnosis
+        Dst: participant
+      - Src: sample
+        Dst: participant
+  of_sample:
+    Props: null
+    Mul: many_to_one
+    Ends:
+      - Src: file
+        Dst: sample
+  of_file:
+    Props: null
+    Mul: one_to_one
+    Ends:
+      - Src: genomic_info
+        Dst: file

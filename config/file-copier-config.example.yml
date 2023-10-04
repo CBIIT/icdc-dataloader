@@ -45,5 +45,8 @@ Config:
     dryrun: false
     # Verify original MD5, if one is given in pre-manifest
     verify_md5: false
+    # destination dir to upload log file. Two options: 1) local dir 2) s3 bucket dir start with 's3://''
+    # s3://[bucket]/[folder1/forlder2/...]
+    upload_log_dir:
 
 

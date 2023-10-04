@@ -29,6 +29,7 @@ class Config(BentoConfig):
         parser.add_argument('--adapter-module', help='Adapter module name')
         parser.add_argument('--adapter-class', help='Adapter class name')
         parser.add_argument('config_file', help='Confguration file')
+        parser.add_argument('--upload-log-dir', help='Upload destination dir for log file,  if dir in s3, use the format, s3://[bucket]/[prefix]')
         args = parser.parse_args()
         super().__init__(args.config_file, args, 'config_file')
 
