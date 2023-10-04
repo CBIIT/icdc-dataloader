@@ -38,6 +38,7 @@ class VisitCreator:
         self.nodes_updated = 0
         self.relationships_created = 0
         self.nodes_stat = {}
+        self.nodes_stat_updated = {}
         self.relationships_stat = {}
         # Dictionary to cache case IDs and their associated cycles in order to prevent redundant querying
         self.cycle_map = {}
@@ -86,6 +87,7 @@ class VisitCreator:
                 update_count = 1
             self.nodes_updated += update_count
             self.nodes_stat[VISIT_NODE] = self.nodes_stat.get(VISIT_NODE, 0) + count
+            self.nodes_stat_updated[VISIT_NODE] = self.nodes_stat_updated.get(VISIT_NODE, 0) + update_count
             if count > 0:
                 case_id = src[CASE_ID]
                 if not self.connect_visit_to_cycle(session, line_num, node_id, case_id, date):

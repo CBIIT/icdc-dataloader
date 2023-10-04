@@ -17,6 +17,7 @@ class IndividualCreator:
         self.nodes_updated = 0
         self.relationships_created = 0
         self.nodes_stat = {}
+        self.nodes_stat_updated = {}
         self.relationships_stat = {}
 
     # Will be called to determine if plugin needs to be run for node_type and event
@@ -86,6 +87,7 @@ class IndividualCreator:
                 update_count = 1
             self.nodes_updated += update_count
             self.nodes_stat[INDIVIDUAL_NODE] = self.nodes_stat.get(INDIVIDUAL_NODE, 0) + count
+            self.nodes_stat_updated[INDIVIDUAL_NODE] = self.nodes_stat_updated.get(INDIVIDUAL_NODE, 0) + update_count
             return i_id[0]
         else:
             return None

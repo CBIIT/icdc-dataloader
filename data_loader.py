@@ -225,6 +225,7 @@ class DataLoader:
         self.nodes_deleted = 0
         self.relationships_deleted = 0
         self.nodes_stat = {}
+        self.nodes_stat_updated = {}
         self.relationships_stat = {}
         self.nodes_deleted_stat = {}
         self.relationships_deleted_stat = {}
@@ -266,13 +267,16 @@ class DataLoader:
         # Print statistics
         for plugin in self.plugins:
             combined_dict_counters(self.nodes_stat, plugin.nodes_stat)
+            combined_dict_counters(self.nodes_stat_updated, plugin.nodes_stat_updated)
             combined_dict_counters(self.relationships_stat, plugin.relationships_stat)
             self.nodes_created += plugin.nodes_created
             self.nodes_updated += plugin.nodes_updated
             self.relationships_created += plugin.relationships_created
         for node in sorted(self.nodes_stat.keys()):
             count = self.nodes_stat[node]
+            update_count = self.nodes_stat_updated[node]
             self.log.info('Node: (:{}) loaded: {}'.format(node, count))
+            self.log.info('Node: (:{}) updated: {}'.format(node, update_count))
         for rel in sorted(self.relationships_stat.keys()):
             count = self.relationships_stat[rel]
             self.log.info('Relationship: [:{}] loaded: {}'.format(rel, count))
@@ -548,7 +552,7 @@ class DataLoader:
                         else:
                             # Same ID exists in same file, but properties are also same, probably it's pointing same
                             # object to multiple parents
-                            self.log.debug(
+                            self.log.warning(
                                 f'Duplicated data at line {line_num}: duplicate {id_field}: {node_id}, found in line: '
                                 f'{", ".join(ids[node_id]["lines"])}')
                     else:
@@ -717,6 +721,7 @@ class DataLoader:
                     nodes_created += count
                     nodes_updated += update_count
                     self.nodes_stat[node_type] = self.nodes_stat.get(node_type, 0) + count
+                    self.nodes_stat_updated[node_type] = self.nodes_stat_updated.get(node_type, 0) + update_count
                 # commit and restart a transaction when batch size reached
                 if split and transaction_counter >= BATCH_SIZE:
                     tx.commit()
