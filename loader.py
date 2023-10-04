@@ -46,6 +46,7 @@ def parse_arguments():
     parser.add_argument('--dataset', help='Dataset directory')
     parser.add_argument('--split-transactions', help='Creates a separate transaction for each file',
                         action='store_true')
+    parser.add_argument('--upload-log-dir', help='Upload destination dir for log file,  if dir in s3, use the format, s3://[bucket]/[prefix]')
     return parser.parse_args()
 
 
@@ -162,6 +163,9 @@ def process_arguments(args, log):
         config.max_violations = int(args.max_violations)
     if not config.max_violations:
         config.max_violations = 10
+
+    if args.upload_log_dir:
+        config.upload_log_dir = args.upload_log_dir
 
     return config
 
