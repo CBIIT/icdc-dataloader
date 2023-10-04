@@ -297,7 +297,7 @@ class FileLoader:
                 self.log.info(f'Files exist at destination: {self.copier.files_exist_at_dest}')
                 self.log.info(f'Files failed: {self.files_failed}')
 
-        #upload log file into configured upload-log-dir
+        #upload log file into configured upload_log_dir
         ori_log_file = get_log_file()
         if self.upload_log_dir:
             try:
