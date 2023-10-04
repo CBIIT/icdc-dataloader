@@ -164,6 +164,9 @@ def process_arguments(args, log):
     if not config.max_violations:
         config.max_violations = 10
 
+    if args.upload_log_dir:
+        config.upload_log_dir = args.upload_log_dir
+
     return config
 
 def prepare_plugin(config, schema):
