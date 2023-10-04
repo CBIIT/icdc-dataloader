@@ -1,4 +1,0 @@
-[submodule "bento"]
-	path = bento
-	url = https://github.com/CBIIT/bento-common.git
-	branch = master
