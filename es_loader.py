@@ -14,6 +14,7 @@ from icdc_schema import ICDC_Schema, PROPERTIES, ENUM, PROP_ENUM, PROP_TYPE, REQ
 from props import Props
 
 logger = get_logger('ESLoader')
+OPENSEARCH_DATA = 'opensearch_data'
 
 
 class ESLoader:
@@ -59,6 +60,9 @@ class ESLoader:
         with self.neo4j_driver.session() as session:
             result = session.run(cypher_query)
             for record in result:
+                keys = record.keys()
+                if len(keys) == 1 and keys[0].lower() == OPENSEARCH_DATA.lower():
+                    record = record[record.keys()[0]]
                 doc = {}
                 for key in fields:
                     doc[key] = record[key]
