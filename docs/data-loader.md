@@ -68,6 +68,7 @@ An example configuration file can be found in ````config/data-loader-config.exam
 *  ````s3_folder````: The name of the S3 folder containing the data to be loaded
 *  ````loading_mode````: The loading mode to be used
 *  ````dataset````: The directory containing the data to be loaded, a temporary directory if loading from an S3 bucket
+*  ````verbose````: When set as true, print the whole list of permissive values when the value is non-permissive value in logs
 
 ## Command Line Arguments
 All of command line arguments can be specified in the configuration file. If an argument is specified in both the configuration file and the command line then the command line value will be used.
@@ -168,6 +169,11 @@ All of command line arguments can be specified in the configuration file. If an 
     * Command : ````--dataset <dir>````
     * Not required if specified in the configuration file
     * Default Value : ````N/A````
+* **Enable Verbose Mode**
+    * When set as true, print the whole list of permissive values when the value is non-permissive value in logs
+    * Command : ````-v/--verbose````
+    * Not required
+    * Default Value : ````false````
 
 ## Usage Example
 Below is an example command to run the Model Converter:

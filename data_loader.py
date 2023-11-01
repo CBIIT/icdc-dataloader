@@ -9,6 +9,7 @@ import sys
 import platform
 import subprocess
 import json
+import pandas as pd
 from timeit import default_timer as timer
 from bento.common.utils import get_host, DATETIME_FORMAT, reformat_date
 
@@ -171,6 +172,7 @@ class DataLoader:
         self.relationships_stat = {}
         self.nodes_deleted_stat = {}
         self.relationships_deleted_stat = {}
+        self.validation_result_file_key = ""
 
     def check_files(self, file_list):
         if not file_list:
@@ -183,24 +185,39 @@ class DataLoader:
                     return False
             return True
 
-    def validate_files(self, cheat_mode, file_list, max_violations):
+    def validate_files(self, cheat_mode, file_list, max_violations, temp_folder, verbose):
         if not cheat_mode:
             validation_failed = False
+            df_validation_dict = {}
             for txt in file_list:
-                if not self.validate_file(txt, max_violations):
+                validate_result, df_validation_dict = self.validate_file(txt, max_violations, df_validation_dict, verbose)
+                if not validate_result:
                     self.log.error('Validating file "{}" failed!'.format(txt))
                     validation_failed = True
+            if validation_failed:
+                if not os.path.exists(temp_folder):
+                    os.makedirs(temp_folder)
+                df_validation_result_file_key = os.path.basename(os.path.dirname(file_list[0]))
+                output_key_invalid = os.path.join(temp_folder, df_validation_result_file_key) + ".xlsx"
+                #df_validation_result.to_csv(output_key_invalid, index=False)
+                writer=pd.ExcelWriter(output_key_invalid, engine='xlsxwriter', engine_kwargs={'options':{'strings_to_urls': False}})
+                for key in df_validation_dict.keys():
+                    sheet_name_new = key
+                    df_validation_dict[key].to_excel(writer,sheet_name=sheet_name_new, index=False)
+                writer.close()
+
+            self.validation_result_file_key = output_key_invalid
             return not validation_failed
         else:
             self.log.info('Cheat mode enabled, all validations skipped!')
             return True
 
-    def load(self, file_list, cheat_mode, dry_run, loading_mode, wipe_db, max_violations,
+    def load(self, file_list, cheat_mode, dry_run, loading_mode, wipe_db, max_violations, temp_folder, verbose,
              split=False, no_backup=True, backup_folder="/", neo4j_uri=None):
         if not self.check_files(file_list):
             return False
         start = timer()
-        if not self.validate_files(cheat_mode, file_list, max_violations):
+        if not self.validate_files(cheat_mode, file_list, max_violations, temp_folder, verbose):
             return False
         if not no_backup and not dry_run:
             if not neo4j_uri:
@@ -522,7 +539,7 @@ class DataLoader:
         return True
 
     # Validate file
-    def validate_file(self, file_name, max_violations):
+    def validate_file(self, file_name, max_violations, df_validation_dict, verbose):
         file_encoding = check_encoding(file_name)
         with open(file_name, encoding=file_encoding) as in_file:
             self.log.info('Validating file "{}" ...'.format(file_name))
@@ -531,9 +548,17 @@ class DataLoader:
             validation_failed = False
             violations = 0
             ids = {}
+            df_validation_result = pd.DataFrame(columns=['File Name', 'Property', 'Value', 'Reason', 'Line Numbers'])
             if not self.validate_field_name(file_name):
-                return False
-
+                return False, df_validation_dict
+            df_invalid = pd.DataFrame(columns=['invalid_properties', 'invalid_values', 'invalid_reason', 'invalid_line_num', 'node_type'])
+            df_missing = pd.DataFrame(columns=['missing_properties', 'missing_reason', 'missing_line_num', 'node_type'])
+            df_duplicate_id = pd.DataFrame(columns=['duplicate_id', 'duplicate_reason', 'duplicate_id_field', 'duplicate_line_num', 'node_type'])
+            duplicate_id = []
+            duplicate_reason = []
+            duplicate_line_num = []
+            duplicate_node_type = []
+            duplicate_id_field = []
             for org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 props = self.get_node_properties(obj)
@@ -549,27 +574,129 @@ class DataLoader:
                                 f'Invalid data at line {line_num}: duplicate {id_field}: {node_id}, found in line: '
                                 f'{", ".join(ids[node_id]["lines"])}')
                             ids[node_id]['lines'].append(str(line_num))
+                            duplicate_id.append(node_id)
+                            duplicate_reason.append('duplicate_id')
+                            duplicate_line_num.append(line_num)
+                            duplicate_node_type.append(obj[NODE_TYPE])
+                            duplicate_id_field.append(id_field)
                         else:
                             # Same ID exists in same file, but properties are also same, probably it's pointing same
                             # object to multiple parents
-                            self.log.warning(
+                            self.log.debug(
                                 f'Duplicated data at line {line_num}: duplicate {id_field}: {node_id}, found in line: '
                                 f'{", ".join(ids[node_id]["lines"])}')
+                            duplicate_id.append(node_id)
+                            duplicate_reason.append('many_to_many')
+                            duplicate_line_num.append(line_num)
+                            duplicate_node_type.append(obj[NODE_TYPE])
+                            duplicate_id_field.append(id_field)
                     else:
                         ids[node_id] = {'props': get_props_signature(props), 'lines': [str(line_num)]}
 
-                validate_result = self.schema.validate_node(obj[NODE_TYPE], obj)
+                validate_result = self.schema.validate_node(obj[NODE_TYPE], obj, verbose)
+                try:
+                    if len(validate_result['invalid_properties']) > 0:
+                        tmp_df_invalid = pd.DataFrame()
+                        tmp_df_invalid['invalid_properties'] = validate_result['invalid_properties']
+                        tmp_df_invalid['invalid_values'] = validate_result['invalid_values']
+                        tmp_df_invalid['invalid_reason'] = validate_result['invalid_reason']
+                        tmp_df_invalid['invalid_line_num'] = line_num
+                        tmp_df_invalid['node_type'] = obj[NODE_TYPE]
+                        df_invalid = pd.concat([df_invalid,tmp_df_invalid])
+
+                except Exception as e:
+                    print(e)
+                try:
+                    if len(validate_result['missing_properties']) > 0:
+                        tmp_df_missing = pd.DataFrame()
+                        tmp_df_missing['missing_properties'] = validate_result['missing_properties']
+                        tmp_df_missing['missing_reason'] = validate_result['missing_reason']
+                        tmp_df_missing['missing_line_num'] = line_num
+                        tmp_df_missing['node_type'] = obj[NODE_TYPE]
+                        df_missing = pd.concat([df_missing, tmp_df_missing])
+                except Exception as e:
+                    print(e)
                 if not validate_result['result'] and not validate_result['warning']:
                     for msg in validate_result['messages']:
                         self.log.error('Invalid data at line {}: "{}"!'.format(line_num, msg))
                     validation_failed = True
                     violations += 1
                     if violations >= max_violations:
-                        return False
+                        return False, df_validation_dict
                 elif not validate_result['result'] and validate_result['warning']:
                     for msg in validate_result['messages']:
                         self.log.warning('Invalid data at line {}: "{}"!'.format(line_num, msg))
-            return not validation_failed
+            # ouput the data vlidation result
+            df_duplicate_id['duplicate_id'] = duplicate_id
+            df_duplicate_id['duplicate_reason'] = duplicate_reason
+            df_duplicate_id['duplicate_line_num'] = duplicate_line_num
+            df_duplicate_id['duplicate_node_type'] = duplicate_node_type
+            df_duplicate_id['duplicate_id_field'] = duplicate_id_field
+            ''''''
+            if len(df_invalid) > 0:
+                df_invalid = df_invalid.sort_values(by=['invalid_properties'])
+                df_invalid = df_invalid.explode('invalid_line_num').groupby(['invalid_properties', 'invalid_values', 'invalid_reason', 'node_type'])['invalid_line_num'].unique().reset_index()
+                tmp_df_validation_result_invalid = pd.DataFrame()
+                tmp_df_validation_result_invalid['File Name'] = [os.path.basename(file_name)] * len(df_invalid)
+                tmp_df_validation_result_invalid['Property'] = df_invalid['invalid_properties']
+                tmp_df_validation_result_invalid['Value'] =  df_invalid['invalid_values']
+                tmp_df_validation_result_invalid['Reason'] =  df_invalid['invalid_reason']
+                tmp_df_validation_result_invalid['Line Numbers'] = self.convert_line_num_list(list(df_invalid['invalid_line_num'])) 
+                df_validation_result = pd.concat([df_validation_result, tmp_df_validation_result_invalid])
+            if len(df_missing) >0:
+                df_missing = df_missing.sort_values(by=['missing_properties'])
+                df_missing = df_missing.explode('missing_line_num').groupby(['missing_properties', 'missing_reason', 'node_type'])['missing_line_num'].unique().reset_index()
+                tmp_df_validation_result_missing = pd.DataFrame()
+                tmp_df_validation_result_missing['File Name'] = [os.path.basename(file_name)] * len(df_missing)
+                tmp_df_validation_result_missing['Property'] = df_missing['missing_properties']
+                tmp_df_validation_result_missing['Reason'] =  df_missing['missing_reason']
+                tmp_df_validation_result_missing['Line Numbers'] = self.convert_line_num_list(list(df_missing['missing_line_num']))
+                df_validation_result = pd.concat([df_validation_result, tmp_df_validation_result_missing])
+            if len(df_duplicate_id) > 0:
+                df_duplicate_id = df_duplicate_id.explode('duplicate_line_num').groupby(['duplicate_id', 'duplicate_reason', 'duplicate_id_field', 'node_type'])['duplicate_line_num'].unique().reset_index()
+                tmp_df_validation_result_duplicate= pd.DataFrame()
+                tmp_df_validation_result_duplicate['File Name'] = [os.path.basename(file_name)] * len(df_duplicate_id)
+                tmp_df_validation_result_duplicate['Property'] = df_duplicate_id['duplicate_id_field']
+                tmp_df_validation_result_duplicate['Value'] = df_duplicate_id['duplicate_id']
+                tmp_df_validation_result_duplicate['Reason'] = df_duplicate_id['duplicate_reason']
+                tmp_df_validation_result_duplicate['Line Numbers'] = self.convert_line_num_list(list(df_duplicate_id['duplicate_line_num']))
+                
+                df_validation_result = pd.concat([df_validation_result, tmp_df_validation_result_duplicate])
+            if len(df_validation_result) > 0:
+                if obj[NODE_TYPE] not in df_validation_dict.keys():
+                    df_validation_dict[obj[NODE_TYPE]] = df_validation_result
+                else:
+                    df_validation_dict[obj[NODE_TYPE]] = pd.concat([df_validation_dict[obj[NODE_TYPE]], df_validation_result])
+
+            '''
+            if len(df_invalid) > 0:
+                output_key_invalid = os.path.join(data_validation_result_sub, os.path.basename(file_name).replace(os.path.splitext(os.path.basename(file_name))[1], "_invalid_values.csv"))
+                df_invalid = df_invalid.sort_values(by=['invalid_properties'])
+                df_invalid.drop_duplicates().to_csv(output_key_invalid, index=False)
+                self.log.error("Invalid values file was created in {}".format(output_key_invalid))
+            if len(df_missing) > 0:
+                output_key_missing = os.path.join(data_validation_result_sub, os.path.basename(file_name).replace(os.path.splitext(os.path.basename(file_name))[1], "_missing_properties.csv"))
+                df_missing = df_missing.sort_values(by=['missing_properties'])
+                df_missing.drop_duplicates().to_csv(output_key_missing, index=False)
+                self.log.error("Missing properties file was created in {}".format(output_key_missing))
+            if len(df_duplicate_id) > 0:
+                output_key_duplicate_id = os.path.join(data_validation_result_sub, os.path.basename(file_name).replace(os.path.splitext(os.path.basename(file_name))[1], "_duplicate_id.csv"))
+                df_duplicate_id.drop_duplicates().to_csv(output_key_duplicate_id, index=False) 
+                self.log.error("Duplicated ID file was created in {}".format(output_key_duplicate_id))'''
+            return not validation_failed, df_validation_dict
+    def convert_line_num_list(self, line_num_list):
+        if len(line_num_list) > 0:
+            new_line_num_list = []
+            for line_num in line_num_list:
+                line_num.sort()
+                line_num_str = [str(x) for x in line_num]
+                if len(line_num) > 1:
+                    new_line_num_list.append(','.join(line_num_str))
+                else:
+                    new_line_num_list.append(line_num_str[0])
+            return new_line_num_list
+        else:
+            return line_num_list
 
     def get_new_statement(self, node_type, obj):
         # statement is used to create current node
