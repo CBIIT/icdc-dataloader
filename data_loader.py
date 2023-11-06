@@ -188,6 +188,7 @@ class DataLoader:
     def validate_files(self, cheat_mode, file_list, max_violations, temp_folder, verbose):
         if not cheat_mode:
             validation_failed = False
+            output_key_invalid = ""
             df_validation_dict = {}
             for txt in file_list:
                 validate_result, df_validation_dict = self.validate_file(txt, max_violations, df_validation_dict, verbose)
