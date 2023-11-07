@@ -5,5 +5,4 @@ requests
 elasticsearch==7.13.*
 tqdm
 requests_aws4auth
-zipfile
 pandas
