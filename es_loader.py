@@ -20,6 +20,7 @@ OPENSEARCH_DATA = 'opensearch_data'
 class ESLoader:
     def __init__(self, es_host, neo4j_driver):
         self.neo4j_driver = neo4j_driver
+        timeout_seconds = 60
         if 'amazonaws.com' in es_host:
             awsauth = AWS4Auth(
                 refreshable_credentials=Session().get_credentials(),
@@ -32,10 +33,10 @@ class ESLoader:
                 use_ssl = True,
                 verify_certs = True,
                 connection_class = RequestsHttpConnection,
-                request_timeout=60
+                timeout=timeout_seconds
             )
         else:
-            self.es_client = Elasticsearch(hosts=[es_host])
+            self.es_client = Elasticsearch(hosts=[es_host], timeout=timeout_seconds)
 
     def create_index(self, index_name, mapping):
         """Creates an index in Elasticsearch if one isn't already there."""
