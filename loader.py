@@ -4,6 +4,8 @@ import glob
 import os
 import sys
 import zipfile
+import datetime
+import dateutil
 
 from neo4j import GraphDatabase
 from neo4j.exceptions import ServiceUnavailable
@@ -231,7 +233,9 @@ def main():
             
             if load_result == False:
                 if loader.validation_result_file_key != "":
-                    zip_file_key = loader.validation_result_file_key.replace(".xlsx", "_data_validation_result.zip")
+                    eastern = dateutil.tz.gettz('US/Eastern')
+                    timestamp = datetime.datetime.now(tz=eastern).strftime("%Y-%m-%dT%H%M%S")
+                    zip_file_key = loader.validation_result_file_key.replace(".xlsx", "_"+timestamp+".zip")
                     with zipfile.ZipFile(zip_file_key, 'w') as zipf:
                         zipf.write(loader.validation_result_file_key, os.path.basename(loader.validation_result_file_key))
                         zipf.write(log_file, os.path.basename(log_file))
