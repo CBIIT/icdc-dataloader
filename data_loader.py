@@ -10,6 +10,8 @@ import platform
 import subprocess
 import json
 import pandas as pd
+import datetime
+import dateutil
 from timeit import default_timer as timer
 from bento.common.utils import get_host, DATETIME_FORMAT, reformat_date
 
@@ -199,7 +201,9 @@ class DataLoader:
                 if not os.path.exists(temp_folder):
                     os.makedirs(temp_folder)
                 df_validation_result_file_key = os.path.basename(os.path.dirname(file_list[0]))
-                output_key_invalid = os.path.join(temp_folder, df_validation_result_file_key) + ".xlsx"
+                eastern = dateutil.tz.gettz('US/Eastern')
+                timestamp = datetime.datetime.now(tz=eastern).strftime("%Y-%m-%dT%H%M%S")
+                output_key_invalid = os.path.join(temp_folder, df_validation_result_file_key) + "_" + timestamp + ".xlsx"
                 #df_validation_result.to_csv(output_key_invalid, index=False)
                 writer=pd.ExcelWriter(output_key_invalid, engine='xlsxwriter', engine_kwargs={'options':{'strings_to_urls': False}})
                 for key in df_validation_dict.keys():
@@ -502,11 +506,11 @@ class DataLoader:
         return node
 
     # Validate the field names
-    def validate_field_name(self, file_name):
+    def validate_field_name(self, file_name, df_validation_dict):
+        df_validation_result = pd.DataFrame(columns=['File Name', 'Property', 'Value', 'Reason', 'Line Numbers', 'Severity'])
         file_encoding = check_encoding(file_name)
         with open(file_name, encoding=file_encoding) as in_file:
             reader = csv.DictReader(in_file, delimiter='\t')
-
             row = next(reader)
             row = self.cleanup_node(row)
             row_prepare_node = self.prepare_node(row)
@@ -532,13 +536,33 @@ class DataLoader:
             if len(error_list) > 0:
                 for error_field_name in error_list:
                     self.log.warning('Property: "{}" not found in data model'.format(error_field_name))
+                    df_validation_result = self.update_field_validation_result(df_validation_result, file_name, error_field_name, "property_not_found_in_model", "warning")
             if len(parent_error_list) > 0:
                 for parent_error_field_name in parent_error_list:
                     self.log.error('Parent pointer: "{}" not found in data model'.format(parent_error_field_name))
+                    df_validation_result = self.update_field_validation_result(df_validation_result, file_name, parent_error_field_name, "parent_pointer_not_found_in_model", "error")
+                if len(df_validation_result) > 0:
+                    if row[NODE_TYPE] not in df_validation_dict.keys():
+                        df_validation_dict[row[NODE_TYPE]] = df_validation_result
+                    else:
+                        df_validation_dict[row[NODE_TYPE]] = pd.concat([df_validation_dict[row[NODE_TYPE]], df_validation_result])
                 self.log.error('Parent pointer not found in the data model, abort loading!')
-                return False
-        return True
-
+                return False, df_validation_dict
+        if len(df_validation_result) > 0:
+            if row[NODE_TYPE] not in df_validation_dict.keys():
+                    df_validation_dict[row[NODE_TYPE]] = df_validation_result
+            else:
+                df_validation_dict[row[NODE_TYPE]] = pd.concat([df_validation_dict[row[NODE_TYPE]], df_validation_result])
+        return True, df_validation_dict
+    # update field validation result
+    def update_field_validation_result(self, df_validation_result, file_name, error_field_name, reason, severity):
+        tmp_df_validation_result_field = pd.DataFrame()
+        tmp_df_validation_result_field['File Name'] = [os.path.basename(file_name)]
+        tmp_df_validation_result_field['Property'] = [error_field_name]
+        tmp_df_validation_result_field['Reason'] =  [reason]
+        tmp_df_validation_result_field['Severity'] = [severity]
+        df_validation_result = pd.concat([df_validation_result, tmp_df_validation_result_field])
+        return df_validation_result
     # Validate file
     def validate_file(self, file_name, max_violations, df_validation_dict, verbose):
         file_encoding = check_encoding(file_name)
@@ -549,8 +573,9 @@ class DataLoader:
             validation_failed = False
             violations = 0
             ids = {}
-            df_validation_result = pd.DataFrame(columns=['File Name', 'Property', 'Value', 'Reason', 'Line Numbers'])
-            if not self.validate_field_name(file_name):
+            df_validation_result = pd.DataFrame(columns=['File Name', 'Property', 'Value', 'Reason', 'Line Numbers', 'Severity'])
+            field_validation_result, df_validation_dict = self.validate_field_name(file_name, df_validation_dict)
+            if not field_validation_result:
                 return False, df_validation_dict
             df_invalid = pd.DataFrame(columns=['invalid_properties', 'invalid_values', 'invalid_reason', 'invalid_line_num', 'node_type'])
             df_missing = pd.DataFrame(columns=['missing_properties', 'missing_reason', 'missing_line_num', 'node_type'])
@@ -623,7 +648,8 @@ class DataLoader:
                     validation_failed = True
                     violations += 1
                     if violations >= max_violations:
-                        return False, df_validation_dict
+                        #return False, df_validation_dict
+                        break
                 elif not validate_result['result'] and validate_result['warning']:
                     for msg in validate_result['messages']:
                         self.log.warning('Invalid data at line {}: "{}"!'.format(line_num, msg))
@@ -642,7 +668,8 @@ class DataLoader:
                 tmp_df_validation_result_invalid['Property'] = df_invalid['invalid_properties']
                 tmp_df_validation_result_invalid['Value'] =  df_invalid['invalid_values']
                 tmp_df_validation_result_invalid['Reason'] =  df_invalid['invalid_reason']
-                tmp_df_validation_result_invalid['Line Numbers'] = self.convert_line_num_list(list(df_invalid['invalid_line_num'])) 
+                tmp_df_validation_result_invalid['Line Numbers'] = self.convert_line_num_list(list(df_invalid['invalid_line_num']))
+                tmp_df_validation_result_invalid['Severity'] = ["error"] * len(df_invalid)
                 df_validation_result = pd.concat([df_validation_result, tmp_df_validation_result_invalid])
             if len(df_missing) >0:
                 df_missing = df_missing.sort_values(by=['missing_properties'])
@@ -652,6 +679,7 @@ class DataLoader:
                 tmp_df_validation_result_missing['Property'] = df_missing['missing_properties']
                 tmp_df_validation_result_missing['Reason'] =  df_missing['missing_reason']
                 tmp_df_validation_result_missing['Line Numbers'] = self.convert_line_num_list(list(df_missing['missing_line_num']))
+                tmp_df_validation_result_missing['Severity'] = ["error"] * len(df_missing)
                 df_validation_result = pd.concat([df_validation_result, tmp_df_validation_result_missing])
             if len(df_duplicate_id) > 0:
                 df_duplicate_id = df_duplicate_id.explode('duplicate_line_num').groupby(['duplicate_id', 'duplicate_reason', 'duplicate_id_field', 'node_type'])['duplicate_line_num'].unique().reset_index()
@@ -661,7 +689,7 @@ class DataLoader:
                 tmp_df_validation_result_duplicate['Value'] = df_duplicate_id['duplicate_id']
                 tmp_df_validation_result_duplicate['Reason'] = df_duplicate_id['duplicate_reason']
                 tmp_df_validation_result_duplicate['Line Numbers'] = self.convert_line_num_list(list(df_duplicate_id['duplicate_line_num']))
-                
+                tmp_df_validation_result_duplicate['Severity'] = ["error"] * len(df_duplicate_id)
                 df_validation_result = pd.concat([df_validation_result, tmp_df_validation_result_duplicate])
             if len(df_validation_result) > 0:
                 if obj[NODE_TYPE] not in df_validation_dict.keys():
