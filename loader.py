@@ -3,6 +3,7 @@ import argparse
 import glob
 import os
 import sys
+import zipfile
 
 from neo4j import GraphDatabase
 from neo4j.exceptions import ServiceUnavailable
@@ -38,6 +39,7 @@ def parse_arguments():
     parser.add_argument('--wipe-db', help='Wipe out database before loading, you\'ll lose all data!',
                         action='store_true')
     parser.add_argument('--no-backup', help='Skip backup step', action='store_true')
+    parser.add_argument('-v', '--verbose', help='Print the whole list of permissive values when the value is non-permissive value', action='store_true')
     parser.add_argument('-y', '--yes', help='Automatically confirm deletion and database wiping', action='store_true')
     parser.add_argument('-M', '--max-violations', help='Max violations to display', nargs='?', type=int)
     parser.add_argument('-b', '--bucket', help='S3 bucket name')
@@ -147,10 +149,10 @@ def process_arguments(args, log):
 
     if args.yes:
         config.yes = args.yes
-
+    if args.verbose:
+        config.verbose = args.verbose
     if args.dry_run:
         config.dry_run = args.dry_run
-
     if args.cheat_mode:
         config.cheat_mode = args.cheat_mode
 
@@ -224,11 +226,18 @@ def main():
             loader = DataLoader(driver, schema, plugins)
 
             load_result = loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db,
-                        config.max_violations, split=config.split_transactions,
+                        config.max_violations, config.temp_folder, config.verbose, split=config.split_transactions,
                         no_backup=config.no_backup, neo4j_uri=config.neo4j_uri, backup_folder=config.backup_folder)
             
             if load_result == False:
-                log.error('Data files upload failed')
+                if loader.validation_result_file_key != "":
+                    zip_file_key = loader.validation_result_file_key.replace(".xlsx", ".zip")
+                    with zipfile.ZipFile(zip_file_key, 'w') as zipf:
+                        zipf.write(loader.validation_result_file_key, os.path.basename(loader.validation_result_file_key))
+                        zipf.write(log_file, os.path.basename(log_file))
+                    log.error('Data files upload failed, validation result zip file was created at {}'.format(zip_file_key))
+                else:
+                    log.error('Data files upload failed')
         else:
             log.info('No files to load.')
 
@@ -260,6 +269,10 @@ def main():
 
     if dest_log_dir:
         try:
+            if load_result == False:
+                if loader.validation_result_file_key != "":
+                    upload_log_file(dest_log_dir, zip_file_key)
+                    log.info(f'Uploading validation result zip file {zip_file_key} succeeded!')
             upload_log_file(dest_log_dir, log_file)
             log.info(f'Uploading log file {log_file} succeeded!')
         except Exception as e:

@@ -44,9 +44,9 @@ Properties:
     exposure: exposure_id
     diagnosis: diagnosis_id
     targeted_therapy: targeted_therapy_id
-    therapy: therapy_id
-    surgical_procedure: surgical_procedure_id
-    radiological_procedure: radiological_procedure_id
+    non_targeted_therapy: non_targeted_therapy_id
+    surgery: surgical_procedure_id
+    radiotherapy: radiological_procedure_id
     subject_status: subject_status_id
     data_file: data_file_uuid
     principal_investigator:  principal_investigator_orcid_id
