@@ -13,7 +13,7 @@ import pandas as pd
 import datetime
 import dateutil
 from timeit import default_timer as timer
-from bento.common.utils import get_host, DATETIME_FORMAT, reformat_date
+from bento.common.utils import get_host, DATETIME_FORMAT, reformat_date, get_time_stamp
 
 from neo4j import Driver
 
@@ -201,8 +201,7 @@ class DataLoader:
                 if not os.path.exists(temp_folder):
                     os.makedirs(temp_folder)
                 df_validation_result_file_key = os.path.basename(os.path.dirname(file_list[0]))
-                eastern = dateutil.tz.gettz('US/Eastern')
-                timestamp = datetime.datetime.now(tz=eastern).strftime("%Y-%m-%dT%H%M%S")
+                timestamp = get_time_stamp()
                 output_key_invalid = os.path.join(temp_folder, df_validation_result_file_key) + "_" + timestamp + ".xlsx"
                 #df_validation_result.to_csv(output_key_invalid, index=False)
                 writer=pd.ExcelWriter(output_key_invalid, engine='xlsxwriter', engine_kwargs={'options':{'strings_to_urls': False}})
