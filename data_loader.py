@@ -436,7 +436,7 @@ class DataLoader:
                 self.df_validation_dict[OTHER] = pd.concat([self.df_validation_dict[OTHER], df_validation_result])
             self.skip_validation_flag = True
             return obj
-        else: #if enable cheat mode and by pass the validation
+        else: #if enable cheat mode and bypass the validation
             self.log.error('No "type" property in node, abort loading')
             sys.exit(1)
 
