@@ -54,11 +54,14 @@ def parse_arguments(args = None):
 
 
 def process_arguments(args, log):
+    print("process_argument")
     config_file = None
     if args.config_file:
         config_file = args.config_file
+    print("before BentoConfig")
     config = BentoConfig(config_file)
 
+    print("before dataset")
     # Required Fields
     if args.dataset:
         config.dataset = args.dataset
