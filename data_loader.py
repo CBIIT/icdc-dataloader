@@ -423,13 +423,13 @@ class DataLoader:
                     elif id_field != UUID:
                         obj2[UUID] = self.schema.get_uuid_for_node(node_type, id_value)
                 else:
-                    raise Exception('No "type" property in node')
+                    raise Exception('No "type" column in file')
             return obj2
         elif not self.cheat_mode:
-            self.log.error('No "type" property in node')
+            self.log.error('No "type" column in file')
             #sys.exit(1)
             df_validation_result = pd.DataFrame(columns=['File Name', 'Property', 'Value', 'Reason', 'Line Numbers', 'Severity'])
-            df_validation_result = self.update_field_validation_result(df_validation_result, file_name, "", "type_property_missing", "error")
+            df_validation_result = self.update_field_validation_result(df_validation_result, file_name, "", "type_column_missing", "error")
             if OTHER not in self.df_validation_dict.keys():
                 self.df_validation_dict[OTHER] = df_validation_result
             else:
@@ -437,7 +437,7 @@ class DataLoader:
             self.skip_validation_flag = True
             return obj
         else: #if enable cheat mode and bypass the validation
-            self.log.error('No "type" property in node, abort loading')
+            self.log.error('No "type" column in file, abort loading')
             sys.exit(1)
 
     def get_signature(self, node):
