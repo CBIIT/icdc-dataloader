@@ -52,8 +52,10 @@ def load_data(
         upload_log_dir,
         plugins
     )
-    
+    print("Before loader:main")
+    print(params.dataset)
     main(params)
+    print("After loader:main")
 
 class Config:
     def __init__(
