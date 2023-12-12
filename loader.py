@@ -196,7 +196,9 @@ def main(args):
     log.info("first log message")
     print("After get_log_file")
     config = process_arguments(args, log)
+    print("After process_arguments")
     print_config(log, config)
+    print("After print_config")
 
     print("Before check_schema_files")
     if not check_schema_files(config.schema_files, log):
