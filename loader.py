@@ -14,6 +14,7 @@ from props import Props
 from bento.common.utils import get_logger, removeTrailingSlash, check_schema_files, UPSERT_MODE, NEW_MODE, DELETE_MODE, \
     get_log_file, LOG_PREFIX, APP_NAME, load_plugin, print_config
 
+print("Before LOG_PREFIX")
 if LOG_PREFIX not in os.environ:
     os.environ[LOG_PREFIX] = 'Data_Loader'
 
@@ -188,8 +189,11 @@ def prepare_plugin(config, schema):
 # optional arguments includes:
 # -i or --uri followed by Neo4j server address and port in format like bolt://12.34.56.78:7687
 def main(args):
+    print("Before get_logger")
     log = get_logger('Loader')
+    print("Before get_log_file")
     log_file = get_log_file()
+    print("After get_log_file")
     config = process_arguments(args, log)
     print_config(log, config)
 
