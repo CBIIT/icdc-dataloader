@@ -45,6 +45,7 @@ class BentoConfig:
             self.split_transactions = None
             self.upload_log_dir = None
             self.verbose = None
+            self.plugins = []
         else:
             if os.path.isfile(config_file):
                 with open(config_file) as c_file:

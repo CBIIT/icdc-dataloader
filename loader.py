@@ -24,7 +24,7 @@ from data_loader import DataLoader
 from bento.common.s3 import S3Bucket, upload_log_file
 
 
-def parse_arguments():
+def parse_arguments(args = None):
     parser = argparse.ArgumentParser(description='Load TSV(TXT) files (from Pentaho) into Neo4j')
     parser.add_argument('-i', '--uri', help='Neo4j uri like bolt://12.34.56.78:7687')
     parser.add_argument('-u', '--user', help='Neo4j user')
@@ -49,7 +49,7 @@ def parse_arguments():
     parser.add_argument('--split-transactions', help='Creates a separate transaction for each file',
                         action='store_true')
     parser.add_argument('--upload-log-dir', help='Upload destination dir for log file,  if dir in s3, use the format, s3://[bucket]/[prefix]')
-    return parser.parse_args()
+    return parser.parse_args(args)
 
 
 def process_arguments(args, log):
@@ -169,6 +169,12 @@ def process_arguments(args, log):
     if args.upload_log_dir:
         config.upload_log_dir = args.upload_log_dir
 
+    # Only applies when running in Prefect via loader_prefect.py, which doesn't have config files
+    # So plugins have to be passed in from Prefect parameters
+    # In that case args is an object that contains all Prefect parameters
+    if hasattr(args, 'plugins'):
+        config.plugins = args.plugins
+
     return config
 
 def prepare_plugin(config, schema):
@@ -181,10 +187,10 @@ def prepare_plugin(config, schema):
 # Data loader will try to load all TSV(.TXT) files from given directory into Neo4j
 # optional arguments includes:
 # -i or --uri followed by Neo4j server address and port in format like bolt://12.34.56.78:7687
-def main():
+def main(args):
     log = get_logger('Loader')
     log_file = get_log_file()
-    config = process_arguments(parse_arguments(), log)
+    config = process_arguments(args, log)
     print_config(log, config)
 
     if not check_schema_files(config.schema_files, log):
@@ -290,4 +296,4 @@ def confirm_deletion(message):
 
 
 if __name__ == '__main__':
-    main()
+    main(parse_arguments())
