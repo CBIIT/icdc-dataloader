@@ -52,9 +52,7 @@ def load_data(
         upload_log_dir,
         plugins
     )
-
-
-    print(params)
+    
     main(params)
 
 class Config:
@@ -104,9 +102,7 @@ class Config:
         self.upload_log_dir = upload_log_dir
         self.plugins = []
         for plugin in plugins:
-            print(plugin)
             self.plugins.append(PluginConfig(plugin))
-        print(len(self.plugins))
 
         self.config_file = None
 
