@@ -193,17 +193,21 @@ def main(args):
     log = get_logger('Loader')
     print("Before get_log_file")
     log_file = get_log_file()
+    log.info("first log message")
     print("After get_log_file")
     config = process_arguments(args, log)
     print_config(log, config)
 
+    print("Before check_schema_files")
     if not check_schema_files(config.schema_files, log):
         return
 
     driver = None
     restore_cmd = ''
     load_result = None
+    print("Before try")
     try:
+        print("Start try")
         txt_files = glob.glob('{}/*.txt'.format(config.dataset))
         tsv_files = glob.glob('{}/*.tsv'.format(config.dataset))
         file_list = txt_files + tsv_files
@@ -262,6 +266,7 @@ def main(args):
         log.critical("User stopped the loading!")
         return
     finally:
+        print("finally")
         if driver:
             driver.close()
         if restore_cmd:
