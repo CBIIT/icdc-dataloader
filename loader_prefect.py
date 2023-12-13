@@ -1,5 +1,3 @@
-import os
-
 from prefect import flow
 
 from loader import main
@@ -55,7 +53,6 @@ def load_data(
         plugins
     )
     print("Before loader:main")
-    print(f'ENV: {os.environ["PREFECT_LOGGING_EXTRA_LOGGERS"]}')
     print(params.dataset)
     main(params)
     print("After loader:main")
