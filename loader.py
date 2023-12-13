@@ -198,11 +198,8 @@ def prepare_plugin(config, schema):
 # optional arguments includes:
 # -i or --uri followed by Neo4j server address and port in format like bolt://12.34.56.78:7687
 def main(args):
-    print("Enter main")
     log = get_logger('Loader')
-    print("got logger")
     log_file = get_log_file()
-    log.info(f"first log message, log file = {log_file}")
     config = process_arguments(args, log)
     print_config(log, config)
 
