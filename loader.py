@@ -14,7 +14,6 @@ from props import Props
 from bento.common.utils import get_logger, removeTrailingSlash, check_schema_files, UPSERT_MODE, NEW_MODE, DELETE_MODE, \
     get_log_file, LOG_PREFIX, APP_NAME, load_plugin, print_config
 
-print("Before LOG_PREFIX")
 if LOG_PREFIX not in os.environ:
     os.environ[LOG_PREFIX] = 'Data_Loader'
 
@@ -54,14 +53,11 @@ def parse_arguments(args = None):
 
 
 def process_arguments(args, log):
-    print("process_argument")
     config_file = None
     if args.config_file:
         config_file = args.config_file
-    print("before BentoConfig")
     config = BentoConfig(config_file)
 
-    print("before dataset")
     # Required Fields
     if args.dataset:
         config.dataset = args.dataset
@@ -193,27 +189,19 @@ def prepare_plugin(config, schema):
 # optional arguments includes:
 # -i or --uri followed by Neo4j server address and port in format like bolt://12.34.56.78:7687
 def main(args):
-    print("Before get_logger")
     log = get_logger('Loader')
-    print("Before get_log_file")
     log_file = get_log_file()
     log.info("first log message")
-    print("After get_log_file")
     config = process_arguments(args, log)
-    print("After process_arguments")
     print_config(log, config)
-    print("After print_config")
 
-    print("Before check_schema_files")
     if not check_schema_files(config.schema_files, log):
         return
 
     driver = None
     restore_cmd = ''
     load_result = None
-    print("Before try")
     try:
-        print("Start try")
         txt_files = glob.glob('{}/*.txt'.format(config.dataset))
         tsv_files = glob.glob('{}/*.tsv'.format(config.dataset))
         file_list = txt_files + tsv_files
@@ -272,7 +260,6 @@ def main(args):
         log.critical("User stopped the loading!")
         return
     finally:
-        print("finally")
         if driver:
             driver.close()
         if restore_cmd:
