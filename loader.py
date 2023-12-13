@@ -68,6 +68,9 @@ def process_arguments(args, log):
     if not config.dataset:
         log.error('No dataset specified! Please specify a dataset in config file or with CLI argument --dataset')
         sys.exit(1)
+
+    if args.s3_folder:
+        config.s3_folder = args.s3_folder
     if not config.s3_folder and not os.path.isdir(config.dataset):
         log.error('{} is not a directory!'.format(config.dataset))
         sys.exit(1)
@@ -110,8 +113,6 @@ def process_arguments(args, log):
         log.error('Backup folder not specified! A backup folder is required unless the --no-backup argument is used')
         sys.exit(1)
 
-    if args.s3_folder:
-        config.s3_folder = args.s3_folder
     if config.s3_folder:
         if not os.path.exists(config.dataset):
             os.makedirs(config.dataset)
