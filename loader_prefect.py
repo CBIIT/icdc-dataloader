@@ -10,6 +10,7 @@ def load_data(
         s3_folder,
         upload_log_dir = None,
         dataset = "data",
+        temp_folder = "tmp",
         uri = "bolt://127.0.0.1:7687",
         user = "neo4j",
         password = "your-password",
@@ -50,7 +51,8 @@ def load_data(
         mode,
         split_transaction,
         upload_log_dir,
-        plugins
+        plugins,
+        temp_folder
     )
     main(params)
 
@@ -77,7 +79,8 @@ class Config:
             mode,
             split_transaction,
             upload_log_dir,
-            plugins
+            plugins,
+            temp_folder
     ):
         self.dataset = dataset
         self.uri = uri
@@ -100,6 +103,7 @@ class Config:
         self.split_transactions = split_transaction
         self.upload_log_dir = upload_log_dir
         self.plugins = []
+        self.temp_folder = temp_folder
         for plugin in plugins:
             self.plugins.append(PluginConfig(plugin))
 

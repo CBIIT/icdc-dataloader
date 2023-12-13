@@ -41,12 +41,12 @@ deployments:
     user: neo4j
     password: your-password
     schemas:
-      - cds-model/model-desc/cds-model.yml
-      - cds-model/model-desc/cds-model-props.yml
+      - ../cds-model/model-desc/cds-model.yml
+      - ../cds-model/model-desc/cds-model-props.yml
     prop_file: config/props-cds.yml
   work_pool:
     name: crdc-dh-validation
     work_queue_name: default
     job_variables:
       env:
-        PREFECT_LOGGING_EXTRA_LOGGERS: "Data_Loader,ICDC Schema,Loader"
+        PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator"
