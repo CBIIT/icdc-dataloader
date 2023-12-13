@@ -18,6 +18,9 @@ pull:
       repository: https://github.com/CBIIT/cds-model.git
       branch: main
   - prefect.deployments.steps.git_clone:
+      repository: https://github.com/CBIIT/icdc-model-tool.git
+      branch: master
+  - prefect.deployments.steps.git_clone:
       id: clone-step
       repository: https://github.com/CBIIT/icdc-dataloader.git
       branch: prefect
@@ -44,6 +47,28 @@ deployments:
       - ../cds-model/model-desc/cds-model.yml
       - ../cds-model/model-desc/cds-model-props.yml
     prop_file: config/props-cds.yml
+  work_pool:
+    name: crdc-dh-validation
+    work_queue_name: default
+    job_variables:
+      env:
+        PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator"
+
+- name: data-hub-dev-icdc
+  version: null
+  tags: []
+  description: null
+  schedule: {}
+  flow_name: null
+  entrypoint: loader_prefect:load_data
+  parameters:
+    uri: "bolt://127.0.0.1:7687"
+    user: neo4j
+    password: your-password
+    schemas:
+      - ../icdc-model-tool/model-desc/icdc-model.yml
+      - ../icdc-model-tool/model-desc/icdc-model-props.yml
+    prop_file: config/props-icdc-pmvp.yml
   work_pool:
     name: crdc-dh-validation
     work_queue_name: default
