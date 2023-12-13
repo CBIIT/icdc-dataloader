@@ -251,9 +251,9 @@ def main(args):
                     with zipfile.ZipFile(zip_file_key, 'w') as zipf:
                         zipf.write(loader.validation_result_file_key, os.path.basename(loader.validation_result_file_key))
                         zipf.write(log_file, os.path.basename(log_file))
-                    log.error('Data files upload failed, validation result zip file was created at {}'.format(zip_file_key))
+                    log.error('Data loading failed, validation result zip file was created at {}'.format(zip_file_key))
                 else:
-                    log.error('Data files upload failed')
+                    log.error('Data loading failed')
         else:
             log.info('No files to load.')
 
