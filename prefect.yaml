@@ -47,4 +47,6 @@ deployments:
   work_pool:
     name: crdc-dh-validation
     work_queue_name: default
-    job_variables: {}
+    job_variables:
+      env:
+        PREFECT_LOGGING_EXTRA_LOGGERS: "Data_Loader,ICDC Schema,Loader"
