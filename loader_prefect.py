@@ -14,7 +14,7 @@ def load_data(
         uri = "bolt://127.0.0.1:7687",
         user = "neo4j",
         password = "your-password",
-        schemas = ["/Users/yingm3/work/icdc/code/model-tool/model-desc/icdc-model.yml", "/Users/yingm3/work/icdc/code/model-tool/model-desc/icdc-model-props.yml"],
+        schemas = ["../icdc-model-tool/model-desc/icdc-model.yml", "../icdc-model-tool/model-desc/icdc-model-props.yml"],
         prop_file = "config/props-icdc-pmvp.yml",
         backup_folder = None,
         cheat_mode = False,
@@ -109,6 +109,38 @@ class Config:
 
         self.config_file = None
 
+@flow(name="CRDC Data Hub Loader", log_prints=True)
+def data_hub_loader(
+        s3_bucket,
+        s3_folder,
+        schemas,
+        prop_file="config/props-icdc-pmvp.yml",
+        uri="bolt://127.0.0.1:7687",
+        password="your-password",
+        cheat_mode=False,
+        dry_run=False,
+        wipe_db=False,
+        no_parents=True,
+        mode="upsert",
+        plugins=[]
+    ):
+
+    load_data(
+        s3_bucket = s3_bucket,
+        s3_folder = s3_folder,
+        upload_log_dir = f's3://{s3_bucket}/{s3_folder}/logs', #
+        uri = uri,
+        password = password,
+        schemas = schemas,
+        prop_file = prop_file,
+        cheat_mode = cheat_mode,
+        dry_run = dry_run,
+        wipe_db = wipe_db,
+        no_parents = no_parents,
+        max_violation = 1000000,
+        mode = mode,
+        plugins = plugins
+    )
 
 if __name__ == "__main__":
     # create your first deployment

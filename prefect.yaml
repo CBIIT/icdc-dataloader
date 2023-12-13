@@ -38,10 +38,9 @@ deployments:
   description: null
   schedule: {}
   flow_name: null
-  entrypoint: loader_prefect:load_data
+  entrypoint: loader_prefect:data_hub_loader
   parameters:
     uri: "bolt://127.0.0.1:7687"
-    user: neo4j
     password: your-password
     schemas:
       - ../cds-model/model-desc/cds-model.yml
@@ -60,10 +59,9 @@ deployments:
   description: null
   schedule: {}
   flow_name: null
-  entrypoint: loader_prefect:load_data
+  entrypoint: loader_prefect:data_hub_loader
   parameters:
     uri: "bolt://127.0.0.1:7687"
-    user: neo4j
     password: your-password
     schemas:
       - ../icdc-model-tool/model-desc/icdc-model.yml
