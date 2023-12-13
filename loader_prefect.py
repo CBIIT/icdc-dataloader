@@ -6,14 +6,15 @@ from config import PluginConfig
 
 @flow(name="CRDC Data Loader", log_prints=True)
 def load_data(
-        dataset,
+        s3_bucket,
+        s3_folder,
+        upload_log_dir = None,
+        dataset = "data",
         uri = "bolt://127.0.0.1:7687",
         user = "neo4j",
         password = "your-password",
         schemas = ["/Users/yingm3/work/icdc/code/model-tool/model-desc/icdc-model.yml", "/Users/yingm3/work/icdc/code/model-tool/model-desc/icdc-model-props.yml"],
         prop_file = "config/props-icdc-pmvp.yml",
-        bucket = None,
-        s3_folder = None,
         backup_folder = None,
         cheat_mode = False,
         dry_run = False,
@@ -25,7 +26,6 @@ def load_data(
         max_violation = 1000000,
         mode = "upsert",
         split_transaction = False,
-        upload_log_dir = None,
         plugins = []
     ):
 
@@ -36,7 +36,7 @@ def load_data(
         password,
         schemas,
         prop_file,
-        bucket,
+        s3_bucket,
         s3_folder,
         backup_folder,
         cheat_mode,
