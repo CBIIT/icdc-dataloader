@@ -73,3 +73,24 @@ deployments:
     job_variables:
       env:
         PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator,Props"
+
+- name: stream-file-validator
+  version: null
+  tags: []
+  description: null
+  schedule: {}
+  flow_name: null
+  entrypoint:  stream_file_validator_prefect.py:stream_file_validator
+  parameters:
+    manifest_file: ../bruce-file-copier/test1/NCATS-COP01_path_report_file_neo4j_neo4j_error_test.txt
+    file_name: file_name
+    file_url: file_location
+    file_size: file_size
+    file_md5: md5sum
+    bucket: bruce-file-copier
+    prefix: test
+    output_file_location: tmp
+  work_pool:
+    name: null
+    work_queue_name: default
+    job_variables: {}
