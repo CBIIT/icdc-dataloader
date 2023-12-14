@@ -14,6 +14,10 @@ push: null
 
 # pull section allows you to provide instructions for cloning this project in remote locations
 pull:
+  - prefect.deployments.steps.pull_from_remote_storage:
+      url: s3://bruce-file-copier/test1/
+      key: "{{ prefect.blocks.secret.my-aws-access-key }}"
+      secret: "{{ prefect.blocks.secret.my-aws-secret-key }}"
   - prefect.deployments.steps.git_clone:
       id: clone-step
       repository: https://github.com/CBIIT/icdc-dataloader.git
@@ -23,10 +27,7 @@ pull:
       requirements_file: requirements.txt
       directory: "{{ clone-step.directory }}"
       stream_output: False
-  - prefect.deployments.steps.pull_from_remote_storage:
-      url: s3://bruce-file-copier/test1/
-      key: "{{ prefect.blocks.secret.my-aws-access-key }}"
-      secret: "{{ prefect.blocks.secret.my-aws-secret-key }}"
+  
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
@@ -38,7 +39,7 @@ deployments:
   flow_name: null
   entrypoint:  stream_file_validator_prefect.py:stream_file_validator
   parameters:
-    manifest_file: bruce-file-copier/test1/NCATS-COP01_path_report_file_neo4j_neo4j_error_test.txt
+    manifest_file: ../bruce-file-copier/test1/NCATS-COP01_path_report_file_neo4j_neo4j_error_test.txt
     file_name: file_name
     file_url: file_location
     file_size: file_size
