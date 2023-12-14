@@ -30,15 +30,15 @@ pull:
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
-  name: stream-file-validator
+- name: stream-file-validator
   version: null
   tags: []
   description: null
   schedule: {}
   flow_name: null
-  entrypoint: stream_file_validator_prefect.py:stream_file_validator
+  entrypoint:  stream_file_validator_prefect.py:stream_file_validator
   parameters:
-    manifest_file: NCATS-COP01_path_report_file_neo4j_neo4j_error_test.txt
+    manifest_file: bruce-file-copier/test1/NCATS-COP01_path_report_file_neo4j_neo4j_error_test.txt
     file_name: file_name
     file_url: file_location
     file_size: file_size
@@ -47,6 +47,6 @@ deployments:
     prefix: test
     output_file_location: tmp
   work_pool:
-    name: crdc-dh-validation
+    name: null
     work_queue_name: default
     job_variables: {}

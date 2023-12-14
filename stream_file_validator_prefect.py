@@ -4,7 +4,7 @@ from stream_file_validator import main
 
 @flow(name="CRDC Stream File Validator", log_prints=True)
 def stream_file_validator(
-        manifest_file = "input file location",
+        manifest_file = "input_file_location",
         file_name = "file_name",
         file_url = "file_location",
         file_size = "file_size",
