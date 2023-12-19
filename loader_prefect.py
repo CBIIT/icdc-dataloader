@@ -1,7 +1,12 @@
-from prefect import flow
+from prefect import flow, task
 
 from loader import main
 from config import PluginConfig
+from bento.common.secret_manager import get_secret
+
+NEO4J_URI = "neo4j_uri"
+NEO4J_PASSWORD = "neo4j_password"
+SUBMISSION_BUCKET = "submission_bucket"
 
 
 @flow(name="CRDC Data Loader", log_prints=True)
@@ -109,21 +114,25 @@ class Config:
 
         self.config_file = None
 
+
 @flow(name="CRDC Data Hub Loader", log_prints=True)
 def data_hub_loader(
-        s3_bucket,
         s3_folder,
+        cheat_mode,
+        dry_run,
+        wipe_db,
+        mode,
+        secret_name,
         schemas,
-        prop_file="config/props-icdc-pmvp.yml",
-        uri="bolt://127.0.0.1:7687",
-        password="your-password",
-        cheat_mode=False,
-        dry_run=False,
-        wipe_db=False,
+        prop_file,
         no_parents=True,
-        mode="upsert",
         plugins=[]
     ):
+
+    secret = get_secret(secret_name)
+    uri = secret[NEO4J_URI]
+    password = secret[NEO4J_PASSWORD]
+    s3_bucket = secret[SUBMISSION_BUCKET]
 
     load_data(
         s3_bucket = s3_bucket,
