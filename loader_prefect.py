@@ -130,6 +130,8 @@ def data_hub_loader(
     ):
 
     secret = get_secret(secret_name)
+    print(secret.keys())
+    print(secret)
     uri = secret[NEO4J_URI]
     password = secret[NEO4J_PASSWORD]
     s3_bucket = secret[SUBMISSION_BUCKET]
