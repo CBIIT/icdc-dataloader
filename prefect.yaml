@@ -40,7 +40,8 @@ deployments:
   flow_name: null
   entrypoint: loader_prefect:data_hub_loader
   parameters:
-    s3_folder: ""
+    organization_id: ""
+    submission_id: ""
     cheat_mode: False
     dry_run: False
     wipe_db: False
@@ -57,29 +58,30 @@ deployments:
       env:
         PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator,Props"
 
-- name: data-hub-dev-icdc
-  version: null
-  tags: []
-  description: null
-  schedule: {}
-  flow_name: null
-  entrypoint: loader_prefect:data_hub_loader
-  parameters:
-    s3_folder: ""
-    cheat_mode: False
-    dry_run: False
-    wipe_db: False
-    mode: "upsert"
-    secret_name: "{{ prefect.variables.secret_name_dev }}"
-    schemas:
-      - ../icdc-model-tool/model-desc/icdc-model.yml
-      - ../icdc-model-tool/model-desc/icdc-model-props.yml
-    prop_file: config/props-icdc-pmvp.yml
-    no_parents: False
-
-  work_pool:
-    name: crdc-dh-validation
-    work_queue_name: default
-    job_variables:
-      env:
-        PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator,Props"
+#- name: data-hub-dev-icdc
+#  version: null
+#  tags: []
+#  description: null
+#  schedule: {}
+#  flow_name: null
+#  entrypoint: loader_prefect:data_hub_loader
+#  parameters:
+#    s3_folder: ""
+#    cheat_mode: False
+#    dry_run: False
+#    wipe_db: False
+#    mode: "upsert"
+#    secret_name: "{{ prefect.variables.secret_name_dev }}"
+#    schemas:
+#      - ../icdc-model-tool/model-desc/icdc-model.yml
+#      - ../icdc-model-tool/model-desc/icdc-model-props.yml
+#    prop_file: config/props-icdc-pmvp.yml
+#    no_parents: False
+#
+#  work_pool:
+#    name: crdc-dh-validation
+#    work_queue_name: default
+#    job_variables:
+#      env:
+#        PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator,Props"
+#
