@@ -45,7 +45,7 @@ deployments:
     dry_run: False
     wipe_db: False
     mode: "upsert"
-    secret_name: bento/crdc-hub/dev
+    secret_name: "{{ prefect.variables.secret_name_dev }}"
     schemas:
       - ../cds-model/model-desc/cds-model.yml
       - ../cds-model/model-desc/cds-model-props.yml
