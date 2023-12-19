@@ -40,8 +40,12 @@ deployments:
   flow_name: null
   entrypoint: loader_prefect:data_hub_loader
   parameters:
-    uri: "bolt://127.0.0.1:7687"
-    password: your-password
+    s3_folder: ""
+    cheat_mode: False
+    dry_run: False
+    wipe_db: False
+    mode: "upsert"
+    secret_name: bento/crdc-hub/dev
     schemas:
       - ../cds-model/model-desc/cds-model.yml
       - ../cds-model/model-desc/cds-model-props.yml
@@ -61,12 +65,18 @@ deployments:
   flow_name: null
   entrypoint: loader_prefect:data_hub_loader
   parameters:
-    uri: "bolt://127.0.0.1:7687"
-    password: your-password
+    s3_folder: ""
+    cheat_mode: False
+    dry_run: False
+    wipe_db: False
+    mode: "upsert"
+    secret_name: bento/crdc-hub/dev
     schemas:
       - ../icdc-model-tool/model-desc/icdc-model.yml
       - ../icdc-model-tool/model-desc/icdc-model-props.yml
     prop_file: config/props-icdc-pmvp.yml
+    no_parents: False
+
   work_pool:
     name: crdc-dh-validation
     work_queue_name: default
