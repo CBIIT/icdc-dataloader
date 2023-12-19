@@ -114,9 +114,6 @@ class Config:
 
         self.config_file = None
 
-@task(name="Get Secrets")
-def get_secret(secret_name):
-    return get_secret(secret_name)
 
 @flow(name="CRDC Data Hub Loader", log_prints=True)
 def data_hub_loader(
