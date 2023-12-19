@@ -14,5 +14,4 @@ config/es_loader_*
 backup/
 .vscode/
 **.DS_Store
-.prefect/
 

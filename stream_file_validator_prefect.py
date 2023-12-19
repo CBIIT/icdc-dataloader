@@ -4,25 +4,34 @@ from stream_file_validator import main
 
 @flow(name="CRDC Stream File Validator", log_prints=True)
 def stream_file_validator(
-        manifest_file = "input_file_location",
+        manifest_folder = "tests/temp/file_validation_test",
+        # Column names in the manifest file
         file_name = "file_name",
         file_url = "file_location",
         file_size = "file_size",
         file_md5 = "md5sum",
-        bucket = "bruce-file-copier",
-        prefix = "test",
-        output_file_location = "tmp"
+        # If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided
+        s3_validation_bucket_list = ["bruce-file-copier"],
+        s3_validation_prefix_list = ["test"],
+        download_from_s3 = True,
+        s3_download_bucket = "bruce-file-copier",
+        s3_download_prefix = "test1",
+        # Output file location, defualt is tmp/
+        output_folder = "tests/temp"
     ):
 
     params = Config(
-        manifest_file,
+        manifest_folder,
         file_name,
         file_url,
         file_size,
         file_md5,
-        bucket,
-        prefix,
-        output_file_location
+        s3_validation_bucket_list,
+        s3_validation_prefix_list,
+        download_from_s3,
+        s3_download_bucket,
+        s3_download_prefix,
+        output_folder
     )
     print("Start stream file validating")
     main(params)
@@ -31,24 +40,30 @@ def stream_file_validator(
 class Config:
     def __init__(
             self,
-            manifest_file,
+            manifest_folder,
             file_name,
             file_url,
             file_size,
             file_md5,
-            bucket,
-            prefix,
-            output_file_location
+            s3_validation_bucket_list,
+            s3_validation_prefix_list,
+            download_from_s3,
+            s3_download_bucket,
+            s3_download_prefix,
+            output_folder
     ):
         
-        self.manifest_file = manifest_file
+        self.manifest_folder = manifest_folder
         self.file_name = file_name
         self.file_url = file_url
         self.file_size = file_size
         self.file_md5 = file_md5
-        self.bucket = bucket
-        self.prefix = prefix
-        self.output_file_location = output_file_location
+        self.s3_validation_bucket_list = s3_validation_bucket_list
+        self.s3_validation_prefix_list = s3_validation_prefix_list
+        self.output_folder = output_folder
+        self.download_from_s3 = download_from_s3
+        self.s3_download_bucket = s3_download_bucket
+        self.s3_download_prefix = s3_download_prefix
         self.config_file = None
 
 
