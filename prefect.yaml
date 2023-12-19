@@ -83,7 +83,7 @@ deployments:
   entrypoint:  stream_file_validator_prefect.py:stream_file_validator
   parameters:
     # Manifest file location
-    manifest_folder: tests/temp/file_validation_test
+    manifest_folder: manifest_file_folder
     # Column names in the manifest file
     file_name: file_name
     file_url: file_location
@@ -91,14 +91,14 @@ deployments:
     file_md5: md5sum
     # If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided
     s3_validation_bucket_list:
-      - bruce-file-copier
+      - s3_bucket_1
     s3_validation_prefix_list:
-      - test
+      - s3_prefix_1
     download_from_s3: True
-    s3_download_bucket: bruce-file-copier
-    s3_download_prefix: test1
+    s3_download_bucket: s3_download_bucket
+    s3_download_prefix: s3_download_prefix
     # Output file location, defualt is tmp/
-    output_folder: tests/temp
+    output_folder: tmp
   work_pool:
     name: crdc-dh-validation
     work_queue_name: default
