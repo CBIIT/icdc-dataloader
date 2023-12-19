@@ -1,8 +1,7 @@
 #from config import BentoConfig
 import argparse
 import csv
-from data_loader import check_encoding
-from bento.common.utils import get_logger, LOG_PREFIX, APP_NAME
+import glob
 import pandas as pd
 import boto3
 import hashlib
@@ -10,8 +9,9 @@ import os
 import sys
 import yaml
 from bento.common.s3 import S3Bucket, upload_log_file
-import glob
-from bento.common.utils import get_time_stamp
+from bento.common.utils import get_time_stamp, get_log_file
+from data_loader import check_encoding
+from bento.common.utils import get_logger, LOG_PREFIX, APP_NAME
 
 FILE_URL = 'file_url'
 DOWNLOAD_FROM_S3 = 'download_from_s3'
@@ -239,8 +239,10 @@ class SteamfileValidator():
 
                 if dest_log_dir:
                     try:
+                        log_file = get_log_file()
                         upload_log_file(dest_log_dir, validation_file_key)
-                        self.log.info(f'Uploading validation result tsv file {validation_file_key} succeeded!')
+                        upload_log_file(dest_log_dir, log_file)
+                        self.log.info(f'Uploading validation result tsv file {validation_file_key} and log file {log_file} succeeded!')
                     except Exception as e:
                         self.log.debug(e)
                         self.log.exception('Copy file failed! Check debug log for detailed information')
