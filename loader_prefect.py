@@ -117,7 +117,8 @@ class Config:
 
 @flow(name="CRDC Data Hub Loader", log_prints=True)
 def data_hub_loader(
-        s3_folder,
+        organization_id,
+        submission_id,
         cheat_mode,
         dry_run,
         wipe_db,
@@ -133,6 +134,7 @@ def data_hub_loader(
     uri = secret[NEO4J_URI]
     password = secret[NEO4J_PASSWORD]
     s3_bucket = secret[SUBMISSION_BUCKET]
+    s3_folder = f'{organization_id}/{submission_id}/metadata'
 
     load_data(
         s3_bucket = s3_bucket,
