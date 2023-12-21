@@ -93,7 +93,10 @@ class ESLoader:
         for ok, _ in streaming_bulk(
                 client=self.es_client,
                 index=index_name,
-                actions=data
+                actions=data,
+                max_retries=2,
+                initial_backoff=10,
+                max_backoff=20
         ):
             total += 1
             successes += 1 if ok else 0
