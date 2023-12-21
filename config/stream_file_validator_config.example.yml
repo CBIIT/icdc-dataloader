@@ -7,6 +7,7 @@ Config:
   file_size: file_size
   file_md5: md5sum
   # If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided
+  # For each manifest file provided for validation, one set of bucket and prefex needs to be probided
   s3_validation_bucket_list:
     - s3_bucket_1
   s3_validation_prefix_list:
