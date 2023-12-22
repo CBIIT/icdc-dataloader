@@ -258,7 +258,7 @@ def main(args):
                 zip_file_key = log_file.replace(".log", ".zip")
                 with zipfile.ZipFile(zip_file_key, 'w') as zipf:
                     zipf.write(log_file, os.path.basename(log_file))
-                log.error('Data loading succeeded, zip file was created at {}'.format(zip_file_key))
+                log.info('Data loading succeeded, zip file was created at {}'.format(zip_file_key))
 
         else:
             log.info('No files to load.')
