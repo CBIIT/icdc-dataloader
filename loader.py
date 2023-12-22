@@ -254,6 +254,12 @@ def main(args):
                     log.error('Data loading failed, validation result zip file was created at {}'.format(zip_file_key))
                 else:
                     log.error('Data loading failed')
+            else:
+                zip_file_key = log_file.replace(".log", ".zip")
+                with zipfile.ZipFile(zip_file_key, 'w') as zipf:
+                    zipf.write(log_file, os.path.basename(log_file))
+                log.info('Data loading succeeded, zip file was created at {}'.format(zip_file_key))
+
         else:
             log.info('No files to load.')
 
@@ -289,7 +295,10 @@ def main(args):
                 if loader.validation_result_file_key != "":
                     upload_log_file(dest_log_dir, zip_file_key)
                     log.info(f'Uploading validation result zip file {zip_file_key} succeeded!')
-            upload_log_file(dest_log_dir, log_file)
+            else:
+                upload_log_file(dest_log_dir, zip_file_key)
+                log.info(f'Uploading validation result zip file {zip_file_key} succeeded!')
+            # upload_log_file(dest_log_dir, log_file)
             log.info(f'Uploading log file {log_file} succeeded!')
         except Exception as e:
             log.debug(e)
