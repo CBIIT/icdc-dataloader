@@ -160,6 +160,7 @@ class SteamfileValidator():
         validation_df = pd.DataFrame(columns=[FILE_NAME_COLUMN, FILE_URL_COLUMN, FILE_SIZE_COLUMN, FILE_MD5_COLUMN, VALIDATION_RESULT, VALIDATION_FAIL_REASON])
         if self.manifest_file.startswith("s3://"):
             #If start with s3://, then read the csv file from s3 bucket
+            self.download_from_s3 = True
             manifest_df = self.read_s3_csv_file()
         else:
             #Remove leading and trailing spaces
@@ -179,7 +180,6 @@ class SteamfileValidator():
                 #If there is an file_url column
                 if not pd.isna(org_obj[self.file_url_column]):
                     #If file_url value not empty
-                    self.download_from_s3 = True
                     s3_bucket, s3_file_key = self.s3_url_transform(org_obj[self.file_url_column])
                     if s3_bucket is None and s3_file_key is None:
                         #If the url is not s3 url
@@ -256,7 +256,7 @@ class SteamfileValidator():
             manifest_file_name = os.path.basename(s3_download_file_key)
         else:
             manifest_file_name = os.path.basename(self.manifest_file)
-        validation_file_key = os.path.join(self.output_folder, manifest_file_name.replace(".txt", "_" + timestamp + "-validation-result.tsv"))
+        validation_file_key = os.path.join(self.output_folder, manifest_file_name.replace(os.path.splitext(manifest_file_name)[1], "_" + timestamp + "-validation-result.tsv"))
         validation_df.to_csv(validation_file_key, sep="\t", index=False)
         zip_file_key = validation_file_key.replace(".tsv", ".zip")
         log_file = get_log_file()
@@ -264,7 +264,7 @@ class SteamfileValidator():
             zipf.write(validation_file_key, os.path.basename(validation_file_key))
             zipf.write(log_file, os.path.basename(log_file))
         #Upload the zip file to s3 bukcet if the manifest csv file is reading from s3 bucket
-        if dest_log_dir:
+        if self.download_from_s3:
             try:
                 upload_log_file(dest_log_dir, zip_file_key)
                 self.log.info(f'Uploading validation result zip file {zip_file_key} succeeded!')
