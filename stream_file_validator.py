@@ -1,31 +1,26 @@
 #from config import BentoConfig
 import argparse
-import csv
-import glob
+import zipfile
 import pandas as pd
 import boto3
-import hashlib
 import os
 import sys
 import yaml
-from bento.common.s3 import S3Bucket, upload_log_file
+from urllib.parse import urlparse
+from bento.common.s3 import upload_log_file
 from bento.common.utils import get_time_stamp, get_log_file
-from data_loader import check_encoding
-from bento.common.utils import get_logger, LOG_PREFIX, APP_NAME
+from bento.common.utils import get_logger, get_stream_md5, LOG_PREFIX, APP_NAME
 
-FILE_URL = 'file_url'
-DOWNLOAD_FROM_S3 = 'download_from_s3'
-S3_VALIDATION_BUCKET_LIST = 's3_validation_bucket_list'
-S3_VALIDATION_PREFIX_LIST = 's3_validation_prefix_list'
-S3_DOWNLOAD_BUCKET = 's3_download_bucket'
-S3_DOWNLOAD_PREFIX = 's3_download_prefix'
-FILE_NAME = "file_name"
-FILE_SIZE = "file_size"
-FILE_MD5 = "file_md5"
+FILE_URL_COLUMN = 'file_url_column'
+VALIDATION_S3_BUCKET = 'validation_s3_bucket'
+VALIDATION_PREFIX = 'validation_prefix'
+FILE_NAME_COLUMN = "file_name_column"
+FILE_SIZE_COLUMN = "file_size_column"
+FILE_MD5_COLUMN = "file_md5_column"
 VALIDATION_RESULT = "validation_result"
 VALIDATION_FAIL_REASON = "validation_fail_reason"
-MANIFEST_FOLDER = 'manifest_folder'
-OUTPUT_FOLDER = 'output_folder'
+MANIFEST_FILE = 'manifest_file'
+TEMP_FOLDER = 'tmp'
 if LOG_PREFIX not in os.environ:
     os.environ[LOG_PREFIX] = 'Stream_File_Validator'
 
@@ -42,7 +37,6 @@ class BentoConfig:
                 self.data = yaml.safe_load(c_file)['Config']
                 if self.data is None:
                     self.data = {}
-
         self._override(args)
 
     def _override(self, args):
@@ -64,59 +58,62 @@ def process_arguments(args, log):
     if args.config_file:
         config_file = args.config_file
     config = BentoConfig(config_file, args)
-    print(config)
+    argument_list = [MANIFEST_FILE, FILE_URL_COLUMN, FILE_NAME_COLUMN, FILE_SIZE_COLUMN, FILE_MD5_COLUMN]
+    check_argument(config, argument_list, log)
     return config
+
+def check_argument(config, argument_list, log):
+    for argument in argument_list:
+        if argument not in config.data.keys():
+            log.error(f'The argument {argument} is invalid!')
+            sys.exit(1)
+        else:
+            if config.data[argument] is None:
+                log.error(f'The argument {argument} is invalid!')
+                sys.exit(1)
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Validate files through streming files from the s3 bucket')
     parser.add_argument('config_file', help='Confguration file', nargs='?', default=None)
-    parser.add_argument('--manifest_folder', help='manifest folder location')
-    parser.add_argument('--file_name', help='The file name column in the input file')
-    parser.add_argument('--file_url', help='The file s3 url column in the input file')
-    parser.add_argument('--file_size', help='The file size column in the input file')
-    parser.add_argument('--file_md5', help='The file md5 column in the input file')
-    parser.add_argument('--s3_validation_bucket_list', help='The s3 bucket of the uploaded file')
-    parser.add_argument('--s3_validation_prefix_list', help="The s3 bucket's subfolder of the uploaded file")
-    parser.add_argument('--s3_download_bucket', help='The s3 bucket to download the files')
-    parser.add_argument('--s3_download_prefix', help="The s3 bucket's subfolder to download the files")
-    parser.add_argument('--output_folder', help="The output validation result folder's location")
-    parser.add_argument('--download_from_s3', help='Skip backup step', action='store_true')
+    parser.add_argument('--manifest-file', help='manifest file location')
+    parser.add_argument('--file-name-column', help='The file name column in the input file')
+    parser.add_argument('--file-url-column', help='The file s3 url column in the input file')
+    parser.add_argument('--file-size-column', help='The file size column in the input file')
+    parser.add_argument('--file-md5-column', help='The file md5 column in the input file')
+    parser.add_argument('--validation-s3-bucket', help='The s3 bucket of the uploaded file')
+    parser.add_argument('--valiation-prefix', help="The s3 bucket's subfolder of the uploaded file")
     return parser.parse_args()
 
 class SteamfileValidator():
     def __init__(self, config_data):
-        self.manifest_folder = config_data[MANIFEST_FOLDER]
+        self.manifest_file= config_data[MANIFEST_FILE]
         self.log = get_logger('Stream File Validator')
-        self.file_name = config_data[FILE_NAME]
-        self.file_size = config_data[FILE_SIZE]
-        self.file_md5 = config_data[FILE_MD5]
-        self.output_folder = config_data[OUTPUT_FOLDER]
+        self.file_name_column = config_data[FILE_NAME_COLUMN]
+        self.file_size_column = config_data[FILE_SIZE_COLUMN]
+        self.file_md5_column = config_data[FILE_MD5_COLUMN]
+        self.output_folder = TEMP_FOLDER
+        self.download_from_s3 = False
         self.s3_client = boto3.client('s3')
-        if FILE_URL in config_data.keys():
-            self.file_url = config_data[FILE_URL]
+        if FILE_URL_COLUMN in config_data.keys():
+            self.file_url_column = config_data[FILE_URL_COLUMN]
         else:
-            self.file_url = None
-        if S3_VALIDATION_BUCKET_LIST in config_data.keys():
-            self.s3_validation_bucket_list = config_data[S3_VALIDATION_BUCKET_LIST]
+            self.file_url_column = None
+        if VALIDATION_S3_BUCKET in config_data.keys():
+            self.validation_s3_bucket = config_data[VALIDATION_S3_BUCKET]
         else:
-            self.s3_validation_bucket_list = []
-        if S3_VALIDATION_PREFIX_LIST in config_data.keys():
-            self.s3_validation_prefix_list = config_data[S3_VALIDATION_PREFIX_LIST]
+            self.validation_s3_bucket = None
+        if VALIDATION_PREFIX in config_data.keys():
+            self.validation_prefix = config_data[VALIDATION_PREFIX]
         else:
-            self.s3_validation_prefix_list = []
-        self.download_from_s3 = config_data[DOWNLOAD_FROM_S3]
-        self.s3_download_bucket = config_data[S3_DOWNLOAD_BUCKET]
-        self.s3_download_prefix = config_data[S3_DOWNLOAD_PREFIX]
-    def s3_url_transform(self, s3_url):
-        s3_url_list = s3_url.split('/')
-        s3_bucket = s3_url_list[2]
-        s3_file_key = ""
-        for i in range(3, len(s3_url_list)):
-            if i != len(s3_url_list) - 1:
-                s3_file_key = s3_file_key + s3_url_list[i] + "/"
-            else:
-                s3_file_key = s3_file_key + s3_url_list[i]
+            self.validation_prefix = None
+    def s3_url_transform(self, url):
+        s3_url = urlparse(url)
+        if s3_url.scheme != 's3':
+            return None, None
+        s3_bucket = s3_url.netloc
+        s3_file_key = s3_url.path.lstrip('/')
         return s3_bucket, s3_file_key
+    
     def check_existence(self, s3_bucket, s3_file_key):
         try:
             response = self.s3_client.head_object(Bucket=s3_bucket, Key=s3_file_key)
@@ -134,118 +131,145 @@ class SteamfileValidator():
         
     def check_md5sum(self, s3_bucket, s3_file_key, md5):
         s3_file = self.s3_client.get_object(Bucket=s3_bucket, Key=s3_file_key)
-        s3_file_content = s3_file['Body'].read()
-        s3_hash = hashlib.md5(s3_file_content).hexdigest()
+        s3_file_stream = s3_file['Body']
+        s3_hash = get_stream_md5(s3_file_stream)
         if s3_hash == md5:
             return True
         else:
             return False
-    def get_s3_file_information(self, org_obj, index):
-        s3_bucket = self.s3_validation_bucket_list[index]
-        if self.s3_validation_prefix_list[index] is not None:
-            s3_file_key = os.path.join(self.s3_validation_prefix_list[index], org_obj[self.file_name])
+
+    def get_s3_file_information(self, org_obj):
+        s3_bucket = self.validation_s3_bucket
+        if self.validation_prefix is not None:
+            s3_file_key = os.path.join(self.validation_prefix, org_obj[self.file_name_column])
         else:
-            s3_file_key = org_obj[self.file_name]
+            s3_file_key = org_obj[self.file_name_column]
         return s3_bucket, s3_file_key
 
+    def read_s3_csv_file(self):
+        s3_url = urlparse(self.manifest_file)
+        s3_bucket = s3_url.netloc
+        s3_file_key = s3_url.path.lstrip('/')
+        s3_file = self.s3_client.get_object(Bucket=s3_bucket, Key=s3_file_key)
+        s3_df = pd.read_csv(s3_file['Body'], sep='\t', na_values=[""])
+        #Remove leading and trailing spaces
+        s3_df.columns = s3_df.columns.str.strip()
+        return s3_df
+
     def validate_stream_file(self):
-        validation_df = pd.DataFrame(columns=[FILE_NAME, FILE_URL, FILE_SIZE, FILE_MD5, VALIDATION_RESULT, VALIDATION_FAIL_REASON])
-        if not os.path.exists(self.manifest_folder):
-            os.makedirs(self.manifest_folder)
-        if self.download_from_s3:
-            bucket = S3Bucket(self.s3_download_bucket)
-            self.log.info(f'Loading data from s3://{self.s3_download_bucket}/{self.s3_download_prefix}')
-            bucket.download_files_in_folder(self.s3_download_prefix, self.manifest_folder)
-        
-        tsv_files = glob.glob('{}/*.tsv'.format(self.manifest_folder))
-        txt_files = glob.glob('{}/*.txt'.format(self.manifest_folder))
-        file_list = txt_files + tsv_files
-        for index in range(0, len(file_list)):
-            file_encoding = check_encoding(file_list[index])
-            with open(file_list[index], encoding=file_encoding) as in_file:
-                manifest = csv.DictReader(in_file, delimiter='\t')
-                line_number = 1
-                for org_obj in manifest:
-                    line_number += 1
-                    s3_bucket = ""
-                    s3_file_key = ""
-                    tmp_validation_df = pd.DataFrame()
-                    if self.file_url in org_obj.keys():
-                        if org_obj[self.file_url] != "":
-                            s3_bucket, s3_file_key = self.s3_url_transform(org_obj[self.file_url])
-                        else:
-                            s3_bucket, s3_file_key = self.get_s3_file_information(org_obj, index)
-                    elif self.s3_validation_bucket_list[index] is not None:
-                        s3_bucket, s3_file_key = self.get_s3_file_information(org_obj, index)
-                    else:
-                        self.log.error("If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided, abort validation")
-                        sys.exit(1)
-                    validation_fail_reason = []
-                    tmp_validation_df[VALIDATION_RESULT] = ['passed']
-                    if org_obj[self.file_url] == "":
-                            tmp_validation_df[VALIDATION_RESULT] = ['warning']
-                            self.log.warning(f'{self.file_url} missing at line {line_number}')
-                            validation_fail_reason.append(f"{self.file_url}_missing")
-                    if org_obj[self.file_name] == "":
-                        tmp_validation_df[VALIDATION_RESULT] = ['warning']
-                        self.log.warning(f'{self.file_name} missing at line {line_number}')
-                        validation_fail_reason.append(f"{self.file_name}_missing")
-                    file_exist = self.check_existence(s3_bucket, s3_file_key)
-                    if file_exist:
-                        if org_obj[self.file_size] == "":
-                            tmp_validation_df[VALIDATION_RESULT] = ['error']
-                            self.log.error(f'{self.file_size} missing at line {line_number}')
-                            validation_fail_reason.append(f"{self.file_size}_missing")
-                        else:
-                            if not self.check_file_size(s3_bucket, s3_file_key, org_obj[self.file_size]):
-                                tmp_validation_df[VALIDATION_RESULT] = ['failed']
-                                validation_fail_reason.append('file_size_validation_fail')
-                                self.log.error(f"file size validation fail at line {line_number}")
-                        if org_obj[self.file_md5] == "":
-                            tmp_validation_df[VALIDATION_RESULT] = ['error']
-                            self.log.error(f'{self.file_md5} missing at line {line_number}')
-                            validation_fail_reason.append(f"{self.file_md5}_missing")
-                        else:
-                            if not self.check_md5sum(s3_bucket, s3_file_key, org_obj[self.file_md5]):
-                                tmp_validation_df[VALIDATION_RESULT] = ['failed']
-                                validation_fail_reason.append('file_md5_validation_fail')
-                                self.log.error(f"file md5 validation fail at line {line_number}")
-                    else:
+        validation_df = pd.DataFrame(columns=[FILE_NAME_COLUMN, FILE_URL_COLUMN, FILE_SIZE_COLUMN, FILE_MD5_COLUMN, VALIDATION_RESULT, VALIDATION_FAIL_REASON])
+        if self.manifest_file.startswith("s3://"):
+            #If start with s3://, then read the csv file from s3 bucket
+            manifest_df = self.read_s3_csv_file()
+        else:
+            #Remove leading and trailing spaces
+            manifest_df = pd.read_csv(self.manifest_file, sep='\t', na_values=[""])
+            manifest_df.columns = manifest_df.columns.str.strip()
+
+        manifest = manifest_df.to_dict(orient='records')
+        line_number = 1
+        for org_obj in manifest:
+            line_number += 1
+            s3_bucket = ""
+            s3_file_key = ""
+            tmp_validation_df = pd.DataFrame()
+            validation_fail_reason = []
+            tmp_validation_df[VALIDATION_RESULT] = ['passed']
+            if self.file_url_column in org_obj.keys():
+                #If there is an file_url column
+                if not pd.isna(org_obj[self.file_url_column]):
+                    #If file_url value not empty
+                    self.download_from_s3 = True
+                    s3_bucket, s3_file_key = self.s3_url_transform(org_obj[self.file_url_column])
+                    if s3_bucket is None and s3_file_key is None:
+                        #If the url is not s3 url
+                        self.log.error(f"The {self.file_url_column} value {org_obj[self.file_url_column]} is invalid at line {line_number}")
+                        tmp_validation_df[VALIDATION_RESULT] = ['error']
+                        validation_fail_reason.append(f"{self.file_url_column}_invalid")
+                else:
+                    s3_bucket, s3_file_key = self.get_s3_file_information(org_obj)
+            elif self.validation_s3_bucket is not None:
+                s3_bucket, s3_file_key = self.get_s3_file_information(org_obj)
+            else:
+                self.log.error("If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided, abort validation")
+                sys.exit(1)
+            
+            if pd.isna(org_obj[self.file_url_column]):
+                    tmp_validation_df[VALIDATION_RESULT] = ['warning']
+                    self.log.warning(f'{self.file_url_column} missing at line {line_number}')
+                    validation_fail_reason.append(f"{self.file_url_column}_missing")
+            if  pd.isna(org_obj[self.file_name_column]):
+                tmp_validation_df[VALIDATION_RESULT] = ['warning']
+                self.log.warning(f'{self.file_name_column} missing at line {line_number}')
+                validation_fail_reason.append(f"{self.file_name_column}_missing")
+            file_exist = self.check_existence(s3_bucket, s3_file_key)
+            if file_exist:
+                if pd.isna(org_obj[self.file_name_column]):
+                    tmp_validation_df[VALIDATION_RESULT] = ['error']
+                    self.log.error(f'{self.file_size_column} missing at line {line_number}')
+                    validation_fail_reason.append(f"{self.file_size_column}_missing")
+                else:
+                    if not self.check_file_size(s3_bucket, s3_file_key, org_obj[self.file_size_column]):
                         tmp_validation_df[VALIDATION_RESULT] = ['failed']
-                        #tmp_validation_df[VALIDATION_FAIL_REASON] = ['file_not_exist_in_s3']
-                        validation_fail_reason.append('file_not_exist_in_s3')
-                    tmp_validation_df[FILE_NAME] = org_obj[self.file_name]
-                    tmp_validation_df[FILE_URL] = org_obj[self.file_url]
-                    tmp_validation_df[FILE_SIZE] = org_obj[self.file_size]
-                    tmp_validation_df[FILE_MD5] = org_obj[self.file_md5]
-                    validation_fail_reason_str = ""
-                    if len(validation_fail_reason) > 0:
-                        for i in range(0, len(validation_fail_reason)):
-                            if i == 0:
-                                validation_fail_reason_str = validation_fail_reason[i]
-                            else:
-                                validation_fail_reason_str = validation_fail_reason_str + "," + validation_fail_reason[i]
-                        tmp_validation_df[VALIDATION_FAIL_REASON] = [validation_fail_reason_str]
-                    validation_df = pd.concat([validation_df, tmp_validation_df])
-                if not os.path.exists(self.output_folder):
-                    os.makedirs(self.output_folder)
-                timestamp = get_time_stamp()
-                validation_file_key = os.path.join(self.output_folder, os.path.basename(file_list[index]).replace(".txt", "_" + timestamp + "_validation_result.tsv"))
-                validation_df.to_csv(validation_file_key, sep="\t", index=False)
+                        validation_fail_reason.append('file_size_validation_fail')
+                        self.log.error(f"file size validation fail at line {line_number}")
+                if pd.isna(self.file_md5_column):
+                    tmp_validation_df[VALIDATION_RESULT] = ['error']
+                    self.log.error(f'{self.file_md5_column} missing at line {line_number}')
+                    validation_fail_reason.append(f"{self.file_md5_column}_missing")
+                else:
+                    if not self.check_md5sum(s3_bucket, s3_file_key, org_obj[self.file_md5_column]):
+                        tmp_validation_df[VALIDATION_RESULT] = ['failed']
+                        validation_fail_reason.append('file_md5_validation_fail')
+                        self.log.error(f"file md5 validation fail at line {line_number}")
+            else:
+                tmp_validation_df[VALIDATION_RESULT] = ['failed']
+                validation_fail_reason.append('file_not_exist_in_s3')
+            if 'passed' in list(tmp_validation_df[VALIDATION_RESULT]):
+                #If file validation passed
+                self.log.info(f'File validation passed at line {line_number}')
+            tmp_validation_df[FILE_NAME_COLUMN] = org_obj[self.file_name_column]
+            tmp_validation_df[FILE_URL_COLUMN] = org_obj[self.file_url_column]
+            tmp_validation_df[FILE_SIZE_COLUMN] = org_obj[self.file_size_column]
+            tmp_validation_df[FILE_MD5_COLUMN] = org_obj[self.file_md5_column]
+            validation_fail_reason_str = ""
+            if len(validation_fail_reason) > 0:
+                for i in range(0, len(validation_fail_reason)):
+                    if i == 0:
+                        validation_fail_reason_str = validation_fail_reason[i]
+                    else:
+                        validation_fail_reason_str = validation_fail_reason_str + "," + validation_fail_reason[i]
+                tmp_validation_df[VALIDATION_FAIL_REASON] = [validation_fail_reason_str]
+            validation_df = pd.concat([validation_df, tmp_validation_df])
+        if not os.path.exists(self.output_folder):
+            os.makedirs(self.output_folder)
+        timestamp = get_time_stamp()
+        if self.download_from_s3:
+            os.path.basename(self.manifest_file)
 
-                if self.download_from_s3:
-                    if self.s3_download_bucket and self.s3_download_prefix:
-                        dest_log_dir = f's3://{self.s3_download_bucket}/{self.s3_download_prefix}/logs'
-
-                if dest_log_dir:
-                    try:
-                        log_file = get_log_file()
-                        upload_log_file(dest_log_dir, validation_file_key)
-                        upload_log_file(dest_log_dir, log_file)
-                        self.log.info(f'Uploading validation result tsv file {validation_file_key} and log file {log_file} succeeded!')
-                    except Exception as e:
-                        self.log.debug(e)
-                        self.log.exception('Copy file failed! Check debug log for detailed information')
+        #Start generating validation result file
+        if self.download_from_s3:
+            s3_download_bucket, s3_download_file_key = self.s3_url_transform(self.manifest_file)
+            s3_download_prefix = os.path.dirname(s3_download_file_key)
+            dest_log_dir = f's3://{s3_download_bucket}/{s3_download_prefix}'
+            manifest_file_name = os.path.basename(s3_download_file_key)
+        else:
+            manifest_file_name = os.path.basename(self.manifest_file)
+        validation_file_key = os.path.join(self.output_folder, manifest_file_name.replace(".txt", "_" + timestamp + "-validation-result.tsv"))
+        validation_df.to_csv(validation_file_key, sep="\t", index=False)
+        zip_file_key = validation_file_key.replace(".tsv", ".zip")
+        log_file = get_log_file()
+        with zipfile.ZipFile(zip_file_key, 'w') as zipf:
+            zipf.write(validation_file_key, os.path.basename(validation_file_key))
+            zipf.write(log_file, os.path.basename(log_file))
+        #Upload the zip file to s3 bukcet if the manifest csv file is reading from s3 bucket
+        if dest_log_dir:
+            try:
+                upload_log_file(dest_log_dir, zip_file_key)
+                self.log.info(f'Uploading validation result zip file {zip_file_key} succeeded!')
+            except Exception as e:
+                self.log.debug(e)
+                self.log.exception(f'File validation failed! Please refer to output file {validation_file_key} and logs {log_file} details')
 
                     
 
@@ -256,8 +280,6 @@ def main(args):
     config = process_arguments(args, log)
     stream_file_validator = SteamfileValidator(config.data)
     stream_file_validator.validate_stream_file()
-    
-    #with open(config.manifest_file, encoding=file_encoding) as in_file
     
 
 if __name__ == '__main__':
