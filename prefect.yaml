@@ -1,0 +1,113 @@
+# Welcome to your prefect.yaml file! You can use this file for storing and managing
+# configuration for deploying your flows. We recommend committing this file to source
+# control along with your flow code.
+
+# Generic metadata about this project
+name: CRDC Data Loader
+prefect-version: 2.14.10
+
+# build section allows you to manage and build docker images
+build: null
+
+# push section allows you to manage if and how this project is uploaded to remote locations
+push: null
+
+# pull section allows you to provide instructions for cloning this project in remote locations
+pull:
+  - prefect.deployments.steps.git_clone:
+      repository: https://github.com/CBIIT/cds-model.git
+      branch: main
+  - prefect.deployments.steps.git_clone:
+      repository: https://github.com/CBIIT/icdc-model-tool.git
+      branch: master
+  - prefect.deployments.steps.git_clone:
+      id: clone-step
+      repository: https://github.com/CBIIT/icdc-dataloader.git
+      branch: prefect
+      include_submodules: True
+  - prefect.projects.steps.pip_install_requirements:
+      requirements_file: requirements.txt
+      directory: "{{ clone-step.directory }}"
+      stream_output: False
+
+# the deployments section allows you to provide configuration for deploying flows
+deployments:
+  - name: data-hub-dev-cds
+    version: null
+    tags: []
+    description: null
+    schedule: {}
+    flow_name: null
+    entrypoint: loader_prefect:data_hub_loader
+    parameters:
+      organization_id: ""
+      submission_id: ""
+      cheat_mode: False
+      dry_run: False
+      wipe_db: False
+      mode: "upsert"
+      secret_name: "{{ prefect.variables.secret_name_dev }}"
+      schemas:
+        - ../cds-model/model-desc/cds-model.yml
+        - ../cds-model/model-desc/cds-model-props.yml
+      prop_file: config/props-cds.yml
+    work_pool:
+      name: crdc-dh-dev-validation
+      work_queue_name: default
+      job_variables:
+        env:
+          PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator,Props"
+
+  - name: data-hub-qa-cds
+    version: null
+    tags: []
+    description: null
+    schedule: {}
+    flow_name: null
+    entrypoint: loader_prefect:data_hub_loader
+    parameters:
+      organization_id: ""
+      submission_id: ""
+      cheat_mode: False
+      dry_run: False
+      wipe_db: False
+      mode: "upsert"
+      secret_name: "{{ prefect.variables.secret_name_qa }}"
+      schemas:
+        - ../cds-model/model-desc/cds-model.yml
+        - ../cds-model/model-desc/cds-model-props.yml
+      prop_file: config/props-cds.yml
+    work_pool:
+      name: crdc-dh-qa-validation
+      work_queue_name: default
+      job_variables:
+        env:
+          PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator,Props"
+
+  #- name: data-hub-dev-icdc
+  #  version: null
+  #  tags: []
+  #  description: null
+  #  schedule: {}
+  #  flow_name: null
+  #  entrypoint: loader_prefect:data_hub_loader
+  #  parameters:
+  #    s3_folder: ""
+  #    cheat_mode: False
+  #    dry_run: False
+  #    wipe_db: False
+  #    mode: "upsert"
+  #    secret_name: "{{ prefect.variables.secret_name_dev }}"
+  #    schemas:
+  #      - ../icdc-model-tool/model-desc/icdc-model.yml
+  #      - ../icdc-model-tool/model-desc/icdc-model-props.yml
+  #    prop_file: config/props-icdc-pmvp.yml
+  #    no_parents: False
+  #
+  #  work_pool:
+  #    name: crdc-dh-validation
+  #    work_queue_name: default
+  #    job_variables:
+  #      env:
+  #        PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator,Props"
+  #

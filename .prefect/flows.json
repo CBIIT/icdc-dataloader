@@ -1,0 +1,4 @@
+{
+  "CRDC Data Hub Loader": "loader_prefect:data_hub_loader",
+  "CRDC Data Loader": "loader_prefect:load_data"
+}
