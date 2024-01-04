@@ -225,6 +225,7 @@ class SteamfileValidator():
             else:
                 tmp_validation_df[VALIDATION_RESULT] = ['failed']
                 validation_fail_reason.append('file_not_exist_in_s3')
+                self.log.error(f"file not exist in s3 at line {line_number}")
             if 'passed' in list(tmp_validation_df[VALIDATION_RESULT]):
                 #If file validation passed
                 self.log.info(f'File validation passed at line {line_number}')
