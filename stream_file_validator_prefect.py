@@ -13,6 +13,7 @@ def stream_file_validator(
         # If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided
         validation_s3_bucket = "bucket",
         validation_prefix = "prefix",
+        upload_s3_url = "s3://<upload_bucket_name>/<upload_file_location>"
     ):
 
     params = Config(
@@ -22,7 +23,8 @@ def stream_file_validator(
         file_size_column,
         file_md5_column,
         validation_s3_bucket,
-        validation_prefix
+        validation_prefix,
+        upload_s3_url
     )
     print("Start stream file validating")
     main(params)
@@ -37,7 +39,8 @@ class Config:
             file_size_column,
             file_md5_column,
             validation_s3_bucket,
-            validation_prefix
+            validation_prefix,
+            upload_s3_url
     ):
         
         self.manifest_file = manifest_file
@@ -47,8 +50,9 @@ class Config:
         self.file_md5_column = file_md5_column
         self.validation_s3_bucket = validation_s3_bucket
         self.validation_prefix = validation_prefix
+        self.upload_s3_url = upload_s3_url
         self.config_file = None
-
+        
 
 if __name__ == "__main__":
     # create your first deployment
