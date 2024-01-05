@@ -9,3 +9,4 @@ Config:
   # If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided
   validation_s3_bucket: bucket
   validation_prefix: prefix
+  upload_s3_url: s3://<upload_bucket_name>/<upload_file_location>
