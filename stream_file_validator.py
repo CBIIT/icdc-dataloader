@@ -172,10 +172,20 @@ class SteamfileValidator():
         if self.manifest_file.startswith("s3://"):
             #If start with s3://, then read the csv file from s3 bucket
             self.download_from_s3 = True
-            manifest_df = self.read_s3_csv_file()
+            try:
+                manifest_df = self.read_s3_csv_file()
+            except Exception as e:
+                self.log.error(e)
+                self.log.error("Uable to read the manifest file from s3, abort validation")
+                sys.exit(1)
         else:
             #Remove leading and trailing spaces
-            manifest_df = pd.read_csv(self.manifest_file, sep='\t', na_values=[""])
+            try:
+                manifest_df = pd.read_csv(self.manifest_file, sep='\t', na_values=[""])
+            except Exception as e:
+                self.log.error(e)
+                self.log.error("Uable to read the manifest file from local, abort validation")
+                sys.exit(1)
             manifest_df.columns = manifest_df.columns.str.strip()
 
         manifest = manifest_df.to_dict(orient='records')
