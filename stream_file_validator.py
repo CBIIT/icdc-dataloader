@@ -127,7 +127,10 @@ class SteamfileValidator():
             return True, error_code
         except Exception as e:
             self.log.error(e)
-            error_code = e.response['Error']['Code']
+            try:
+                error_code = e.response['Error']['Code']
+            except Exception as e:
+                error_code = "Other"
             return False, error_code
     def check_file_size(self, s3_bucket, s3_file_key, file_size):
         response = self.s3_client.head_object(Bucket=s3_bucket, Key=s3_file_key)
@@ -190,14 +193,38 @@ class SteamfileValidator():
 
         manifest = manifest_df.to_dict(orient='records')
         line_number = 1
+        # Get manifest file name
+        if self.download_from_s3:
+            s3_download_bucket, s3_download_file_key = self.s3_url_transform(self.manifest_file)
+            s3_download_prefix = os.path.dirname(s3_download_file_key)
+            if self.upload_s3_url is None:
+                dest_log_dir = f's3://{s3_download_bucket}/{s3_download_prefix}'
+            else:
+                dest_log_dir = self.upload_s3_url
+            manifest_file_name = os.path.basename(s3_download_file_key)
+        else:
+            manifest_file_name = os.path.basename(self.manifest_file)
+
         for org_obj in manifest:
             line_number += 1
+            if self.file_md5_column not in org_obj.keys():
+                self.log.error(f"The file md5 column {self.file_md5_column} given can not be found in the manifest file {manifest_file_name}, abort validation")
+                sys.exit(1)
+            if self.file_name_column not in org_obj.keys():
+                self.log.error(f"The file name column {self.file_name_column} given can not be found in the manifest file {manifest_file_name}, abort validation")
+                sys.exit(1)
+            if self.file_size_column not in org_obj.keys():
+                self.log.error(f"The file size column {self.file_size_column} given can not be found in the manifest file {manifest_file_name}, abort validation")
+                sys.exit(1)
+            if self.file_url_column is not None and self.file_url_column not in org_obj.keys():
+                self.log.error(f"The file size column {self.file_url_column} given can not be found in the manifest file {manifest_file_name}, abort validation")
+                sys.exit(1)
             s3_bucket = ""
             s3_file_key = ""
             tmp_validation_df = pd.DataFrame()
             validation_fail_reason = []
             tmp_validation_df[VALIDATION_RESULT] = ['passed']
-            if self.file_url_column in org_obj.keys() and self.file_url_column is not None:
+            if self.file_url_column in org_obj.keys():
                 #If there is an file_url column
                 if not pd.isna(org_obj[self.file_url_column]):
                     #If file_url value not empty
@@ -211,7 +238,6 @@ class SteamfileValidator():
                     s3_bucket, s3_file_key = self.get_s3_file_information(org_obj)
             elif self.validation_s3_bucket is not None:
                 s3_bucket, s3_file_key = self.get_s3_file_information(org_obj)
-                self.file_url_column = None
             else:
                 self.log.error("If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided, abort validation")
                 sys.exit(1)
@@ -228,10 +254,9 @@ class SteamfileValidator():
                 tmp_validation_df[VALIDATION_RESULT] = ['warning']
                 self.log.warning(f'column {self.file_name_column} missing at line {line_number}')
                 validation_fail_reason.append(f"column_{self.file_name_column}_missing")
-            
             file_exist, error_code = self.check_existence(s3_bucket, s3_file_key)
             if file_exist:
-                if pd.isna(org_obj[self.file_name_column]):
+                if pd.isna(org_obj[self.file_size_column]):
                     tmp_validation_df[VALIDATION_RESULT] = ['error']
                     self.log.error(f'column {self.file_size_column} missing at line {line_number}')
                     validation_fail_reason.append(f"column_{self.file_size_column}_missing")
@@ -264,7 +289,8 @@ class SteamfileValidator():
             tmp_validation_df[self.file_name_column] = org_obj[self.file_name_column]
             if self.file_url_column is not None:
                 tmp_validation_df[self.file_url_column] = org_obj[self.file_url_column]
-            tmp_validation_df[self.file_size_column] = org_obj[self.file_size_column]
+            if self.file_size_column is not None:
+                tmp_validation_df[self.file_size_column] = org_obj[self.file_size_column]
             tmp_validation_df[self.file_md5_column] = org_obj[self.file_md5_column]
             validation_fail_reason_str = ""
             if len(validation_fail_reason) > 0:
@@ -278,20 +304,8 @@ class SteamfileValidator():
         if not os.path.exists(self.output_folder):
             os.makedirs(self.output_folder)
         timestamp = get_time_stamp()
-        if self.download_from_s3:
-            os.path.basename(self.manifest_file)
 
         #Start generating validation result file
-        if self.download_from_s3:
-            s3_download_bucket, s3_download_file_key = self.s3_url_transform(self.manifest_file)
-            s3_download_prefix = os.path.dirname(s3_download_file_key)
-            if self.upload_s3_url is None:
-                dest_log_dir = f's3://{s3_download_bucket}/{s3_download_prefix}'
-            else:
-                dest_log_dir = self.upload_s3_url
-            manifest_file_name = os.path.basename(s3_download_file_key)
-        else:
-            manifest_file_name = os.path.basename(self.manifest_file)
         validation_file_key = os.path.join(self.output_folder, manifest_file_name.replace(os.path.splitext(manifest_file_name)[1], "_" + timestamp + "-validation-result.tsv"))
         validation_df.to_csv(validation_file_key, sep="\t", index=False)
         zip_file_key = validation_file_key.replace(".tsv", ".zip")
@@ -303,7 +317,7 @@ class SteamfileValidator():
         if self.download_from_s3:
             try:
                 upload_log_file(dest_log_dir, zip_file_key)
-                self.log.info(f'Uploading validation result zip file {zip_file_key} succeeded!')
+                self.log.info(f'Uploading validation result zip file {os.path.basename(zip_file_key)} succeeded!')
             except Exception as e:
                 self.log.debug(e)
                 self.log.exception(f'File validation failed! Please refer to output file {validation_file_key} and logs {log_file} details')
