@@ -197,7 +197,7 @@ class SteamfileValidator():
             tmp_validation_df = pd.DataFrame()
             validation_fail_reason = []
             tmp_validation_df[VALIDATION_RESULT] = ['passed']
-            if self.file_url_column in org_obj.keys():
+            if self.file_url_column in org_obj.keys() and self.file_url_column is not None:
                 #If there is an file_url column
                 if not pd.isna(org_obj[self.file_url_column]):
                     #If file_url value not empty
@@ -211,18 +211,24 @@ class SteamfileValidator():
                     s3_bucket, s3_file_key = self.get_s3_file_information(org_obj)
             elif self.validation_s3_bucket is not None:
                 s3_bucket, s3_file_key = self.get_s3_file_information(org_obj)
+                self.file_url_column = None
             else:
                 self.log.error("If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided, abort validation")
                 sys.exit(1)
-            
-            if pd.isna(org_obj[self.file_url_column]):
-                    tmp_validation_df[VALIDATION_RESULT] = ['warning']
-                    self.log.warning(f'column {self.file_url_column} missing at line {line_number}')
-                    validation_fail_reason.append(f"column_{self.file_url_column}_missing")
+            if self.file_url_column is not None:
+                if pd.isna(org_obj[self.file_url_column]):
+                        tmp_validation_df[VALIDATION_RESULT] = ['warning']
+                        self.log.warning(f'column {self.file_url_column} missing at line {line_number}')
+                        validation_fail_reason.append(f"column_{self.file_url_column}_missing")
+            else:
+                tmp_validation_df[VALIDATION_RESULT] = ['warning']
+                self.log.warning(f'column file_url missing at line {line_number}')
+                validation_fail_reason.append(f"column_file_url_missing")
             if  pd.isna(org_obj[self.file_name_column]):
                 tmp_validation_df[VALIDATION_RESULT] = ['warning']
                 self.log.warning(f'column {self.file_name_column} missing at line {line_number}')
                 validation_fail_reason.append(f"column_{self.file_name_column}_missing")
+            
             file_exist, error_code = self.check_existence(s3_bucket, s3_file_key)
             if file_exist:
                 if pd.isna(org_obj[self.file_name_column]):
