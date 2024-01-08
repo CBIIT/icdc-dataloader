@@ -207,6 +207,7 @@ class SteamfileValidator():
 
         for org_obj in manifest:
             line_number += 1
+            #If the given column names are incorrect
             if self.file_md5_column not in org_obj.keys():
                 self.log.error(f"The file md5 column {self.file_md5_column} given can not be found in the manifest file {manifest_file_name}, abort validation")
                 sys.exit(1)
