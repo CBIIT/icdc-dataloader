@@ -32,7 +32,7 @@ pull:
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
-  - name: data-hub-dev-cds
+  - name: data-hub-metadata-validation-dev
     version: null
     tags: []
     description: null
@@ -58,7 +58,7 @@ deployments:
         env:
           PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator,Props"
 
-  - name: data-hub-qa-cds
+  - name: data-hub-metadata-validation-qa
     version: null
     tags: []
     description: null
@@ -84,29 +84,28 @@ deployments:
         env:
           PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator,Props"
 
-  - name: stream-file-validator
+  - name: data-hub-file-validation-dev
     version: null
     tags: []
     description: null
     schedule: {}
     flow_name: null
-    entrypoint:  stream_file_validator_prefect.py:stream_file_validator
+    entrypoint:  stream_file_validator_prefect.py:data_hub_file_validator
     parameters:
-      # Manifest file location
-      manifest_file: s3://<bucket_name>/<file_key>
-      # Column names in the manifest file
+      organization_id: ""
+      submission_id: ""
+      manifest_name: ""
       file_name_column: file_name
-      file_url_column: file_location
       file_size_column: file_size
       file_md5_column: md5sum
+      secret_name: "{{ prefect.variables.secret_name_dev }}"
       # If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided
-      validation_s3_bucket: bucket
-      validation_prefix: prefix
-      upload_s3_url: s3://<upload_bucket_name>/<upload_file_location>
     work_pool:
-      name: crdc-dh-validation
+      name: crdc-dh-dev-validation
       work_queue_name: default
-      job_variables: {}
+      job_variables:
+        env:
+          PREFECT_LOGGING_EXTRA_LOGGERS: "Stream File Validator, S3 Bucket,Bento Config"
 
   #- name: data-hub-dev-icdc
   #  version: null

@@ -1,19 +1,54 @@
 from prefect import flow
 from stream_file_validator import main
+from bento.common.secret_manager import get_secret
+
+
+SUBMISSION_BUCKET = "submission_bucket"
+
+
+@flow(name="CRDC Data Hub File Validator", log_prints=True)
+def data_hub_file_validator(
+        organization_id,
+        submission_id,
+        manifest_name,
+        secret_name,
+        file_name_column="file_name",
+        file_size_column="file_size",
+        file_md5_column="md5sum"
+):
+    secret = get_secret(secret_name)
+    bucket_name = secret[SUBMISSION_BUCKET]
+    file_prefix = f"{organization_id}/{submission_id}/file/"
+    upload_s3_url = f"s3://{bucket_name}/{organization_id}/{submission_id}/file/logs"
+
+    manifest_file = f"s3://{bucket_name}/{organization_id}/{submission_id}/metadata/{manifest_name}",
+
+    stream_file_validator(
+        manifest_file,
+        None,
+        # If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided
+        bucket_name,
+        file_prefix,
+        upload_s3_url,  # "s3://<upload_bucket_name>/<upload_file_location>"
+        # Column names in the manifest file
+        file_name_column="file_name",
+        file_size_column="file_size",
+        file_md5_column="md5sum"
+    )
 
 
 @flow(name="CRDC Stream File Validator", log_prints=True)
 def stream_file_validator(
-        manifest_file = "s3://<bucket_name>/<file_key>",
+        manifest_file, #  "s3://<bucket_name>/<file_key>",
+        file_url_column,
+        # If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided
+        validation_s3_bucket,
+        validation_prefix,
+        upload_s3_url, # "s3://<upload_bucket_name>/<upload_file_location>"
         # Column names in the manifest file
         file_name_column = "file_name",
-        file_url_column = "file_location",
         file_size_column = "file_size",
-        file_md5_column = "md5sum",
-        # If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided
-        validation_s3_bucket = "bucket",
-        validation_prefix = "prefix",
-        upload_s3_url = "s3://<upload_bucket_name>/<upload_file_location>"
+        file_md5_column = "md5sum"
     ):
 
     params = Config(
