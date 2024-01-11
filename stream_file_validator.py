@@ -170,6 +170,7 @@ class SteamfileValidator():
     def validate_stream_file(self):
         if self.file_url_column is None:
             validation_df = pd.DataFrame(columns=[self.file_name_column, self.file_size_column, self.file_md5_column, VALIDATION_RESULT, VALIDATION_FAIL_REASON])
+            self.log.warning(f"The file url column is not configured")
         else:
             validation_df = pd.DataFrame(columns=[self.file_name_column, self.file_url_column, self.file_size_column, self.file_md5_column, VALIDATION_RESULT, VALIDATION_FAIL_REASON])
         if self.manifest_file.startswith("s3://"):
@@ -218,7 +219,7 @@ class SteamfileValidator():
                 self.log.error(f"The file size column {self.file_size_column} given can not be found in the manifest file {manifest_file_name}, abort validation")
                 sys.exit(1)
             if self.file_url_column is not None and self.file_url_column not in org_obj.keys():
-                self.log.error(f"The file size column {self.file_url_column} given can not be found in the manifest file {manifest_file_name}, abort validation")
+                self.log.error(f"The file url column {self.file_url_column} given can not be found in the manifest file {manifest_file_name}, abort validation")
                 sys.exit(1)
             s3_bucket = ""
             s3_file_key = ""
@@ -245,22 +246,18 @@ class SteamfileValidator():
             if self.file_url_column is not None:
                 if pd.isna(org_obj[self.file_url_column]):
                         tmp_validation_df[VALIDATION_RESULT] = ['warning']
-                        self.log.warning(f'column {self.file_url_column} missing at line {line_number}')
-                        validation_fail_reason.append(f"column_{self.file_url_column}_missing")
-            else:
-                tmp_validation_df[VALIDATION_RESULT] = ['warning']
-                self.log.warning(f'column file_url missing at line {line_number}')
-                validation_fail_reason.append(f"column_file_url_missing")
+                        self.log.warning(f'{self.file_url_column} missing at line {line_number}')
+                        validation_fail_reason.append(f"{self.file_url_column}_missing")
             if  pd.isna(org_obj[self.file_name_column]):
                 tmp_validation_df[VALIDATION_RESULT] = ['warning']
-                self.log.warning(f'column {self.file_name_column} missing at line {line_number}')
-                validation_fail_reason.append(f"column_{self.file_name_column}_missing")
+                self.log.warning(f'{self.file_name_column} missing at line {line_number}')
+                validation_fail_reason.append(f"{self.file_name_column}_missing")
             file_exist, error_code = self.check_existence(s3_bucket, s3_file_key)
             if file_exist:
                 if pd.isna(org_obj[self.file_size_column]):
                     tmp_validation_df[VALIDATION_RESULT] = ['error']
-                    self.log.error(f'column {self.file_size_column} missing at line {line_number}')
-                    validation_fail_reason.append(f"column_{self.file_size_column}_missing")
+                    self.log.error(f'{self.file_size_column} missing at line {line_number}')
+                    validation_fail_reason.append(f"{self.file_size_column}_missing")
                 else:
                     if not self.check_file_size(s3_bucket, s3_file_key, org_obj[self.file_size_column]):
                         tmp_validation_df[VALIDATION_RESULT] = ['failed']
@@ -268,8 +265,8 @@ class SteamfileValidator():
                         self.log.error(f"file size validation fail at line {line_number}")
                 if pd.isna(self.file_md5_column):
                     tmp_validation_df[VALIDATION_RESULT] = ['error']
-                    self.log.error(f'column {self.file_md5_column} missing at line {line_number}')
-                    validation_fail_reason.append(f"column_{self.file_md5_column}_missing")
+                    self.log.error(f'{self.file_md5_column} missing at line {line_number}')
+                    validation_fail_reason.append(f"{self.file_md5_column}_missing")
                 else:
                     if not self.check_md5sum(s3_bucket, s3_file_key, org_obj[self.file_md5_column]):
                         tmp_validation_df[VALIDATION_RESULT] = ['failed']
