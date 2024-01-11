@@ -23,7 +23,7 @@ pull:
   - prefect.deployments.steps.git_clone:
       id: clone-step
       repository: https://github.com/CBIIT/icdc-dataloader.git
-      branch: prefect
+      branch: master #prefect_stream_file_validator
       include_submodules: True
   - prefect.projects.steps.pip_install_requirements:
       requirements_file: requirements.txt
@@ -83,6 +83,30 @@ deployments:
       job_variables:
         env:
           PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator,Props"
+
+  - name: stream-file-validator
+    version: null
+    tags: []
+    description: null
+    schedule: {}
+    flow_name: null
+    entrypoint:  stream_file_validator_prefect.py:stream_file_validator
+    parameters:
+      # Manifest file location
+      manifest_file: s3://<bucket_name>/<file_key>
+      # Column names in the manifest file
+      file_name_column: file_name
+      file_url_column: file_location
+      file_size_column: file_size
+      file_md5_column: md5sum
+      # If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided
+      validation_s3_bucket: bucket
+      validation_prefix: prefix
+      upload_s3_url: s3://<upload_bucket_name>/<upload_file_location>
+    work_pool:
+      name: crdc-dh-validation
+      work_queue_name: default
+      job_variables: {}
 
   #- name: data-hub-dev-icdc
   #  version: null

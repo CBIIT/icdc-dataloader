@@ -1,0 +1,12 @@
+Config:
+  # Manifest file location
+  manifest_file: s3://<bucket_name>/<file_key> #i.e. s3://bucket/test/test1.txt or test/test1.txt if the manifest file is in local
+  # Column names in the manifest file
+  file_name_column: file_name
+  file_url_column: file_location
+  file_size_column: file_size
+  file_md5_column: md5sum
+  # If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided
+  validation_s3_bucket: bucket
+  validation_prefix: prefix
+  upload_s3_url: s3://<upload_bucket_name>/<upload_file_location>
