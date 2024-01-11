@@ -22,6 +22,7 @@ def data_hub_file_validator(
     upload_s3_url = f"s3://{bucket_name}/{organization_id}/{submission_id}/file/logs"
 
     manifest_file = f"s3://{bucket_name}/{organization_id}/{submission_id}/metadata/{manifest_name}",
+    print(f'Manifest file in data_hub_file_validator {manifest_file}')
 
     stream_file_validator(
         manifest_file,
@@ -50,6 +51,7 @@ def stream_file_validator(
         file_size_column = "file_size",
         file_md5_column = "md5sum"
     ):
+    print(f'Manifest file in stream_file_validator {manifest_file}')
 
     params = Config(
         manifest_file,
@@ -62,7 +64,7 @@ def stream_file_validator(
         upload_s3_url
     )
     print("Start stream file validating")
-    print(params.manifest_file)
+    print(f'manifest file in Config {params.manifest_file}' )
     main(params)
     print("Finish stream file validating")
 
