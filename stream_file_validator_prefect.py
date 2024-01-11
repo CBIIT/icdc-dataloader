@@ -21,7 +21,7 @@ def data_hub_file_validator(
     file_prefix = f"{organization_id}/{submission_id}/file/"
     upload_s3_url = f"s3://{bucket_name}/{organization_id}/{submission_id}/file/logs"
 
-    manifest_file = f"s3://{bucket_name}/{organization_id}/{submission_id}/metadata/{manifest_name}",
+    manifest_file = f"s3://{bucket_name}/{organization_id}/{submission_id}/metadata/{manifest_name}"
     print(f'Manifest file in data_hub_file_validator {manifest_file}')
 
     stream_file_validator(
