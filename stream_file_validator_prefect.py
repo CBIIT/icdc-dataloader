@@ -20,21 +20,17 @@ def data_hub_file_validator(
     bucket_name = secret[SUBMISSION_BUCKET]
     file_prefix = f"{organization_id}/{submission_id}/file/"
     upload_s3_url = f"s3://{bucket_name}/{organization_id}/{submission_id}/file/logs"
-
     manifest_file = f"s3://{bucket_name}/{organization_id}/{submission_id}/metadata/{manifest_name}"
-    print(f'Manifest file in data_hub_file_validator {manifest_file}')
 
     stream_file_validator(
         manifest_file,
         None,
-        # If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided
         bucket_name,
         file_prefix,
-        upload_s3_url,  # "s3://<upload_bucket_name>/<upload_file_location>"
-        # Column names in the manifest file
-        file_name_column="file_name",
-        file_size_column="file_size",
-        file_md5_column="md5sum"
+        upload_s3_url,
+        file_name_column,
+        file_size_column,
+        file_md5_column
     )
 
 
@@ -51,7 +47,6 @@ def stream_file_validator(
         file_size_column = "file_size",
         file_md5_column = "md5sum"
     ):
-    print(f'Manifest file in stream_file_validator {manifest_file}')
 
     params = Config(
         manifest_file,
@@ -64,7 +59,6 @@ def stream_file_validator(
         upload_s3_url
     )
     print("Start stream file validating")
-    print(f'manifest file in Config {params.manifest_file}' )
     main(params)
     print("Finish stream file validating")
 
