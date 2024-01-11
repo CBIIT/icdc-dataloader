@@ -55,10 +55,13 @@ class BentoConfig:
 
 
 def process_arguments(args, log):
+    print(args)
     config_file = None
     if args.config_file:
         config_file = args.config_file
     config = BentoConfig(config_file, args)
+    print(config)
+    print(config.data)
     argument_list = [MANIFEST_FILE, FILE_NAME_COLUMN, FILE_SIZE_COLUMN, FILE_MD5_COLUMN]
     check_argument(config, argument_list, log)
     return config
@@ -328,6 +331,7 @@ class SteamfileValidator():
 def main(args):
     log = get_logger('Stream File Validator')
     config = process_arguments(args, log)
+    print(config)
     stream_file_validator = SteamfileValidator(config.data)
     stream_file_validator.validate_stream_file()
     
