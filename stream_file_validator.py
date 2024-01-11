@@ -90,7 +90,7 @@ class SteamfileValidator():
     def __init__(self, config_data):
         self.manifest_file= config_data[MANIFEST_FILE]
         self.log = get_logger('Stream File Validator')
-        self.log.debug(f'Manifest file: "{self.manifest_file}"')
+        print(f'Manifest file: "{self.manifest_file}"')
         self.file_name_column = config_data[FILE_NAME_COLUMN]
         self.file_size_column = config_data[FILE_SIZE_COLUMN]
         self.file_md5_column = config_data[FILE_MD5_COLUMN]
