@@ -62,6 +62,7 @@ def stream_file_validator(
         upload_s3_url
     )
     print("Start stream file validating")
+    print(params.manifest_file)
     main(params)
     print("Finish stream file validating")
 
