@@ -121,7 +121,6 @@ class SteamfileValidator():
         return s3_bucket, s3_file_key
     
     def check_existence(self, s3_bucket, s3_file_key):
-        print(s3_bucket, s3_file_key)
         try:
             response = self.s3_client.head_object(Bucket=s3_bucket, Key=s3_file_key)
             error_code = None
