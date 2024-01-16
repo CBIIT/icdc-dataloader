@@ -319,17 +319,21 @@ class SteamfileValidator():
             except Exception as e:
                 self.log.debug(e)
                 self.log.exception(f'File validation failed! Please refer to output file {validation_file_key} and logs {log_file} details')
-
-                    
-
-            
+        if "failed" in list(validation_df[VALIDATION_RESULT]):    
+            return False
+        else:
+            return True
 
 def main(args):
     log = get_logger('Stream File Validator')
     config = process_arguments(args, log)
     stream_file_validator = SteamfileValidator(config.data)
-    stream_file_validator.validate_stream_file()
-    
+    file_validation_result = stream_file_validator.validate_stream_file()
+    if not file_validation_result:
+        log.error("File validation failed")
+        sys.exit(1)
+    else:
+        log.info("File validation succeeded")
 
 if __name__ == '__main__':
     main(parse_arguments())
