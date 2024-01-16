@@ -107,6 +107,29 @@ deployments:
         env:
           PREFECT_LOGGING_EXTRA_LOGGERS: "Stream File Validator, S3 Bucket,Bento Config"
 
+  - name: data-hub-file-validation-qa
+    version: null
+    tags: []
+    description: null
+    schedule: {}
+    flow_name: null
+    entrypoint:  stream_file_validator_prefect.py:data_hub_file_validator
+    parameters:
+      organization_id: ""
+      submission_id: ""
+      manifest_name: ""
+      file_name_column: file_name
+      file_size_column: file_size
+      file_md5_column: md5sum
+      secret_name: "{{ prefect.variables.secret_name_qa }}"
+      # If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided
+    work_pool:
+      name: crdc-dh-qa-validation
+      work_queue_name: default
+      job_variables:
+        env:
+          PREFECT_LOGGING_EXTRA_LOGGERS: "Stream File Validator, S3 Bucket,Bento Config"
+
   #- name: data-hub-dev-icdc
   #  version: null
   #  tags: []

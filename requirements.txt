@@ -7,4 +7,4 @@ tqdm
 requests_aws4auth
 pandas
 xlsxwriter
-prefect
+prefect>=2.14.15
