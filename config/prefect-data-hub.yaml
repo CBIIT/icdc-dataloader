@@ -17,9 +17,9 @@ pull:
   - prefect.deployments.steps.git_clone:
       repository: https://github.com/CBIIT/cds-model.git
       branch: main
-  - prefect.deployments.steps.git_clone:
-      repository: https://github.com/CBIIT/icdc-model-tool.git
-      branch: master
+#  - prefect.deployments.steps.git_clone:
+#      repository: https://github.com/CBIIT/icdc-model-tool.git
+#      branch: master
   - prefect.deployments.steps.git_clone:
       id: clone-step
       repository: https://github.com/CBIIT/icdc-dataloader.git
@@ -52,7 +52,7 @@ deployments:
         - ../cds-model/model-desc/cds-model-props.yml
       prop_file: config/props-cds.yml
     work_pool:
-      name: crdc-dh-dev-validation
+      name: crdc-dh-dev-validation-ecs
       work_queue_name: default
       job_variables:
         env:
@@ -78,7 +78,7 @@ deployments:
         - ../cds-model/model-desc/cds-model-props.yml
       prop_file: config/props-cds.yml
     work_pool:
-      name: crdc-dh-qa-validation
+      name: crdc-dh-qa-validation-ecs
       work_queue_name: default
       job_variables:
         env:
@@ -101,7 +101,7 @@ deployments:
       secret_name: "{{ prefect.variables.secret_name_dev }}"
       # If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided
     work_pool:
-      name: crdc-dh-dev-validation
+      name: crdc-dh-dev-validation-ecs
       work_queue_name: default
       job_variables:
         env:
@@ -124,7 +124,7 @@ deployments:
       secret_name: "{{ prefect.variables.secret_name_qa }}"
       # If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided
     work_pool:
-      name: crdc-dh-qa-validation
+      name: crdc-dh-qa-validation-ecs
       work_queue_name: default
       job_variables:
         env:
