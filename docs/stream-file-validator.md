@@ -91,11 +91,14 @@ The Stream File Validator generates a result TSV file that contains the file val
     * Default Value : ````N/A````
 
 ## Usage Example
-Below is an example command to run the File Loader:
+Below are the example commands to run the File Loader:
 ````
 python3 stream_file_validator.py config/config.yml
 ````
-
+or
+````
+python3 stream_file_validator.py --manifest-file tests/temp/NCATS-COP01_path_report_file_neo4j_neo4j_error_test.txt --file-name-column file_name --file-url-column file_location --file-size-column file_size --file-md5-column md5sum --validation-s3-bucket bruce-file-copier --validation-prefix test --upload-s3-url s3://bruce-file-copier/test2
+````
 ### Example Inputs
 * **Manifest File Location**
     * ````s3://bucket/test/manifest.tsv```` or ````temp/manifest.tsv````
