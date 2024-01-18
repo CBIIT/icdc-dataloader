@@ -91,7 +91,7 @@ The Stream File Validator generates a result TSV file that contains the file val
     * Default Value : ````N/A````
 
 ## Usage Example
-There are two ways to configure and run the validator: using a configuration file or using command line arguments. Below are the example commands to run the File Loader by using a configuration file or by using command line arguments:
+There are two ways to configure and run the Stream File Validator: using a configuration file or using command line arguments. Below are the example commands to run Stream File Validator by using a configuration file or by using command line arguments:
 ````
 python3 stream_file_validator.py config/config.yml
 ````
