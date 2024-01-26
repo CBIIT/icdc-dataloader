@@ -39,7 +39,7 @@ PROVIDED_PARENTS = 'provided_parents'
 RELATIONSHIP_PROPS = 'relationship_properties'
 BATCH_SIZE = 1000
 OTHER = '__other__'
-
+csv.field_size_limit(sys.maxsize)
 
 def get_btree_indexes(session):
     """
