@@ -84,6 +84,58 @@ deployments:
         env:
           PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator,Props"
 
+  - name: data-hub-metadata-validation-stage
+    version: null
+    tags: []
+    description: null
+    schedule: {}
+    flow_name: null
+    entrypoint: loader_prefect:data_hub_loader
+    parameters:
+      organization_id: ""
+      submission_id: ""
+      cheat_mode: False
+      dry_run: False
+      wipe_db: False
+      mode: "upsert"
+      secret_name: "{{ prefect.variables.secret_name_stage }}"
+      schemas:
+        - ../cds-model/model-desc/cds-model.yml
+        - ../cds-model/model-desc/cds-model-props.yml
+      prop_file: config/props-cds.yml
+    work_pool:
+      name: crdc-dh-stage-validation-ecs
+      work_queue_name: default
+      job_variables:
+        env:
+          PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator,Props"
+
+  - name: data-hub-metadata-validation-prod
+    version: null
+    tags: []
+    description: null
+    schedule: {}
+    flow_name: null
+    entrypoint: loader_prefect:data_hub_loader
+    parameters:
+      organization_id: ""
+      submission_id: ""
+      cheat_mode: False
+      dry_run: False
+      wipe_db: False
+      mode: "upsert"
+      secret_name: "{{ prefect.variables.secret_name_prod }}"
+      schemas:
+        - ../cds-model/model-desc/cds-model.yml
+        - ../cds-model/model-desc/cds-model-props.yml
+      prop_file: config/props-cds.yml
+    work_pool:
+      name: crdc-dh-prod-validation-ecs
+      work_queue_name: default
+      job_variables:
+        env:
+          PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator,Props"
+
   - name: data-hub-file-validation-dev
     version: null
     tags: []
@@ -125,6 +177,52 @@ deployments:
       # If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided
     work_pool:
       name: crdc-dh-qa-validation-ecs
+      work_queue_name: default
+      job_variables:
+        env:
+          PREFECT_LOGGING_EXTRA_LOGGERS: "Stream File Validator, S3 Bucket,Bento Config"
+
+  - name: data-hub-file-validation-stage
+    version: null
+    tags: []
+    description: null
+    schedule: {}
+    flow_name: null
+    entrypoint:  stream_file_validator_prefect.py:data_hub_file_validator
+    parameters:
+      organization_id: ""
+      submission_id: ""
+      manifest_name: ""
+      file_name_column: file_name
+      file_size_column: file_size
+      file_md5_column: md5sum
+      secret_name: "{{ prefect.variables.secret_name_stage }}"
+      # If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided
+    work_pool:
+      name: crdc-dh-stage-validation-ecs
+      work_queue_name: default
+      job_variables:
+        env:
+          PREFECT_LOGGING_EXTRA_LOGGERS: "Stream File Validator, S3 Bucket,Bento Config"
+
+  - name: data-hub-file-validation-prod
+    version: null
+    tags: []
+    description: null
+    schedule: {}
+    flow_name: null
+    entrypoint:  stream_file_validator_prefect.py:data_hub_file_validator
+    parameters:
+      organization_id: ""
+      submission_id: ""
+      manifest_name: ""
+      file_name_column: file_name
+      file_size_column: file_size
+      file_md5_column: md5sum
+      secret_name: "{{ prefect.variables.secret_name_prod }}"
+      # If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided
+    work_pool:
+      name: crdc-dh-prod-validation-ecs
       work_queue_name: default
       job_variables:
         env:
