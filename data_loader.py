@@ -834,7 +834,6 @@ class DataLoader:
 
         file_encoding = check_encoding(file_name)
         with open(file_name, encoding=file_encoding) as in_file:
-            csv.field_size_limit(sys.maxsize)
             reader = csv.DictReader(in_file, delimiter='\t')
             nodes_created = 0
             nodes_updated = 0
