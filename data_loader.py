@@ -260,15 +260,15 @@ class DataLoader:
             return False
         # Data updates and schema related updates cannot be performed in the same session so multiple will be created
         # Create new session for schema related updates (index creation)
-        with self.driver.session() as session:
-            tx = session.begin_transaction()
-            try:
-                self.create_indexes(tx)
-                tx.commit()
-            except Exception as e:
-                tx.rollback()
-                self.log.exception(e)
-                return False
+        # with self.driver.session() as session:
+        #     tx = session.begin_transaction()
+        #     try:
+        #         self.create_indexes(tx)
+        #         tx.commit()
+        #     except Exception as e:
+        #         tx.rollback()
+        #         self.log.exception(e)
+        #         return False
         # Create new session for data related updates
         with self.driver.session() as session:
             # Split Transactions enabled

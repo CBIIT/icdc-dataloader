@@ -232,7 +232,7 @@ def main(args):
                 driver = GraphDatabase.driver(
                     config.neo4j_uri,
                     auth=(config.neo4j_user, config.neo4j_password),
-                    encrypted=False
+                    encrypted=True
                 )
 
             plugins = []
