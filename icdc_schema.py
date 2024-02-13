@@ -302,7 +302,7 @@ class ICDC_Schema:
             enum = set()
             r_url = re.compile(r"://")
             url_list = list(filter(r_url.search, item_type))
-            if not len(item_type) != 1 or len(url_list) != 1:
+            if len(item_type) != 1 or len(url_list) != 1:
                 for t in item_type:
                     enum.add(t)
             if len(enum) > 0:
