@@ -272,8 +272,10 @@ class ICDC_Schema:
                             result[HAS_UNIT] = True
                 elif isinstance(prop_desc, list):
                     enum = set()
-                    for t in prop_desc:
-                        if not re.search(r'://', t):
+                    r_url = re.compile(r"://")
+                    url_list = list(filter(r_url.search, prop_desc))
+                    if not(len(prop_desc) == 1 and len(url_list) == 1):
+                        for t in prop_desc:
                             enum.add(t)
                     if len(enum) > 0:
                         result[ENUM] = enum
@@ -298,8 +300,10 @@ class ICDC_Schema:
             return {PROP_TYPE: self.map_type(item_type)}
         elif isinstance(item_type, list):
             enum = set()
-            for t in item_type:
-                if not re.search(r'://', t):
+            r_url = re.compile(r"://")
+            url_list = list(filter(r_url.search, item_type))
+            if not(len(item_type) == 1 and len(url_list) == 1):
+                for t in item_type:
                     enum.add(t)
             if len(enum) > 0:
                 return {PROP_TYPE: DEFAULT_TYPE, ENUM: enum}
