@@ -681,7 +681,7 @@ class DataLoader:
             df_duplicate_id['duplicate_id'] = duplicate_id
             df_duplicate_id['duplicate_reason'] = duplicate_reason
             df_duplicate_id['duplicate_line_num'] = duplicate_line_num
-            df_duplicate_id['duplicate_node_type'] = duplicate_node_type
+            df_duplicate_id['node_type'] = duplicate_node_type
             df_duplicate_id['duplicate_id_field'] = duplicate_id_field
             ''''''
             if len(df_invalid) > 0:
