@@ -105,7 +105,8 @@ class ESLoader:
                 actions=data,
                 max_retries=2,
                 initial_backoff=10,
-                max_backoff=20
+                max_backoff=20,
+                max_chunk_bytes=10485760
         ):
             total += 1
             successes += 1 if ok else 0
