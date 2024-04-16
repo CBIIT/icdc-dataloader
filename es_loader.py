@@ -57,11 +57,12 @@ class ESLoader:
     def delete_index(self, index_name):
         return self.es_client.indices.delete(index=index_name, ignore_unavailable=True)
 
-    def get_data(self, cypher_query, fields):
+    def get_data(self, cypher_query, fields, skip, limit):
         """Reads data from Neo4j, for each row
         yields a single document. This function is passed into the bulk()
         helper to create many documents in sequence.
         """
+        cypher_query = f"{cypher_query} SKIP {skip} LIMIT {limit}"
         with self.neo4j_driver.session() as session:
             result = session.run(cypher_query)
             for record in result:
@@ -84,13 +85,18 @@ class ESLoader:
 
     def load(self, index_name, mapping, cypher_query):
         self.recreate_index(index_name, mapping)
-
         logger.info('Indexing data from Neo4j')
-        self.bulk_load(index_name, self.get_data(cypher_query, mapping.keys()))
+        skip = 0
+        page_size = 10000
+        total = page_size
+        successful_total = 0
+        while total >= page_size:
+            successes, total = self.bulk_load(index_name, self.get_data(cypher_query, mapping.keys(), skip, page_size))
+            successful_total += successes
+            logger.info(f"Indexing Progress {successful_total}/{skip+total}")
+            skip += page_size
 
     def bulk_load(self, index_name, data):
-        logger.info('Indexing data in bulk ...')
-
         successes = 0
         total = 0
         for ok, _ in streaming_bulk(
@@ -103,7 +109,7 @@ class ESLoader:
         ):
             total += 1
             successes += 1 if ok else 0
-        logger.info(f"Indexed {successes}/{total} documents")
+        return successes, total
 
     def load_about_page(self, index_name, mapping, file_name):
         logger.info('Indexing content from about page')
