@@ -87,7 +87,7 @@ class ESLoader:
         self.recreate_index(index_name, mapping)
         logger.info('Indexing data from Neo4j')
         skip = 0
-        page_size = 10000
+        page_size = 100000
         total = page_size
         successful_total = 0
         while total >= page_size:
