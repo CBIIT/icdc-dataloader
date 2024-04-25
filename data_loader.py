@@ -191,7 +191,35 @@ class DataLoader:
                     return False
             return True
 
-    def validate_files(self, cheat_mode, file_list, max_violations, temp_folder, verbose):
+    def validate_delete_files(self, file_list):
+        with self.driver.session() as session:
+            for txt in file_list:
+                file_encoding = check_encoding(txt)
+                with open(txt, encoding=file_encoding) as in_file:
+                    reader = csv.DictReader(in_file, delimiter='\t')
+                    for org_obj in reader:
+                        obj = self.cleanup_node(org_obj)
+                        id_field = self.schema.get_id_field(obj)
+                        if id_field not in obj.keys():
+                            self.log.error(f'Required id field {id_field} is missing, validation failed')
+                            return False
+                        elif obj[id_field] is None:
+                            self.log.error(f'Required id field {id_field} is None, validation failed')
+                            return False
+                        if NODE_TYPE not in obj.keys():
+                            self.log.error(f'Required node type field {NODE_TYPE} is missing, validation failed')
+                            return True
+                        elif obj[NODE_TYPE] is None:
+                            self.log.error(f'Required node type field {NODE_TYPE} is None, validation failed')
+                            return False
+                        node_type = obj.get(NODE_TYPE, None)
+                        if not self.node_exists(session, node_type, id_field, obj[id_field]):
+                            self.log.error(f'The id {obj[id_field]} is missing in database, validation failed')
+                            return False
+        return True
+
+
+    def validate_files(self, cheat_mode, loading_mode, dry_run, file_list, max_violations, temp_folder, verbose):
         if not cheat_mode:
             self.cheat_mode = False
             validation_failed = False
@@ -216,6 +244,12 @@ class DataLoader:
 
             self.validation_result_file_key = output_key_invalid
             return not validation_failed
+        elif loading_mode == DELETE_MODE and not dry_run:
+            self.log.info("Start validation the delete file.")
+            validation_result = self.validate_delete_files(file_list)
+            if validation_result:
+                self.log.info("Passed all delete file validation.")
+            return validation_result
         else:
             self.log.info('Cheat mode enabled, all validations skipped!')
             return True
@@ -225,7 +259,7 @@ class DataLoader:
         if not self.check_files(file_list):
             return False
         start = timer()
-        if not self.validate_files(cheat_mode, file_list, max_violations, temp_folder, verbose):
+        if not self.validate_files(cheat_mode, loading_mode, dry_run, file_list, max_violations, temp_folder, verbose):
             return False
         if not no_backup and not dry_run:
             if not neo4j_uri:
