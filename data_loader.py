@@ -192,6 +192,7 @@ class DataLoader:
             return True
 
     def validate_delete_files(self, file_list):
+        validation_result = True
         with self.driver.session() as session:
             for txt in file_list:
                 file_encoding = check_encoding(txt)
@@ -214,9 +215,9 @@ class DataLoader:
                             return False
                         node_type = obj.get(NODE_TYPE, None)
                         if not self.node_exists(session, node_type, id_field, obj[id_field]):
-                            self.log.error(f'The id {obj[id_field]} is missing in database, validation failed')
-                            return False
-        return True
+                            self.log.error(f'The id {obj[id_field]} is missing in the database, validation failed')
+                            validation_result = False
+        return validation_result
 
 
     def validate_files(self, cheat_mode, loading_mode, dry_run, file_list, max_violations, temp_folder, verbose):
