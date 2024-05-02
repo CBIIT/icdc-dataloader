@@ -20,7 +20,7 @@ SRC = 'Src'
 DEST = 'Dst'
 VALUE_TYPE = 'value_type'
 ITEM_TYPE = 'item_type'
-LIST_DELIMITER = '*'
+#LIST_DELIMITER = '|'
 LABEL_NEXT = 'next'
 NEXT_RELATIONSHIP = 'next'
 UNITS = 'units'
@@ -37,8 +37,8 @@ EX_MAX = 'exclusiveMaximum'
 DESCRIPTION = 'Desc'
 
 
-def get_list_values(list_str):
-    return [item.strip() for item in list_str.split(LIST_DELIMITER) if item.strip()]
+def get_list_values(list_str, list_delimiter):
+    return [item.strip() for item in list_str.split(list_delimiter) if item.strip()]
 
 
 def is_parent_pointer(field_name):
@@ -51,6 +51,7 @@ class ICDC_Schema:
             raise AssertionError
         self.props = props
         self.rel_prop_delimiter = props.rel_prop_delimiter
+        self.delimiter = props.delimiter
 
         if not yaml_files:
             raise Exception('File list is empty,could not initialize ICDC_Schema object!')
@@ -265,7 +266,7 @@ class ICDC_Schema:
                         if ITEM_TYPE in prop_desc:
                             item_type = self._get_item_type(prop_desc[ITEM_TYPE])
                             result[ITEM_TYPE] = item_type
-                        elif PROP_ENUM in prop_desc:
+                        if PROP_ENUM in prop_desc:
                             item_type = self._get_item_type(prop_desc[PROP_ENUM])
                             result[ITEM_TYPE] = item_type
                         if UNITS in prop_desc:
@@ -512,10 +513,15 @@ class ICDC_Schema:
                     and not re.match(r'\bltf\b', str_value, re.IGNORECASE)):
                 return False, wrong_type
         elif model_type[PROP_TYPE] == 'Array':
-            for item in get_list_values(str_value):
-                validation_result, error_type = self._validate_type(model_type[ITEM_TYPE], item)
-                if not validation_result:
-                    return False, wrong_type
+            for item in get_list_values(str_value, self.delimiter):
+                if ENUM in model_type[ITEM_TYPE]:
+                    if not isinstance(item, str):
+                        return False, wrong_type
+                    if item != '' and item not in model_type[ITEM_TYPE][ENUM]:
+                        return False, non_permissive_value
+                #validation_result, error_type = self._validate_type(model_type[ITEM_TYPE], item)
+                #if not validation_result:
+                #    return False, non_permissive_value
 
         elif model_type[PROP_TYPE] == 'Object':
             if not isinstance(str_value, dict):

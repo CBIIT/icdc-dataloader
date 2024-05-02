@@ -1,6 +1,7 @@
 Properties:
   domain: cds.cancer.gov
   rel_prop_delimiter: "$"
+  delimiter: ","
 
   plurals:
     study: studies
@@ -20,6 +21,7 @@ Properties:
     integer: Int
     boolean: Boolean
     array: Array
+    list: Array
     object: Object
     datetime: DateTime
     date: Date

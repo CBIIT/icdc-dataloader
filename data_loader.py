@@ -412,7 +412,7 @@ class DataLoader:
                         cleaned_value = None
                     obj[key] = cleaned_value
                 elif key_type == 'Array':
-                    items = get_list_values(value)
+                    items = get_list_values(value, self.schema.delimiter)
                     # todo: need to transform items if item type is not string
                     obj[key] = json.dumps(items)
                 elif key_type == 'DateTime' or key_type == 'Date':

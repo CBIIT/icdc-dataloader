@@ -20,6 +20,7 @@ class Props:
                 self.rel_prop_delimiter = props.get('rel_prop_delimiter', '$')
                 self.indexes = props.get('indexes', [])
                 self.save_parent_id = props.get('save_parent_id', [])
+                self.delimiter = props.get("delimiter", "|")
         else:
             msg = f'Can NOT open file: "{file_name}"'
             self.log.error(msg)
