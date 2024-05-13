@@ -218,9 +218,6 @@ def main(args):
                 if not confirm_deletion('Wipe out entire Neo4j database before loading?'):
                     sys.exit(1)
 
-            if config.loading_mode == DELETE_MODE:
-                config.cheat_mode = True
-
             if config.loading_mode == DELETE_MODE and not config.yes:
                 if not confirm_deletion('Delete all nodes and child nodes from data file?'):
                     sys.exit(1)

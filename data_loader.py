@@ -17,7 +17,7 @@ from bento.common.utils import get_host, DATETIME_FORMAT, reformat_date, get_tim
 
 from neo4j import Driver
 
-from icdc_schema import ICDC_Schema, is_parent_pointer, get_list_values
+from icdc_schema import ICDC_Schema, is_parent_pointer
 from bento.common.utils import get_logger, NODES_CREATED, RELATIONSHIP_CREATED, UUID, \
     RELATIONSHIP_TYPE, MULTIPLIER, ONE_TO_ONE, DEFAULT_MULTIPLIER, UPSERT_MODE, \
     NEW_MODE, DELETE_MODE, NODES_DELETED, RELATIONSHIP_DELETED, NODES_UPDATED, combined_dict_counters, \
@@ -221,7 +221,7 @@ class DataLoader:
 
 
     def validate_files(self, cheat_mode, loading_mode, dry_run, file_list, max_violations, temp_folder, verbose):
-        if not cheat_mode:
+        if not cheat_mode and loading_mode != DELETE_MODE:
             self.cheat_mode = False
             validation_failed = False
             output_key_invalid = ""
@@ -245,7 +245,7 @@ class DataLoader:
 
             self.validation_result_file_key = output_key_invalid
             return not validation_failed
-        elif loading_mode == DELETE_MODE and not dry_run:
+        elif loading_mode == DELETE_MODE and not dry_run and not cheat_mode:
             self.log.info("Start validation the delete file.")
             validation_result = self.validate_delete_files(file_list)
             if validation_result:
@@ -412,7 +412,7 @@ class DataLoader:
                         cleaned_value = None
                     obj[key] = cleaned_value
                 elif key_type == 'Array':
-                    items = get_list_values(value, self.schema.delimiter)
+                    items = self.schema.get_list_values(value)
                     # todo: need to transform items if item type is not string
                     obj[key] = json.dumps(items)
                 elif key_type == 'DateTime' or key_type == 'Date':

@@ -37,10 +37,6 @@ EX_MAX = 'exclusiveMaximum'
 DESCRIPTION = 'Desc'
 
 
-def get_list_values(list_str, list_delimiter):
-    return [item.strip() for item in list_str.split(list_delimiter) if item.strip()]
-
-
 def is_parent_pointer(field_name):
     return re.fullmatch(r'\w+\.\w+', field_name) is not None
 
@@ -132,6 +128,8 @@ class ICDC_Schema:
 
         return {PROPERTIES: props, REQUIRED: required, PRIVATE: private}
 
+    def get_list_values(self, list_str):
+        return [item.strip() for item in list_str.split(self.delimiter) if item.strip()]
     def process_node(self, name, desc, is_relationship=False):
         """
         Process input node/relationship properties and save it in self.nodes
@@ -444,20 +442,36 @@ class ICDC_Schema:
                 prop_type = properties[key]
                 type_validation_result, error_type = self._validate_type(prop_type, value)
                 if not type_validation_result:
-                    result['result'] = False
-                    result['invalid_values'].append(value)
-                    result['invalid_properties'].append(key)
-                    result['invalid_reason'].append(error_type)
-                    if not verbose:
-                        if error_type == "non_permissive_value":
+                    if type(error_type) is tuple:
+                        result['result'] = False
+                        result['invalid_values'].append(error_type[0])
+                        result['invalid_properties'].append(key)
+                        result['invalid_reason'].append(error_type[1])
+                        if not verbose:
+                            if error_type[1] == "non_permissive_value":
+                                result['messages'].append(
+                                    'Property: "{}":"{}" is not in permissible value list!'.format(key, error_type[0]))
+                            elif error_type[1] == "wrong_type":
+                                result['messages'].append(
+                                    'Property: "{}":"{}" is in wrong type!'.format(key, error_type[0]))
+                        else:
                             result['messages'].append(
-                                'Property: "{}":"{}" is not in permissible value list!'.format(key, value))
-                        elif error_type == "wrong_type":
-                            result['messages'].append(
-                                'Property: "{}":"{}" is in wrong type!'.format(key, value))
+                                'Property: "{}":"{}" is not a valid "{}" type!'.format(key, error_type[0], prop_type))
                     else:
-                        result['messages'].append(
-                            'Property: "{}":"{}" is not a valid "{}" type!'.format(key, value, prop_type))
+                        result['result'] = False
+                        result['invalid_values'].append(value)
+                        result['invalid_properties'].append(key)
+                        result['invalid_reason'].append(error_type)
+                        if not verbose:
+                            if error_type == "non_permissive_value":
+                                result['messages'].append(
+                                    'Property: "{}":"{}" is not in permissible value list!'.format(key, value))
+                            elif error_type == "wrong_type":
+                                result['messages'].append(
+                                    'Property: "{}":"{}" is in wrong type!'.format(key, value))
+                        else:
+                            result['messages'].append(
+                                'Property: "{}":"{}" is not a valid "{}" type!'.format(key, value, prop_type))
 
 
         return result
@@ -513,12 +527,11 @@ class ICDC_Schema:
                     and not re.match(r'\bltf\b', str_value, re.IGNORECASE)):
                 return False, wrong_type
         elif model_type[PROP_TYPE] == 'Array':
-            for item in get_list_values(str_value, self.delimiter):
+            for item in self.get_list_values(str_value):
                 if ENUM in model_type[ITEM_TYPE]:
-                    if not isinstance(item, str):
-                        return False, wrong_type
-                    if item != '' and item not in model_type[ITEM_TYPE][ENUM]:
-                        return False, non_permissive_value
+                    validation_result, error_type = self._validate_type(model_type[ITEM_TYPE], item)
+                    if not validation_result:
+                        return False, (item, error_type)
                 #validation_result, error_type = self._validate_type(model_type[ITEM_TYPE], item)
                 #if not validation_result:
                 #    return False, non_permissive_value
