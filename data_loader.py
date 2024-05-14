@@ -199,25 +199,28 @@ class DataLoader:
                     file_encoding = check_encoding(txt)
                     with open(txt, encoding=file_encoding) as in_file:
                         reader = csv.DictReader(in_file, delimiter='\t')
+                        line_number = 1
                         for org_obj in reader:
+                            line_number += 1
                             obj = self.cleanup_node(org_obj)
                             id_field = self.schema.get_id_field(obj)
                             if id_field not in obj.keys():
-                                self.log.error(f'Required id field {id_field} is missing, validation failed')
+                                self.log.error(f'Line: {line_number}: Required id field {id_field} is missing, validation failed')
                                 return False
                             elif obj[id_field] is None:
-                                self.log.error(f'Required id field {id_field} is None, validation failed')
+                                self.log.error(f'Line: {line_number}: Required id field {id_field} is None, validation failed')
                                 return False
                             if NODE_TYPE not in obj.keys():
-                                self.log.error(f'Required node type field {NODE_TYPE} is missing, validation failed')
+                                self.log.error(f'Line: {line_number}: Required node type field {NODE_TYPE} is missing, validation failed')
                                 return True
                             elif obj[NODE_TYPE] is None:
-                                self.log.error(f'Required node type field {NODE_TYPE} is None, validation failed')
+                                self.log.error(f'Line: {line_number}: Required node type field {NODE_TYPE} is None, validation failed')
                                 return False
                             node_type = obj.get(NODE_TYPE, None)
                             if not self.node_exists(session, node_type, id_field, obj[id_field]):
-                                self.log.error(f'The id {obj[id_field]} is missing in the database, validation failed')
+                                self.log.error(f'Line: {line_number}: The deleted node (:{obj[NODE_TYPE]} {{{id_field}: "{obj[id_field]}"}}) not found in DB!, validation failed')
                                 validation_result = False
+                            
         except Exception as e:
             self.log.error(e)
             self.log.error("Delete file validation failed, abort the deletion")
