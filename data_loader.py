@@ -218,7 +218,7 @@ class DataLoader:
                                 return False
                             node_type = obj.get(NODE_TYPE, None)
                             if not self.node_exists(session, node_type, id_field, obj[id_field]):
-                                self.log.error(f'Line: {line_number}: The deleted node (:{obj[NODE_TYPE]} {{{id_field}: "{obj[id_field]}"}}) not found in DB!, validation failed')
+                                self.log.error(f'Line: {line_number}: The node to be deleted (:{obj[NODE_TYPE]} {{{id_field}: "{obj[id_field]}"}}) not found in DB!, validation failed')
                                 validation_result = False
                             
         except Exception as e:
