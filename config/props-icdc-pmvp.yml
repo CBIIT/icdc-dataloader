@@ -1,6 +1,7 @@
 Properties:
   domain: caninecommons.cancer.gov
   rel_prop_delimiter: "$"
+  delimiter: "*"
 
   plurals:
     program: programs
