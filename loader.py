@@ -228,7 +228,7 @@ def main(args):
             else:
                 props = Props(config.prop_file)
             schema = ICDC_Schema(config.schema_files, props)
-            if not config.dry_run:
+            if not config.dry_run or config.loading_mode == DELETE_MODE:
                 driver = GraphDatabase.driver(
                     config.neo4j_uri,
                     auth=(config.neo4j_user, config.neo4j_password),

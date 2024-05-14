@@ -17,7 +17,7 @@ from bento.common.utils import get_host, DATETIME_FORMAT, reformat_date, get_tim
 
 from neo4j import Driver
 
-from icdc_schema import ICDC_Schema, is_parent_pointer, get_list_values
+from icdc_schema import ICDC_Schema, is_parent_pointer
 from bento.common.utils import get_logger, NODES_CREATED, RELATIONSHIP_CREATED, UUID, \
     RELATIONSHIP_TYPE, MULTIPLIER, ONE_TO_ONE, DEFAULT_MULTIPLIER, UPSERT_MODE, \
     NEW_MODE, DELETE_MODE, NODES_DELETED, RELATIONSHIP_DELETED, NODES_UPDATED, combined_dict_counters, \
@@ -191,31 +191,75 @@ class DataLoader:
                     return False
             return True
 
-    def validate_files(self, cheat_mode, file_list, max_violations, temp_folder, verbose):
-        if not cheat_mode:
-            self.cheat_mode = False
-            validation_failed = False
-            output_key_invalid = ""
-            for txt in file_list:
-                validate_result = self.validate_file(txt, max_violations, verbose)
-                if not validate_result:
-                    self.log.error('Validating file "{}" failed!'.format(txt))
-                    validation_failed = True
-            if validation_failed:
-                if not os.path.exists(temp_folder):
-                    os.makedirs(temp_folder)
-                df_validation_result_file_key = os.path.basename(os.path.dirname(file_list[0]))
-                timestamp = get_time_stamp()
-                output_key_invalid = os.path.join(temp_folder, df_validation_result_file_key) + "_" + timestamp + ".xlsx"
-                #df_validation_result.to_csv(output_key_invalid, index=False)
-                writer=pd.ExcelWriter(output_key_invalid, engine='xlsxwriter', engine_kwargs={'options':{'strings_to_urls': False}})
-                for key in self.df_validation_dict.keys():
-                    sheet_name_new = key
-                    self.df_validation_dict[key].to_excel(writer,sheet_name=sheet_name_new, index=False)
-                writer.close()
+    def validate_delete_files(self, file_list):
+        validation_result = True
+        try:
+            with self.driver.session() as session:
+                for txt in file_list:
+                    file_encoding = check_encoding(txt)
+                    with open(txt, encoding=file_encoding) as in_file:
+                        reader = csv.DictReader(in_file, delimiter='\t')
+                        line_number = 1
+                        for org_obj in reader:
+                            line_number += 1
+                            obj = self.cleanup_node(org_obj)
+                            id_field = self.schema.get_id_field(obj)
+                            if id_field not in obj.keys():
+                                self.log.error(f'Line: {line_number}: Required id field {id_field} is missing, validation failed')
+                                return False
+                            elif obj[id_field] is None:
+                                self.log.error(f'Line: {line_number}: Required id field {id_field} is None, validation failed')
+                                return False
+                            if NODE_TYPE not in obj.keys():
+                                self.log.error(f'Line: {line_number}: Required node type field {NODE_TYPE} is missing, validation failed')
+                                return True
+                            elif obj[NODE_TYPE] is None:
+                                self.log.error(f'Line: {line_number}: Required node type field {NODE_TYPE} is None, validation failed')
+                                return False
+                            node_type = obj.get(NODE_TYPE, None)
+                            if not self.node_exists(session, node_type, id_field, obj[id_field]):
+                                self.log.error(f'Line: {line_number}: The node to be deleted (:{obj[NODE_TYPE]} {{{id_field}: "{obj[id_field]}"}}) not found in DB!, validation failed')
+                                validation_result = False
+                            
+        except Exception as e:
+            self.log.error(e)
+            self.log.error("Delete file validation failed, abort the deletion")
+            sys.exit(1)
+        return validation_result
 
-            self.validation_result_file_key = output_key_invalid
-            return not validation_failed
+
+    def validate_files(self, cheat_mode, loading_mode, file_list, max_violations, temp_folder, verbose):
+        if not cheat_mode:
+            if loading_mode != DELETE_MODE:
+                self.cheat_mode = False
+                validation_failed = False
+                output_key_invalid = ""
+                for txt in file_list:
+                    validate_result = self.validate_file(txt, max_violations, verbose)
+                    if not validate_result:
+                        self.log.error('Validating file "{}" failed!'.format(txt))
+                        validation_failed = True
+                if validation_failed:
+                    if not os.path.exists(temp_folder):
+                        os.makedirs(temp_folder)
+                    df_validation_result_file_key = os.path.basename(os.path.dirname(file_list[0]))
+                    timestamp = get_time_stamp()
+                    output_key_invalid = os.path.join(temp_folder, df_validation_result_file_key) + "_" + timestamp + ".xlsx"
+                    #df_validation_result.to_csv(output_key_invalid, index=False)
+                    writer=pd.ExcelWriter(output_key_invalid, engine='xlsxwriter', engine_kwargs={'options':{'strings_to_urls': False}})
+                    for key in self.df_validation_dict.keys():
+                        sheet_name_new = key
+                        self.df_validation_dict[key].to_excel(writer,sheet_name=sheet_name_new, index=False)
+                    writer.close()
+
+                self.validation_result_file_key = output_key_invalid
+                return not validation_failed
+            elif loading_mode == DELETE_MODE:
+                self.log.info("Start validation the delete file.")
+                validation_result = self.validate_delete_files(file_list)
+                if validation_result:
+                    self.log.info("Passed all delete file validation.")
+                return validation_result
         else:
             self.log.info('Cheat mode enabled, all validations skipped!')
             return True
@@ -225,7 +269,7 @@ class DataLoader:
         if not self.check_files(file_list):
             return False
         start = timer()
-        if not self.validate_files(cheat_mode, file_list, max_violations, temp_folder, verbose):
+        if not self.validate_files(cheat_mode, loading_mode, file_list, max_violations, temp_folder, verbose):
             return False
         if not no_backup and not dry_run:
             if not neo4j_uri:
@@ -377,7 +421,7 @@ class DataLoader:
                         cleaned_value = None
                     obj[key] = cleaned_value
                 elif key_type == 'Array':
-                    items = get_list_values(value)
+                    items = self.schema.get_list_values(value)
                     # todo: need to transform items if item type is not string
                     obj[key] = json.dumps(items)
                 elif key_type == 'DateTime' or key_type == 'Date':
