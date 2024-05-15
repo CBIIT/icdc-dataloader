@@ -11,9 +11,10 @@ import subprocess
 import json
 import pandas as pd
 import datetime
-import dateutil
+#import dateutil
 from timeit import default_timer as timer
 from bento.common.utils import get_host, DATETIME_FORMAT, reformat_date, get_time_stamp
+from create_index import create_index
 
 from neo4j import Driver
 
@@ -40,20 +41,6 @@ RELATIONSHIP_PROPS = 'relationship_properties'
 BATCH_SIZE = 1000
 OTHER = '__other__'
 csv.field_size_limit(sys.maxsize)
-
-def get_btree_indexes(session):
-    """
-    Queries the database to get all existing indexes
-    :param session: the current neo4j transaction session
-    :return: A set of tuples representing all existing indexes in the database
-    """
-    command = "SHOW INDEXES"
-    result = session.run(command)
-    indexes = set()
-    for r in result:
-        if r["type"] == "BTREE":
-            indexes.add(format_as_tuple(r["labelsOrTypes"][0], r["properties"]))
-    return indexes
 
 def format_as_tuple(node_name, properties):
     """
@@ -140,13 +127,15 @@ def get_props_signature(props):
 
 
 class DataLoader:
-    def __init__(self, driver, schema, plugins=None):
+    def __init__(self, driver, mg_connection, schema, database_type, plugins=None):
         if plugins is None:
             plugins = []
         if not schema or not isinstance(schema, ICDC_Schema):
             raise Exception('Invalid ICDC_Schema object')
         self.log = get_logger('Data Loader')
         self.driver = driver
+        self.mg_connection = mg_connection
+        self.database_type = database_type
         self.schema = schema
         self.rel_prop_delimiter = self.schema.rel_prop_delimiter
 
@@ -190,7 +179,7 @@ class DataLoader:
                     self.log.error('File "{}" does not exist'.format(data_file))
                     return False
             return True
-
+ 
     def validate_delete_files(self, file_list):
         validation_result = True
         try:
@@ -304,15 +293,15 @@ class DataLoader:
             return False
         # Data updates and schema related updates cannot be performed in the same session so multiple will be created
         # Create new session for schema related updates (index creation)
-        with self.driver.session() as session:
-            tx = session.begin_transaction()
-            try:
-                self.create_indexes(tx)
-                tx.commit()
-            except Exception as e:
-                tx.rollback()
-                self.log.exception(e)
-                return False
+        try:
+            #cursor = self.mg_connection.cursor()
+            if self.database_type == "neo4j":
+                self.indexes_created = create_index(self.driver, self.schema, self.log, self.database_type)
+            elif self.database_type == "memgraph":
+                self.indexes_created = create_index(self.mg_connection, self.schema, self.log, self.database_type)
+        except Exception as e:
+            self.log.exception(e)
+            return False
         # Create new session for data related updates
         with self.driver.session() as session:
             # Split Transactions enabled
@@ -329,7 +318,8 @@ class DataLoader:
                 except Exception as e:
                     tx.rollback()
                     self.log.exception(e)
-                    return False
+                    #return False
+                    sys.exit(1)
 
         # End the timer
         end = timer()
@@ -815,8 +805,11 @@ class DataLoader:
             prop_stmts.append('n.{0} = ${0}'.format(key))
 
         statement += 'MERGE (n:{0} {{ {1}: ${1} }})'.format(node_type, id_field)
-        statement += ' ON CREATE ' + 'SET n.{} = datetime(), '.format(CREATED) + ' ,'.join(prop_stmts)
-        statement += ' ON MATCH ' + 'SET n.{} = datetime(), '.format(UPDATED) + ' ,'.join(prop_stmts)
+        #statement += ' ON CREATE ' + 'SET n.{} = datetime(), '.format(CREATED) + ' ,'.join(prop_stmts)
+        current_time = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        statement += ' ON CREATE ' + 'SET n.{} = "{}", '.format(CREATED, current_time) + ' ,'.join(prop_stmts)
+        #statement += ' ON MATCH ' + 'SET n.{} = datetime(), '.format(UPDATED) + ' ,'.join(prop_stmts)
+        statement += ' ON MATCH ' + 'SET n.{} = "{}", '.format(UPDATED, current_time) + ' ,'.join(prop_stmts)
         return statement
 
     # Delete a node and children with no other parents recursively
@@ -836,7 +829,8 @@ class DataLoader:
     def get_children_with_single_parent(self, session, node):
         node_type = node[NODE_TYPE]
         statement = 'MATCH (n:{0} {{ {1}: ${1} }})<--(m)'.format(node_type, self.schema.get_id_field(node))
-        statement += ' WHERE NOT (n)<--(m)-->() RETURN m'
+        #statement += ' WHERE NOT (n)<--(m)-->() RETURN m'
+        statement += ' WHERE NOT EXISTS((n)<--(m)-->()) RETURN m'
         result = session.run(statement, node)
         children = []
         for obj in result:
@@ -923,7 +917,7 @@ class DataLoader:
                     count = result.consume().counters.nodes_created
                     #count the updated nodes
                     update_count = 0
-                    if result.consume().counters.nodes_created == 0 and result.consume().counters._contains_updates:
+                    if result.consume().counters.nodes_created == 0 and result.consume().counters.nodes_deleted == 0:
                         update_count = 1
                     self.nodes_created += count
                     self.nodes_updated += update_count
@@ -1133,9 +1127,12 @@ class DataLoader:
                         statement += ' MATCH (n:{0} {{ {1}: ${1} }})'.format(node_type,
                                                                              self.schema.get_id_field(obj))
                         statement += ' MERGE (n)-[r:{}]->(m)'.format(relationship_name)
-                        statement += ' ON CREATE SET r.{} = datetime()'.format(CREATED)
+                        current_time = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                        #statement += ' ON CREATE SET r.{} = datetime()'.format(CREATED)
+                        statement += ' ON CREATE SET r.{} = "{}"'.format(CREATED, current_time)
                         statement += ', {}'.format(prop_statement) if prop_statement else ''
-                        statement += ' ON MATCH SET r.{} = datetime()'.format(UPDATED)
+                        #statement += ' ON MATCH SET r.{} = datetime()'.format(UPDATED)
+                        statement += ' ON MATCH SET r.{} = "{}"'.format(UPDATED, current_time)
                         statement += ', {}'.format(prop_statement) if prop_statement else ''
 
                         result = tx.run(statement, {**obj, "__parentID__": parent_id, **properties})
@@ -1209,33 +1206,3 @@ class DataLoader:
                 raise e
         self.log.info('{} nodes deleted!'.format(self.nodes_deleted))
         self.log.info('{} relationships deleted!'.format(self.relationships_deleted))
-
-    def create_indexes(self, session):
-        """
-        Creates indexes, if they do not already exist, for all entries in the "id_fields" and "indexes" sections of the
-        properties file
-        :param session: the current neo4j transaction session
-        """
-        existing = get_btree_indexes(session)
-        # Create indexes from "id_fields" section of the properties file
-        ids = self.schema.props.id_fields
-        for node_name in ids:
-            self.create_index(node_name, ids[node_name], existing, session)
-        # Create indexes from "indexes" section of the properties file
-        indexes = self.schema.props.indexes
-        # each index is a dictionary, indexes is a list of these dictionaries
-        # for each dictionary in list
-        for node_dict in indexes:
-            node_name = list(node_dict.keys())[0]
-            self.create_index(node_name, node_dict[node_name], existing, session)
-
-    def create_index(self, node_name, node_property, existing, session):
-        index_tuple = format_as_tuple(node_name, node_property)
-        # If node_property is a list of properties, convert to a comma delimited string
-        if isinstance(node_property, list):
-            node_property = ",".join(node_property)
-        if index_tuple not in existing:
-            command = "CREATE INDEX ON :{}({});".format(node_name, node_property)
-            session.run(command)
-            self.indexes_created += 1
-            self.log.info("Index created for \"{}\" on property \"{}\"".format(node_name, node_property))

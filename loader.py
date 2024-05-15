@@ -4,6 +4,7 @@ import glob
 import os
 import sys
 import zipfile
+import mgclient
 
 from neo4j import GraphDatabase
 from neo4j.exceptions import ServiceUnavailable
@@ -52,6 +53,7 @@ def parse_arguments(args = None):
     parser.add_argument('--split-transactions', help='Creates a separate transaction for each file',
                         action='store_true')
     parser.add_argument('--upload-log-dir', help='Upload destination dir for log file,  if dir in s3, use the format, s3://[bucket]/[prefix]')
+    parser.add_argument('--database-type', help='The database type, can be either neo4j or memgraph')
     return parser.parse_args(args)
 
 
@@ -104,10 +106,10 @@ def process_arguments(args, log):
         config.no_backup = args.no_backup
     if args.backup_folder:
         config.backup_folder = args.backup_folder
-    if config.split_transactions and config.no_backup:
-        log.error('--split-transaction and --no-backup cannot both be enabled, a backup is required when running'
-                  ' in split transactions mode')
-        sys.exit(1)
+    #if config.split_transactions and config.no_backup:
+    #    log.error('--split-transaction and --no-backup cannot both be enabled, a backup is required when running'
+    #              ' in split transactions mode')
+    #    sys.exit(1)
     if not config.backup_folder and not config.no_backup:
         log.error('Backup folder not specified! A backup folder is required unless the --no-backup argument is used')
         sys.exit(1)
@@ -172,7 +174,9 @@ def process_arguments(args, log):
 
     if args.upload_log_dir:
         config.upload_log_dir = args.upload_log_dir
-
+    
+    if args.database_type:
+        config.database_type = args.database_type
     # Only applies when running in Prefect via loader_prefect.py, which doesn't have config files and temp_foldetemp_folderr
     # So plugins have to be passed in from Prefect parameters
     # In that case args is an object that contains all Prefect parameters
@@ -207,6 +211,7 @@ def main(args):
         return
 
     driver = None
+    mg_connection = None
     restore_cmd = ''
     load_result = None
     try:
@@ -234,12 +239,18 @@ def main(args):
                     auth=(config.neo4j_user, config.neo4j_password),
                     encrypted=False
                 )
-
+                if config.database_type == "memgraph":
+                    mg_host = config.neo4j_uri.replace("bolt://", "").split(":")[0]
+                    mg_port = int(config.neo4j_uri.replace("bolt://", "").split(":")[1])
+                    mg_connection = mgclient.connect(host=mg_host, port=mg_port, username=config.neo4j_user, password=config.neo4j_password)
+                    mg_connection.autocommit = True
+                else:
+                    mg_connection = None
             plugins = []
             if len(config.plugins) > 0:
                 for plugin_config in config.plugins:
                     plugins.append(prepare_plugin(plugin_config, schema))
-            loader = DataLoader(driver, schema, plugins)
+            loader = DataLoader(driver, mg_connection, schema, config.database_type, plugins)
 
             load_result = loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db,
                         config.max_violations, config.temp_folder, config.verbose, split=config.split_transactions,
