@@ -175,6 +175,8 @@ def process_arguments(args, log):
     if args.upload_log_dir:
         config.upload_log_dir = args.upload_log_dir
     
+    if not config.database_type:
+        config.database_type = "neo4j"
     if args.database_type:
         config.database_type = args.database_type
     # Only applies when running in Prefect via loader_prefect.py, which doesn't have config files and temp_foldetemp_folderr
