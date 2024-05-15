@@ -47,7 +47,7 @@ Config:
   # Split the loading transaction into separate transactions for each file
   split_transactions: false
   # Database type, can be either neo4j or memgraph
-  database_type: neo4j
+  database_type: memgraph
 
   # S3 bucket name, if you are loading from an S3 bucket, can be overridden by -b/--bucket argument
   s3_bucket:
