@@ -45,6 +45,7 @@ class BentoConfig:
             self.split_transactions = None
             self.upload_log_dir = None
             self.verbose = None
+            self.database_type = "neo4j"
             self.plugins = []
         else:
             if os.path.isfile(config_file):
@@ -106,6 +107,7 @@ class BentoConfig:
                     self.split_transactions = config.get('split_transactions')
                     self.upload_log_dir = config.get('upload_log_dir')
                     self.verbose = config.get('verbose')
+                    self.database_type = config.get("database_type")
             else:
                 msg = f'Can NOT open configuration file "{config_file}"!'
                 self.log.error(msg)
