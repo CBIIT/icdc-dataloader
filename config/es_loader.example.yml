@@ -15,3 +15,7 @@ Config:
     - bento-model/model-desc/bento_tailorx_model_properties.yaml
 
   prop_file: config/props-bento-ext.yml
+
+  # The page size for the Neo4j queries
+  # pagination will be disabled if this value is missing, less than 1, or a non-numeric value
+  page_size: 50000

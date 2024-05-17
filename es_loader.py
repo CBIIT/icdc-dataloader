@@ -18,8 +18,16 @@ OPENSEARCH_DATA = 'opensearch_data'
 
 
 class ESLoader:
-    def __init__(self, es_host, neo4j_driver):
+    def __init__(self, es_host, neo4j_driver, page_size):
         self.neo4j_driver = neo4j_driver
+        try:
+            self.page_size = int(page_size)
+            if self.page_size < 1:
+                raise ValueError
+            logger.info(f'Pagination enabled with page size: {page_size}')
+        except (ValueError, TypeError):
+            self.page_size = 0
+            logger.warning(f'Invalid or missing page size value: {page_size}. Pagination will be disabled.')
         timeout_seconds = 60
         if 'amazonaws.com' in es_host:
             awsauth = AWS4Auth(
@@ -57,12 +65,13 @@ class ESLoader:
     def delete_index(self, index_name):
         return self.es_client.indices.delete(index=index_name, ignore_unavailable=True)
 
-    def get_data(self, cypher_query, fields, skip, limit):
+    def get_data(self, cypher_query, fields, skip=None, limit=None):
         """Reads data from Neo4j, for each row
         yields a single document. This function is passed into the bulk()
         helper to create many documents in sequence.
         """
-        cypher_query = f"{cypher_query} SKIP {skip} LIMIT {limit}"
+        if type(skip) == int and type(limit) == int:
+            cypher_query = f"{cypher_query} SKIP {skip} LIMIT {limit}"
         with self.neo4j_driver.session() as session:
             result = session.run(cypher_query)
             for record in result:
@@ -86,15 +95,21 @@ class ESLoader:
     def load(self, index_name, mapping, cypher_query):
         self.recreate_index(index_name, mapping)
         logger.info('Indexing data from Neo4j')
-        skip = 0
-        page_size = 300000
-        total = page_size
-        successful_total = 0
-        while total >= page_size:
-            successes, total = self.bulk_load(index_name, self.get_data(cypher_query, mapping.keys(), skip, page_size))
-            successful_total += successes
-            logger.info(f"Indexing Progress {successful_total}/{skip+total}")
-            skip += page_size
+        total_successes = 0
+        total_documents = 0
+        if self.page_size > 0:
+            skip = 0
+            total = self.page_size
+            while total >= self.page_size:
+                successes, total = self.bulk_load(index_name, self.get_data(cypher_query, mapping.keys(), skip=skip, limit=self.page_size))
+                total_successes += successes
+                total_documents += total
+                logger.info(f"Indexing in progress: successfully indexed {total_successes}/{total_documents} documents")
+                skip += self.page_size
+        else:
+            total_successes, total_documents = self.bulk_load(index_name, self.get_data(cypher_query, mapping.keys()))
+        logger.info(f"Indexing completed: successfully indexed {total_successes}/{total_documents} documents")
+
 
     def bulk_load(self, index_name, data):
         successes = 0
@@ -212,7 +227,8 @@ def main():
 
     loader = ESLoader(
         es_host=config['es_host'],
-        neo4j_driver=neo4j_driver
+        neo4j_driver=neo4j_driver,
+        page_size=config.get('page_size')
     )
 
 
