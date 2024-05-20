@@ -35,7 +35,7 @@ WITH {
 RETURN opensearch_data
 ```
 ## Pagination
-For large amounts of data, sending multiple paginated index queries may be necessary to avoid exceeding Neo4j memory limits and to improve query performance. Both of the following are required for the dataloader to use pagination:
+For large amounts of data, sending multiple paginated index queries may be necessary to avoid exceeding Neo4j memory limits and it can improve query performance in some cases. Both of the following conditions are required for implementing pagination:
 1. The **page_size** configuration variable is set to an integer greater than 1
 2. The index queries in the specified indices file contain the pagination variables **$skip** and **$limit**.
 
@@ -48,7 +48,7 @@ Pagination can be added to a query by inserting the following line after a line 
 ```
 SKIP $skip LIMIT $limit
 ```
-This pagination line should be added as early as possible in the query, after the primary node type of the index is added to the graph. If the pagination line is added at the end, then it will have no impact on memory efficiency or execution speed.
+This pagination line should be added to the query as early as possible, after the primary node type of the index is added to the graph. If the pagination line is added at the end, then it will have no impact on Neo4j memory efficiency or execution speed.
 #### Examples:
 In the following examples the primary node type of the index is **primary_node**
 ```
