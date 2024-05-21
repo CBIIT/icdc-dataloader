@@ -98,7 +98,7 @@ class ESLoader:
         if self.page_size > 0:
             skip = 0
             total = self.page_size
-            while total >= self.page_size:
+            while total == self.page_size:
                 successes, total = self.bulk_load(
                     index_name,
                     self.get_data(
