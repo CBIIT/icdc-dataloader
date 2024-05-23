@@ -18,8 +18,16 @@ OPENSEARCH_DATA = 'opensearch_data'
 
 
 class ESLoader:
-    def __init__(self, es_host, neo4j_driver):
+    def __init__(self, es_host, neo4j_driver, page_size):
         self.neo4j_driver = neo4j_driver
+        try:
+            self.page_size = int(page_size)
+            if self.page_size < 1:
+                raise ValueError
+            logger.info(f'Pagination enabled with page size: {page_size}')
+        except (ValueError, TypeError):
+            self.page_size = 0
+            logger.warning(f'Invalid or missing page size value: {page_size}. Pagination will be disabled.')
         timeout_seconds = 60
         if 'amazonaws.com' in es_host:
             awsauth = AWS4Auth(
@@ -29,10 +37,10 @@ class ESLoader:
             )
             self.es_client = Elasticsearch(
                 hosts=[es_host],
-                http_auth = awsauth,
-                use_ssl = True,
-                verify_certs = True,
-                connection_class = RequestsHttpConnection,
+                http_auth=awsauth,
+                use_ssl=True,
+                verify_certs=True,
+                connection_class=RequestsHttpConnection,
                 timeout=timeout_seconds
             )
         else:
@@ -57,13 +65,13 @@ class ESLoader:
     def delete_index(self, index_name):
         return self.es_client.indices.delete(index=index_name, ignore_unavailable=True)
 
-    def get_data(self, cypher_query, fields):
+    def get_data(self, cypher_query: str, fields: dict, skip: int = 0, limit: int = 10000000):
         """Reads data from Neo4j, for each row
         yields a single document. This function is passed into the bulk()
         helper to create many documents in sequence.
         """
         with self.neo4j_driver.session() as session:
-            result = session.run(cypher_query)
+            result = session.run(cypher_query, {"skip": skip, "limit": limit})
             for record in result:
                 keys = record.keys()
                 if len(keys) == 1 and keys[0].lower() == OPENSEARCH_DATA.lower():
@@ -84,13 +92,28 @@ class ESLoader:
 
     def load(self, index_name, mapping, cypher_query):
         self.recreate_index(index_name, mapping)
-
         logger.info('Indexing data from Neo4j')
-        self.bulk_load(index_name, self.get_data(cypher_query, mapping.keys()))
+        total_successes = 0
+        total_documents = 0
+        if self.page_size > 0:
+            skip = 0
+            total = self.page_size
+            while total == self.page_size:
+                successes, total = self.bulk_load(
+                    index_name,
+                    self.get_data(
+                        cypher_query, mapping.keys(), skip=skip, limit=self.page_size
+                    )
+                )
+                total_successes += successes
+                total_documents += total
+                logger.info(f"Indexing in progress: successfully indexed {total_successes}/{total_documents} documents")
+                skip += self.page_size
+        else:
+            total_successes, total_documents = self.bulk_load(index_name, self.get_data(cypher_query, mapping.keys()))
+        logger.info(f"Indexing completed: successfully indexed {total_successes}/{total_documents} documents")
 
     def bulk_load(self, index_name, data):
-        logger.info('Indexing data in bulk ...')
-
         successes = 0
         total = 0
         for ok, _ in streaming_bulk(
@@ -104,7 +127,7 @@ class ESLoader:
         ):
             total += 1
             successes += 1 if ok else 0
-        logger.info(f"Indexed {successes}/{total} documents")
+        return successes, total
 
     def load_about_page(self, index_name, mapping, file_name):
         logger.info('Indexing content from about page')
@@ -167,21 +190,20 @@ class ESLoader:
                     elif subtype == 'value' and ENUM in prop:
                         for value in prop[ENUM]:
                             yield {
-                                    'type': 'value',
-                                    "node": node_name,
-                                    "node_name": node_name,
-                                    "property": prop_name,
-                                    "property_name": prop_name,
-                                    'property_description': prop.get(DESCRIPTION, ''),
-                                    'property_required': prop.get(REQUIRED, False),
-                                    'property_type': PROP_ENUM,
-                                    "value": value,
-                                    "value_kw": value
+                                'type': 'value',
+                                "node": node_name,
+                                "node_name": node_name,
+                                "property": prop_name,
+                                "property_name": prop_name,
+                                'property_description': prop.get(DESCRIPTION, ''),
+                                'property_required': prop.get(REQUIRED, False),
+                                'property_type': PROP_ENUM,
+                                "value": value,
+                                "value_kw": value
                             }
 
     def index_data(self, index_name, object, id):
         self.es_client.index(index_name, body=object, id=id)
-
 
 
 def main():
@@ -206,9 +228,9 @@ def main():
 
     loader = ESLoader(
         es_host=config['es_host'],
-        neo4j_driver=neo4j_driver
+        neo4j_driver=neo4j_driver,
+        page_size=config.get('page_size')
     )
-
 
     load_model = False
     if 'model_files' in config and config['model_files'] and 'prop_file' in config and config['prop_file']:
@@ -227,7 +249,8 @@ def main():
             if load_model and 'subtype' in index:
                 loader.load_model(index['index_name'], index['mapping'], index['subtype'])
             else:
-                logger.warning(f'"model_files" not set in configuration file, {index["index_name"]} will not be loaded!')
+                logger.warning(
+                    f'"model_files" not set in configuration file, {index["index_name"]} will not be loaded!')
         else:
             logger.error(f'Unknown index type: "{index["type"]}"')
             continue
