@@ -249,10 +249,13 @@ def main(args):
                 else:
                     mg_connection = None
             plugins = []
+            memgraph_snapshot_dir = None
             if len(config.plugins) > 0:
                 for plugin_config in config.plugins:
                     plugins.append(prepare_plugin(plugin_config, schema))
-            loader = DataLoader(driver, mg_connection, schema, config.database_type, plugins)
+            if config.memgraph_snapshot_dir:
+                memgraph_snapshot_dir = config.memgraph_snapshot_dir
+            loader = DataLoader(driver, mg_connection, schema, config.database_type, memgraph_snapshot_dir, plugins)
 
             load_result = loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db,
                         config.max_violations, config.temp_folder, config.verbose, split=config.split_transactions,
