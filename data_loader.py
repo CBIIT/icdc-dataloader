@@ -140,6 +140,7 @@ class DataLoader:
         self.schema = schema
         self.rel_prop_delimiter = self.schema.rel_prop_delimiter
         self.memgraph_snapshot_dir = memgraph_snapshot_dir
+        self.allowed_database_type = ["neo4j", "memgraph"]
         if plugins:
             for plugin in plugins:
                 if not hasattr(plugin, 'create_node'):
@@ -256,6 +257,9 @@ class DataLoader:
 
     def load(self, file_list, cheat_mode, dry_run, loading_mode, wipe_db, max_violations, temp_folder, verbose,
              split=False, no_backup=True, backup_folder="/", neo4j_uri=None):
+        if self.database_type not in self.allowed_database_type:
+            self.log.error('database_type is neither neo4j nor memgraph, abort loading')
+            sys.exit(1)
         if not self.check_files(file_list):
             return False
         start = timer()
