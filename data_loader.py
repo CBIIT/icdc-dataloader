@@ -14,6 +14,7 @@ import datetime
 #import dateutil
 from timeit import default_timer as timer
 from bento.common.utils import get_host, DATETIME_FORMAT, reformat_date, get_time_stamp
+from memgraph_backup_restore import backup_memgraph
 from create_index import create_index
 
 from neo4j import Driver
@@ -127,7 +128,7 @@ def get_props_signature(props):
 
 
 class DataLoader:
-    def __init__(self, driver, mg_connection, schema, database_type, plugins=None):
+    def __init__(self, driver, mg_connection, schema, database_type, memgraph_snapshot_dir=None, plugins=None):
         if plugins is None:
             plugins = []
         if not schema or not isinstance(schema, ICDC_Schema):
@@ -138,7 +139,8 @@ class DataLoader:
         self.database_type = database_type
         self.schema = schema
         self.rel_prop_delimiter = self.schema.rel_prop_delimiter
-
+        self.memgraph_snapshot_dir = memgraph_snapshot_dir
+        self.allowed_database_type = ["neo4j", "memgraph"]
         if plugins:
             for plugin in plugins:
                 if not hasattr(plugin, 'create_node'):
@@ -255,6 +257,9 @@ class DataLoader:
 
     def load(self, file_list, cheat_mode, dry_run, loading_mode, wipe_db, max_violations, temp_folder, verbose,
              split=False, no_backup=True, backup_folder="/", neo4j_uri=None):
+        if self.database_type not in self.allowed_database_type:
+            self.log.error('database_type is neither neo4j nor memgraph, abort loading')
+            sys.exit(1)
         if not self.check_files(file_list):
             return False
         start = timer()
@@ -264,12 +269,18 @@ class DataLoader:
             if not neo4j_uri:
                 self.log.error('No Neo4j URI specified for backup, abort loading!')
                 sys.exit(1)
-            backup_name = datetime.datetime.today().strftime(DATETIME_FORMAT)
             host = get_host(neo4j_uri)
-            restore_cmd = backup_neo4j(backup_folder, backup_name, host, self.log)
-            if not restore_cmd:
-                self.log.error('Backup Neo4j failed, abort loading!')
-                sys.exit(1)
+            if self.database_type == "neo4j":
+                backup_name = datetime.datetime.today().strftime(DATETIME_FORMAT)
+                restore_cmd = backup_neo4j(backup_folder, backup_name, host, self.log)
+                if not restore_cmd:
+                    self.log.error('Backup Neo4j failed, abort loading!')
+                    sys.exit(1)
+            elif self.database_type == "memgraph":
+                backup_name = backup_memgraph(backup_folder, self.memgraph_snapshot_dir, self.log)
+                if not backup_name:
+                    self.log.error('Backup Memgraph failed, abort loading!')
+                    sys.exit(1)
         if dry_run:
             end = timer()
             self.log.info('Dry run mode, no nodes or relationships loaded.')  # Time in seconds, e.g. 5.38091952400282
