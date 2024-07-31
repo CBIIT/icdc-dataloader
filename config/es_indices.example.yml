@@ -68,31 +68,31 @@ Indices:
               study_subject_source_id: ss.study_subject_source_id,
               taxon: ss.taxon,
               status: ss.status
-          } AS output_data
+          } AS opensearch_data
           SKIP $skip LIMIT $limit
           OPTIONAL MATCH (ss)-->(:study)-->(p:program)
-          WITH ss, apoc.map.merge(output_data, {
+          WITH ss, apoc.map.merge(opensearch_data, {
               program: p.program_acronym,
               program_id: p.program_id
-          }) AS output_data
+          }) AS opensearch_data
           OPTIONAL MATCH (ss)-->(s:study)
-          WITH ss, apoc.map.merge(output_data, {
+          WITH ss, apoc.map.merge(opensearch_data, {
               study_acronym: s.study_acronym,
               study: s.study_name,
               study_description: s.study_short_description
-          }) AS output_data
+          }) AS opensearch_data
           OPTIONAL MATCH (ss)<-[*..2]-()<--(f:file)
-          WITH ss, apoc.map.merge(output_data, {
+          WITH ss, apoc.map.merge(opensearch_data, {
               file_types: COLLECT(DISTINCT f.file_type),
               file_ids: COLLECT(DISTINCT f.file_id)
-          }) AS output_data
+          }) AS opensearch_data
           OPTIONAL MATCH (ss)<--(samp:sample)
-          WITH ss, apoc.map.merge(output_data, {
+          WITH ss, apoc.map.merge(opensearch_data, {
               sample_ids: COLLECT(DISTINCT samp.sample_id),
               tissue_types: COLLECT(DISTINCT samp.tissue_type),
               sample_compositions: COLLECT(DISTINCT samp.composition)
-          }) AS output_data
-          RETURN output_data
+          }) AS opensearch_data
+          RETURN opensearch_data
         # the page size used if this query has pagination variables
         page_size: 10000
   - index_name: about_page
