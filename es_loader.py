@@ -113,7 +113,9 @@ class ESLoader:
                     skip += page_size
             else:
                 logger.info(f'Pagination is disabled')
-                total_successes, total_documents = self.bulk_load(index_name, self.get_data(query, mapping.keys()))
+                successes, documents = self.bulk_load(index_name, self.get_data(query, mapping.keys()))
+                total_successes += successes
+                total_documents += documents
         logger.info(f"Indexing completed: successfully indexed {total_successes}/{total_documents} documents")
         return total_successes
 
