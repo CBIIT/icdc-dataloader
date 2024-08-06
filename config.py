@@ -46,7 +46,6 @@ class BentoConfig:
             self.upload_log_dir = None
             self.verbose = None
             self.plugins = []
-            self.page_size = None
         else:
             if os.path.isfile(config_file):
                 with open(config_file) as c_file:
@@ -107,7 +106,6 @@ class BentoConfig:
                     self.split_transactions = config.get('split_transactions')
                     self.upload_log_dir = config.get('upload_log_dir')
                     self.verbose = config.get('verbose')
-                    self.page_size = config.get('page_size')
             else:
                 msg = f'Can NOT open configuration file "{config_file}"!'
                 self.log.error(msg)

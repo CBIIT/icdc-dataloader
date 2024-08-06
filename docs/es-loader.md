@@ -35,13 +35,11 @@ WITH {
 RETURN opensearch_data
 ```
 ## Pagination
-For large amounts of data, sending multiple paginated index queries may be necessary to avoid exceeding Neo4j memory limits and it can improve query performance in some cases. Both of the following conditions are required for implementing pagination:
-1. The **page_size** configuration variable is set to an integer greater than 1
-2. The index queries in the specified indices file contain the pagination variables **$skip** and **$limit**.
+For large amounts of data, sending multiple paginated index queries may be necessary to avoid exceeding Neo4j memory limits. In some cases, pagination might also improve loading performance. For each index loading query in the "cypher_queries" lists, the following conditions must be met for pagination to be enabled:
+1. The **page_size** property in the "cypher_queries" entry must be present and set to an integer greater than 1
+2. The **query** property in the "cypher_queries" entry must be a cypher query that includes the pagination variables **$skip** and **$limit**.
 
-If either of these conditions are not met, the OpenSearch loader will still run but pagination will be disabled.
-
-**NOTE**: The OpenSearch loader cannot detect if the pagination variables are present in each index loading query. If the **page_size** variable is set to a valid value but the index queries do not contain pagination variables, then the logs will say that pagination is enabled even though the queries are not paginated.
+If either of these conditions are not met, the OpenSearch loader will still run the loading query but pagination will be disabled.
 
 ### Adding Pagination to Index Queries
 Pagination can be added to a query by inserting the following line after a line starting with the **WITH** keyword:
