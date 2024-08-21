@@ -278,6 +278,7 @@ class DataLoader:
                     sys.exit(1)
             elif self.database_type == "memgraph":
                 backup_name = backup_memgraph(backup_folder, self.memgraph_snapshot_dir, self.log)
+                print(backup_name)
                 if not backup_name:
                     self.log.error('Backup Memgraph failed, abort loading!')
                     sys.exit(1)

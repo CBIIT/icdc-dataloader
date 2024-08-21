@@ -27,7 +27,7 @@ def backup_memgraph(memgraph_backup_dir, memgraph_snapshot_dir, log):
         return dest_file_path
     except Exception as e:
         log.error(e)
-        return False
+        return "Backup Memgraph failed"
 
 def delete_files(folder_path_list, log):
     # List all files in the folder
