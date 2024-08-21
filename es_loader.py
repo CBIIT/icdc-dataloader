@@ -3,6 +3,7 @@ import argparse
 
 import os
 import yaml
+import re
 from elasticsearch import Elasticsearch, RequestsHttpConnection
 from elasticsearch.helpers import streaming_bulk
 from requests_aws4auth import AWS4Auth
@@ -29,10 +30,10 @@ class ESLoader:
             )
             self.es_client = Elasticsearch(
                 hosts=[es_host],
-                http_auth = awsauth,
-                use_ssl = True,
-                verify_certs = True,
-                connection_class = RequestsHttpConnection,
+                http_auth=awsauth,
+                use_ssl=True,
+                verify_certs=True,
+                connection_class=RequestsHttpConnection,
                 timeout=timeout_seconds
             )
         else:
@@ -57,13 +58,13 @@ class ESLoader:
     def delete_index(self, index_name):
         return self.es_client.indices.delete(index=index_name, ignore_unavailable=True)
 
-    def get_data(self, cypher_query, fields):
+    def get_data(self, cypher_query: str, fields: dict, skip: int = 0, limit: int = 10000000):
         """Reads data from Neo4j, for each row
         yields a single document. This function is passed into the bulk()
         helper to create many documents in sequence.
         """
         with self.neo4j_driver.session() as session:
-            result = session.run(cypher_query)
+            result = session.run(cypher_query, {"skip": skip, "limit": limit})
             for record in result:
                 keys = record.keys()
                 if len(keys) == 1 and keys[0].lower() == OPENSEARCH_DATA.lower():
@@ -74,23 +75,51 @@ class ESLoader:
                 yield doc
 
     def recreate_index(self, index_name, mapping):
-        logger.info(f'Deleting old index "{index_name}"')
+        logger.info(f'Deleting old index: "{index_name}"')
         result = self.delete_index(index_name)
         logger.info(result)
 
-        logger.info(f'Creating index "{index_name}"')
+        logger.info(f'Creating index: "{index_name}"')
         result = self.create_index(index_name, mapping)
         logger.info(result)
 
-    def load(self, index_name, mapping, cypher_query):
+    def load(self, index_name, mapping, cypher_queries):
         self.recreate_index(index_name, mapping)
-
         logger.info('Indexing data from Neo4j')
-        self.bulk_load(index_name, self.get_data(cypher_query, mapping.keys()))
+        total_successes = 0
+        total_documents = 0
+        for i, cypher_query in enumerate(cypher_queries):
+            query = cypher_query.get('query')
+            if query is None:
+                raise Exception(f'A query entry is missing for {index_name}')
+            page_size = cypher_query.get('page_size')
+            if page_size is None:
+                page_size = 0
+            logger.info(f'Executing index query {i+1}/{len(cypher_queries)}')
+            if page_size > 0:
+                logger.info(f'Page size is set to {page_size}')
+                skip = 0
+                total = page_size
+                while total == page_size:
+                    successes, total = self.bulk_load(
+                        index_name,
+                        self.get_data(
+                            query, mapping.keys(), skip=skip, limit=page_size
+                        )
+                    )
+                    total_successes += successes
+                    total_documents += total
+                    logger.info(f"Indexing in progress: successfully indexed {total_successes}/{total_documents} documents")
+                    skip += page_size
+            else:
+                logger.info(f'Pagination is disabled')
+                successes, documents = self.bulk_load(index_name, self.get_data(query, mapping.keys()))
+                total_successes += successes
+                total_documents += documents
+        logger.info(f"Indexing completed: successfully indexed {total_successes}/{total_documents} documents")
+        return total_successes
 
     def bulk_load(self, index_name, data):
-        logger.info('Indexing data in bulk ...')
-
         successes = 0
         total = 0
         for ok, _ in streaming_bulk(
@@ -104,7 +133,7 @@ class ESLoader:
         ):
             total += 1
             successes += 1 if ok else 0
-        logger.info(f"Indexed {successes}/{total} documents")
+        return successes, total
 
     def load_about_page(self, index_name, mapping, file_name):
         logger.info('Indexing content from about page')
@@ -167,21 +196,20 @@ class ESLoader:
                     elif subtype == 'value' and ENUM in prop:
                         for value in prop[ENUM]:
                             yield {
-                                    'type': 'value',
-                                    "node": node_name,
-                                    "node_name": node_name,
-                                    "property": prop_name,
-                                    "property_name": prop_name,
-                                    'property_description': prop.get(DESCRIPTION, ''),
-                                    'property_required': prop.get(REQUIRED, False),
-                                    'property_type': PROP_ENUM,
-                                    "value": value,
-                                    "value_kw": value
+                                'type': 'value',
+                                "node": node_name,
+                                "node_name": node_name,
+                                "property": prop_name,
+                                "property_name": prop_name,
+                                'property_description': prop.get(DESCRIPTION, ''),
+                                'property_required': prop.get(REQUIRED, False),
+                                'property_type': PROP_ENUM,
+                                "value": value,
+                                "value_kw": value
                             }
 
     def index_data(self, index_name, object, id):
         self.es_client.index(index_name, body=object, id=id)
-
 
 
 def main():
@@ -209,28 +237,69 @@ def main():
         neo4j_driver=neo4j_driver
     )
 
-
     load_model = False
     if 'model_files' in config and config['model_files'] and 'prop_file' in config and config['prop_file']:
         loader.read_model(config['model_files'], config['prop_file'])
         load_model = True
 
+    summary = {}
     for index in indices:
+        index_name = index.get('index_name')
+        summary[index_name] = "ERROR!"
+        logger.info(f'Begin loading index: "{index_name}"')
         if 'type' not in index or index['type'] == 'neo4j':
-            loader.load(index['index_name'], index['mapping'], index['cypher_query'])
+            cypher_queries = index.get('cypher_queries')
+            cypher_query = index.get('cypher_query')
+            if cypher_queries is None and cypher_query is not None:
+                cypher_queries = [{'query': cypher_query}]
+            try:
+                _validate_cypher_queries(cypher_queries)
+                summary[index_name] = loader.load(index_name, index['mapping'], cypher_queries)
+            except Exception as ex:
+                logger.error(f'There is an error in the "{index_name}" index definition, this index will not be loaded')
+                logger.error(ex)
         elif index['type'] == 'about_file':
             if 'about_file' in config:
-                loader.load_about_page(index['index_name'], index['mapping'], config['about_file'])
+                loader.load_about_page(index_name, index['mapping'], config['about_file'])
+                summary[index_name] = "Loaded Successfully"
             else:
-                logger.warning(f'"about_file" not set in configuration file, {index["index_name"]} will not be loaded!')
+                logger.warning(f'"about_file" not set in configuration file, {index_name} will not be loaded!')
         elif index['type'] == 'model':
             if load_model and 'subtype' in index:
-                loader.load_model(index['index_name'], index['mapping'], index['subtype'])
+                loader.load_model(index_name, index['mapping'], index['subtype'])
+                summary[index_name] = "Loaded Successfully"
             else:
-                logger.warning(f'"model_files" not set in configuration file, {index["index_name"]} will not be loaded!')
+                logger.warning(
+                    f'"model_files" not set in configuration file, {index_name} will not be loaded!')
         else:
             logger.error(f'Unknown index type: "{index["type"]}"')
-            continue
+    logger.info(f'Index loading summary:')
+    for index in summary.keys():
+        logger.info(f'{index}: {summary[index]}')
+
+
+def _validate_cypher_queries(cypher_queries):
+    if type(cypher_queries) is not list:
+        raise Exception(f'The required property "cypher_queries" must be a list')
+    for i, cypher_query in enumerate(cypher_queries):
+        if type(cypher_query) is not dict:
+            raise Exception(f'Each entry in the "cypher_queries" list be a dict with a "query" property')
+        query = cypher_query.get('query')
+        if query is None:
+            raise Exception(f'The required property "query" is missing from a "cypher_queries" entry')
+        page_size = cypher_query.get('page_size')
+        if not _check_query_for_pagination(query):
+            logger.warning(f'Pagination parameters are missing from "cypher_queries" entry {i+1}, pagination will be disabled for this query')
+            cypher_query['page_size'] = 0
+        elif page_size is None:
+            logger.warning(
+                f'The page_size property is missing from "cypher_queries" entry {i+1}, pagination will be disabled for this query')
+            cypher_query['page_size'] = 0
+
+
+def _check_query_for_pagination(query: str):
+    match = re.search('skip\s*\$skip\s*limit\s*\$limit', query, re.IGNORECASE)
+    return match is not None
 
 
 if __name__ == '__main__':
