@@ -1,96 +1,154 @@
   # Indices settings
 Indices:
-  # First index
-  # Name of the index to be created, existing index with same name will be deleted
-  - index_name: dashboard
+    # the name of the index to be created, existing indices with same name will be deleted
+  - index_name: cases
+    # index type, this index is initialized with a neo4j cypher query
     type: neo4j
     # type mapping for each property of the index
     mapping:
-      programs:
+      case_id:
         type: keyword
-      studies:
+      disease_type:
         type: keyword
-      subject_id:
+      case_report_form_submitted:
         type: keyword
-      diagnoses:
+      in_analysis:
         type: keyword
-      rc_scores:
+      lost_to_follow_up:
         type: keyword
-      tumor_sizes:
+      consent_type:
         type: keyword
-      chemo_regimen:
+      primary_site:
         type: keyword
-      tumor_grades:
+      consent_withdrawn:
         type: keyword
-      er_status:
+      disease_subtype:
         type: keyword
-      pr_status:
+      study_subject_source_id:
         type: keyword
-      endo_therapies:
+      taxon:
         type: keyword
-      meno_status:
+      status:
         type: keyword
-      tissue_type:
+      program:
         type: keyword
-      composition:
+      program_id:
         type: keyword
-      association:
+      study_acronym:
         type: keyword
-      file_type:
+      study:
         type: keyword
-
-    # Cypher query will be used to retrieve data from Neo4j, and index into Elasticsearch
-    cypher_query: "
-      MATCH (ss)<-[:sf_of_study_subject]-(sf)
-      MATCH (ss)<-[:diagnosis_of_study_subject]-(d)<-[:tp_of_diagnosis]-(tp)
-      MATCH (ss:study_subject)-[:study_subject_of_study]->(s)-[:study_of_program]->(p)
-      MATCH (ss)<-[:demographic_of_study_subject]-(demo)
-      MATCH (ss)<-[:sample_of_study_subject]-(samp)
-      MATCH (ss)<-[*..2]-(parent)<--(f:file)
-      OPTIONAL MATCH (f)-[:file_of_laboratory_procedure]->(lp)
-      OPTIONAL MATCH (ss)-[:study_subject_of_study]->(s)-[:study_of_program]->(p)
-      OPTIONAL MATCH (ss)<-[:sf_of_study_subject]-(sf)
-      OPTIONAL MATCH (ss)<-[:diagnosis_of_study_subject]-(d)
-      OPTIONAL MATCH (d)<-[:tp_of_diagnosis]-(tp)
-      OPTIONAL MATCH (ss)<-[:demographic_of_study_subject]-(demo)
-      RETURN
-      p.program_acronym AS programs,
-      (s.study_acronym + ': ' + s.study_short_description) AS studies,
-      ss.study_subject_id AS subject_id,
-      ss.disease_subtype AS diagnoses,
-      sf.grouped_recurrence_score AS rc_scores,
-      d.tumor_size_group AS tumor_sizes,
-      tp.chemotherapy_regimen AS chemo_regimen,
-      d.tumor_grade AS tumor_grades,
-      d.er_status AS er_status,
-      d.pr_status AS pr_status,
-      tp.endocrine_therapy_type AS endo_therapies,
-      demo.menopause_status AS  meno_status,
-      COLLECT(DISTINCT samp.tissue_type) AS tissue_type,
-      COLLECT(DISTINCT samp.composition) AS composition,
-      COLLECT(DISTINCT head(labels(parent))) AS association,
-      COLLECT(DISTINCT f.file_type) AS file_type
-      "
-  # Second index
-  # Name of the index to be created, existing index with same name will be deleted
-  - index_name: subjects
-    type: neo4j
-      # type mapping for each property of the index
+      study_description:
+        type: keyword
+      file_types:
+        type: keyword
+      file_ids:
+        type: keyword
+      sample_ids:
+        type: keyword
+      tissue_types:
+        type: keyword
+      sample_compositions:
+        type: keyword
+    # a list of the queries that are used to initialize the index
+    cypher_queries:
+        # the cypher query used for initialization
+      - query: |
+          MATCH (ss:study_subject)
+          WITH ss, {
+              case_id: ss.study_subject_id,
+              disease_type: ss.disease_type,
+              case_report_form_submitted: ss.case_report_form_submitted,
+              in_analysis: ss.in_analysis,
+              lost_to_follow_up: ss.lost_to_follow_up,
+              consent_type: ss.consent_type,
+              primary_site: ss.primary_site,
+              consent_withdrawn: ss.consent_withdrawn,
+              disease_subtype: ss.disease_subtype,
+              study_subject_source_id: ss.study_subject_source_id,
+              taxon: ss.taxon,
+              status: ss.status
+          } AS opensearch_data
+          SKIP $skip LIMIT $limit
+          OPTIONAL MATCH (ss)-->(:study)-->(p:program)
+          WITH ss, apoc.map.merge(opensearch_data, {
+              program: p.program_acronym,
+              program_id: p.program_id
+          }) AS opensearch_data
+          OPTIONAL MATCH (ss)-->(s:study)
+          WITH ss, apoc.map.merge(opensearch_data, {
+              study_acronym: s.study_acronym,
+              study: s.study_name,
+              study_description: s.study_short_description
+          }) AS opensearch_data
+          OPTIONAL MATCH (ss)<-[*..2]-()<--(f:file)
+          WITH ss, apoc.map.merge(opensearch_data, {
+              file_types: COLLECT(DISTINCT f.file_type),
+              file_ids: COLLECT(DISTINCT f.file_id)
+          }) AS opensearch_data
+          OPTIONAL MATCH (ss)<--(samp:sample)
+          WITH ss, apoc.map.merge(opensearch_data, {
+              sample_ids: COLLECT(DISTINCT samp.sample_id),
+              tissue_types: COLLECT(DISTINCT samp.tissue_type),
+              sample_compositions: COLLECT(DISTINCT samp.composition)
+          }) AS opensearch_data
+          RETURN opensearch_data
+        # the page size used if this query has pagination variables
+        page_size: 10000
+  - index_name: about_page
+    type: about_file
+    # type mapping for each property of the index
     mapping:
-      subject_id:
+      page:
         type: keyword
-    # Cypher query will be used to retrieve data from Neo4j, and index into Elasticsearch
-    cypher_query: "MATCH (ss:study_subject) return ss.study_subject_id AS subject_id"
-
-    - index_name: about_page
-      type: about_file
-      # type mapping for each property of the index
-      mapping:
-        page:
-          type: search_as_you_type
-        title:
-          type: search_as_you_type
-        primaryContentImage:
-          type: text
-        content:
-          type: text
+      title:
+        type: keyword
+      primaryContentImage:
+        type: text
+      content:
+        type: object
+  - index_name: model_nodes
+    type: model
+    subtype: node
+    # type mapping for each property of the index
+    mapping:
+      node:
+        type: keyword
+      node_kw:
+        type: keyword
+  - index_name: model_properties
+    type: model
+    subtype: property
+    # type mapping for each property of the index
+    mapping:
+      node:
+        type: keyword
+      property:
+        type: keyword
+      property_kw:
+        type: keyword
+      property_description:
+        type: keyword
+      property_required:
+        type: keyword
+      property_type:
+        type: keyword
+  - index_name: model_values
+    type: model
+    subtype: value
+    # type mapping for each property of the index
+    mapping:
+      node:
+        type: keyword
+      property:
+        type: keyword
+      property_description:
+        type: keyword
+      property_required:
+        type: keyword
+      property_type:
+        type: keyword
+      value:
+        type: keyword
+      value_kw:
+        type: keyword

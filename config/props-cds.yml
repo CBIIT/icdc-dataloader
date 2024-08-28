@@ -1,7 +1,6 @@
 Properties:
   domain: cds.cancer.gov
   rel_prop_delimiter: "$"
-  delimiter: ","
 
   plurals:
     study: studies
