@@ -106,10 +106,10 @@ def process_arguments(args, log):
         config.no_backup = args.no_backup
     if args.backup_folder:
         config.backup_folder = args.backup_folder
-    #if config.split_transactions and config.no_backup:
-    #    log.error('--split-transaction and --no-backup cannot both be enabled, a backup is required when running'
-    #              ' in split transactions mode')
-    #    sys.exit(1)
+    if config.split_transactions and config.no_backup:
+        log.error('--split-transaction and --no-backup cannot both be enabled, a backup is required when running'
+                  ' in split transactions mode')
+        sys.exit(1)
     if not config.backup_folder and not config.no_backup:
         log.error('Backup folder not specified! A backup folder is required unless the --no-backup argument is used')
         sys.exit(1)
