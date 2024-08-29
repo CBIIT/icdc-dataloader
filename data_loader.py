@@ -14,7 +14,7 @@ import datetime
 #import dateutil
 from timeit import default_timer as timer
 from bento.common.utils import get_host, DATETIME_FORMAT, reformat_date, get_time_stamp
-from memgraph_backup_restore import backup_memgraph
+from memgraph_backup_restore import backup_memgraph_mgconsole
 from create_index import create_index
 
 from neo4j import Driver
@@ -256,7 +256,7 @@ class DataLoader:
             return True
 
     def load(self, file_list, cheat_mode, dry_run, loading_mode, wipe_db, max_violations, temp_folder, verbose,
-             split=False, no_backup=True, backup_folder="/", neo4j_uri=None):
+             split=False, no_backup=True, neo4j_uri=None, backup_folder="/", username=None, password=None):
         if self.database_type not in self.allowed_database_type:
             self.log.error('database_type is neither neo4j nor memgraph, abort loading')
             sys.exit(1)
@@ -277,7 +277,7 @@ class DataLoader:
                     self.log.error('Backup Neo4j failed, abort loading!')
                     sys.exit(1)
             elif self.database_type == "memgraph":
-                backup_name = backup_memgraph(backup_folder, self.memgraph_snapshot_dir, self.log)
+                backup_name = backup_memgraph_mgconsole(backup_folder, self.memgraph_snapshot_dir, username, password, self.log)
                 print(backup_name)
                 if not backup_name:
                     self.log.error('Backup Memgraph failed, abort loading!')
