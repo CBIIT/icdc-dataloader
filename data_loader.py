@@ -817,11 +817,8 @@ class DataLoader:
             prop_stmts.append('n.{0} = ${0}'.format(key))
 
         statement += 'MERGE (n:{0} {{ {1}: ${1} }})'.format(node_type, id_field)
-        #statement += ' ON CREATE ' + 'SET n.{} = datetime(), '.format(CREATED) + ' ,'.join(prop_stmts)
-        current_time = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        statement += ' ON CREATE ' + 'SET n.{} = "{}", '.format(CREATED, current_time) + ' ,'.join(prop_stmts)
-        #statement += ' ON MATCH ' + 'SET n.{} = datetime(), '.format(UPDATED) + ' ,'.join(prop_stmts)
-        statement += ' ON MATCH ' + 'SET n.{} = "{}", '.format(UPDATED, current_time) + ' ,'.join(prop_stmts)
+        statement += ' ON CREATE ' + 'SET n.{} = datetime(), '.format(CREATED) + ' ,'.join(prop_stmts)
+        statement += ' ON MATCH ' + 'SET n.{} = datetime(), '.format(UPDATED) + ' ,'.join(prop_stmts)
         return statement
 
     # Delete a node and children with no other parents recursively
@@ -1139,12 +1136,9 @@ class DataLoader:
                         statement += ' MATCH (n:{0} {{ {1}: ${1} }})'.format(node_type,
                                                                              self.schema.get_id_field(obj))
                         statement += ' MERGE (n)-[r:{}]->(m)'.format(relationship_name)
-                        current_time = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                        #statement += ' ON CREATE SET r.{} = datetime()'.format(CREATED)
-                        statement += ' ON CREATE SET r.{} = "{}"'.format(CREATED, current_time)
+                        statement += ' ON CREATE SET r.{} = datetime()'.format(CREATED)
                         statement += ', {}'.format(prop_statement) if prop_statement else ''
-                        #statement += ' ON MATCH SET r.{} = datetime()'.format(UPDATED)
-                        statement += ' ON MATCH SET r.{} = "{}"'.format(UPDATED, current_time)
+                        statement += ' ON MATCH SET r.{} = datetime()'.format(UPDATED)
                         statement += ', {}'.format(prop_statement) if prop_statement else ''
 
                         result = tx.run(statement, {**obj, "__parentID__": parent_id, **properties})
