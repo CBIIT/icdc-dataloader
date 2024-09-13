@@ -46,6 +46,10 @@ Config:
   max_violations: 10
   # Split the loading transaction into separate transactions for each file
   split_transactions: false
+  # Database type, can be either neo4j or memgraph
+  database_type: memgraph
+  # The snapshot folder directory, will be None if not provided
+  memgraph_snapshot_dir: /var/lib/memgraph/snapshots
 
   # S3 bucket name, if you are loading from an S3 bucket, can be overridden by -b/--bucket argument
   s3_bucket:
