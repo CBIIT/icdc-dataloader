@@ -1,5 +1,5 @@
 from prefect import flow, task
-
+from typing import Literal
 from loader import main
 from config import PluginConfig
 from bento.common.secret_manager import get_secret
@@ -7,10 +7,11 @@ from bento.common.secret_manager import get_secret
 NEO4J_URI = "neo4j_uri"
 NEO4J_PASSWORD = "neo4j_password"
 SUBMISSION_BUCKET = "submission_bucket"
-
+database_choices = Literal["neo4j", "memgraph"]
 
 @flow(name="CRDC Data Loader", log_prints=True)
 def load_data(
+        database_type: database_choices,
         s3_bucket,
         s3_folder,
         upload_log_dir = None,
@@ -36,6 +37,7 @@ def load_data(
     ):
 
     params = Config(
+        database_type,
         dataset,
         uri,
         user,
@@ -64,6 +66,7 @@ def load_data(
 class Config:
     def __init__(
             self,
+            database_type,
             dataset,
             uri,
             user,
@@ -109,6 +112,7 @@ class Config:
         self.upload_log_dir = upload_log_dir
         self.plugins = []
         self.temp_folder = temp_folder
+        self.database_type = database_type
         for plugin in plugins:
             self.plugins.append(PluginConfig(plugin))
 
@@ -117,6 +121,7 @@ class Config:
 
 @flow(name="CRDC Data Hub Loader", log_prints=True)
 def data_hub_loader(
+        database_type: database_choices,
         organization_id,
         submission_id,
         cheat_mode,
@@ -137,6 +142,7 @@ def data_hub_loader(
     s3_folder = f'{organization_id}/{submission_id}/metadata'
 
     load_data(
+        database_type = database_type,
         s3_bucket = s3_bucket,
         s3_folder = s3_folder,
         upload_log_dir = f's3://{s3_bucket}/{s3_folder}/logs', #

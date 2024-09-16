@@ -40,6 +40,7 @@ deployments:
     flow_name: null
     entrypoint: loader_prefect:data_hub_loader
     parameters:
+      database_type: ""
       organization_id: ""
       submission_id: ""
       cheat_mode: False
@@ -66,6 +67,7 @@ deployments:
     flow_name: null
     entrypoint: loader_prefect:data_hub_loader
     parameters:
+      database_type: ""
       organization_id: ""
       submission_id: ""
       cheat_mode: False
