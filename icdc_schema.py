@@ -108,10 +108,11 @@ class ICDC_Schema:
 
     def get_node_id(self, node_type):
         node_id_list = []
-        for prop in self.org_schema[NODES][node_type][PROPERTIES]:
-            if KEY in self.org_schema[PROP_DEFINITIONS][prop]:
-                if self.org_schema[PROP_DEFINITIONS][prop][KEY]:
-                    node_id_list.append(prop)
+        if self.org_schema[NODES][node_type][PROPERTIES] is not None:
+            for prop in self.org_schema[NODES][node_type][PROPERTIES]:
+                if KEY in self.org_schema[PROP_DEFINITIONS][prop]:
+                    if self.org_schema[PROP_DEFINITIONS][prop][KEY]:
+                        node_id_list.append(prop)
 
         return node_id_list
 
