@@ -4,7 +4,6 @@ import glob
 import os
 import sys
 import zipfile
-import mgclient
 
 from neo4j import GraphDatabase
 from neo4j.exceptions import ServiceUnavailable
@@ -14,6 +13,7 @@ from icdc_schema import ICDC_Schema
 from props import Props
 from bento.common.utils import get_logger, removeTrailingSlash, check_schema_files, UPSERT_MODE, NEW_MODE, DELETE_MODE, \
     get_log_file, LOG_PREFIX, APP_NAME, load_plugin, print_config
+from create_index import NEO4J, MEMGRAPH
 
 if LOG_PREFIX not in os.environ:
     os.environ[LOG_PREFIX] = 'Data_Loader'
@@ -26,7 +26,6 @@ from bento.common.s3 import S3Bucket, upload_log_file
 
 DEFAULT_MAX_VIOLATIONS = 1000000
 DEFAULT_TEMP_FOLDER = "tmp"
-
 
 def parse_arguments(args = None):
     parser = argparse.ArgumentParser(description='Load TSV(TXT) files (from Pentaho) into Neo4j')
@@ -53,7 +52,7 @@ def parse_arguments(args = None):
     parser.add_argument('--split-transactions', help='Creates a separate transaction for each file',
                         action='store_true')
     parser.add_argument('--upload-log-dir', help='Upload destination dir for log file,  if dir in s3, use the format, s3://[bucket]/[prefix]')
-    parser.add_argument('--database-type', help='The database type, can be either neo4j or memgraph')
+    parser.add_argument('--database-type', help='The database type, can be either neo4j or memgraph', choices=[NEO4J, MEMGRAPH])
     return parser.parse_args(args)
 
 
@@ -176,7 +175,12 @@ def process_arguments(args, log):
         config.upload_log_dir = args.upload_log_dir
     
     if not config.database_type:
-        config.database_type = "neo4j"
+        config.database_type = NEO4J
+    allowed_database_type = [NEO4J, MEMGRAPH]
+    if config.database_type not in allowed_database_type:
+            log.error('database_type is neither neo4j nor memgraph, abort loading')
+            sys.exit(1)
+
     if args.database_type:
         config.database_type = args.database_type
     # Only applies when running in Prefect via loader_prefect.py, which doesn't have config files and temp_foldetemp_folderr
@@ -241,13 +245,7 @@ def main(args):
                     auth=(config.neo4j_user, config.neo4j_password),
                     encrypted=False
                 )
-                if config.database_type == "memgraph":
-                    mg_host = config.neo4j_uri.replace("bolt://", "").split(":")[0]
-                    mg_port = int(config.neo4j_uri.replace("bolt://", "").split(":")[1])
-                    mg_connection = mgclient.connect(host=mg_host, port=mg_port, username=config.neo4j_user, password=config.neo4j_password)
-                    mg_connection.autocommit = True
-                else:
-                    mg_connection = None
+
             plugins = []
             memgraph_snapshot_dir = None
             if len(config.plugins) > 0:
@@ -255,7 +253,7 @@ def main(args):
                     plugins.append(prepare_plugin(plugin_config, schema))
             if config.memgraph_snapshot_dir:
                 memgraph_snapshot_dir = config.memgraph_snapshot_dir
-            loader = DataLoader(driver, mg_connection, schema, config.database_type, memgraph_snapshot_dir, plugins)
+            loader = DataLoader(driver, schema, config, memgraph_snapshot_dir, plugins)
 
             load_result = loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db,
                         config.max_violations, config.temp_folder, config.verbose, split=config.split_transactions,
