@@ -1,14 +1,13 @@
 import os
 import re
 import sys
-
 import yaml
-
 from bento.common.utils import get_logger, MULTIPLIER, DEFAULT_MULTIPLIER, RELATIONSHIP_TYPE, get_uuid, \
     parse_date
 from props import Props
 
 NODES = 'Nodes'
+KEY = "Key"
 RELATIONSHIPS = 'Relationships'
 PROPERTIES = 'Props'
 PROP_DEFINITIONS = 'PropDefinitions'
@@ -48,7 +47,6 @@ class ICDC_Schema:
         self.props = props
         self.rel_prop_delimiter = props.rel_prop_delimiter
         self.delimiter = props.delimiter
-
         if not yaml_files:
             raise Exception('File list is empty,could not initialize ICDC_Schema object!')
         else:
@@ -93,6 +91,30 @@ class ICDC_Schema:
                 if not key.startswith('_'):
                     self.process_node(key, value, True)
                     self.num_relationship += self.process_edges(key, value)
+        # If there is no id fields inside the props file
+        #if len(props.id_fields) == 0:
+        id_fields = {}
+        for node_type in self.org_schema[NODES]:
+            if node_type not in self.props.id_fields.keys():
+                node_id_list = self.get_node_id(node_type)
+                if len(node_id_list) == 1:
+                    id_fields[node_type] = node_id_list[0]
+                    self.log.info(f"Found the ID field {node_id_list[0]} for node {node_type}")
+                elif len(node_id_list) > 1:
+                    raise Exception("More than one key property found for the same node")
+        if len(id_fields) > 0:
+            self.props.id_fields = id_fields
+            
+
+    def get_node_id(self, node_type):
+        node_id_list = []
+        if self.org_schema[NODES][node_type][PROPERTIES] is not None:
+            for prop in self.org_schema[NODES][node_type][PROPERTIES]:
+                if KEY in self.org_schema[PROP_DEFINITIONS][prop]:
+                    if self.org_schema[PROP_DEFINITIONS][prop][KEY]:
+                        node_id_list.append(prop)
+
+        return node_id_list
 
     def get_uuid_for_node(self, node_type, signature):
         """
