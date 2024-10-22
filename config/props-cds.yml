@@ -37,3 +37,4 @@ Properties:
     genomic_info: genomic_info_id
     program: program_acronym
     image: study_link_id
+    version: data_version_id
