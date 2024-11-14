@@ -246,7 +246,7 @@ class DataLoader:
                     timestamp = get_time_stamp()
                     output_key_invalid = os.path.join(temp_folder, df_validation_result_file_key) + "_" + timestamp + ".xlsx"
                     #df_validation_result.to_csv(output_key_invalid, index=False)
-                    writer=pd.ExcelWriter(output_key_invalid, engine='xlsxwriter', engine_kwargs={'options':{'strings_to_urls': False}})
+                    writer=pd.ExcelWriter(output_key_invalid, engine='xlsxwriter')
                     for key in self.df_validation_dict.keys():
                         sheet_name_new = key
                         self.df_validation_dict[key].to_excel(writer,sheet_name=sheet_name_new, index=False)
