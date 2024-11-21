@@ -38,3 +38,5 @@ Properties:
     program: program_acronym
     image: study_link_id
     version: data_version_id
+    MultiplexMicroscopy: MultiplexMicroscopy_id
+    proteomic: aliquot_id
