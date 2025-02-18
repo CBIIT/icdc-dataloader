@@ -54,3 +54,13 @@ def join_collection(collection: list, separator: str = '') -> str:
 def json_to_cypher(json_list):
     cypher_list = "[" + ", ".join(map(str, json_list)) + "]"
     return cypher_list
+@mgp.function
+def text_replace(string, old, new):
+    return string.replace(old, new)
+@mgp.function
+def text_join(elements, delimiter):
+    return delimiter.join(elements)
+@mgp.function
+def text_split(string, delimiter):
+    return string.split(delimiter)
+
