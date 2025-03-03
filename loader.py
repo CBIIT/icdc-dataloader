@@ -21,7 +21,8 @@ if LOG_PREFIX not in os.environ:
 os.environ[APP_NAME] = 'Data_Loader'
 
 from config import BentoConfig
-from data_loader import DataLoader
+from data_loader_batch import DataLoader
+#from data_loader import DataLoader
 from bento.common.s3 import S3Bucket, upload_log_file
 
 DEFAULT_MAX_VIOLATIONS = 1000000
