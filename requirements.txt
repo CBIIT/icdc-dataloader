@@ -2,7 +2,7 @@ pyyaml
 neo4j==4.4.*
 boto3
 requests
-elasticsearch
+elasticsearch==7.13.*
 tqdm
 requests_aws4auth
 pandas
