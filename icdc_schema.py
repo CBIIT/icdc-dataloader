@@ -660,4 +660,4 @@ class ICDC_Schema:
             return obj[id_field]
 
     def is_relationship_property(self, key):
-        return re.match('^.+\{}.+$'.format(self.rel_prop_delimiter), key)
+        return re.match('^.+{}.+$'.format(self.rel_prop_delimiter), key)

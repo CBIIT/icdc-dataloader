@@ -298,7 +298,7 @@ def _validate_cypher_queries(cypher_queries):
 
 
 def _check_query_for_pagination(query: str):
-    match = re.search('skip\s*\$skip\s*limit\s*\$limit', query, re.IGNORECASE)
+    match = re.search(r'skip\s*\$skip\s*limit\s*\$limit', query, re.IGNORECASE)
     return match is not None
 
 
