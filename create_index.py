@@ -26,12 +26,22 @@ def create_index(driver, schema, log, database_type):
                 return False
     elif database_type == MEMGRAPH:
         try:
-            cursor = driver.cursor()
-            index_created = create_indexes(cursor, schema, log, database_type)
+            #cursor = driver.cursor()
+            with driver.session() as session:
+                index_created = create_indexes(session, schema, log, database_type)
         except Exception as e:
             log.exception(e)
             return False
     return index_created
+
+def get_memgraph_index_info(session):
+    #query the memgraph database to get all existing indexes
+    command = "SHOW INDEX INFO"
+    result = session.run(command)
+    indexes = set()
+    for r in result:
+        indexes.add(format_as_tuple(r["label"], r["property"]))
+    return indexes
 
 def get_btree_indexes(session):
     """
@@ -56,26 +66,23 @@ def create_indexes(session, schema, log, database_type):
     index_created = 0
     if database_type == NEO4J:
         existing = get_btree_indexes(session)
+    elif database_type == MEMGRAPH:
+        existing = get_memgraph_index_info(session)
     # Create indexes from "id_fields" section of the properties file
     ids = schema.props.id_fields
     for node_name in ids:
-        if database_type == NEO4J:
-            index_created = create_neo4j_index(node_name, ids[node_name], existing, session, log, index_created)
-        elif database_type == MEMGRAPH:
-            index_created = create_memgraph_index(node_name, ids[node_name], session, log, index_created)
+        index_created = add_index(node_name, ids[node_name], existing, session, log, index_created)
     # Create indexes from "indexes" section of the properties file
     indexes = schema.props.indexes
     # each index is a dictionary, indexes is a list of these dictionaries
     # for each dictionary in list
     for node_dict in indexes:
         node_name = list(node_dict.keys())[0]
-        if database_type == NEO4J:
-            index_created = create_neo4j_index(node_name, node_dict[node_name], existing, session, log, index_created)
-        elif database_type == MEMGRAPH:
-            index_created = create_memgraph_index(node_name, node_dict[node_name], session, log, index_created) 
+        index_created = add_index(node_name, node_dict[node_name], existing, session, log, index_created)
+
     return index_created
 
-def create_neo4j_index(node_name, node_property, existing, session, log, index_created):
+def add_index(node_name, node_property, existing, session, log, index_created):
     index_tuple = format_as_tuple(node_name, node_property)
     # If node_property is a list of properties, convert to a comma delimited string
     if isinstance(node_property, list):
@@ -85,16 +92,4 @@ def create_neo4j_index(node_name, node_property, existing, session, log, index_c
         session.run(command)
         index_created += 1
         log.info("Index created for \"{}\" on property \"{}\"".format(node_name, node_property))
-    return index_created
-
-def create_memgraph_index(node_name, node_property, cursor, log, index_created):
-    
-    # If node_property is a list of properties, convert to a comma delimited string
-    if isinstance(node_property, list):
-        node_property = ",".join(node_property)
-    #if index_tuple not in existing:
-    command = "CREATE INDEX ON :{}({});".format(node_name, node_property)
-    index_created += 1
-    cursor.execute(command)
-    log.info("Index created for \"{}\" on property \"{}\"".format(node_name, node_property))
     return index_created
