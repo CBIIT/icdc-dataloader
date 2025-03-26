@@ -11,6 +11,7 @@ import subprocess
 import json
 import pandas as pd
 import datetime
+import mgclient
 from timeit import default_timer as timer
 from bento.common.utils import get_host, DATETIME_FORMAT, reformat_date, get_time_stamp
 from memgraph_backup_restore import backup_memgraph_mgconsole
@@ -40,16 +41,7 @@ PROVIDED_PARENTS = 'provided_parents'
 RELATIONSHIP_PROPS = 'relationship_properties'
 BATCH_SIZE = 1000
 OTHER = '__other__'
-
-maxInt = sys.maxsize
-while True:
-    # decrease the maxInt value by factor 10 
-    # as long as the OverflowError occurs.
-    try:
-        csv.field_size_limit(maxInt)
-        break
-    except OverflowError:
-        maxInt = int(maxInt/10)
+csv.field_size_limit(sys.maxsize)
 
 def format_as_tuple(node_name, properties):
     """
@@ -146,6 +138,13 @@ class DataLoader:
         self.database_type = NEO4J
         if config is not None:
             self.database_type = config.database_type
+            if config.database_type == MEMGRAPH:
+                mg_uri_list = config.neo4j_uri.replace("bolt://", "").split(":")
+                mg_host = mg_uri_list[0]
+                mg_port = int(mg_uri_list[1])
+                mg_connection = mgclient.connect(host=mg_host, port=mg_port, username=config.neo4j_user, password=config.neo4j_password)
+                mg_connection.autocommit = True
+                self.mg_connection = mg_connection
 
         self.schema = schema
         self.rel_prop_delimiter = self.schema.rel_prop_delimiter
@@ -312,7 +311,11 @@ class DataLoader:
         # Data updates and schema related updates cannot be performed in the same session so multiple will be created
         # Create new session for schema related updates (index creation)
         try:
-            self.indexes_created = create_index(self.driver, self.schema, self.log, self.database_type)
+            #cursor = self.mg_connection.cursor()
+            if self.database_type == NEO4J:
+                self.indexes_created = create_index(self.driver, self.schema, self.log, self.database_type)
+            elif self.database_type == MEMGRAPH:
+                self.indexes_created = create_index(self.mg_connection, self.schema, self.log, self.database_type)
         except Exception as e:
             self.log.exception(e)
             return False
