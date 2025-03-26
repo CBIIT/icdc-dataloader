@@ -244,9 +244,17 @@ def main():
 
     summary = {}
     indices_list = config.get('indices_list')
-    if indices_list is not None:
-        lower_indices_list = [item.lower() for item in indices_list]
-        logger.warning(f"An indices list is provided, only the indices in the indices list {indices_list} will be loaded")
+    if isinstance(indices_list, list):
+        if len(indices_list) > 0:
+            lower_indices_list = [item.lower() for item in indices_list]
+            logger.warning(f"An indices list is provided, only the indices in the indices list {indices_list} will be loaded")
+        else:
+            logger.warning("Empty indices_list value is provided, all the indices will be loaded")
+            indices_list = None
+    else:
+        logger.warning(f"Invalid indices_list value {indices_list} is provided, all the indices will be loaded")
+        indices_list = None
+
     index_name_list = []
     for index in indices:
         index_name = index.get('index_name')

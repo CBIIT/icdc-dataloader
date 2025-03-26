@@ -2,6 +2,7 @@ pyyaml
 neo4j==4.4.*
 boto3
 requests
+numpy==1.26.4
 elasticsearch==7.13.*
 tqdm
 requests_aws4auth
