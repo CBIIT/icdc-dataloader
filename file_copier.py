@@ -180,11 +180,25 @@ class FileLoader:
         record[self.FILE_LOC] = self.get_s3_location(self.bucket_name, result[Copier.KEY])
         file_name = result[Copier.NAME]
         record[self.MD5_SUM] = result[Copier.MD5]
-        record[self.FILE_FORMAT] = (os.path.splitext(file_name)[1]).split('.')[1].lower()
+        record[self.FILE_FORMAT] = self._parse_file_format(file_name)
         record[UUID] = get_uuid(self.domain, "file", record[self.FILE_LOC])
         record[self.FILE_STAT] = self.DEFAULT_STAT
         record[Copier.ACL] = result[Copier.ACL]
         return record
+    
+    @staticmethod
+    def _parse_file_format(file_name):
+        """
+        Determines file format while ignoring certain compression extensions
+        :param file_name: Name of file (including extensions)
+        :return: Detected file format or None if no extension is found
+        """
+        split_filename = file_name.lower().split(".")
+        if len(split_filename) < 2:
+            return None
+        if split_filename[-1] in ("gz", "zip", "7z", "bz2", "xz", "rar") and len(split_filename) > 2:
+            return split_filename[-2]
+        return split_filename[-1]
 
     @staticmethod
     def _clean_up_field_names(headers):
