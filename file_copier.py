@@ -165,6 +165,8 @@ class FileLoader:
         return os.path.join(folder, new_name)
 
     def populate_indexd_record(self, record, result):
+        print("****** INDEXD RECORD ******")
+        print(record)
         record[self.SIZE] = result[Copier.SIZE]
         record[self.MD5] = result[Copier.MD5]
         record[Copier.ACL] = result[Copier.ACL]
