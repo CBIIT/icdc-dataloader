@@ -165,11 +165,6 @@ class FileLoader:
         return os.path.join(folder, new_name)
 
     def populate_indexd_record(self, record, result):
-        print("****** RESULT ******")
-        print(result)
-        print("****** Copier ACL ******")
-        print(Copier.ACL)
-        print(result[Copier.ACL])
         record[self.SIZE] = result[Copier.SIZE]
         record[self.MD5] = result[Copier.MD5]
         record[Copier.ACL] = result[Copier.ACL]
@@ -294,8 +289,6 @@ class FileLoader:
                     if file_skip == False:
                         try:
                             result = self.copier.copy_file(file_info, self.overwrite, self.dryrun, self.verify_md5)
-                            print(">>>> FILE INFO:  ", file_info)
-                            print(">>>> RESULT:  ", result)
                             if result[Copier.STATUS]:
                                 indexd_record = {}
                                 self.populate_indexd_record(indexd_record, result)
