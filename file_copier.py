@@ -294,6 +294,8 @@ class FileLoader:
                     if file_skip == False:
                         try:
                             result = self.copier.copy_file(file_info, self.overwrite, self.dryrun, self.verify_md5)
+                            print(">>>> FILE INFO:  ", file_info)
+                            print(">>>> RESULT:  ", result)
                             if result[Copier.STATUS]:
                                 indexd_record = {}
                                 self.populate_indexd_record(indexd_record, result)
