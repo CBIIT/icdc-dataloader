@@ -19,7 +19,7 @@ class BentoAdapter:
     Following methods are required and subclasses is responsible to provide them, and override above methods if needed
         - get_org_url
     """
-    DEFAULT_ACL = "['Open']"
+    DEFAULT_ACL = "['*']"
 
     def __init__(self, name_field=None, md5_field=None, size_field=None, acl_field=None, location_field=None):
         """
