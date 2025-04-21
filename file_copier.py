@@ -23,10 +23,10 @@ if LOG_PREFIX not in os.environ:
 
 
 class FileLoader:
-    GUID = 'GUID'
+    GUID = 'guid'
     MD5 = 'md5'
     SIZE = 'size'
-    URL = 'url'
+    URL = 'urls'
     MANIFEST_FIELDS = [GUID, MD5, SIZE, Copier.ACL, URL]
 
     NODE_TYPE = 'type'
