@@ -144,8 +144,11 @@ class DataLoader:
         self.log = get_logger('Data Loader')
         self.driver = driver
         self.database_type = NEO4J
+        self.empty_value_overwrite = False
         if config is not None:
             self.database_type = config.database_type
+            if isinstance(config.empty_value_overwrite, bool):
+                self.empty_value_overwrite = config.empty_value_overwrite
 
         self.schema = schema
         self.rel_prop_delimiter = self.schema.rel_prop_delimiter
@@ -386,6 +389,7 @@ class DataLoader:
         # Cleanup values for Boolean, Int and Float types
         if node_type:
             df_validation_result = pd.DataFrame(columns=['File Name', 'Property', 'Value', 'Reason', 'Line Numbers', 'Severity'])
+            key_deleted = []
             for key, value in obj.items():
                 search_node_type = node_type
                 search_key = key
@@ -395,6 +399,11 @@ class DataLoader:
                     search_node_type, search_key = key.split(self.rel_prop_delimiter)
 
                 key_type = self.schema.get_prop_type(search_node_type, search_key)
+                # If empty string in the object, remove the property from the object
+                if isinstance(value, str) and not self.empty_value_overwrite:
+                    if value == "":
+                        key_deleted.append(key)
+
                 if key_type == 'Boolean':
                     cleaned_value = None
                     if isinstance(value, str):
@@ -435,6 +444,9 @@ class DataLoader:
                         cleaned_value = reformat_date(value)
                     obj[key] = cleaned_value
             obj2 = {}
+            if len(key_deleted) > 0 and not self.empty_value_overwrite:
+                for key in key_deleted:
+                    del obj[key]
             for key, value in obj.items():
                 obj2[key] = value
                 # Add parent id field(s) into node

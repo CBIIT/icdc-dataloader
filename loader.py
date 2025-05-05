@@ -53,6 +53,7 @@ def parse_arguments(args = None):
                         action='store_true')
     parser.add_argument('--upload-log-dir', help='Upload destination dir for log file,  if dir in s3, use the format, s3://[bucket]/[prefix]')
     parser.add_argument('--database-type', help='The database type, can be either neo4j or memgraph', choices=[NEO4J, MEMGRAPH])
+    parser.add_argument('--empty-value-overwrite', help='Whether or not to overwrite the database value with provided empty values, default false', action='store_true')
     return parser.parse_args(args)
 
 
@@ -178,11 +179,15 @@ def process_arguments(args, log):
         config.database_type = NEO4J
     allowed_database_type = [NEO4J, MEMGRAPH]
     if config.database_type not in allowed_database_type:
-            log.error('database_type is neither neo4j nor memgraph, abort loading')
-            sys.exit(1)
-
+        log.error('database_type is neither neo4j nor memgraph, abort loading')
+        sys.exit(1)
     if args.database_type:
         config.database_type = args.database_type
+    
+    if not config.empty_value_overwrite:
+        config.empty_value_overwrite = False
+    if args.empty_value_overwrite:
+        config.empty_value_overwrite = args.empty_value_overwrite
     # Only applies when running in Prefect via loader_prefect.py, which doesn't have config files and temp_foldetemp_folderr
     # So plugins have to be passed in from Prefect parameters
     # In that case args is an object that contains all Prefect parameters

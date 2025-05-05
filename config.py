@@ -46,6 +46,7 @@ class BentoConfig:
             self.upload_log_dir = None
             self.verbose = None
             self.database_type = "neo4j"
+            self.empty_value_overwrite = False
             self.plugins = []
             self.memgraph_snapshot_dir = None
         else:
@@ -110,6 +111,7 @@ class BentoConfig:
                     self.verbose = config.get('verbose')
                     self.database_type = config.get("database_type")
                     self.memgraph_snapshot_dir = config.get("memgraph_snapshot_dir")
+                    self.empty_value_overwrite = config.get("empty_value_overwrite")
             else:
                 msg = f'Can NOT open configuration file "{config_file}"!'
                 self.log.error(msg)
