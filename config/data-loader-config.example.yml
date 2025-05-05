@@ -46,7 +46,7 @@ Config:
   max_violations: 10
   # Split the loading transaction into separate transactions for each file
   split_transactions: false
-  # Whether or not to overwrite the database value with provided empty values, default false
+  # Whether or not to overwrite the database value with the provided empty value, default false
   empty-value-overwrite: false
 
   # S3 bucket name, if you are loading from an S3 bucket, can be overridden by -b/--bucket argument

@@ -53,7 +53,7 @@ def parse_arguments(args = None):
                         action='store_true')
     parser.add_argument('--upload-log-dir', help='Upload destination dir for log file,  if dir in s3, use the format, s3://[bucket]/[prefix]')
     parser.add_argument('--database-type', help='The database type, can be either neo4j or memgraph', choices=[NEO4J, MEMGRAPH])
-    parser.add_argument('--empty-value-overwrite', help='Whether or not to overwrite the database value with provided empty values, default false', action='store_true')
+    parser.add_argument('--empty-value-overwrite', help='Whether or not to overwrite the database value with the provided empty value, default false', action='store_true')
     return parser.parse_args(args)
 
 
