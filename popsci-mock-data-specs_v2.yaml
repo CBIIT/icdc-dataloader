@@ -1,0 +1,76 @@
+---
+HeadNode:
+  - name: study
+    count: 1
+    Prefix: POPSCI-STUDY
+    ImportFile: yes
+
+#Nodes to be included in the data graph.
+#Only nodes in the IncludeNodes section will be created.
+#Includes nodes in the hierarchy in which they occur in the model.
+IncludeNodes:
+  participant:
+    NodeCount: 50000
+    Prefix: POPSCI-PARTICIPANT
+
+#Properties for which synthetic values need to be created.
+#Assumption: property names are duplicated among node types, ie, a property never belongs
+#to more than one node type.
+
+IncludeProperties:
+  study:
+    - study_name
+    - study_acronym
+    - study_description
+    - study_external_url
+    - phs_accession
+    - index_date
+    - data_access_level
+    - experimental_strategy_and_data_subtypes
+    - cds_primary_bucket
+    - primary_investigator_name
+    - number_of_participants
+    - file_types_and_format
+    - study_data_types
+    - short_description
+    - study_short_name
+    - number_of_samples
+    - primary_investigator_email
+  participant:
+    - participant_id # per CTDC, CDE ID = 12220014
+    - age_at_enrollment # per CTDC, CDE = 12299548
+    - participant_sex # per CTDC, CDE ID = 7572817)
+    - participant_race # per CTDC, CDE ID = 2192199
+    - participant_ethnicity # per CTDC, CDE ID = 2192217
+    - participant_case_indicator
+    - age_at_first_cancer_diagnosis
+
+    - cancer_diagnosis_ICD-O_location
+    - cancer_diagnosis_primary_site
+    - cancer_diagnosis_subsite
+
+    
+    
+    - cancer_diagnosis_disease_morphology  #updated from cancer_diagnosis_morphology
+    - participant_ncbi_taxonomy_id
+
+
+    #- year_of_birth
+    #- study_participant_id
+    #- age
+    #- ethnicity
+    #- sex
+    #- race
+    #- vital_status
+
+#Relationship specifications. For example: how many studies per program; how many cases per studies.
+# This also includes specifications on how these node counts should be generated.
+# 1. SrcNodeCount: fixed, indicates that the "count" variable holds the counts.
+# 2. SrcNodeCount: random, indicates that counts are generated from a drawing from a uniform distribution 
+# 3. All relationships among the included nodes will automatically be created.
+# 4. Do not specify relationships between nodes of the same type, e.g between two samples, two visits etc.
+
+RelationshipSpecs:
+  study:
+    participant:
+      SrcNodeCount: fixed
