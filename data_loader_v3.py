@@ -193,8 +193,9 @@ class DataLoader:
         
             records = session.execute_read(self.get_schema_data, query)
             for record in records:
-                if(record['labelsOrTypes'] != None):
-                    self.node_keys_dict[record['labelsOrTypes'][0]] = {'Primary ID': record['properties'][0], 'Node_Index_DF':  pd.DataFrame(columns=['Node_ID', 'Primary_Key_Value'])}
+                if(record['labelsOrTypes'] != None ):
+                    self.node_keys_dict[record['labelsOrTypes'][0]] = {'Primary ID': record['properties'][0], 
+                                                                       'Node_Index_DF':  pd.DataFrame(columns=['Node_ID', 'Primary_Key_Value'])}
     
             for curr_node in self.node_keys_dict:
                 #index_df = pd.DataFrame(columns = ['Node_ID', 'Primary_Key_Value'])
@@ -283,20 +284,20 @@ class DataLoader:
         # Create new session for data related updates
         with self.driver.session(database = self.db_name) as session:
             # Split Transactions enabled
-            if split:
-                self._load_all(session, file_list, loading_mode, split, wipe_db)
+            #if split:
+            #    self._load_all(session, file_list, loading_mode, split, wipe_db)
 
             # Split Transactions Disabled
-            else:
-                # Data updates transaction
-                tx = session.begin_transaction()
-                try:
-                    self._load_all(session, tx, file_list, loading_mode, split, wipe_db)
-                    #tx.commit()
-                except Exception as e:
-                    tx.rollback()
-                    self.log.exception(e)
-                    return False
+            #else:
+            # Data updates transaction
+            tx = session.begin_transaction()
+            try:
+                self._load_all(session, tx, file_list, loading_mode, split, wipe_db)
+                 #tx.commit()
+            except Exception as e:
+                tx.rollback()
+                self.log.exception(e)
+                return False
 
         if session:
             session.close()
@@ -373,7 +374,7 @@ class DataLoader:
                     elif (nodes_done+batch_size) > len(txt):
                         start_node = nodes_done
                         end_node = len(txt)
-                    else: 
+                    else:
                         start_node = nodes_done
                         end_node = nodes_done + batch_size
                     data_to_work = txt[start_node: end_node]
@@ -595,7 +596,7 @@ class DataLoader:
                     try:
                         if key not in self.schema.get_props_for_node(row['type']) and key != 'type':
                             error_list.append(key)
-                    except:
+                    except Exception:
                         error_list.append(key)
                 else:
                     try:
@@ -859,7 +860,7 @@ class DataLoader:
             #    print(f"Node: {node_type} is empty")
                 
             if loading_mode != DELETE_MODE:
-                check_db = df.merge(self.node_keys_dict[node_type]['Node_Index_DF'], 
+                check_db = df.merge(self.node_keys_dict[node_type]['Node_Index_DF'],
                                     left_on=self.schema.get_id_field(obj), right_on= "Primary_Key_Value", 
                                     how="left", indicator="Node_Exists")
                 
@@ -1066,93 +1067,8 @@ class DataLoader:
                     
                     self.relationship_passed += qry_result["operations"]['committed']
                     self.relationship_failed += qry_result["operations"]['failed']
-                except Exception as e:
+                except Exception:
                     print(file_data_dct)
-        return
-
-        # Use session in one transaction mode
-        tx = session
-        # Use transactions in split-transactions mode
-        if split:
-            tx = session.begin_transaction()
-        for obj in file_data:
-            line_num += 1
-            
-            transaction_counter += 1
-            #obj = self.prepare_node(org_obj)
-            
-            print(transaction_counter)
-            
-            node_type = obj[NODE_TYPE]
-            results = self.collect_relationships(obj, tx, True, line_num)
-            relationships = results[RELATIONSHIPS]
-            int_nodes_created += results[INT_NODE_CREATED]
-            provided_parents = results[PROVIDED_PARENTS]
-            relationship_props = results[RELATIONSHIP_PROPS]
-           
-            if provided_parents > 0:
-                if len(relationships) == 0:
-                    raise Exception('Line: {}: No parents found, abort loading!'.format(line_num))
-                for relationship in relationships:
-                    relationship_name = relationship[RELATIONSHIP_TYPE]
-                    multiplier = relationship[MULTIPLIER]
-                    parent_node = relationship[PARENT_TYPE]
-                    parent_id_field = relationship[PARENT_ID_FIELD]
-                    parent_id = relationship[PARENT_ID]
-                    properties = relationship_props.get(relationship_name, {})
-                    
-                    curr_index = self.node_keys_dict[node_type]["Node_Index_DF"].query(f"Primary_Key_Value == '{obj[self.schema.get_id_field(obj)]}'")["Node_ID"].iloc[0]
-                    if multiplier in [DEFAULT_MULTIPLIER, ONE_TO_ONE]:
-                        if loading_mode == UPSERT_MODE:
-                            self.remove_old_relationship(tx, node_type, obj, relationship, curr_index)
-                        elif loading_mode == NEW_MODE:
-                            if self.has_existing_relationship(tx, node_type, obj, relationship, curr_index,  True):
-                                raise Exception(
-                                    'Line: {}: Relationship already exists, abort loading!'.format(line_num))
-                        else:
-                            raise Exception('Wrong loading_mode: {}'.format(loading_mode))
-                    else:
-                        self.log.debug('Multiplier: {}, no action needed!'.format(multiplier))
-                    prop_statement = ', '.join(self.get_relationship_prop_statements(properties))
-                                           
-                    statement = 'MATCH (m:{0} {{ {1}: ${1} }})'.format(parent_node, parent_id_field)
-                    statement += ' MATCH (n:{0}) where n.{1} = ${1} and ID(n) = {2}'.format(node_type,
-                                                                         self.schema.get_id_field(obj), curr_index)
-                    statement += ' MERGE (n)-[r:{}]->(m)'.format(relationship_name)
-                    statement += ' ON CREATE SET r.{} = datetime()'.format(CREATED)
-                    statement += ', {}'.format(prop_statement) if prop_statement else ''
-                    statement += ' ON MATCH SET r.{} = datetime()'.format(UPDATED)
-                    statement += ', {}'.format(prop_statement) if prop_statement else ''
-
-                    result = tx.run(statement, {**obj, parent_id_field: parent_id, **properties})
-                    count = result.consume().counters.relationships_created
-                    
-                    self.relationships_created += count
-                    relationship_pattern = '(:{})->[:{}]->(:{})'.format(node_type, relationship_name, parent_node)
-                    relationships_created[relationship_pattern] = relationships_created.get(relationship_pattern,
-                                                                                            0) + count
-                    self.relationships_stat[relationship_name] = self.relationships_stat.get(relationship_name,
-                                                                                             0) + count
-                for plugin in self.plugins:
-                    if plugin.should_run(node_type, NODE_LOADED):
-                        if plugin.create_node(session=tx, line_num=line_num, src=obj):
-                            int_nodes_created += 1
-            # commit and restart a transaction when batch size reached
-            if split and transaction_counter >= BATCH_SIZE:
-                tx.commit()
-                tx = session.begin_transaction()
-                self.log.info(f'{line_num - 1} rows loaded ...')
-                transaction_counter = 0
-
-        # commit last transaction
-        if split:
-            tx.commit()
-        if provided_parents == 0:
-            self.log.warning('there is no parent mapping columns in the node {}'.format(node_type))
-        for rel, count in relationships_created.items():
-            self.log.info('{} {} relationship(s) loaded'.format(count, rel))
-        if int_nodes_created > 0:
-            self.log.info('{} intermediate node(s) loaded'.format(int_nodes_created))
         return True
 
     @staticmethod
@@ -1169,7 +1085,7 @@ class DataLoader:
     def clean_database(self, tx):
         batch_size = 10000
         self.log.info(" ")
-        query = """ 
+        query = """
             MATCH ()-[r]->()
             CALL {
                 WITH r

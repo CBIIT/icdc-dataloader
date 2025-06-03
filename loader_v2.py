@@ -57,8 +57,8 @@ def parse_arguments():
 def process_arguments(args, log):
     config_file = None
 
-    args.config_file = r'C:\Users\breadsp2\Desktop\Data_Loader\config\popsci-config.yml' #used in debug mode
-    
+    #args.config_file = r'C:\Users\breadsp2\Desktop\Data_Loader\config\popsci-config.yml' #used in debug mode
+
     if args.config_file:
         config_file = args.config_file
     config = BentoConfig(config_file)
