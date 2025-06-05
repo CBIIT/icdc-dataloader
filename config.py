@@ -1,7 +1,7 @@
 import os
 import yaml
 
-from bento.common.utils import get_logger, UPSERT_MODE
+from bento.common.utils import get_logger
 
 class PluginConfig:
     def __init__(self, config):
@@ -43,10 +43,9 @@ class BentoConfig:
             self.dataset = None
             self.no_parents = None
             self.split_transactions = None
-            self.upload_log_dir = None
-            self.verbose = None
-            self.plugins = []
+
         else:
+            print(config_file)
             if os.path.isfile(config_file):
                 with open(config_file) as c_file:
                     config = yaml.safe_load(c_file)['Config']
@@ -100,12 +99,11 @@ class BentoConfig:
                     self.max_violations = config.get('max_violations', 10)
                     self.s3_bucket = config.get('s3_bucket')
                     self.s3_folder = config.get('s3_folder')
-                    self.loading_mode = config.get('loading_mode', UPSERT_MODE)
+                    self.loading_mode = config.get('loading_mode', 'UPSERT_MODE')
                     self.dataset = config.get('dataset')
                     self.no_parents = config.get('no_parents')
                     self.split_transactions = config.get('split_transactions')
-                    self.upload_log_dir = config.get('upload_log_dir')
-                    self.verbose = config.get('verbose')
+                    self.database_name = config.get('database_name')
             else:
                 msg = f'Can NOT open configuration file "{config_file}"!'
                 self.log.error(msg)
