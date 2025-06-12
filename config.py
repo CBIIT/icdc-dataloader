@@ -43,6 +43,8 @@ class BentoConfig:
             self.dataset = None
             self.no_parents = None
             self.split_transactions = None
+            self.database_name  = 'neo4j'
+            self.convert_files = []
 
         else:
             print(config_file)
@@ -104,6 +106,7 @@ class BentoConfig:
                     self.no_parents = config.get('no_parents')
                     self.split_transactions = config.get('split_transactions')
                     self.database_name = config.get('database_name')
+                    self.convert_files = config.get("convert_files")
             else:
                 msg = f'Can NOT open configuration file "{config_file}"!'
                 self.log.error(msg)
