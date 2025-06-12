@@ -222,7 +222,7 @@ class DataLoader:
     
             for curr_node in self.node_keys_dict:
                 #index_df = pd.DataFrame(columns = ['Node_ID', 'Primary_Key_Value'])
-                query = f"MATCH (n:{curr_node}) RETURN elementId(n) as Node_ID, n.{self.node_keys_dict[curr_node]['Primary ID']} as Primary_Key_Value"
+                query = f"MATCH (n:{curr_node}) RETURN Id(n) as Node_ID, n.{self.node_keys_dict[curr_node]['Primary ID']} as Primary_Key_Value"
 
                 records = session.execute_read(self.get_schema_data, query)
                 if len(records) > 0:
@@ -787,7 +787,7 @@ class DataLoader:
         if create_type == "CREATE":
             new_qry += """\"CREATE (n:MyNode) SET n = item  SET n.created = datetime() return n \", """    # Action statement: Creates a node for each item
         elif create_type == 'MATCH':  #add filtering criteria to node
-            new_qry += """ \"Match(n:MyNode) where elementId(n) = item.Node_ID and n.Primary_Key_Value = item.Primary_Key_Value """
+            new_qry += """ \"Match(n:MyNode) where Id(n) = item.Node_ID and n.Primary_Key_Value = item.Primary_Key_Value """
             new_qry += """  SET n.updated = datetime()  return n \", """
         
         new_qry += """{batchSize: 1000, """   # Process 1000 items per batch
@@ -1025,7 +1025,7 @@ class DataLoader:
         parent_type = relationship[PARENT_TYPE]
         parent_id_field = relationship[PARENT_ID_FIELD]
 
-        base_statement = 'MATCH (n:{0})-[r:{2}]->(m:{3}) where n.{1} = ${1} and elementId(n) = {4} '.format(node_type,
+        base_statement = 'MATCH (n:{0})-[r:{2}]->(m:{3}) where n.{1} = ${1} and Id(n) = {4} '.format(node_type,
                                                                                  self.schema.get_id_field(node),
                                                                                  relationship_name, parent_type, curr_index)
         statement = base_statement + ' return m.{} AS {}'.format(parent_id_field, PARENT_ID)
@@ -1104,7 +1104,7 @@ class DataLoader:
                     qry_str += f"MATCH (n:{node_type}) "
                     qry_str += f"where m.{curr_relationship.split('.')[1]} = batch.{curr_relationship.split('.')[1]} and "
                     
-                    qry_str += 'n.{0} = batch.{0} and elementId(n) = batch.Node_ID '.format(self.schema.get_id_field(obj))
+                    qry_str += 'n.{0} = batch.{0} and Id(n) = batch.Node_ID '.format(self.schema.get_id_field(obj))
                     qry_str += f"MERGE (n)-[r:{relation}]->(m) ON CREATE SET r.created = datetime() ON MATCH SET r.updated = datetime()"
                     
                     
