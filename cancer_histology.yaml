@@ -1,0 +1,987 @@
+CancerHistology:
+  FIBROUS HISTIOCYTOMA, MAL.:
+    Fibrous histiocytoma-malignant: 8830/3
+    Dermatofibrosarcoma-NOS: 8832/3
+    Pigmented dermatofibrosarcoma protuberans: 8833/3
+  AMELOBLASTOMA, MALIGNANT:
+    Ameloblastoma-malignant: 9310/3
+  CARCINOID TUMOR, MALIGNANT:
+    Carcinoid tumor-malignant: 8240/3
+    Composite carcinoid: 8244/3
+    Neuroendocrine carcinoma: 8246/3
+    Neuroendocrine tumor: 8249/3
+    Enterochromaffin cell carcinoid: 8241/3
+    Enterochromaffin-like cell tumor-malignant: 8242/3
+    Goblet cell carcinoid: 8243/3
+    Adenocarcinoid tumor: 8245/3
+    Merkel cell carcinoma: 8247/3
+  RETINOBLASTOMA, NOS:
+    Retinoblastoma-NOS: 9510/3
+    Retinoblastoma-differentiated: 9511/3
+    Retinoblastoma-undifferentiated: 9512/3
+    Retinoblastoma-diffuse: 9513/3
+  PLEXIFORM NEUROFIBROMA:
+    Plexiform neurofibroma: 9550/0
+  LIPID CELL TUMOR, MAL.:
+    Steroid cell tumor-malignant: 8670/3
+  LEYDIG CELL TUMOR, MALIGNANT:
+    Leydig cell tumor-malignant: 8650/3
+  BRENNER TUMOR, MALIGNANT:
+    Brenner tumor-malignant: 9000/3
+  NEUROFIBROSARCOMA:
+    Malignant peripheral nerve sheath tumor: 9540/3
+    Epithelioid malignant peripheral nerve sheath tumor: 9542/3
+    Neurofibroma-NOS: 9540/0
+    Neurofibromatosis-NOS: 9540/1
+    Melanotic neurofibroma: 9541/0
+  OTHER SPEC. NON-HODGKIN LYMPHOMA:
+    Intravascular large B-cell lymphoma: 9712/3
+    Anaplastic large cell lymphoma-T-cell and Null cell type: 9714/3
+    Anaplastic large cell lymphoma-ALK negative: 9715/3
+    NK/T-cell lymphoma-nasal and nasal-type: 9719/3
+    Intestinal T-cell lymphoma: 9717/3
+    Hepatosplenic gamma-delta cell lymphoma: 9716/3
+    Primary cutan. CD30+ T-cell lymphoprolif. disorder: 9718/3
+  SOLID CARCINOMA, NOS:
+    Duct carcinoma in situ-solid type: 8230/2
+    Solid carcinoma-NOS: 8230/3
+    Carcinoma simplex: 8231/3
+  HODGKIN LYMPHOMA, NOD. SCLER.:
+    Hodgkin granuloma [obs]: 9661/3
+    Hodgkin sarcoma [obs]: 9662/3
+    Hodgkin lymphoma-nodular sclerosis-NOS: 9663/3
+    Hodgkin lymphoma-nod. scler.-cellular phase: 9664/3
+    Hodgkin lymphoma-nod. scler.-grade 1: 9665/3
+    Hodgkin lymphoma-nod. scler.-grade 2: 9667/3
+  PAGET DISEASE, EXTRAMAMMARY:
+    Paget disease-extramammary: 8542/3
+  GERM CELL TUMORS:
+    Dysgerminoma: 9060/3
+    Germinoma: 9064/3
+    Germ cell tumor-nonseminomatous: 9065/3
+    Seminoma-NOS: 9061/3
+    Seminoma-anaplastic: 9062/3
+    Spermatocytic seminoma: 9063/3
+    Intratubular malignant germ cells: 9064/2
+  EWING SARCOMA:
+    Ewing sarcoma: 9260/3
+    Adamantinoma of long bones: 9261/3
+  SMALL CELL CARCINOMA, NOS:
+    Small cell carcinoma-NOS: 8041/3
+    Small cell carcinoma-fusiform cell: 8043/3
+    Combined small cell carcinoma: 8045/3
+    Oat cell carcinoma: 8042/3
+    Small cell carcinoma-intermediate cell: 8044/3
+  CYSTADENOCARCINOMA, NOS:
+    Cystadenocarcinoma-NOS: 8440/3
+    Serous cystadenocarcinoma: 8441/3
+    Serous tubal intraepithelial carcinoma: 8441/2
+    Serous cystadenoma-borderline malignancy (C56.9): 8442/1
+  PRECURS. CELL LYMPHOBLASTIC LYMPH.:
+    SystemicEBV pos. T-cell lymphoproliferative disease of childhood: 9724/3
+    Precursor cell lymphoblastic lymphoma-NOS: 9727/3
+    Precursor B-cell lymphoblastic lymphoma: 9728/3
+    Precursor T-cell lymphoblastic lymphoma: 9729/3
+    Hydroa vacciniforme-like lymphoma: 9725/3
+    Primary Cutaneous gamma-delta T-cell lymphoma: 9726/3
+  AMELANOTIC MELANOMA:
+    Amelanotic melanoma: 8730/3
+  NEUROBLASTOMA, NOS:
+    Neuroblastoma-NOS: 9500/3
+    Medulloepithelioma-NOS: 9501/3
+    Teratoid medulloepithelioma: 9502/3
+    Neuroepithelioma-NOS: 9503/3
+    Spongioneuroblastoma: 9504/3
+    Ganglioglioma-anaplastic: 9505/3
+    Multinodular and vascolating neuronal tumor: 9505/0
+    Ganglioglioma-NOS: 9505/1
+    Atypical teratoid/rhabdoid tumor: 9508/3
+    Papillary glioneuronal tumor: 9509/1
+    Centrol neurocytoma: 9506/1
+    Multinodular and vacuolating neuronal tumor: 9509/0
+    Diffuse leptomeningeal glioneuronal tumor: 9509/3
+  ML, SMALL B-CELL LYMPHOCYTIC:
+    ML-small B lymphocytic-NOS: 9670/3
+    ML-lymphoplasmacytic: 9671/3
+    Mantle cell lymphoma: 9673/3
+    ML-mixed sm. and lg. cell-diffuse: 9675/3
+    Primary effusion lymphoma: 9678/3
+    Mediastinal large B-cell lymphoma: 9679/3
+  LYMPHOID LEUKEMIA, NOS:
+    Chronic lymphocytic leukemia/small lymphocytic lymphoma: 9823/3
+    Lymphoid leukemia-NOS: 9820/3
+    Burkitt cell leukemia: 9826/3
+    Adult T-cell leukemia/lymphoma (HTLV-1 pos.): 9827/3
+    Acute lymphoblastic leukemia-L2 type-NOS: 9828/3
+  SKIN APPENDAGE CARCINOMA:
+    Skin appendage carcinoma: 8390/3
+  MULLERIAN MIXED TUMOR:
+    Mullerian mixed tumor: 8950/3
+    Mesodermal mixed tumor: 8951/3
+    Malignant cystic nephroma: 8959/3
+  GLIOMA:
+    Glioma-malignant: 9380/3
+    Gliomatosis cerebri: 9381/3
+    Mixed glioma: 9382/3
+    Subependymoma: 9383/1
+    Supependymal giant cell astrocytoma: 9384/1
+    Diffuse midline glioma-H3 K27M-mutant: 9385/3
+  MONOCYTIC/OTHER LEUKEMIA, NOS:
+    Acute monocytic leukemia: 9891/3
+    Acute myeloid leuk. with multilineage dysplasia: 9895/3
+    Acute myeloid leukemia-t(8;21)(q22;q22): 9896/3
+    Acute myeloid leukemia-11q23 abnormalities: 9897/3
+    Myeloid leukemia associated with Down Syndrome: 9898/3
+  ADENOCA IN FAMIL POLYP COLI:
+    Adenocarcinoma in situ in familial polyp. coli: 8220/2
+    Adenocarcinoma in adenoma. polyposis coli: 8220/3
+    Adenocarc. in situ in mult. adenomatous polyps: 8221/2
+    Adenocarcinoma in mult. adenomatous polyps: 8221/3
+  BASOPHIL CARCINOMA:
+    Basophil adenoma: 8300/0
+    Basophil carcinoma: 8300/3
+  PAPILLARY CARCINOMA, NOS:
+    Papillary carcinoma in situ: 8050/2
+    Papillary carcinoma-NOS: 8050/3
+    Verrucous carcinoma-NOS: 8051/3
+    Papillary squamous cell carcinoma-non-invasive: 8052/2
+    Papillary squamous cell carcinoma: 8052/3
+    'Papillary carcinoma in situ ': 8050/2
+    'Papillary carcinoma-NOS ': 8050/3
+    Warty carcinoma: 8054/3
+  RHABDOMYOSARCOMA, NOS:
+    Rhabdomyosarcoma-NOS: 8900/3
+    Pleomorphic rhabdomyosarcoma-adult type: 8901/3
+    Mixed type rhabdomyosarcoma: 8902/3
+    Rhabdomyoma-NOS: 8900/0
+  ENDOCRINOMAS:
+    Mixed neuroendocrine non-neuroendocrine neoplasm: 8154/3
+    Gastrinoma-malignant: 8153/3
+    Somatostatinoma-malignant: 8156/3
+    Glucagonoma-malignant: 8152/3
+    Enteroglucagonoma-malignant: 8157/3
+    Islet cell carcinoma: 8150/3
+    Insulinoma-malignant: 8151/3
+    Vipoma: 8155/3
+    ACTH-producing tumor: 8158/3
+  NEURILEMMOMA:
+    Neurilemmoma-malignant: 9560/3
+    MPNST with rhabdomyoblastic differentiation: 9561/3
+    Neurilemoma-NOS: 9560/0
+    Melanotic schwannoma: 9560/1
+    Neurothekeoma: 9562/0
+  ADENOID CYSTIC & CRIBRIFORM CA.:
+    Adenoid cystic carcinoma: 8200/3
+    Cribriform carcinoma in situ: 8201/2
+    Cribriform carcinoma: 8201/3
+  COMB HEPATOCEL CA. & CHOLANG:
+    Comb. hepatocel. carcinoma & cholangiocarcinoma: 8180/3
+  DUCT CARCINOMA:
+    Invasive carcinoma of no special type: 8500/3
+    Secretory carcinoma of no special type: 8502/3
+    Intraductal carcinoma-noninfiltrating-NOS: 8500/2
+    Noninfiltrating intraductal papillary adenocarcinoma: 8503/2
+    Intraductal papillary adenocarcinoma with invasion: 8503/3
+    Noninfiltrating intracystic carcinoma: 8504/2
+    Intracystic carcinoma-NOS: 8504/3
+    Comedocarcinoma-non-infiltrating: 8501/2
+    Comedocarcinoma-NOS: 8501/3
+    Intraductal micropapillary carcinoma: 8507/2
+    Cystic hypersecretory carcinoma: 8508/3
+    Secretory carcinoma of breast: 8502/3
+    Invasive micropapillary carcinoma: 8507/3
+    Solid papillary carcinoma in situ: 8509/2
+    Solid papillary carcinoma with invasion: 8509/3
+  PERINEURIOMA:
+    Perineurioma-malignant: 9571/3
+    Neuroma-NOS: 9570/0
+    Perineurioma-NOS: 9571/0
+  HEPATOCELLULAR CARCINOMA, NOS:
+    Hepatocellular carcinoma-NOS: 8170/3
+    Hepatocellular carcinoma-fibrolamellar: 8171/3
+    Hepatocellular carcinoma-scirrhous: 8172/3
+    Hepatocellular carcinoma-spindle cell variant: 8173/3
+    Hepatocellular carcinoma-clear cell type: 8174/3
+    Hepatocellular carcinoma-pleomorphic type: 8175/3
+  ANGIOLIPOMA:
+    Angiolipoma-NOS: 8861/0
+  CEREBELLAR SARCOMA, NOS:
+    Cerebellar sarcoma-NOS: 9480/3
+  REFRACTORY ANEMIA:
+    Refractory anemia: 9980/3
+    Refractory anemia with sideroblasts: 9982/3
+    Refractory anemia with excess blasts: 9983/3
+    Refract. anemia with excess blasts in transformation: 9984/3
+    Refractory cytopenia with multilineage dysplasia: 9985/3
+    Myelodysplastic syndr. with 5q deletion syndrome: 9986/3
+    Therapy-related myelodysplastic syndrome-NOS: 9987/3
+    Myelodysplastic syndrome-NOS: 9989/3
+  OSTEOSARCOMA, NOS:
+    Osteosarcoma-NOS: 9180/3
+    Chondroblastic osteosarcoma: 9181/3
+    Fibroblastic osteosarcoma: 9182/3
+    Telangiectatic osteosarcoma: 9183/3
+    Osteosarcoma in Paget disease: 9184/3
+    Small cell osteosarcoma: 9185/3
+    Central osteosarcoma: 9186/3
+    Instrosseous well differentiated osteosarcoma: 9187/3
+  MUCOEPIDERMOID CARCINOMA:
+    Mucoepidermoid carcinoma: 8430/3
+  OTHER MYELOID LEUKEMIAS:
+    Acute basophilic leukemia: 9870/3
+    Ac. myelomonocytic leuk. w abn. mar. eosinophils: 9871/3
+    Acute myeloid leukemia-minimal differentiation: 9872/3
+    Acute myeloid leukemia without maturation: 9873/3
+    Acute myeloid leukemia with maturation: 9874/3
+    Chronic myelogenous leukemia-BCR/ABL positive: 9875/3
+    Atypical chronic myeloid leuk.-BCR/ABL negative: 9876/3
+    Acute myeloid leukemia with mutated NPM1: 9877/3
+    Acute myeloid leukemia with biallelic mutations of CEBPA: 9878/3
+    Acute myeloid leukemia with mutated RUNX1: 9879/3
+  TRICHILEMMOCARCINOMA:
+    Trichilemmocarcinoma: 8102/3
+  ALVEOLAR RHABDOMYOSARCOMA:
+    Alveolar rhabdomyosarcoma: 8920/3
+    Rhabdomyosarcoma with ganglionic differentiation: 8921/3
+  TRANSITIONAL CELL CARCINOMA, NOS:
+    Transitional cell carcinoma in situ: 8120/2
+    Transitional cell carcinoma-NOS: 8120/3
+    Schneiderian carcinoma: 8121/3
+    Trans. cell carcinoma-spindle cell: 8122/3
+    Basaloid carcinoma: 8123/3
+    Cloacogenic carcinoma: 8124/3
+  EPITHELIOID CELL MELANOMA:
+    Mixed epithel. & spindle cell melanoma: 8770/3
+    Epithelioid cell melanoma: 8771/3
+    Spindle cell melanoma-NOS: 8772/3
+    Spindle cell melanoma-type A: 8773/3
+    Spindle cell melanoma-type B: 8774/3
+  GONADAL NEOPLASMS:
+    Androblastoma-malignant: 8630/3
+    Sertoli-Leydig cell tumor-poorly differentiated: 8631/3
+    Gynandroblastoma-malignant: 8632/3
+    Sertoli-Leydig cl tum.-p.d. w heterologous elements: 8634/3
+  INFLAMMATORY CARCINOMA:
+    Inflammatory carcinoma: 8530/3
+  MIXED TUMOR, MALIGNANT, NOS:
+    Mixed tumor-malignant-NOS: 8940/3
+    Carcinoma in pleomorphic adenoma: 8941/3
+  MAST CELL TUMORS:
+    Mast cell sarcoma: 9740/3
+    Malignant mastocytosis: 9741/3
+    Erdhiem-Chester Disease: 9749/3
+    Mast cell leukemia: 9742/3
+    Juvenile xanthogranuloma: 9749/1
+  CARCINOMA, NOS:
+    Carcinoma in situ-NOS: 8010/2
+    Carcinoma-NOS: 8010/3
+    Epithelioma-malignant: 8011/3
+    Large cell carcinoma-NOS: 8012/3
+    Large cell neuroendocrine carcinoma: 8013/3
+    Large cell carcinoma with rhabdoid phenotype: 8014/3
+    Glassy cell carcinoma: 8015/3
+    Epithelial tumor-benign: 8010/0
+  MEDULLOBLASTOMA, NOS:
+    Primitive neuroectodermal tumor: 9473/3
+    Medulloblastoma-WNT-activated: 9475/3
+    Medulloblastoma-SHH-activated and TP53-mutant: 9476/3
+    Medulloblastoma-non-WNT/non-SHH: 9477/3
+    Embryonal tumor with multilayered rosettes-NOS: 9478/3
+    Medulloblastoma-NOS: 9470/3
+    Desmoplastic medulloblastoma: 9471/3
+    Medullomyoblastoma: 9472/3
+    Large cell medulloblastoma: 9474/3
+  MESONEPHROMA, MALIGNANT:
+    Mesonephroma-malignant: 9110/3
+    Mesonephric-like adenocarcinoma: 9111/3
+  ENDOMETRIOID ADENOCARCINOMA:
+    Endometrioid carcinoma: 8380/3
+    Adenocarcinoma-endocervical type: 8384/3
+    Endometrioid intraepithelial neoplasia: 8380/2
+    Endometrioid adenofibroma-malignant: 8381/3
+    Endometrioid adenocarcinoma-secretory variant: 8382/3
+    Endometrioid adenocarcinoma-ciliated cell variant: 8383/3
+  ERYTHROID LEUKEMIA:
+    Acute myeloid leukemia-M6 type: 9840/3
+  GIANT & SPINDLE CELL CARCINOMA:
+    Giant cell and spindle cell carcinoma: 8030/3
+    Giant cell carcinoma: 8031/3
+    Spindle cell carcinoma: 8032/3
+    Pseudosarcomatous carcinoma: 8033/3
+    Polygonal cell carcinoma: 8034/3
+    Carcinoma with osteoclast-like giant cells: 8035/3
+  FIBROMATOUS NEOPLASMS:
+    Fibrosarcoma-NOS: 8810/3
+    Fibromyxosarcoma: 8811/3
+    Fascial fibrosarcoma: 8813/3
+    Infantile fibrosarcoma: 8814/3
+    Solitary fibrous tumor-malignant: 8815/3
+    Periosteal fibrosarcoma: 8812/3
+    Fibroma-NOS: 8810/0
+    Solitary fibrous tumor: 8815/0
+    'Solitary fibrous tumor/hemangiopericytoma Grade 2 ': '8815/1 '
+    Hemangiopericytoma-malignant: 8815/3
+  CHOLANGIOCARCINOMA:
+    Pancreatobiliary-type carcinoma: 8163/3
+    Cholangiocarcinoma: 8160/3
+    Bile duct cystadenocarcinoma: 8161/3
+    Klatskin tumor: 8162/3
+  MYELOPLASTIC/MYELOPROLIFERATIVE NEOPLASMS:
+    Polymorphic PTLD: 9971/3
+    Myelodysplastic/Myeloproliferative neoplasm-unclassifiable: 9975/3
+  EMBRYONAL CARCINOMA, NOS:
+    Embryonal carcinoma-NOS: 9070/3
+    Yolk sac tumor: 9071/3
+    Polyembryoma: 9072/3
+  PHEOCHROMOCYTOMA:
+    Pheochromocytoma: 8700/3
+  CHONDROBLASTOMA, MALIGNANT:
+    Chondroblastoma-malignant: 9230/3
+    Myxoid chondrosarcoma: 9231/3
+  PHYLLODES TUMOR,MAL.:
+    Phyllodes tumor-malignant: 9020/3
+  ODONTOGENIC CARCINOSARCOMA:
+    Odontogenic carcinosarcoma: 9342/3
+    Clear cell odontogenic carcinoma: 9341/3
+  SEBACEOUS/ECCRINE ADENOCA.:
+    Sebaceous adenocarcinoma: 8410/3
+    Eccrine adenocarcinoma: 8413/3
+  PAPILLARY SEROUS CYSTADENOCA:
+    Low-grade serous carcinoma: 8460/3
+    High-grade serous carcinoma: 8461/3
+    Non-invasive low grade serous carcinoma: 8460/2
+    Serous papillary cystic tumor of borderline malignancy (C56.9): 8462/1
+  GT. CELL TUMOR OF BONE, MAL.:
+    Malignant giant cell tumor of soft parts: 9251/3
+    Malignant tenosynovial giant cell tumor: 9252/3
+    Giant cell tumor of bone-malignant: 9250/3
+  LYMPHOEPITHELIAL CARCINOMA:
+    Bowen disease: 8081/2
+    Lymphoepithelial carcinoma: 8082/3
+    Basaloid squamous cell carcinoma: 8083/3
+    Squamous cell carcinoma-clear cell type: 8084/3
+    Squamous cell carcinoma-HPV-positive: 8085/3
+    Squamous cell carcinoma-HPV-negative: 8086/3
+    Queyrat erythroplasia: 8080/2
+  MESENCHYMOMA, MALIGNANT:
+    Mesenchymoma-malignant: 8990/3
+    Embryonal sarcoma: 8991/3
+  PARAGANGLIOMA:
+    Paraganglioma-malignant: 8680/3
+    Paraganglioma-NOS: 8680/1
+    Sympathetic paraganglioma: 8681/3
+    Parasympathetic paraganglioma: 8682/3
+  ODONTOGENIC TUMOR, MAL.:
+    Odontogenic tumor-malignant: 9270/3
+    Ghost cell odontogenic carcinoma: 9302/3
+  GRANULAR CELL TUMOR:
+    Granular cell tumor-malignant: 9580/3
+    Alveolar soft part sarcoma: 9581/3
+    Granular cell tumor-NOS: 9580/0
+    Granular cell tumor of the sellar region: 9582/0
+  BLOOD VESSEL TUMORS:
+    Hemangiosarcoma: 9120/3
+    Kupffer cell sarcoma: 9124/3
+    Hemangioma-NOS: 9120/0
+    Cavernous hemangioma: 9121/0
+    Venous hemangioma: 9122/0
+  SWEAT GLAND ADENOCARCINOMA:
+    Apocrine adenocarcinoma: 8401/3
+    Sweat gland adenocarcinoma: 8400/3
+    Nodular hidradenoma-malignant: 8402/3
+    Malignant eccrine spiradenoma: 8403/3
+    Sclerosing sweat duct carcinoma: 8407/3
+    Eccrine papillary adenocarcinoma: 8408/3
+    Eccrine poroma-malignant: 8409/3
+  HEPATOBLASTOMA:
+    Gastroblastoma: 8976/3
+    Hepatoblastoma: 8970/3
+    Pulmonary blastoma: 8972/3
+    Pleuropulmonary blastoma: 8973/3
+  LOBULAR AND OTHER DUCTAL CA.:
+    Polymorphous low grade adenocarcinoma: 8525/3
+    Infiltrating ductular carcinoma: 8521/3
+    Lobular carcinoma in situ: 8520/2
+    Lobular carcinoma-NOS: 8520/3
+    Intraductal and lobular in situ carcinoma: 8522/2
+    Infiltrating duct and lobular carcinoma: 8522/3
+    Infiltr. duct mixed with other types of carcinoma-in situ: 8523/2
+    Infiltr. duct mixed with other types of carcinoma: 8523/3
+    Infiltrating lobular mixed with other types of carc.: 8524/3
+  BASAL CELL CARCINOMA, NOS:
+    Basal cell carcinoma-NOS: 8090/3
+    Multifocal superficial basal cell carcinoma: 8091/3
+    Infiltrating basal cell carcinoma-NOS: 8092/3
+    Basal cell carcinoma-fibroepithelial: 8093/3
+    Basosquamous carcinoma: 8094/3
+    Metatypical carcinoma: 8095/3
+    Basal cell carcinoma-nodular: 8097/3
+    Adenoid basal cell carcinoma: 8098/3
+  MEDULLARY CARCINOMA, NOS:
+    Medullary carcinoma-NOS: 8510/3
+    Medullary carcinoma with lymphoid stroma: 8512/3
+    Duct carcinoma-desmoplastic type: 8514/3
+    Atypical medullary carcinoma: 8513/3
+    Pleomorphic lobular carcinoma in situ: 8519/2
+  TERATOMA:
+    Teratoma-malignant-NOS: 9080/3
+    Teratocarcinoma: 9081/3
+    Malignant teratoma-undiff.: 9082/3
+    Malignant teratoma-intermediate: 9083/3
+    Teratoma with malig. transformation: 9084/3
+    Mixed germ cell tumor: 9085/3
+    Germ cell tumors with associated hematological malignancy: 9086/3
+    Teratoma-benign: 9080/0
+    Teratoma-NOS: 9080/1
+    Dermoid cyst-NOS: 9084/0
+  OLIGODENDROGLIOMA, NOS:
+    Oligodendroglioma-NOS: 9450/3
+    Oligodendroglioma-anaplastic: 9451/3
+  PRECURSOR LYMPHOID NEOPLASMS:
+    B lymphoblastic leukemia/lymphoma-NOS: 9811/3
+    Leukemia/lymphoma with t(9;22)(q34;q11.2);BCR-ABL1: 9812/3
+    Leukemia/lymphoma with t(v;11q23);MLL rearranged: 9813/3
+    Leukemia/lymphoma with t(12;21)(p13;q22);TEL-AML1(ETV6-RUNX1): 9814/3
+    B lymphoblastic leukemia/lymphoma with hyperdiploidy: 9815/3
+    Leukemia/lymphoma with hypodiploidy (hypodiploid ALL): 9816/3
+    B lymphblastic leukemia/lymphoma with t(5;14)(q31;q32);IL3-IGH: 9817/3
+    Leukemia/lymphoma with t(1;19)(q23;p13.3); E2A PBX1 (TCF3 PBX1): 9818/3
+    B-lymphocytic leukemia/lymphoma-BCR-ABL1-like: 9819/3
+  CARCINOSARCOMA, NOS:
+    Carcinosarcoma-NOS: 8980/3
+    Carcinosarcoma-embryonal type: 8981/3
+    Malignant myoepithelioma: 8982/3
+    Myoepithelial carcinoma: 8982/3
+    Adenomyoepithelioma with carcinoma: 8983/3
+  SQUAMOUS CELL CARCINOMA, NOS:
+    Squamous cell carcinoma in situ-NOS: 8070/2
+    Squamous cell carcinoma-NOS: 8070/3
+    Sq. cell carcinoma-keratinizing-NOS: 8071/3
+    Sq. cell carcinoma-lg. cell-non-ker.: 8072/3
+    Sq. cell carcinoma-sm. cell-non-ker.: 8073/3
+    Sq. cell carcinoma-spindle cell: 8074/3
+    Squamous cell carcinoma-adenoid: 8075/3
+    Sq. cell carc. in situ with question. stromal invas.: 8076/2
+    Sq. cell carcinoma-micro-invasive: 8076/3
+    Squamous cell carcinoma with horn formation: 8078/3
+    Squamous intraepithelial neoplasia-grade III: 8077/2
+    Sq. cell carcinoma-keratinizing-NOS-in situ: 8071/2
+    Sq. cell carcinoma-lg. cell-non-ker.-in situ: 8072/2
+  GRANULOSA CELL TUMOR, MAL.:
+    Granulosa cell tumor-malignant: 8620/3
+    Granulosa cell-theca cell tumor-mal.: 8621/3
+  PANCREATOBLASTOMA:
+    Pancreatoblastoma: 8971/3
+  CERUMINOUS ADENOCARCINOMA:
+    Ceruminous adenocarcinoma: 8420/3
+  PAPILLARY CYSTADENOCA., NOS:
+    Papillary cystadenocarcinoma-NOS: 8450/3
+    Solid pseudopapillary carcinoma: 8452/3
+    Intraductal papillary-mucinous carcinoma-non-inv.: 8453/2
+    Intraductal papillary-mucinous carcinoma-invasive: 8453/3
+    Intraductal oncocytic papillary neoplasm-NOS: 8455/2
+    Intraductal oncocytic papillary neoplasms with associated invasive carcinoma: 8455/3
+    Papillary cystadenoma-borderline malignancy (C56.9): 8451/1
+  PAPILLARY TRANS. CELL CARCINOMA:
+    Papillary trans. cell carcinoma-non-invasive: 8130/2
+    Papillary trans. cell carcinoma: 8130/3
+    Transitional cell carcinoma-micropapillary: 8131/3
+  MYELODYSPLASTIC SYNDROMES:
+    Refractory neutropenia: 9991/3
+    Refractory thrombocytopenia: 9992/3
+    Myelodysplastic syndrome with ring sideroblasts and multilineage dysplasia: 9993/3
+  OTHER LEUKEMIAS:
+    Hairy cell leukemia: 9940/3
+    Chronic myelomonocytic leukemia-NOS: 9945/3
+    Juvenile myelomonocytic leukemia: 9946/3
+    Aggressive NK-cell leukemia: 9948/3
+  GLOMANGIOSARCOMA:
+    Glomangiosarcoma: 8710/3
+    PEComa-malignant: 8714/3
+  GLIOBLASTOMA, NOS:
+    Glioblastoma-NOS: 9440/3
+    Giant cell glioblastoma: 9441/3
+    Gliofibroma: 9442/1
+    Gliosarcoma: 9442/3
+    Chordoid glioma: 9444/1
+    Glioblastoma-IDH-mutant: 9445/3
+  ADENOCA. IN ADENOMA. POLYP:
+    Adenocarcinoma in situ in adenomatous polyp: 8210/2
+    Adenocarcinoma in adenomatous polyp: 8210/3
+    Tubular adenocarcinoma: 8211/3
+    Serrated dysplasia-high grade: 8213/2
+    Parietal cell carcinoma: 8214/3
+    Serrated adenocarcinoma: 8213/3
+    Adenocarcinoma of anal glands: 8215/3
+  OSSEOUS & CHONDROMATOUS NEOPLASMS:
+    Mesenchymal chondrosarcoma: 9240/3
+    Clear cell chondrosarcoma: 9242/3
+    Dedifferentiated chondrosarcoma: 9243/3
+  LIPOSARCOMA NEOPLASMS:
+    Liposarcoma-NOS: 8850/3
+    Liposarcoma-well differentiated: 8851/3
+    Myxoid liposarcoma: 8852/3
+    Round cell liposarcoma: 8853/3
+    Pleomorphic liposarcoma: 8854/3
+    Mixed type liposarcoma: 8855/3
+    Fibroblastic liposarcoma: 8857/3
+    Dedifferentiated liposarcoma: 8858/3
+    Myxoid pleomorphic liposarcoma: 8859/3
+    Lipoma-NOS: 8850/0
+    Fibrolipoma: 8851/0
+    Atypical lipoma: 8850/1
+  THECOMA, MALIGNANT:
+    Thecoma-malignant: 8600/3
+  MYOMATOUS NEOPLASMS:
+    Leiomyosarcoma-NOS: 8890/3
+    Epithelioid leiomyosarcoma: 8891/3
+    Angiomyosarcoma: 8894/3
+    Myosarcoma: 8895/3
+    Myxoid leiomyosarcoma: 8896/3
+    Leiomyoma-NOS: 8890/0
+    Leiomyomatosis-nOS: 8890/1
+    Smooth muscle tumor-NOS: 8897/1
+  AMELOBLASTIC FIBROSARCOMA:
+    Ameloblastic fibrosarcoma: 9330/3
+  HEMANGIOBLASTOMA:
+    Hemangioblastoma: 9161/1
+  NEOPLASM:
+    Neoplasm-malignant: 8000/3
+    Tumor cells-malignant: 8001/3
+    Malignant tumor-small cell type: 8002/3
+    Malignant tumor-giant cell type: 8003/3
+    Malignant tumor-spindle cell type: 8004/3
+    Malignant tumor-clear cell type: 8005/3
+    Neoplasm-benign: 8000/0
+    Neoplasm-uncertain whether benign or malignant: 8000/1
+    Tumor cells-benign: 8001/0
+    Tumor cells-uncertain whether benign or malignant: 8001/1
+    Clear cell tumor-NOS: 8005/0
+  OLIGODENDROBLASTOMA:
+    Oligodendroblastoma: 9460/3
+  CHORIOCARCINOMA:
+    Choriocarcinoma: 9100/3
+    Choriocarcinoma combined w/ other germ cell elements: 9101/3
+    Trophoblastic tumor-epithelioid: 9105/3
+    Malignant placental site trophoblastic tumor: 9104/3
+    Malignant teratoma-trophoblastic: 9102/3
+  CHORDOMA:
+    Chordoma-NOS: 9370/3
+    Chondroid chordoma: 9371/3
+    Dedifferentiated chordoma: 9372/3
+  ADRENAL CORTICAL CARCINOMA:
+    Adrenal cortical carcinoma: 8370/3
+  PILOMATRIX CARCINOMA:
+    Pilomatrix carcinoma: 8110/3
+  SIGNET RING CELL CARCINOMA:
+    Signet ring cell carcinoma: 8490/3
+  ASTROCYTOMA, NOS:
+    Astrocytoma-NOS: 9400/3
+    Astrocytoma-anaplastic: 9401/3
+  EMBRYONAL RHABDOMYOSARCOMA:
+    Embryonal rhabdomyosarcoma: 8910/3
+    Spindle cell rhabdomyosarcoma: 8912/3
+  ADENOSQUAMOUS CARCINOMA:
+    Adenosquamous carcinoma: 8560/3
+    Epithelial-myoepithelial carcinoma: 8562/3
+    Warthin tumor-malignant: 8561/3
+  THYMOMA, MALIGNANT:
+    Thymoma-malignant-NOS: 8580/3
+    Thymoma-type A-malignant: 8581/3
+    Thymoma-type AB-malignant: 8582/3
+    Thymoma-type B1-malignant: 8583/3
+    Thymoma-type B2-malignant: 8584/3
+    Thymoma-type B3-malignant: 8585/3
+    Thymic carcinoma-NOS: 8586/3
+    Spindle epithelial tumor with thymus-like element: 8588/3
+    Carcinoma showing thymus-like element: 8589/3
+  LYMPHANGIOSARCOMA:
+    Lymphangiosarcoma: 9170/3
+    'Lymphangioleiomyomatosis ': 9174/3
+  ASTROBLASTOMA:
+    Astroblastoma: 9430/3
+    Angiocentric glioma: 9431/1
+    Pituicytoma: 9432/1
+  T-CELL LYMPHOMAS:
+    Sezary syndrome: 9701/3
+    Mature T-cell lymphoma-NOS: 9702/3
+    Angioimmunoblastic T-cell lymphoma: 9705/3
+    Mycosis fungoides: 9700/3
+    Subcutaneous panniculitis-like T-cell lymphoma: 9708/3
+    Cutaneous T-cell lymphoma-NOS: 9709/3
+  THERAPY RELATED AC. MYEL. LEUK.:
+    Therapy-related acute myeloid leukemia-NOS: 9920/3
+  MYELOID SARCOMA:
+    Myeloid sarcoma: 9930/3
+    Acute panmyelosis with myelofibrosis: 9931/3
+  PROLYMPH/PRECURS LEUKEMIA:
+    T-cell large granular lymphocytic leukemia: 9831/3
+    T lymphoblastic leukemia/lymphoma: 9837/3
+    Prolymphocytic leukemia-NOS: 9832/3
+    Prolymphocytic leukemia-B-cell type: 9833/3
+    Prolymphocytic leukemia-T-cell type: 9834/3
+    Precursor cell lymphoblastic leukemia-NOS: 9835/3
+    Precursor B-cell lymphoblastic leukemia: 9836/3
+  OXYPHILIC ADENOCARCINOMA:
+    Oxyphilic adenocarcinoma: 8290/3
+    Oxyphilic adenoma: 8290/0
+  TRABECULAR ADENOCARCINOMA:
+    Trabecular adenocarcinoma: 8190/3
+  GRANULAR CELL CARCINOMA:
+    Mixed cell adenocarcinoma: 8323/3
+    Granular cell carcinoma: 8320/3
+    Water-clear cell adenocarcinoma: 8322/3
+    Mixed cell adenoma: 8323/0
+  BRONCHIOLO-ALVEOLAR ADENOCA.:
+    Adenocarcinoma with mixed subtypes: 8255/3
+    Alveolar adenocarcinoma: 8251/3
+    'Lepidic adenocarcinoma ': 8250/3
+    Bronchiolo-alveolar carcinoma-non-mucinous: 8252/3
+    Invasive mucinous adenocarcinoma: 8253/3
+    Mixed invasive mucinous and non-mucinous adenocarcinoma: 8254/3
+    Adenocarcinoma in situ-non-mucinous: 8250/2
+    Adenocarcinoma in situ-mucinous: 8253/2
+    Minimally invasive adenocarcinoma-non-mucinous: 8256/3
+    Minimally invasive adenocarcinoma-mucinous: 8257/3
+  POLYCYTHEMIA VERA:
+    Polycythemia vera: 9950/3
+  SARCOMA, NOS:
+    Myofibroblastic sarcoma: 8825/3
+    Sarcoma-NOS: 8800/3
+    Spindle cell sarcoma: 8801/3
+    Giant cell sarcoma: 8802/3
+    Small cell sarcoma: 8803/3
+    Epithelioid sarcoma: 8804/3
+    Undifferentiated sarcoma: 8805/3
+    Desmoplastic small round cell tumor: 8806/3
+    Soft tissue tumor-benign: 8800/0
+  PAGET DISEASE, MAMMARY:
+    Paget disease-mammary: 8540/3
+    Paget dis. & infil. duct carcinoma: 8541/3
+    Paget disease and intraductal ca.: 8543/3
+  MUCINOUS CYSTADENOCARC., NOS:
+    Mucinous cystadenocarcinoma-non-invasive: 8470/2
+    Mucinous cystadenocarcinoma-NOS: 8470/3
+    Papillary mucinous cystadenocarcinoma: 8471/3
+    Mucinous cystic tumor of borderline malignancy (C56.9): 8472/1
+    Papillary mucinous cystadenoma-borderline malignancy (C56.9): 8473/1
+    Seromucinous carcinoma: 8474/3
+  ADENOCARCINOMA, NOS:
+    Adenocarcinoma in situ: 8140/2
+    Adenocarcinoma-NOS: 8140/3
+    Scirrhous adenocarcinoma: 8141/3
+    Superficial spreading adenocarcinoma: 8143/3
+    Basal cell adenocarcinoma: 8147/3
+    Carcinoma-diffuse type: 8145/3
+    Linitis plastica: 8142/3
+    Intestinal-type adenoma-high grade: 8144/2
+    Adenocarcinoma-intestinal type: 8144/3
+    Glandular intraepithelial neoplasia-grade III: 8148/2
+    Adenoma-NOS: 8140/0
+    Monomorphic adenoma: 8146/0
+  MENINGIOMA:
+    Meningioma-NOS: 9530/0
+    Meningiomatosis-NOS: 9530/1
+    Meningioma-malignant: 9530/3
+    Meningothelial meningioma: 9531/0
+    Fibrous meningioma: 9532/0
+    Psammomatous meningioma: 9533/0
+    Angiomatous meningioma: 9534/0
+    Transitional meningioma: 9537/0
+    Clear cell meningioma: 9538/1
+    Papillary meningioma: 9538/3
+    Atypical meningioma: 9539/1
+    Meningeal sarcomatosis: 9539/3
+  HEMANGIOENDOTHELIOMA:
+    Hemangioendothelioma-malignant: 9130/3
+    Epithelioid hemangioendothelioma-malignant: 9133/3
+    Intimal sarcoma: 9137/3
+    Capillary hemangioma: 9131/0
+    Hemangioendothelioma-benign: 9130/0
+    Hemangioendothelioma-NOS: 9130/1
+  FOLLICULAR ADENOCARCINOMA, NOS:
+    Fetal adenocarcinoma: 8333/3
+    Follicular adenocarcinoma-NOS: 8330/3
+    Follicular adenocarcinoma well diff.: 8331/3
+    Follicular adenocarcinoma trabecular: 8332/3
+    Follicular carcinoma-minimally invasive: 8335/3
+    Insular carcinoma: 8337/3
+    Follicular thyroid carcinoma (FTC)-encapsulated angioinvasive: 8339/3
+  AMELOBLASTIC ODONTOSARCOMA:
+    Ameloblastic odontosarcoma: 9290/3
+  NONENCAPSUL. SCLEROSING CA.:
+    Nonencapsulated sclerosing carcinoma: 8350/3
+  MALIGNANT LYMPHOMA, NOS:
+    Malignant lymphoma-NOS: 9590/3
+    Malignant lymphoma-non-Hodgkin: 9591/3
+    Composite Hodgkin and non-Hodgkin lymphoma: 9596/3
+    Primary Cutaneous follicle centre lymphoma: 9597/3
+  CHONDROSARCOMA, NOS:
+    Chondrosarcoma-NOS: 9220/3
+    Juxtacortical chondrosarcoma: 9221/3
+  CLEAR CELL ADENOCARCINOMA, NOS:
+    Clear cell adenocarcinoma-NOS: 8310/3
+    Lipid-rich carcinoma: 8314/3
+    Glycogen-rich carcinoma: 8315/3
+    Clear cell adenocarcinofibroma: 8313/3
+    Hereditary leiomyomatosis and RCC-associated renal cell carcinoma: 8311/3
+    Renal cell carcinoma: 8312/3
+    Cyst-associated renal cell carcinoma: 8316/3
+    Renal cell carcinoma-chromophobe type: 8317/3
+    Renal cell carcinoma-sarcomatoid: 8318/3
+    Collecting duct carcinoma: 8319/3
+    Clear cell adenoma: 8310/0
+  CLEAR CELL SARC/NEPHROBLASTOMA:
+    Nephroblastoma-NOS: 8960/3
+    Malignant rhabdoid tumor: 8963/3
+    Clear cell sarcoma of kidney: 8964/3
+  MESOTHELIOMA:
+    Mesothelioma-in situ: 9050/2
+    Mesothelioma-malignant: 9050/3
+    Fibrous mesothelioma-malignant: 9051/3
+    Epithel. mesothelioma-mal.: 9052/3
+    Mesothelioma-biphasic-malignant: 9053/3
+  GANGLIONEUROBLASTOMA:
+    Ganglioneuroblastoma: 9490/3
+    Ganglioneuroma: 9490/0
+    Gangliocytoma: 9492/0
+    Dysplastic gangliocytoma of cerebellum (Lhermitte-Duclos): 9493/0
+  PROTOPLASMIC ASTROCYTOMA:
+    Protoplasmic astrocytoma: 9410/3
+    Gemistocytic astrocytoma: 9411/3
+    Desmoplastic infantile astrocytoma: 9412/1
+    Dysembryoplastic neuroepithelial tumor: 9413/0
+  CHROMOPHOBE CARCINOMA:
+    Chromophobe adenoma: 8270/0
+    Chromophobe carcinoma: 8270/3
+    Prolactinoma: 8271/0
+    Pituitary adenoma-NOS: 8272/0
+    Pituitary carcinoma-NOS: 8272/3
+    Pituitary blastoma: 8273/3
+  CARCINOMA, UNDIFF., NOS:
+    Carcinoma-undifferentiated type-NOS: 8020/3
+    Carcinoma-anaplastic type-NOS: 8021/3
+    Pleomorphic carcinoma: 8022/3
+    NUT carcinoma: 8023/3
+  FIBRILLARY ASTROCYTOMA:
+    Fibrillary astrocytoma: 9420/3
+    Pilocytic astrocytoma: 9421/3
+    Polar spongioblastoma: 9423/3
+    Pleomorphic xanthoastrocytoma: 9424/3
+    Pilomyxoid astrocytoma: 9425/3
+  EXTRA-ADRENAL PARAGANG., MAL:
+    Extra-adrenal paraganglioma-malignant: 8693/3
+    Middle ear paraganglioma: 8690/3
+    Aortic body tumor-malignant: 8691/3
+    Carotid body tumor-malignant: 8692/3
+  CRANIOPHARYNGIOMA:
+    Craniopharyngioma: 9350/1
+    Adamantinomatous craniopharyngioma: 9351/1
+    Papillary craniopharyngioma: 9352/1
+  KAPOSI SARCOMA:
+    Kaposi sarcoma: 9140/3
+  PLASMA CELL TUMORS:
+    Plasmacytoma-NOS: 9731/3
+    Plasmacytoma-extramedullary: 9734/3
+    Plasmablastic lymphoma: 9735/3
+    ALK positive large B-cell lymphoma: 9737/3
+    Lrg B-cell lymphoma in HHV8-assoc. multicentric Castleman DZ: 9738/3
+    Multiple myeloma: 9732/3
+    Plasma cell leukemia: 9733/3
+  MUCINOUS ADENOCARCINOMA:
+    Mucinous adenocarcinoma: 8480/3
+    Mucin-producing adenocarcinoma: 8481/3
+    High grade appendiceal mucinous neoplasm: 8480/2
+    'Mucinous adenocarcinoma ': 8480/3
+    Mucinous adenocarcinoma-endocervical type: 8482/3
+    Adenocarcinoma-HPV-associated: 8483/3
+    Adenocarcinoma-HPV-independent-NOS: 8484/3
+  JUXTACORTICAL OSTEOSARCOMA:
+    Parosteal osteosarcoma: 9192/3
+    Periosteal osteosarcoma: 9193/3
+    High grade surface osteosarcoma: 9194/3
+    Intracortical osteosarcoma: 9195/3
+  SYNOVIAL SARCOMA, NOS:
+    Synovial sarcoma-NOS: 9040/3
+    Synovial sarcoma-spindle cell: 9041/3
+    Synovial sarcoma-epithelioid cell: 9042/3
+    Synovial sarcoma-biphasic: 9043/3
+    Clear cell sarcoma,NOS (except of kidney M-8964/3): 9044/3
+    Biphenotypic sinonasal sarcoma: 9045/3
+  ACINAR CELL CARCINOMA:
+    Acinar cell carcinoma: 8550/3
+    Acinar cell cystadenocarcinoma: 8551/3
+    Mixed acinar ductal carcinoma: 8552/3
+    'Acinar cell carcinoma ': 8550/3
+  STROMAL SARCOMA:
+    Carcinofibroma: 8934/3
+    Stromal sarcoma-NOS: 8935/3
+    Gastrointestinal stromal sarcoma: 8936/3
+    Endometrial stromal sarcoma: 8930/3
+    Endometrial stromal sarcoma-low grade: 8931/3
+    Adenosarcoma: 8933/3
+  NEVI & MELANOMAS:
+    Melanoma in situ: 8720/2
+    Malignant melanoma-NOS: 8720/3
+    Nodular melanoma: 8721/3
+    Balloon cell melanoma: 8722/3
+    Malignant melanoma-regressing: 8723/3
+    Diffuse melanocytosis: 8728/0
+    Meningeal melanocytoma: 8728/1
+    Meningeal melanomatosis: 8728/3
+  LEUKEMIA, NOS:
+    Leukemia-NOS: 9800/3
+    Acute leukemia-NOS: 9801/3
+    Acute biphenotypic leukemia: 9805/3
+    Mixed phenotype acute leukemia with t(9;22)(q34;q11.2);BCR-ABL1: 9806/3
+    Mixed phenotype acute leukemia with t(v;11q23);MLL rearranged: 9807/3
+    Mixed phenotype acute leukemia-B/myeloid-NOS: 9808/3
+    Mixed phenotype acute leukemia-T/myeloid-NOS: 9809/3
+  HEMANGIOPERICYTOMA:
+    Hemangiopericytoma-malignant: 9150/3
+    Hemangiopericytoma-benign: 9150/0
+    Hemangiopericytoma-NOS: 9150/1
+  PAPILLARY ADENOCARCINOMA, NOS:
+    Papillary adenocarcinoma-NOS: 8260/3
+    Adenocarcinoma in situ in villous adenoma: 8261/2
+    Adenocarcinoma in villous adenoma: 8261/3
+    Villous adenocarcinoma: 8262/3
+    Adenocarcinoma in situ in tubulovillous adenoma: 8263/2
+    Adenocarcinoma in tubulovillous adenoma: 8263/3
+    Micropapillary carcinoma-NOS: 8265/3
+    Papillary adenoma-NOS: 8260/0
+  BLUE NEVUS, MALIGNANT:
+    Blue nevus-malignant: 8780/3
+  ML, LARGE B-CELL, DIFFUSE:
+    ML-large B-cell-diffuse: 9680/3
+    ML-large B-cell-diffuse-immunoblastic-NOS: 9684/3
+    Burkitt lymphoma-NOS: 9687/3
+    T-cell histiocyte rich large B-cell lymphoma: 9688/3
+    Splenic marginal zone B-cell lymphoma: 9689/3
+  FOLLIC. & MARGINAL LYMPH, NOS:
+    Marginal zone B-cell lymphoma-NOS: 9699/3
+    Follicular lymphoma-NOS: 9690/3
+    Follicular lymphoma-grade 2: 9691/3
+    Follicular lymphoma-grade 1: 9695/3
+    Follicular lymphoma-grade 3: 9698/3
+  IMMUNOPROLIFERATIVE DISEASES:
+    Lymphomatoid granulomatosis-grade 3: 9766/3
+    Immunoproliferative small intestinal disease: 9764/3
+    Immunoproliferative disease-NOS: 9760/3
+    Waldenstrom macroglobulinemia: 9761/3
+    Heavy chain disease-NOS: 9762/3
+  OLFACTORY NEUROGENIC TUMOR:
+    Olfactory neurogenic tumor: 9520/3
+    Olfactory neurcytoma: 9521/3
+    Olfactory neuroblastoma: 9522/3
+    Olfactory neuroepithelioma: 9523/3
+  MAL. MELAN. IN GIANT PIGMT. NEVUS:
+    Mal. melanoma in giant pigmented nevus: 8761/3
+  NON-SMALL CELL CARCINOMA, NOS:
+    Non-small cell carcinoma: 8046/3
+  ADENOCARCINOFIBROMA:
+    Serous adenocarcinofibroma: 9014/3
+    Mucinous adenocarcinofibroma: 9015/3
+  PAPILLARY & FOLLICULAR ADENOCA.:
+    Papillary carcinoma-follicular variant: 8340/3
+    Papillary microcarcinoma: 8341/3
+    Papillary carcinoma-oxyphilic cell: 8342/3
+    'Non-invasive EFVPTC ': 8343/2
+    Papillary carcinoma-encapsulated: 8343/3
+    Papillary carcinoma-columnar cell: 8344/3
+    Medullary carcinoma with amyloid stroma: 8345/3
+    Mixed medullary-follicular carcinoma: 8346/3
+    Mixed medullary-papillary carcinoma: 8347/3
+  PERIPHERAL NEUROECTODERMAL TUMOR:
+    Peripheral neuroectodermal tumor: 9364/3
+    Askin tumor: 9365/3
+    Round cell sarcoma with EWSR1-non-ETS fusions: 9366/3
+    CIC-rearranged sarcoma: 9367/3
+    Sarcoma with BCOR genetic alterations: 9368/3
+    Pinealoma-NOS: 9360/1
+    Pineocytoma: 9361/1
+    Pineoblastoma: 9362/3
+  OVARIAN STROMAL TUMOR, MAL.:
+    Ovarian stromal tumor-mal.: 8590/3
+  ACIDOPHIL CARCINOMA:
+    Acidophil adenoma: 8280/0
+    Acidophil carcinoma: 8280/3
+    Mixed acidophil-basophil adenoma: 8281/0
+    Mixed acidophil-basophil carcinoma: 8281/3
+  ADENOCA. WITH METAPLASIA:
+    Adenocarcinoma with squamous metaplasia: 8570/3
+    Adenocarcinoma w cartilag. & oss. metaplas.: 8571/3
+    Adenocarcinoma with spindle cell mataplasia: 8572/3
+    Adenocarcinoma with apocrine metaplasia: 8573/3
+    Adenocarcinoma with neuroendocrine differen.: 8574/3
+    Metaplastic carcinoma-NOS: 8575/3
+    Hepatoid adenocarcinoma: 8576/3
+  SERTOLI CELL CARCINOMA:
+    Sertoli cell carcinoma: 8640/3
+  NEOPLASMS OF HISTIOCYTES AND ACCESSORY LYMPHOID CELLS:
+    Malignant histiocytosis: 9750/3
+    Langerhans cell histiocytosis-NOS: 9751/3
+    Langerhans cell histiocytosis-disseminated: 9754/3
+    Histiocytic sarcoma: 9755/3
+    Langerhans cell sarcoma: 9756/3
+    Interdigitating dendritic cell sarcoma: 9757/3
+    Follicular dendritic cell sarcoma: 9758/3
+    Fibroblastic reticular cell tumor: 9759/3
+  MYXOSARCOMA:
+    Myxosarcoma: 8840/3
+    Pulmonary myxoid sarcoma with EWSR1-CREB1 translocation: 8842/3
+  MYELOID LEUKEMIA, NOS:
+    Myeloid leukemia-NOS: 9860/3
+    Acute myeloid leukemia: 9861/3
+    Chronic myeloid leukemia-NOS: 9863/3
+    Acute myeloid leukemia with t(6;9)(p23;q34) DEK-NUP214: 9865/3
+    Acute promyelocytic leuk.,t(15;17)(q22;q11-12): 9866/3
+    Acute myelomonocytic leukemia: 9867/3
+    Acute myeloid leukemia with inv(3)(q21q26.2) or t(3;3)(q21;q26.2);RPN1EVI1: 9869/3
+  MAL. MEL. IN JUNCT. NEVUS:
+    Superficial spreading melanoma: 8743/3
+    Desmoplastic melanoma-malignant: 8745/3
+    Mucosal lentiginous melanoma: 8746/3
+    Mal. melanoma in junctional nevus: 8740/3
+    Precancerous melanosis-NOS: 8741/2
+    Mal. melanoma in precan. melanosis: 8741/3
+    Lentigo maligna: 8742/2
+    Lentigo maligna melanoma: 8742/3
+    Superficial spreading melanoma-in situ: 8743/2
+    Acral lentiginous melanoma-malig.: 8744/3
+  MEGAKARYOBLASTIC LEUKEMIA:
+    Acute megakaryoblastic leukemia: 9910/3
+    Acute myeloid leukemia (megakaryoblastic) with t(1;22)(p13;q13);RBM15-MLK1: 9911/3
+    Acute myeloid leukemia with BCR-ABL1: 9912/3
+  CHRONIC MYELOPROLIFERATIVE DIS.:
+    Myeloid and lymphoid neoplasms with PDGFRB rearrangement: 9965/3
+    Myeloid and lymphoid neoplasm with FGFR1 abnormalities: 9967/3
+    Chronic myeloproliferative disease-NOS: 9960/3
+    Myelosclerosis with myeloid metaplasia: 9961/3
+    Essential thrombocythemia: 9962/3
+    Chronic neutrophilic leukemia: 9963/3
+    Hypereosinophilic syndrome: 9964/3
+    Myeloid and lymphoid neoplasms with PDGFRB re arrangement: 9966/3
+    Myeloid/lymphoid neoplasm with PCM1-JAK2: 9968/3
+  STRUMA OVARII, MALIGNANT:
+    Phyllodes tumor-malignant: 9092/3
+    Struma ovarii-malignant: 9090/3
+  EPENDYMOMA, NOS:
+    Sellar ependymoma: 9391/1
+    Ependymoma-NOS: 9391/3
+    Ependymoma-anaplastic: 9392/3
+    Papillary ependymoma: 9393/3
+    Myxopapillary ependymoma: 9394/1
+    Ependymoma-RELA fusion-positive: 9396/3
+    Choroid plexus papilloma-NOS: 9390/0
+    Atypical choroid plexus papilloma: 9390/1
+    Choroid plexus papilloma-malignant: 9390/3
+    Papillary tumor of pineal region: 9395/3
+  HODGKIN LYMPHOMA:
+    Hodgkin lymphoma-NOS: 9650/3
+    Hodgkin lymphoma-lymphocyte-rich: 9651/3
+    Hodgkin lymphoma-mixed cellularity-NOS: 9652/3
+    Hodgkin lymphoma-lymphocytic deplet.-NOS: 9653/3
+    Hodgkin lymph.-lymphocyt. deplet.-diffuse fibrosis: 9654/3
+    Hodgkin lymphoma-lymphocyt. deplet.-reticular: 9655/3
+    Hodgkin lymph.-nodular lymphocyte predom.: 9659/3
