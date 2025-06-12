@@ -15,6 +15,7 @@ from bento.common.utils import get_host, DATETIME_FORMAT, reformat_date
 
 from neo4j import Driver
 import pandas as pd
+import yaml
 
 from icdc_schema import ICDC_Schema, is_parent_pointer, get_list_values
 from bento.common.utils import get_logger, NODES_CREATED, RELATIONSHIP_CREATED, UUID, \
@@ -138,7 +139,7 @@ def get_props_signature(props):
 
 
 class DataLoader:
-    def __init__(self, driver, schema, database_name, plugins=None):
+    def __init__(self, driver, schema, database_name, conversion_files, plugins=None):
         if plugins is None:
             plugins = []
         if not schema or not isinstance(schema, ICDC_Schema):
@@ -174,6 +175,28 @@ class DataLoader:
         self.nodes_deleted_stat = {}
         self.relationships_deleted_stat = {}
         
+        if 'location' in conversion_files:
+            self.location_codes = self.get_cancer_translations(conversion_files["location"])
+        if 'histology' in conversion_files:
+            self.histology_codes = self.get_cancer_translations(conversion_files["histology"])
+
+    
+    def get_cancer_translations(self, yml_file):
+        with open(yml_file) as f:
+            cancer_term_file = yaml.load(f, Loader=yaml.FullLoader)
+
+        all_terms = pd.DataFrame()
+        for curr_key in cancer_term_file.keys():
+            for curr_location in cancer_term_file[curr_key]:
+                x = pd.DataFrame.from_dict(cancer_term_file[curr_key][curr_location], orient = 'index')
+                x["Primary Site"] = curr_location
+                x.reset_index(inplace=True)
+                
+                all_terms = pd.concat([all_terms, x])
+    
+        all_terms.columns = ["Sub Site", "ICD-O-3 Code", "Primary Site"]
+        return all_terms
+    
     def get_schema_data(self, tx, query):
         result = tx.run(query)
         data_list = [i for i in result.data()]
@@ -199,7 +222,7 @@ class DataLoader:
     
             for curr_node in self.node_keys_dict:
                 #index_df = pd.DataFrame(columns = ['Node_ID', 'Primary_Key_Value'])
-                query = f"MATCH (n:{curr_node}) RETURN ID(n) as Node_ID, n.{self.node_keys_dict[curr_node]['Primary ID']} as Primary_Key_Value"
+                query = f"MATCH (n:{curr_node}) RETURN elementId(n) as Node_ID, n.{self.node_keys_dict[curr_node]['Primary ID']} as Primary_Key_Value"
 
                 records = session.execute_read(self.get_schema_data, query)
                 if len(records) > 0:
@@ -764,7 +787,7 @@ class DataLoader:
         if create_type == "CREATE":
             new_qry += """\"CREATE (n:MyNode) SET n = item  SET n.created = datetime() return n \", """    # Action statement: Creates a node for each item
         elif create_type == 'MATCH':  #add filtering criteria to node
-            new_qry += """ \"Match(n:MyNode) where Id(n) = item.Node_ID and n.Primary_Key_Value = item.Primary_Key_Value """
+            new_qry += """ \"Match(n:MyNode) where elementId(n) = item.Node_ID and n.Primary_Key_Value = item.Primary_Key_Value """
             new_qry += """  SET n.updated = datetime()  return n \", """
         
         new_qry += """{batchSize: 1000, """   # Process 1000 items per batch
@@ -804,9 +827,29 @@ class DataLoader:
     def write_nodes_to_db(self, session, col_name, node_type, current_nodes, create_type):
 
         file_data, qry_str, total_records = self.convert_df_to_dict(current_nodes)
+        rem_list = ['Node_Exists', 'Node_ID', 'Primary_Key_Value']
+        
+        index = 0
+        for curr_row in file_data:
+            file_data[index] = {i:curr_row[i] for i in curr_row if i not in rem_list}
+            index +=1
+        
         qry_result = session.execute_write(self.process_data_in_batches, file_data, create_type, node_type)
         self.load_passed += qry_result["operations"]["committed"]
         self.load_failed += qry_result["operations"]['failed']
+    
+    def convert_codes(self, df, column_name, code_list):
+        if column_name in df.columns:
+            df = df.merge(code_list, left_on=column_name, 
+                          right_on="ICD-O-3 Code", how="left")
+
+            df.drop([column_name, "Primary Site"], axis=1, inplace=True)
+            df.rename(columns={"Sub Site": column_name, "ICD-O-3 Code": "ICD-O-3 Code" + column_name.replace("cancer_diagnosis", "")}, inplace=True)
+            
+            x = df.query("participant_case_indicator == 'No'")
+            df.loc[x.index, column_name] = "N/A"
+            df.loc[x.index, "ICD-O-3 Code" + column_name.replace("cancer_diagnosis", "")] = "N/A"
+        return df
     
     def load_nodes(self, session, tx, file_name, loading_mode,  wipe_db, split=False):
         if loading_mode == NEW_MODE:
@@ -821,6 +864,9 @@ class DataLoader:
 
         file_data = pd.read_csv(file_name, sep='\t', header=0)
         file_data.fillna("missing data", inplace=True)
+        
+        file_data = self.convert_codes(file_data, 'cancer_diagnosis_primary_site', self.location_codes)
+        file_data = self.convert_codes(file_data, 'cancer_diagnosis_disease_morphology', self.histology_codes)
         
         ## load nodes in batches of 5,000
         nodes_done = 0
@@ -979,7 +1025,7 @@ class DataLoader:
         parent_type = relationship[PARENT_TYPE]
         parent_id_field = relationship[PARENT_ID_FIELD]
 
-        base_statement = 'MATCH (n:{0})-[r:{2}]->(m:{3}) where n.{1} = ${1} and ID(n) = {4} '.format(node_type,
+        base_statement = 'MATCH (n:{0})-[r:{2}]->(m:{3}) where n.{1} = ${1} and elementId(n) = {4} '.format(node_type,
                                                                                  self.schema.get_id_field(node),
                                                                                  relationship_name, parent_type, curr_index)
         statement = base_statement + ' return m.{} AS {}'.format(parent_id_field, PARENT_ID)
@@ -1022,10 +1068,10 @@ class DataLoader:
         #file_encoding = check_encoding(file_name)
         #with open(file_name, encoding=file_encoding) as in_file:
         #    reader = csv.DictReader(in_file, delimiter='\t')
-        relationships_created = {}
-        int_nodes_created = 0
-        line_num = 1
-        transaction_counter = 0
+        #relationships_created = {}
+        #int_nodes_created = 0
+        #line_num = 1
+        #transaction_counter = 0
         
         file_data_df = pd.DataFrame(file_data)
         obj = file_data_df.iloc[0].to_dict()
@@ -1034,7 +1080,8 @@ class DataLoader:
         file_data_df = file_data_df.merge(self.node_keys_dict[node_type]['Node_Index_DF'], 
                                     left_on=self.schema.get_id_field(obj), right_on= "Primary_Key_Value", 
                                     how="left", indicator="Node_Exists")
-
+        
+        file_data_df.drop("Node_Exists", axis=1, inplace=True)
         file_data_df.fillna(-1, inplace=True)
         missing_id = file_data_df.query("Node_ID == -1")
         if len(missing_id) > 0:
@@ -1057,7 +1104,7 @@ class DataLoader:
                     qry_str += f"MATCH (n:{node_type}) "
                     qry_str += f"where m.{curr_relationship.split('.')[1]} = batch.{curr_relationship.split('.')[1]} and "
                     
-                    qry_str += 'n.{0} = batch.{0} and ID(n) = batch.Node_ID '.format(self.schema.get_id_field(obj))
+                    qry_str += 'n.{0} = batch.{0} and elementId(n) = batch.Node_ID '.format(self.schema.get_id_field(obj))
                     qry_str += f"MERGE (n)-[r:{relation}]->(m) ON CREATE SET r.created = datetime() ON MATCH SET r.updated = datetime()"
                     
                     
@@ -1085,17 +1132,17 @@ class DataLoader:
     def clean_database(self, tx):
         batch_size = 10000
         self.log.info(" ")
-        query = """
-            MATCH ()-[r]->()
-            CALL {
-                WITH r
-                DELETE r
-                } IN TRANSACTIONS OF $batch_size ROWS
-            """
-        tx.run(query, batch_size=batch_size)
-        self.log.info("all relationships deleted!")
-        self.log.info(" ")
-        self.log.info(" ")
+        #query = ""
+        #query +=  """:auto MATCH ()-[r]->()
+        #    CALL {
+        #        WITH r
+        #        DELETE r
+        #        } IN TRANSACTIONS OF $batch_size ROWS
+        #    """
+        #tx.run(query, batch_size=batch_size)
+        #self.log.info("all relationships deleted!")
+        #self.log.info(" ")
+        #self.log.info(" ")
 
         query = """
              CALL apoc.periodic.iterate(
@@ -1166,7 +1213,11 @@ class DataLoader:
         if isinstance(node_property, list):
             node_property = ",".join(node_property)
         if index_tuple not in existing:
-            command = "CREATE INDEX ON :{}({});".format(node_name, node_property)
+            #`CREATE INDEX ON :Label(property)` is deprecated
+            #command = "CREATE INDEX ON :{}({});".format(node_name, node_property)
+            
+            command = "CREATE INDEX IF NOT EXISTS FOR (n:{0}) ON (n.{1})".format(node_name, node_property)
+            
             session.run(command)
             self.indexes_created += 1
             self.log.info("Index created for \"{}\" on property \"{}\"".format(node_name, node_property))

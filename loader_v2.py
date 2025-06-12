@@ -31,6 +31,8 @@ def parse_arguments():
     parser.add_argument('-u', '--user', help='Neo4j user')
     parser.add_argument('-p', '--password', help='Neo4j password')
     parser.add_argument('-s', '--schema', help='Schema files', action='append')
+    parser.add_argument('-cv', '--convert', help='Conversion files') #, action='append')
+    
     parser.add_argument('--prop-file', help='Property file, example is in config/props.example.yml')
     parser.add_argument('--backup-folder', help='Location to store database backup')
     parser.add_argument('config_file', help='Configuration file, example is in config/data-loader-config.example.yml',
@@ -57,7 +59,7 @@ def parse_arguments():
 def process_arguments(args, log):
     config_file = None
 
-    #args.config_file = r'C:\Users\breadsp2\Desktop\Data_Loader\config\popsci-config.yml' #used in debug mode
+    args.config_file = r'C:\Users\breadsp2\Desktop\Data_Loader\config\popsci-config_v2.yml' #used in debug mode
 
     if args.config_file:
         config_file = args.config_file
@@ -231,15 +233,15 @@ def main():
             if not config.dry_run:
                 driver = GraphDatabase.driver(
                     config.neo4j_uri,
-                    auth=(config.neo4j_user, config.neo4j_password),
-                    encrypted=False
+                    auth=(config.neo4j_user, config.neo4j_password) #,
+                    #encrypted=False
                 )
 
             plugins = []
             if len(config.plugins) > 0:
                 for plugin_config in config.plugins:
                     plugins.append(prepare_plugin(plugin_config, schema))
-            loader = DataLoader(driver, schema, config.database_name, plugins)
+            loader = DataLoader(driver, schema, config.database_name, config.convert_files, plugins)
 
             load_result = loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db,
                         config.max_violations, split=config.split_transactions,
