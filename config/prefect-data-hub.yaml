@@ -30,6 +30,11 @@ pull:
       repository: https://github.com/CBIIT/bento-cds-backend.git
       branch: 3.1.0
       include_submodules: True
+  - prefect.deployments.steps.git_clone:
+      id: clone-step
+      repository: https://github.com/CBIIT/bento-cds-frontend.git
+      branch: 4.6.0
+      include_submodules: True
   - prefect.projects.steps.pip_install_requirements:
       requirements_file: requirements.txt
       directory: "{{ clone-step.directory }}"
@@ -146,7 +151,7 @@ deployments:
     entrypoint: es_loader_prefect.py:es_loader_prefect
     parameters:
       environment: ""
-      about_file: ""
+      about_file: "../bento-cds-frontend/src/content/prod/aboutPagesContent.yaml"
       indices_list: []
       indices_file: "../bento-cds-backend/src/main/resources/yaml/es_indices_cds.yml"
       model_files:
@@ -158,7 +163,7 @@ deployments:
       work_queue_name: cds-curation-queue
       job_variables:
         env:
-          PREFECT_LOGGING_EXTRA_LOGGERS: ""
+          PREFECT_LOGGING_EXTRA_LOGGERS: "ESLoader"
   
 
   #- name: data-hub-dev-icdc
