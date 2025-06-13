@@ -23,7 +23,12 @@ pull:
   - prefect.deployments.steps.git_clone:
       id: clone-step
       repository: https://github.com/CBIIT/icdc-dataloader.git
-      branch: 2.0.0
+      branch: 3.2.0_delete_command
+      include_submodules: True
+  - prefect.deployments.steps.git_clone:
+      id: clone-step
+      repository: https://github.com/CBIIT/bento-cds-backend.git
+      branch: 3.1.0
       include_submodules: True
   - prefect.projects.steps.pip_install_requirements:
       requirements_file: requirements.txt
@@ -131,6 +136,30 @@ deployments:
       job_variables:
         env:
           PREFECT_LOGGING_EXTRA_LOGGERS: "Stream File Validator, S3 Bucket,Bento Config"
+  
+  - name: data-hub-metadata-validation-qa
+    version: null
+    tags: []
+    description: null
+    schedule: {}
+    flow_name: null
+    entrypoint: es_loader_prefect.py:es_loader_prefect
+    parameters:
+      environment: ""
+      about_file: ""
+      indices_list: []
+      indices_file: "../bento-cds-backend/src/main/resources/yaml/es_indices_cds.yml"
+      model_files:
+        - ../cds-model/model-desc/cds-model.yml
+        - ../cds-model/model-desc/cds-model-props.yml
+      prop_file: config/props-cds.yml
+    work_pool:
+      name: cds-curation-ecs
+      work_queue_name: cds-curation-queue
+      job_variables:
+        env:
+          PREFECT_LOGGING_EXTRA_LOGGERS: ""
+  
 
   #- name: data-hub-dev-icdc
   #  version: null
