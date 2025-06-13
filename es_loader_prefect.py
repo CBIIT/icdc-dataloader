@@ -19,7 +19,7 @@ with open(config_file, 'r') as file:
     config = yaml.safe_load(file)
 environment_choices = Literal[tuple(list(config.keys()))]
 
-@flow(name="memgraph data asset generation", log_prints=True)
+@flow(name="CRDC Dadta Hub ESloader", log_prints=True)
 def es_loader_prefect(
     environment: environment_choices, # type: ignore
     about_file,

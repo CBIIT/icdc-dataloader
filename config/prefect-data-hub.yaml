@@ -142,7 +142,7 @@ deployments:
         env:
           PREFECT_LOGGING_EXTRA_LOGGERS: "Stream File Validator, S3 Bucket,Bento Config"
   
-  - name: data-hub-metadata-validation-qa
+  - name: data-hub-opensearch-loader
     version: null
     tags: []
     description: null
