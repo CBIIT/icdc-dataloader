@@ -42,6 +42,29 @@ pull:
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
+  - name: data-hub-opensearch-loader
+    version: null
+    tags: []
+    description: null
+    schedule: {}
+    flow_name: null
+    entrypoint: es_loader_prefect.py:es_loader_prefect
+    parameters:
+      environment: "dev"
+      about_file: "../bento-cds-frontend/src/content/prod/aboutPagesContent.yaml"
+      indices_list: []
+      indices_file: "../bento-cds-backend/src/main/resources/yaml/es_indices_cds.yml"
+      model_files:
+        - ../cds-model/model-desc/cds-model.yml
+        - ../cds-model/model-desc/cds-model-props.yml
+      prop_file: config/props-cds.yml
+    work_pool:
+      name: cds-curation-ecs
+      work_queue_name: cds-curation-queue
+      job_variables:
+        env:
+          PREFECT_LOGGING_EXTRA_LOGGERS: "ESLoader"
+
   - name: data-hub-metadata-validation-dev
     version: null
     tags: []
@@ -141,29 +164,6 @@ deployments:
       job_variables:
         env:
           PREFECT_LOGGING_EXTRA_LOGGERS: "Stream File Validator, S3 Bucket,Bento Config"
-  
-  - name: data-hub-opensearch-loader
-    version: null
-    tags: []
-    description: null
-    schedule: {}
-    flow_name: null
-    entrypoint: es_loader_prefect.py:es_loader_prefect
-    parameters:
-      environment: ""
-      about_file: "../bento-cds-frontend/src/content/prod/aboutPagesContent.yaml"
-      indices_list: []
-      indices_file: "../bento-cds-backend/src/main/resources/yaml/es_indices_cds.yml"
-      model_files:
-        - ../cds-model/model-desc/cds-model.yml
-        - ../cds-model/model-desc/cds-model-props.yml
-      prop_file: config/props-cds.yml
-    work_pool:
-      name: cds-curation-ecs
-      work_queue_name: cds-curation-queue
-      job_variables:
-        env:
-          PREFECT_LOGGING_EXTRA_LOGGERS: "ESLoader"
   
 
   #- name: data-hub-dev-icdc
