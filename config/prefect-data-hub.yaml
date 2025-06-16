@@ -15,26 +15,26 @@ push: null
 # pull section allows you to provide instructions for cloning this project in remote locations
 pull:
   - prefect.deployments.steps.git_clone:
+      #id: clone-step
+      repository: https://github.com/CBIIT/icdc-dataloader.git
+      branch: 3.2.0_delete_command
+      include_submodules: True
+  - prefect.deployments.steps.git_clone:
       repository: https://github.com/CBIIT/cds-model.git
       branch: main
   - prefect.deployments.steps.git_clone:
       repository: https://github.com/CBIIT/icdc-model-tool.git
       branch: master
   - prefect.deployments.steps.git_clone:
-      id: clone-step
-      repository: https://github.com/CBIIT/icdc-dataloader.git
-      branch: 3.2.0_delete_command
-      include_submodules: True
-  - prefect.deployments.steps.git_clone:
-      id: clone-step
       repository: https://github.com/CBIIT/bento-cds-backend.git
       branch: 3.1.0
       include_submodules: True
   - prefect.deployments.steps.git_clone:
-      id: clone-step
       repository: https://github.com/CBIIT/bento-cds-frontend.git
       branch: 4.6.0
       include_submodules: True
+  - prefect.deployments.steps.set_working_directory:
+      directory: "/opt/prefect/icdc-dataloader"
   - prefect.projects.steps.pip_install_requirements:
       requirements_file: requirements.txt
       directory: "{{ clone-step.directory }}"
