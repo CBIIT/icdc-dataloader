@@ -8,11 +8,10 @@ import os
 import prefect.variables as Variable
 from neo4j import GraphDatabase
 
-NEO4j_SECRET = "neo4j_secret"
-NEO4J_IP = "neo4j_ip"
-NEO4J_USER = "neo4j_user"
-NEO4J_KEY = "neo4j_key"
-NEO4J_PASSWORD = "neo4j_password"
+MEMGRAPH_SECRET = "neo4j_secret"
+MEMGRAPH_ENDPOINT = "memgraph_endpoint"
+MEMGRAPH_USER = "memgraph_user"
+MEMGRAPH_PASSWORD = "memgraph_password"
 
 config_file = "config/prefect_drop_down_config_esloader.yaml"
 with open(config_file, 'r') as file:
@@ -37,16 +36,16 @@ def es_loader_prefect(
     config['about_file'] = about_file
     config['prop_file'] = prop_file
     config['indices_list'] = indices_list
-    neo4j_secret = Variable.get(config_drop_list[environment][NEO4j_SECRET])
+    neo4j_secret = Variable.get(config_drop_list[environment][MEMGRAPH_SECRET])
     secret = get_secret(neo4j_secret)
-    config['neo4j_uri'] = secret[NEO4J_IP]
-    config['neo4j_user'] = secret[NEO4J_USER]
-    config['neo4j_password'] = secret[NEO4J_PASSWORD]
+    config['memgraph_endpoint'] = "bolt://" + secret[MEMGRAPH_ENDPOINT] + ":7687"
+    config['memgraph_user'] = secret[MEMGRAPH_USER]
+    config['memgraph_password'] = secret[MEMGRAPH_PASSWORD]
     print_config(logger, config)
 
     neo4j_driver = GraphDatabase.driver(
-        config['neo4j_uri'],
-        auth=(config['neo4j_user'], config['neo4j_password']),
+        config['memgraph_endpoint'],
+        auth=(config['memgraph_user'],  config['memgraph_password']),
         encrypted=False
     )
 
