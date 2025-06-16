@@ -170,7 +170,7 @@ class ICDC_Schema:
                     actual_multiplier = multiplier
                 if src not in self.relationships:
                     self.relationships[src] = {}
-                print(f"checking relationship for: {src} to {dest}")
+                #print(f"checking relationship for: {src} to {dest}")
                 self.relationships[src][dest] = {RELATIONSHIP_TYPE: name, MULTIPLIER: actual_multiplier}
 
                 count += 1

@@ -1,0 +1,267 @@
+# Population Sciences DC data model nodes, properties and relationships file
+# Title case names are "reserved" (meaningful to the parser)
+# Lower case names are labels for the entities
+
+Nodes:
+  # node:
+  #   Desc: text
+  #   Tags:
+  #     Category: value
+  #     Assignment: value
+  #     Class: value
+  #     Template: 'Yes'
+  #   Props:
+  #     - property_1
+  #     - property_2
+  #     - property_3
+  #     - property_4
+  #     - property_5
+  program:  
+    Desc: The Program node contains properties which describe any broad framework and/or administrative umbrella into which inter-related projects, and/or studies/trials and/or other research activities can be grouped, based upon their origins and/or scientific focus. These programs may or may not directly relate to any formal program, e.g. NCI funding programs. Example - Clinical Proteomic Tumor Analysis.
+    Tags:
+      Category: administrative
+      Assignment: core
+      Class: primary
+      Template: 'Yes'
+    Props:
+      - program_name #11444542
+      - program_short_name #11459801
+  project:
+    Desc: text <WORK NEEDED HERE>
+    Tags:
+      Category: administrative
+      Assignment: core
+      Class: secondary
+      Template: 'Yes'
+    Props:
+      - project_name #11459804
+      - project_short_name #11459806
+  study:
+    Desc: The Study node contains properties required to characterize each study in terms of a title, describe when, how and why the study/trial was conducted, and indicate the total number of participants included in the study in question.
+    Tags:
+      Category: study
+      Assignment: core
+      Class: primary
+      Template: 'Yes'
+    Props:
+      - study_name #11459810
+      - study_short_name #11459812
+      - study_id #5054234
+      - dbgap_accession_id
+      - study_description #3444002
+      - study_type #11160683
+      - study_design
+      - study_status
+      - enrollment_beginning_year
+      - enrollment_ending_year
+      - study_beginning_year
+      - study_ending_year
+      - number_of_participants
+      - biospecimen_collection
+  study_personnel:
+    Desc: The Study Personnel node contains properties which identify the individuals most directly involved in the conduct of any given study and/or the analysis of the data generatedy, and which indicate the specific role(s) of each member of the study team.
+    Tags:
+      Category: study
+      Assignment: core
+      Class: secondary
+      Template: 'Yes'
+    Props:
+      - study_personnel_record_id #14822135
+      - person_first_name #2179589
+      - person_last_name #2179591
+      - person_middle_name #2179590
+      #- person_orcid_id #10624734
+      - person_institution
+      - person_email_address
+      - person_role #2201713
+  associated_link:
+    Desc: The Associated Link node contains the properties required to associate multiple links to additional information about any given study with the appropriate study record, and to define an inuitive label via which each link will be diplayed within the UI. 
+    Tags:
+      Category: study
+      Assignment: core
+      Class: secondary
+      Template: 'Yes'
+    Props:
+      - associated_link_record_id #14822135
+      - associated_link_name #14822136
+      - associated_link_url #14822140
+  publication:
+    Desc: The Publication node is comprised of properties which describe publications that are directly associated with any given study of interest, inclusive of the location(s) at which publications can be viewed in electronic form.
+    Tags:
+      Category: study
+      Assignment: core
+      Class: secondary
+      Template: 'Yes'
+    Props:
+      - publication_record_id #14822135
+      - publication_title
+      - authorship
+      - year_of_publication
+      - journal_citation
+      - digital_object_id
+      - pubmed_id
+  study_country:
+    Desc: The Study Country node contains only a single property via which potentially lengthy lists of countires from which study participants were included can be associated with the study in question, using data loading files of minimal complexity.
+    Tags:
+      Category: study
+      Assignment: core
+      Class: secondary
+      Template: 'Yes'
+    Props:
+      - study_country_record_id #14822135
+      - study_country
+  study_state_province_territory:
+    Desc: The Study State/Province/Territory node contains only a single proerty via which potentially lengthy lists of states and/or provinces and/or territories from which study participants were included can be associated with the study in question, using data loading files of minimal complexity.
+    Tags:
+      Category: study
+      Assignment: core
+      Class: secondary
+      Template: 'Yes'
+    Props:
+      - study_state_record_id #14822135
+      - study_state_province_territory
+  study_demographic:
+    Desc: The Demographic node is comprised of properties which describe the key demographic characteristics of the study population as whole, such as the sexes, genders, races and etnnicities represented.
+    Tags:
+      Category: study
+      Assignment: core
+      Class: primary
+      Template: 'Yes'
+    Props:
+      - study_demographic_record_id #14822135
+      - study_participant_minimum_age
+      - study_participant_maximum_age
+      - study_participant_median_age
+      - race # use list type property?
+      - ethnicity # use list type property?
+      - sex # use list type property? Or use definite, exclusive values like Female Only, Mixed?
+      - gender #10748236 # use list type property?
+      - ncbi_taxonomy_id #10543100
+      - ncbi_taxonomy_name #10543082
+  primary_diagnosis:
+    Desc: The Diagnosis node contains only a single property which captures the various and potentially numerous primary diseases with which study participants were diagnosed.
+    Tags:
+      Category: study
+      Assignment: core
+      Class: primary
+      Template: 'Yes'
+    Props:
+      - primary_diagnosis_record_id #14822135
+      - primary_diagnosis_disease_term
+  # comorbidity:
+  #   Desc: The Comorbidity node contains only a single property which captures any comorbidities being examined by the study in question as potential contributing factors.
+  #   Tags:
+  #     Category: study
+  #     Assignment: core
+  #     Class: primary
+  #     Template: 'Yes'
+  #   Props:  
+  #     - comorbidity_record_id #14822135
+  #     - comorbidity_disease_term
+  data_collection:
+    Desc: The Data Collection node is comprised of the properties required to describe the nature of the data being gathered by any given study, and to define the extent to which each data collection category was covered.
+    Tags:
+      Category: study
+      Assignment: core
+      Class: primary
+      Template: 'Yes'
+    Props:  
+      - data_collection_record_id #14822135
+      #- data_collection_grouping # the higher-level grouping or family to which each specific data collection category belongs
+      - data_collection_category # for example Mental Health Assessments, Cardiovascular Health Assessments, Smoking History, etc., all per CV
+      #- data_collection_category_annotation_coverage # for example Extensive, Typical, Limited, Minimal
+      - data_collection_category_annotation_count # the number of annotations per data collection category
+      - data_collection_category_assessed
+  participant:
+    Desc: The Particpant node is comprised of the properties which define and characterize each study participant
+    Tags:
+      Category: case
+      Assignment: core
+      Class: primary
+      Template: 'Yes'
+    Props:
+      - participant_id # per CTDC, CDE ID = 12220014
+      - participant_case_indicator
+      - cancer_diagnosis_primary_site
+      - cancer_diagnosis_disease_morphology
+      - age_at_enrollment # per CTDC, CDE = 12299548
+      - age_at_first_cancer_diagnosis
+      #- year_of_birth
+      - participant_race # per CTDC, CDE ID = 2192199
+      - participant_ethnicity # per CTDC, CDE ID = 2192217
+      - participant_sex # per CTDC, CDE ID = 7572817)
+      #- height # per CTDC, CDE ID = 2179643
+      #- weight # per CTDC, CDE ID = 2179689
+      #- body_surface_area # per CTDC, CDE ID = 653
+      #- body_mass_index
+      #- occupation # per CTDC, CDE ID = 6617540
+      #- income # per CTDC, CDE ID = 14834966
+      #- highest_level_of_education # per CTDC, CDE ID = 2681552
+      #- tobacco_usage
+      #- alcohol_consumption
+      #- country_of_residence
+      #- state_province_territory_of_residence
+      - participant_ncbi_taxonomy_id # per DSS for CTDC, CDE ID = 10543100
+      #- participant_ncbi_taxonomy_name # per DSS for CTDC, CDE ID = 10543082
+  data_file:
+    Desc: Data files can be associated with CTDC project, study, participant, diagnosis and specimen records, but are not themselves stored within the application. Instead, the application stores records as to the existence and nature of such data files. The Data File node is comprised of properties which characterize these files in terms of their size, format and content, such that they can be appropriately represented within the application's UI, and in terms of their storage location, such that they can be retrieved for analysis.
+    Tags:
+      Category: data_file
+      Assignment: core
+      Class: primary
+      Template: 'Yes'
+    Props:
+      - data_file_name #11284037
+      - data_file_type #14824731
+      - data_file_description #11280338
+      - data_file_format #11416926
+      - data_file_size #11479876
+      - data_file_checksum_value #11480133
+      - data_file_checksum_type #11475057
+      - data_file_compression_status #11387114
+      - data_file_uuid #14826100
+      - data_file_location #11556141
+      - data_file_signed_url # to be used ONLY in support of the MVP-style direct file download, and to be removed outright post-MVP
+      - data_file_access_control
+Relationships:
+  belongs_to:
+    Mul: many_to_one
+    Ends:
+      - Src: study
+        Dst: project
+      - Src: study # so can a lowest-level study belong directly to a highest-level program?
+        Dst: program
+      #- Src: project # this relationship can be removed because project is above study?
+        #Dst: study
+      - Src: project # this seems legitimate
+        Dst: program     
+    Props: null
+  associated_with: # group all file relationships in here?
+    Mul: many_to_one
+    Ends:
+      - Src: data_file
+        Dst: study
+      # - Src: data_file
+      #   Dst: project
+      - Src: participant
+        Dst: study
+      - Src: data_collection
+        Dst: study
+      # - Src: comorbidity
+      #   Dst: study
+      - Src: primary_diagnosis
+        Dst: study
+      - Src: study_demographic
+        Dst: study
+        Mul: one_to_one
+      - Src: study_state_province_territory
+        Dst: study
+      - Src: study_country
+        Dst: study
+      - Src: publication
+        Dst: study 
+      - Src: associated_link
+        Dst: study
+      - Src: study_personnel
+        Dst: study
+    Props: null

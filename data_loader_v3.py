@@ -16,6 +16,7 @@ from bento.common.utils import get_host, DATETIME_FORMAT, reformat_date
 from neo4j import Driver
 import pandas as pd
 import yaml
+import numpy as np
 
 from icdc_schema import ICDC_Schema, is_parent_pointer, get_list_values
 from bento.common.utils import get_logger, NODES_CREATED, RELATIONSHIP_CREATED, UUID, \
@@ -178,7 +179,7 @@ class DataLoader:
         if 'location' in conversion_files:
             self.location_codes = self.get_cancer_translations(conversion_files["location"])
         if 'histology' in conversion_files:
-            self.histology_codes = self.get_cancer_translations(conversion_files["histology"])
+            self.histology_codes = self.get_cancer_translations_hist(conversion_files["histology"])
 
     
     def get_cancer_translations(self, yml_file):
@@ -195,6 +196,20 @@ class DataLoader:
                 all_terms = pd.concat([all_terms, x])
     
         all_terms.columns = ["Sub Site", "ICD-O-3 Code", "Primary Site"]
+        return all_terms
+    
+    def get_cancer_translations_hist(self, yml_file):
+        with open(yml_file) as f:
+            cancer_term_file = yaml.load(f, Loader=yaml.FullLoader)
+
+        all_terms = pd.DataFrame()
+        for curr_key in cancer_term_file.keys():
+            x = pd.DataFrame.from_dict(cancer_term_file[curr_key], orient = 'index')
+            x["Primary Site"] = None
+            x.reset_index(inplace=True)
+            all_terms = pd.concat([all_terms, x])
+    
+        all_terms.columns = ["ICD-O-3 Code", "Sub Site", "Primary Site"]
         return all_terms
     
     def get_schema_data(self, tx, query):
@@ -221,10 +236,13 @@ class DataLoader:
                                                                        'Node_Index_DF':  pd.DataFrame(columns=['Node_ID', 'Primary_Key_Value'])}
     
             for curr_node in self.node_keys_dict:
-                #index_df = pd.DataFrame(columns = ['Node_ID', 'Primary_Key_Value'])
-                query = f"MATCH (n:{curr_node}) RETURN Id(n) as Node_ID, n.{self.node_keys_dict[curr_node]['Primary ID']} as Primary_Key_Value"
+                try:  #elementID(n) is to be used in verion 5 or higher
+                    query = f"MATCH (n:{curr_node}) RETURN elementId(n) as Node_ID, n.{self.node_keys_dict[curr_node]['Primary ID']} as Primary_Key_Value"
+                    records = session.execute_read(self.get_schema_data, query)
+                except Exception:  #in version 4 or earlier the ID(n) is used
+                    query = f"MATCH (n:{curr_node}) RETURN Id(n) as Node_ID, n.{self.node_keys_dict[curr_node]['Primary ID']} as Primary_Key_Value"
+                    records = session.execute_read(self.get_schema_data, query)
 
-                records = session.execute_read(self.get_schema_data, query)
                 if len(records) > 0:
                     data_res = pd.DataFrame(records)
                     self.node_keys_dict[curr_node]['Node_Index_DF'] = data_res
@@ -384,7 +402,7 @@ class DataLoader:
         
         #for txt in file_list:
         rel_start_time = time.perf_counter()
-        batch_size = 1000
+        batch_size = 5000
         
         for txt in processed_files:
             if loading_mode != DELETE_MODE:
@@ -451,6 +469,7 @@ class DataLoader:
                     try:
                         if value is None:
                             cleaned_value = None
+                            cleaned_value = np.nan
                         else:
                             cleaned_value = int(value)
                     except ValueError:
@@ -657,6 +676,11 @@ class DataLoader:
                 id_field = self.schema.get_id_field(obj)
                 node_id = self.schema.get_id(obj)
 
+                #properties = self.schema.nodes[obj[NODE_TYPE]]["Props"]
+                #obj = {i:obj[i] if properties[i]["Type"] == 'String' 
+                #       else np.nan if properties[i]["Type"] == 'Float' and len(i) == 0
+                #       else obj[i] for i in obj}
+
                 if node_id:
                     if node_id in ids:
                         if get_props_signature(props) != ids[node_id]['props']:
@@ -787,7 +811,7 @@ class DataLoader:
         if create_type == "CREATE":
             new_qry += """\"CREATE (n:MyNode) SET n = item  SET n.created = datetime() return n \", """    # Action statement: Creates a node for each item
         elif create_type == 'MATCH':  #add filtering criteria to node
-            new_qry += """ \"Match(n:MyNode) where Id(n) = item.Node_ID and n.Primary_Key_Value = item.Primary_Key_Value """
+            new_qry += """ \"Match(n:MyNode) where elementId(n) = item.Node_ID and n.Primary_Key_Value = item.Primary_Key_Value """
             new_qry += """  SET n.updated = datetime()  return n \", """
         
         new_qry += """{batchSize: 1000, """   # Process 1000 items per batch
@@ -802,7 +826,12 @@ class DataLoader:
         new_qry = new_qry.replace("n.Node_ID = item.Node_ID","")
         new_qry = new_qry.replace("n.Primary_Key_Value = item.Primary_Key_Value","")
 
-        result = tx.run(new_qry, data=data)
+        try:
+            result = tx.run(new_qry, data=data)
+        except Exception:
+            new_qry = new_qry.replace("elementId", "ID")
+            result = tx.run(new_qry, data=data)
+            
         data_list = [i for i in result.data()]
         return  data_list[0]
     
@@ -811,7 +840,7 @@ class DataLoader:
         new_qry += """\"UNWIND $data AS batch return batch\", """  # Iterate statement: Unwinds the list of data items
         new_qry += """ \"old_qry \", """
         
-        new_qry += """{batchSize: 1000, """   # Process 1000 items per batch
+        new_qry += """{batchSize: 5000, """   # Process 1000 items per batch
         new_qry += """parallel: true, """    # Run batches sequentially
         new_qry += """iterateList: true, """ # process all batches at once
         new_qry += """params: { data: $data } } )"""   # Pass the data list as a parameter
@@ -860,10 +889,17 @@ class DataLoader:
             action_word = 'Deleting'
         else:
             raise Exception('Wrong loading_mode: {}'.format(loading_mode))
+        self.log.info(' ')
         self.log.info('{} nodes from file: {}'.format(action_word, file_name))
 
         file_data = pd.read_csv(file_name, sep='\t', header=0)
-        file_data.fillna("missing data", inplace=True)
+        for col in file_data:
+            if file_data[col].dtype in ['int64', 'float64']:
+                file_data[col] = file_data[col].fillna(np.nan)
+            elif file_data[col].dtype == 'datetime64[ns]':
+                file_data[col] = file_data[col].fillna(pd.to_datetime('1900-01-01'))
+            else:
+                file_data[col] = file_data[col].fillna("missing data")
         
         file_data = self.convert_codes(file_data, 'cancer_diagnosis_primary_site', self.location_codes)
         file_data = self.convert_codes(file_data, 'cancer_diagnosis_disease_morphology', self.histology_codes)
@@ -925,7 +961,7 @@ class DataLoader:
             nodes_done += len(data_to_work)
             batches += 1
             end_time = time.time()
-            print(f"Completed batch {batches}, total nodes done: {nodes_done} in {end_time - batch_time} seconds")
+            self.log.info(f"Completed batch {batches}, total nodes done: {nodes_done} in {end_time - batch_time: .4f} seconds")
         return all_new_nodes, all_existing_nodes , all_obj
 
 
@@ -1025,11 +1061,16 @@ class DataLoader:
         parent_type = relationship[PARENT_TYPE]
         parent_id_field = relationship[PARENT_ID_FIELD]
 
-        base_statement = 'MATCH (n:{0})-[r:{2}]->(m:{3}) where n.{1} = ${1} and Id(n) = {4} '.format(node_type,
+        base_statement = 'MATCH (n:{0})-[r:{2}]->(m:{3}) where n.{1} = ${1} and ElementId(n) = {4} '.format(node_type,
                                                                                  self.schema.get_id_field(node),
                                                                                  relationship_name, parent_type, curr_index)
         statement = base_statement + ' return m.{} AS {}'.format(parent_id_field, PARENT_ID)
-        result = session.run(statement, node)
+        try:
+            result = session.run(statement, node)
+        except Exception:
+            statement = statement.replace("elementId", "ID")
+            result = session.run(statement, node)
+        
         if result:
             old_parent = result.single()
             if old_parent:
@@ -1092,28 +1133,30 @@ class DataLoader:
         
         check_relationship = [i for i in file_data_df.columns if i in header_names]
         if len(check_relationship) == 0:
-            print(f"no relationship found for file type: {list(set(file_data_df[NODE_TYPE]))}")
+            self.log.info(f"no relationship found for file type: {list(set(file_data_df[NODE_TYPE]))}")
         else:
             for curr_relationship in check_relationship:
-
                 try:
-                    
                     relation = self.schema.relationships[node_type][curr_relationship.split('.')[0]]['relationship_type']
                     qry_str = "  "
                     qry_str += f"MATCH (m:{curr_relationship.split('.')[0]}) "
                     qry_str += f"MATCH (n:{node_type}) "
                     qry_str += f"where m.{curr_relationship.split('.')[1]} = batch.{curr_relationship.split('.')[1]} and "
                     
-                    qry_str += 'n.{0} = batch.{0} and Id(n) = batch.Node_ID '.format(self.schema.get_id_field(obj))
+                    qry_str += 'n.{0} = batch.{0} and elementId(n) = batch.Node_ID '.format(self.schema.get_id_field(obj))
                     qry_str += f"MERGE (n)-[r:{relation}]->(m) ON CREATE SET r.created = datetime() ON MATCH SET r.updated = datetime()"
-                    
                     
                     file_data_df.columns = [i if len(i.split('.')) == 1 else  i.split('.')[1] for i in file_data_df.columns]
                     file_data_dct = file_data_df.to_dict('records')
-                    qry_result = session.execute_write(self.process_relationships_batches, file_data_dct, qry_str)
-                    
-                    self.relationship_passed += qry_result["operations"]['committed']
-                    self.relationship_failed += qry_result["operations"]['failed']
+                    try:
+                        qry_result = session.execute_write(self.process_relationships_batches, file_data_dct, qry_str)
+                    except Exception:
+                        qry_str = qry_str.replace("elementId", "ID")
+                        qry_result = session.execute_write(self.process_relationships_batches, file_data_dct, qry_str)
+                    finally:
+                        self.log.info(f"{qry_result["operations"]['committed']} Created and {qry_result["operations"]['failed']} failed")
+                        self.relationship_passed += qry_result["operations"]['committed']
+                        self.relationship_failed += qry_result["operations"]['failed']
                 except Exception:
                     print(file_data_dct)
         return True
@@ -1149,10 +1192,10 @@ class DataLoader:
             "MATCH (n) RETURN n",
             "DETACH DELETE n",
             {batchSize: $batch_size, parallel: true} ) """
-        tx.run(query, batch_size=batch_size)
-        self.log.info("all nodes deleted!")
-        self.log.info(" ")
+        result = tx.run(query, batch_size=batch_size)
         
+        data_list = [i for i in result.data()]
+        return  data_list[0]
         
         #query = """  MATCH (n) CALL { WITH n DETACH DELETE n } IN TRANSACTIONS OF 1000 ROWS"""
         #result = tx.run(query).consume()
@@ -1160,11 +1203,16 @@ class DataLoader:
         #return node_result
 
     def wipe_db(self, session, split=False):
-        session.execute_write(self.clean_database)
-        #self.nodes_deleted = result.counters.nodes_deleted
-        #self.relationships_deleted = result.counters.relationships_deleted
-        #self.log.info('{} nodes deleted!'.format(self.nodes_deleted))
-        #self.log.info('{} relationships deleted!'.format(self.relationships_deleted))
+        failed_nodes = 1
+        deleted_nodes = 0
+        while failed_nodes > 0:
+            qry_result = session.execute_write(self.clean_database)
+            
+            deleted_nodes += qry_result["operations"]["committed"]
+            failed_nodes = qry_result["operations"]['failed']
+
+        self.log.info(" ")
+        self.log.info(f'{deleted_nodes} nodes deleted...')
 
     def wipe_db_split(self, session):
         while True:

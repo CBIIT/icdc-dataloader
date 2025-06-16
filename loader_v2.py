@@ -38,6 +38,7 @@ def parse_arguments():
     parser.add_argument('config_file', help='Configuration file, example is in config/data-loader-config.example.yml',
                         nargs='?', default=None)
     parser.add_argument('-c', '--cheat-mode', help='Skip validations, aka. Cheat Mode', action='store_true')
+    parser.add_argument('-dg', '--debug-mode', help='Run data Loader in debug mode', action='store_true')
     parser.add_argument('-d', '--dry-run', help='Validations only, skip loading', action='store_true')
     parser.add_argument('--wipe-db', help='Wipe out database before loading, you\'ll lose all data!',
                         action='store_true')
@@ -59,13 +60,16 @@ def parse_arguments():
 def process_arguments(args, log):
     config_file = None
 
-    args.config_file = r'C:\Users\breadsp2\Desktop\Data_Loader\config\popsci-config_v2.yml' #used in debug mode
-
     if args.config_file:
         config_file = args.config_file
+    else:   #if a file was not provided then use the default file
+        config_file = './config/popsci-config_v2.yml' #used in debug mode
     config = BentoConfig(config_file)
 
     # Required Fields
+    if args.debug_mode:
+        config.debug_mode = args.debug_mode
+
     if args.dataset:
         config.dataset = args.dataset
     if not config.database_name:
