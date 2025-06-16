@@ -16,8 +16,8 @@ NEO4J_PASSWORD = "neo4j_password"
 
 config_file = "config/prefect_drop_down_config_esloader.yaml"
 with open(config_file, 'r') as file:
-    config = yaml.safe_load(file)
-environment_choices = Literal[tuple(list(config.keys()))]
+    config_drop_list = yaml.safe_load(file)
+environment_choices = Literal[tuple(list(config_drop_list.keys()))]
 
 @flow(name="CRDC Dadta Hub ESloader", log_prints=True)
 def es_loader_prefect(
@@ -37,7 +37,7 @@ def es_loader_prefect(
     config['about_file'] = about_file
     config['prop_file'] = prop_file
     config['indices_list'] = indices_list
-    neo4j_secret = Variable.get(config[environment][NEO4j_SECRET])
+    neo4j_secret = Variable.get(config_drop_list[environment][NEO4j_SECRET])
     secret = get_secret(neo4j_secret)
     config['neo4j_uri'] = secret[NEO4J_IP]
     config['neo4j_user'] = secret[NEO4J_USER]
