@@ -277,8 +277,6 @@ def main():
             except Exception as ex:
                 logger.error(f'There is an error in the "{index_name}" index definition, this index will not be loaded')
                 logger.error(ex)
-                logger.error(cypher_query)
-                raise Exception
         elif index['type'] == 'about_file':
             if 'about_file' in config:
                 loader.load_about_page(index_name, index['mapping'], config['about_file'])
