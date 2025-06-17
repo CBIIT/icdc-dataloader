@@ -51,6 +51,15 @@ def es_loader_prefect(
         encrypted=False
     )
 
+    # ...existing code...
+
+    with neo4j_driver.session() as session:
+        result = session.run("MATCH (n) RETURN count(n) AS node_count")
+        node_count = result.single()["node_count"]
+        logger.log(f"Total nodes in database: {node_count}")
+
+    # ...existing code...
+
     loader = ESLoader(
         es_host=config['es_host'],
         neo4j_driver=neo4j_driver
