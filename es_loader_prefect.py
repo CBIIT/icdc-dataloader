@@ -56,7 +56,7 @@ def es_loader_prefect(
     with neo4j_driver.session() as session:
         result = session.run("MATCH (n) RETURN count(n) AS node_count")
         node_count = result.single()["node_count"]
-        logger.log(f"Total nodes in database: {node_count}")
+        logger.info(f"Total nodes in database: {node_count}")
 
     # ...existing code...
 
