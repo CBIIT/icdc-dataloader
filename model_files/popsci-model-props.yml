@@ -233,6 +233,7 @@ PropDefinitions:
     Enum: # Acceptable values listed here are the actual values propsed by the working group
       - Active # Data collection still in progress
       - Closed # Data collection completed, data analysis in progress
+      - Inactive
     Req: Preferred
     Tags:
       Labeled: Status 
@@ -910,55 +911,57 @@ PropDefinitions:
         Version: '1' # ?    
     Src: Data Submitter(s)
     Type:
-      value_type: list
-      Enum: # example values for primary site copied directly from the ICDC data model listed below are to be used only for the generation of mock data
-      - Abdomen
-      - Bladder
-      - Bladder, Prostate
-      - Bladder, Urethra
-      - Bladder, Urethra, Prostate
-      - Bladder, Urethra, Vagina
-      - Bone
-      - Bone (Appendicular)
-      - Bone (Axial)
-      - Bone Marrow
-      - Brain
-      - Carpus
-      - Chest Wall
-      - Cranial Sternum
-      - Distal Urethra
-      - Elbow Joint
-      - Femur
-      - Flank
-      - Hip
-      - Hock
-      - Humerus
-      - Inguinal Region
-      - Kidney
-      - Knee Region
-      - Lip
-      - Lung
-      - Lymph Node
-      - Mammary Gland
-      - Mandible
-      - Maxilla
-      - Mouth
-      - Neck
-      - Not Applicable
-      - Pleural Cavity
-      - Rib Region
-      - Shoulder
-      - Skin
-      - Spleen
-      - Subcutis
-      - Tarsus
-      - Thigh
-      - Thorax
-      - Thyroid Gland
-      - Unknown
-      - Urethra, Prostate
-      - Urinary Tract
-      - Urogenital Tract
+       value_type: yaml
+    dict_name:
+       yml_file: 'location_codes'
+    Enum: # example values for primary site copied directly from the ICDC data model listed below are to be used only for the generation of mock data
+      - 'Abdomen'
+      - 'Bladder'
+      - 'Bladder, Prostate'
+      - 'Bladder, Urethra'
+      - 'Bladder, Urethra, Prostate'
+      - 'Bladder, Urethra, Vagina'
+      - 'Bone'
+      - 'Bone (Appendicular)'
+      - 'Bone (Axial)'
+      - 'Bone Marrow'
+      - 'Brain'
+      - 'Carpus'
+      - 'Chest Wall'
+      - 'Cranial Sternum'
+      - 'Distal Urethra'
+      - 'Elbow Joint'
+      - 'Femur'
+      - 'Flank'
+      - 'Hip'
+      - 'Hock'
+      - 'Humerus'
+      - 'Inguinal Region'
+      - 'Kidney'
+      - 'Knee Region'
+      - 'Lip'
+      - 'Lung'
+      - 'Lymph Node'
+      - 'Mammary Gland'
+      - 'Mandible'
+      - 'Maxilla'
+      - 'Mouth'
+      - 'Neck'
+      - 'Not Applicable'
+      - 'Pleural Cavity'
+      - 'Rib Region'
+      - 'Shoulder'
+      - 'Skin'
+      - 'Spleen'
+      - 'Subcutis'
+      - 'Tarsus'
+      - 'Thigh'
+      - 'Thorax'
+      - 'Thyroid Gland'
+      - 'Unknown'
+      - 'Urethra, Prostate'
+      - 'Urinary Tract'
+      - 'Urogenital Tract'
     Req: 'Yes'
   cancer_diagnosis_disease_morphology:
     Desc: <The ICD-O-3 code which identifies the specific appearance of cells and tissues (normal and abnormal) used to define the presence and nature of disease.> This list type property accepts multiple values for participants diagnosed with more than one type of cancer, provided that each neoplasm value specified is represented within the associated controlled vocabulary of acceptable terms. Within the data loading file for the Participant node, multiple diagnoses assocaited with a single study participant must be separated from one another using the pipe (|) character. <br>CDE ID = 13606049
@@ -969,8 +972,10 @@ PropDefinitions:
         Version: '1' # ?    
     Src: Data Submitter(s)
     Type:
-      value_type: list
-      Enum:
+       value_type: yaml
+    dict_name:
+      yml_file:'histology_codes'
+    Enum:
         # - Acute Myeloid Leukemia Not Otherwise Specified
         # - Adenocarcinoma of the Gastroesophageal Junction
         # - Colorectal Carcinoma
@@ -1018,8 +1023,6 @@ PropDefinitions:
       units:
         - days
       value_type: number
-    minimum: 5565   #55 * 365
-    maximun: 24115   #75 * 365
     Req: 'Yes'
   age_at_first_cancer_diagnosis:
     Desc: <The age (in days) of the participant when the participant was first diagnosed with cancer.> The age of the participant as of first diagnosis of cancer, measured in days. <br>CDE ID = 
@@ -1033,8 +1036,6 @@ PropDefinitions:
       units:
         - days
       value_type: number
-    minimum: 5565   #55 * 365
-    maximum: 24115   #75 * 365
     Req: 'Yes'
   # year_of_birth:
   #   Desc: text

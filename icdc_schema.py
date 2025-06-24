@@ -35,7 +35,7 @@ MAX = 'maximum'
 EX_MIN = 'exclusiveMinimum'
 EX_MAX = 'exclusiveMaximum'
 DESCRIPTION = 'Desc'
-
+#YAML_DICT = 'Yaml_dict'
 
 def get_list_values(list_str):
     return [item.strip() for item in list_str.split(LIST_DELIMITER) if item.strip()]
@@ -247,6 +247,7 @@ class ICDC_Schema:
 
     def get_type(self, name):
         result = {PROP_TYPE: DEFAULT_TYPE}
+
         if name in self.org_schema[PROP_DEFINITIONS]:
             prop = self.org_schema[PROP_DEFINITIONS][name]
             result[DESCRIPTION] = prop.get(DESCRIPTION, '')
@@ -257,6 +258,8 @@ class ICDC_Schema:
             elif PROP_ENUM in prop:
                 key = PROP_ENUM
             if key:
+                if isinstance(key, dict):
+                    key = key['value_type']
                 prop_desc = prop[key]
                 if isinstance(prop_desc, str):
                     result[PROP_TYPE] = self.map_type(prop_desc)
@@ -272,12 +275,15 @@ class ICDC_Schema:
                         if UNITS in prop_desc:
                             result[HAS_UNIT] = True
                 elif isinstance(prop_desc, list):
-                    enum = set()
-                    for t in prop_desc:
-                        if not re.search(r'://', t):
-                            enum.add(t)
-                    if len(enum) > 0:
-                        result[ENUM] = enum
+                    try:
+                        enum = set()
+                        for t in prop_desc:
+                            if not re.search(r'://', t):
+                                enum.add(t)
+                        if len(enum) > 0:
+                            result[ENUM] = enum
+                    except Exception:
+                        print("error")
                 else:
                     self.log.debug(
                         'Property type: "{}" not supported, use default type: "{}"'.format(prop_desc, DEFAULT_TYPE))
@@ -421,6 +427,9 @@ class ICDC_Schema:
                 self.log.debug('Property "{}" is not in data model!'.format(key))
             else:
                 prop_type = properties[key]
+                if key == "cancer_diagnosis_primary_site":
+                    if obj["cancer_diagnosis_primary_site"] != "Not Applicable":
+                        print("check")
                 if not self._validate_type(prop_type, value):
                     result['result'] = False
                     result['messages'].append(
@@ -483,11 +492,15 @@ class ICDC_Schema:
             if not isinstance(str_value, dict):
                 return False
         elif model_type[PROP_TYPE] == 'String':
-            if ENUM in model_type:
+            if ENUM in model_type and YAML_DICT not in model_type:
                 if not isinstance(str_value, str):
                     return False
                 if str_value != '' and str_value not in model_type[ENUM]:
                     return False
+            elif YAML_DICT in model_type:
+                if str_value != '' and str_value not in model_type[ENUM]:
+                    return False
+                
         elif model_type[PROP_TYPE] == 'Date':
             if not isinstance(str_value, str):
                 return False

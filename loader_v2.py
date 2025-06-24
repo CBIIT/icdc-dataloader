@@ -14,15 +14,15 @@ from bento.common.utils import LOG_PREFIX, APP_NAME,  UPSERT_MODE, NEW_MODE, DEL
 from bento.common.utils import get_logger, removeTrailingSlash, check_schema_files, print_config, get_log_file, load_plugin
 import time
 
+from config import BentoConfig
+from data_loader_v3 import DataLoader   # udpated to use new version of data loader
+from bento.common.s3 import S3Bucket
+
 
 if LOG_PREFIX not in os.environ:
     os.environ[LOG_PREFIX] = 'Data_Loader'
 
 os.environ[APP_NAME] = 'Data_Loader'
-
-from config import BentoConfig
-from data_loader_v3 import DataLoader   #udpated to use new version of data loader
-from bento.common.s3 import S3Bucket
 
 
 def parse_arguments():
@@ -31,8 +31,8 @@ def parse_arguments():
     parser.add_argument('-u', '--user', help='Neo4j user')
     parser.add_argument('-p', '--password', help='Neo4j password')
     parser.add_argument('-s', '--schema', help='Schema files', action='append')
-    parser.add_argument('-cv', '--convert', help='Conversion files') #, action='append')
-    
+    parser.add_argument('-cv', '--convert', help='Conversion files')  # , action='append')
+
     parser.add_argument('--prop-file', help='Property file, example is in config/props.example.yml')
     parser.add_argument('--backup-folder', help='Location to store database backup')
     parser.add_argument('config_file', help='Configuration file, example is in config/data-loader-config.example.yml',
@@ -59,11 +59,12 @@ def parse_arguments():
 
 def process_arguments(args, log):
     config_file = None
+    log.info("")
 
     if args.config_file:
         config_file = args.config_file
-    else:   #if a file was not provided then use the default file
-        config_file = './config/popsci-config_v2.yml' #used in debug mode
+    else:   # if a file was not provided then use the default file
+        config_file = './config/popsci-config_v2.yml'  # used in debug mode
     config = BentoConfig(config_file)
 
     # Required Fields
@@ -73,7 +74,7 @@ def process_arguments(args, log):
     if args.dataset:
         config.dataset = args.dataset
     if not config.database_name:
-        config.database_name = 'neo4j'   #default database if none was provided
+        config.database_name = 'neo4j'   # default database if none was provided
     if args.db:
         config.database_name = args.db
     if not config.dataset:
@@ -190,6 +191,7 @@ def upload_log_file(bucket_name, folder, file_path):
     key = f'{folder}/{base_name}'
     return s3.upload_file(key, file_path)
 
+
 def prepare_plugin(config, schema):
     if not config.params:
         config.params = {}
@@ -205,10 +207,9 @@ def main():
     log_file = get_log_file()
     overall_start = time.perf_counter()
 
-
     config = process_arguments(parse_arguments(), log)
     print_config(log, config)
-   
+
     if not check_schema_files(config.schema_files, log):
         return
 
@@ -218,7 +219,7 @@ def main():
         txt_files = glob.glob('{}/*.txt'.format(config.dataset))
         tsv_files = glob.glob('{}/*.tsv'.format(config.dataset))
         file_list = txt_files + tsv_files
-        
+
         if file_list:
             if config.wipe_db and not config.yes:
                 if not confirm_deletion('Wipe out entire Neo4j database before loading?'):
@@ -237,8 +238,8 @@ def main():
             if not config.dry_run:
                 driver = GraphDatabase.driver(
                     config.neo4j_uri,
-                    auth=(config.neo4j_user, config.neo4j_password) #,
-                    #encrypted=False
+                    auth=(config.neo4j_user, config.neo4j_password),
+                    encrypted=False
                 )
 
             plugins = []
@@ -248,18 +249,17 @@ def main():
             loader = DataLoader(driver, schema, config.database_name, config.convert_files, plugins)
 
             load_result = loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db,
-                        config.max_violations, split=config.split_transactions,
-                        no_backup=config.no_backup, neo4j_uri=config.neo4j_uri, backup_folder=config.backup_folder)
+                                      config.max_violations, split=config.split_transactions,
+                                      no_backup=config.no_backup, neo4j_uri=config.neo4j_uri, backup_folder=config.backup_folder)
             if driver:
                 driver.close()
             if restore_cmd:
                 log.info(restore_cmd)
-            if load_result == False:
+            if load_result is False:
                 log.error('Data files upload failed')
                 sys.exit(1)
         else:
             log.info('No files to load.')
-
 
     except ServiceUnavailable:
         log.critical("Neo4j service not available at: \"{}\"".format(config.neo4j_uri))
@@ -275,11 +275,11 @@ def main():
             driver.close()
         if restore_cmd:
             log.info(restore_cmd)
-        
-        ## added print statments to show total duration program took tor
+
+        # added print statments to show total duration program took tor
         print("")
         print("driver has been closed")
-        print(f"Total time from start of load function to completion {time.perf_counter()- overall_start:.4f} seconds")
+        print(f"Total time from start of load function to completion {time.perf_counter() - overall_start:.4f} seconds")
 
     if config.s3_bucket and config.s3_folder:
         result = upload_log_file(config.s3_bucket, f'{config.s3_folder}/logs', log_file)

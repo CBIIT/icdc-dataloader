@@ -17,12 +17,13 @@ from neo4j import Driver
 import pandas as pd
 import yaml
 import numpy as np
+from datetime import date
 
 from icdc_schema import ICDC_Schema, is_parent_pointer, get_list_values
 from bento.common.utils import get_logger, NODES_CREATED, RELATIONSHIP_CREATED, UUID, \
-    RELATIONSHIP_TYPE, MULTIPLIER, ONE_TO_ONE, DEFAULT_MULTIPLIER, UPSERT_MODE, \
+    RELATIONSHIP_TYPE, MULTIPLIER, ONE_TO_ONE, UPSERT_MODE, \
     NEW_MODE, DELETE_MODE, NODES_DELETED, RELATIONSHIP_DELETED, combined_dict_counters, \
-    MISSING_PARENT, NODE_LOADED, get_string_md5
+    MISSING_PARENT, get_string_md5  # DEFAULT_MULTIPLIER,  NODE_LOADED   #these libraries are not used
 
 NODE_TYPE = 'type'
 PROP_TYPE = 'Type'
@@ -39,6 +40,7 @@ INT_NODE_CREATED = 'int_node_created'
 PROVIDED_PARENTS = 'provided_parents'
 RELATIONSHIP_PROPS = 'relationship_properties'
 BATCH_SIZE = 1000
+ID_FUNC = 'elementID'
 
 
 def get_btree_indexes(session):
@@ -54,6 +56,7 @@ def get_btree_indexes(session):
         if r["type"] == "BTREE":
             indexes.add(format_as_tuple(r["labelsOrTypes"][0], r["properties"]))
     return indexes
+
 
 def format_as_tuple(node_name, properties):
     """
@@ -175,13 +178,12 @@ class DataLoader:
         self.relationships_stat = {}
         self.nodes_deleted_stat = {}
         self.relationships_deleted_stat = {}
-        
-        if 'location' in conversion_files:
-            self.location_codes = self.get_cancer_translations(conversion_files["location"])
-        if 'histology' in conversion_files:
-            self.histology_codes = self.get_cancer_translations_hist(conversion_files["histology"])
 
-    
+        if 'location' in conversion_files:
+            self.schema.location_codes = self.get_cancer_translations(conversion_files["location"])
+        if 'histology' in conversion_files:
+            self.schema.histology_codes = self.get_cancer_translations_hist(conversion_files["histology"])
+
     def get_cancer_translations(self, yml_file):
         with open(yml_file) as f:
             cancer_term_file = yaml.load(f, Loader=yaml.FullLoader)
@@ -189,63 +191,78 @@ class DataLoader:
         all_terms = pd.DataFrame()
         for curr_key in cancer_term_file.keys():
             for curr_location in cancer_term_file[curr_key]:
-                x = pd.DataFrame.from_dict(cancer_term_file[curr_key][curr_location], orient = 'index')
+                x = pd.DataFrame.from_dict(cancer_term_file[curr_key][curr_location], orient='index')
                 x["Primary Site"] = curr_location
                 x.reset_index(inplace=True)
-                
+
                 all_terms = pd.concat([all_terms, x])
-    
+
         all_terms.columns = ["Sub Site", "ICD-O-3 Code", "Primary Site"]
         return all_terms
-    
+
     def get_cancer_translations_hist(self, yml_file):
         with open(yml_file) as f:
             cancer_term_file = yaml.load(f, Loader=yaml.FullLoader)
 
         all_terms = pd.DataFrame()
         for curr_key in cancer_term_file.keys():
-            x = pd.DataFrame.from_dict(cancer_term_file[curr_key], orient = 'index')
+            x = pd.DataFrame.from_dict(cancer_term_file[curr_key], orient='index')
             x["Primary Site"] = None
             x.reset_index(inplace=True)
             all_terms = pd.concat([all_terms, x])
-    
+
         all_terms.columns = ["ICD-O-3 Code", "Sub Site", "Primary Site"]
         return all_terms
-    
+
     def get_schema_data(self, tx, query):
         result = tx.run(query)
         data_list = [i for i in result.data()]
         return data_list
-    
+
     def get_data(self, tx, query, obj_data, batch_size):
-        
-        #query = "CALL apoc.periodic.iterate( " + query + """ {batchSize: """ + str(batch_size) + """, parallel:true})"""
+        # query = "CALL apoc.periodic.iterate( " + query + """ {batchSize: """ + str(batch_size) + """, parallel:true})"""
         result = tx.run(query, batch=obj_data)
         return result.data()
-        
-    def get_schema_indexes(self):
+
+    def get_schema_indexes(self, create_type):
+        start = timer()
         self.node_keys_dict = dict()
-    
-        with self.driver.session(database = self.db_name) as session:
+        with self.driver.session(database=self.db_name) as session:
             query = 'SHOW INDEXES'
-        
             records = session.execute_read(self.get_schema_data, query)
             for record in records:
-                if(record['labelsOrTypes'] != None ):
-                    self.node_keys_dict[record['labelsOrTypes'][0]] = {'Primary ID': record['properties'][0], 
+                if (record['labelsOrTypes'] is not None):
+                    self.node_keys_dict[record['labelsOrTypes'][0]] = {'Primary ID': record['properties'][0],
                                                                        'Node_Index_DF':  pd.DataFrame(columns=['Node_ID', 'Primary_Key_Value'])}
-    
-            for curr_node in self.node_keys_dict:
-                try:  #elementID(n) is to be used in verion 5 or higher
-                    query = f"MATCH (n:{curr_node}) RETURN elementId(n) as Node_ID, n.{self.node_keys_dict[curr_node]['Primary ID']} as Primary_Key_Value"
-                    records = session.execute_read(self.get_schema_data, query)
-                except Exception:  #in version 4 or earlier the ID(n) is used
-                    query = f"MATCH (n:{curr_node}) RETURN Id(n) as Node_ID, n.{self.node_keys_dict[curr_node]['Primary ID']} as Primary_Key_Value"
-                    records = session.execute_read(self.get_schema_data, query)
 
+            file_size = 0
+            for curr_node in self.node_keys_dict:
+                if self.node_keys_dict[curr_node]['Primary ID'] == 'None':
+                    continue
+                query = f"MATCH (n:{curr_node}) RETURN {ID_FUNC}(n) as Node_ID, n.{self.node_keys_dict[curr_node]['Primary ID']} as Primary_Key_Value"
+                records = session.execute_read(self.get_schema_data, query)
+
+                self.log.info(f"{curr_node} has {len(records)} nodes found in database")
                 if len(records) > 0:
                     data_res = pd.DataFrame(records)
-                    self.node_keys_dict[curr_node]['Node_Index_DF'] = data_res
+                    self.node_keys_dict[curr_node]['Node_Index_DF'] = pd.concat([self.node_keys_dict[curr_node]['Node_Index_DF'], data_res])
+                    file_size = file_size + len(data_res)
+
+        self.log.info(' ')
+        end = timer()
+        self.log.info('{0} Index Dictionary ({2}) nodes) took: {1:.2f} seconds'.format(create_type, end - start, file_size))
+
+    def update_indexs_with_new(self):
+        today = date.today()
+        for curr_node in self.node_keys_dict:
+            new_nodes = """MATCH (n:curr_node) where date(n.created) = """
+            new_nodes += """date({year: """ + f"{today.year}, month: {today.month}, day: {today.day}"
+            new_nodes += """}) RETURN """ + f"n.{self.node_keys_dict[curr_node]['Primary ID']} as Primary_Key_Value, {ID_FUNC}(n) as Node_ID"
+            new_nodes = new_nodes.replace("curr_node", curr_node)
+            with self.driver.session(database=self.db_name) as session:
+                records = session.execute_read(self.get_schema_data, new_nodes)
+            x = pd.concat([self.node_keys_dict[curr_node]['Node_Index_DF'], pd.DataFrame(records)])
+            self.node_keys_dict[curr_node]['Node_Index_DF'] = x.drop_duplicates()
 
     def check_files(self, file_list):
         if not file_list:
@@ -269,6 +286,12 @@ class DataLoader:
         else:
             self.log.info('Cheat mode enabled, all validations skipped!')
             return True
+
+    def get_neo4j_version(self, tx):
+        # Use the dbms.components() procedure to get server details
+        result = tx.run("CALL dbms.components() YIELD name, versions, edition "
+                        "UNWIND versions AS version RETURN name, version, edition;")
+        return result.single()
 
     def load(self, file_list, cheat_mode, dry_run, loading_mode, wipe_db, max_violations,
              split=False, no_backup=True, backup_folder="/", neo4j_uri=None):
@@ -307,12 +330,24 @@ class DataLoader:
             return False
         # Data updates and schema related updates cannot be performed in the same session so multiple will be created
         # Create new session for schema related updates (index creation)
-        
+
         self.log.info("  ")
         self.log.info(f"Database name being used is: {self.db_name} ")
         self.log.info("  ")
-        
-        with self.driver.session(database = self.db_name) as session:
+
+        with self.driver.session() as session:
+            server_info = session.execute_read(self.get_neo4j_version)
+            if server_info:
+                self.log.info(f"Neo4j Version: {server_info['version']}")  # Extract the version from the result
+                self.log.info(f"Neo4j Edition: {server_info['edition']}")  # Extract the edition
+            else:
+                self.log.error("Could not retrieve server information.")
+            self.log.info("  ")
+        if int(server_info['version'][0]) == 4:  # if neo4j database is v5 or higher use element id
+            global ID_FUNC
+            ID_FUNC = 'ID'
+
+        with self.driver.session(database=self.db_name) as session:
             tx = session.begin_transaction()
             try:
                 self.create_indexes(tx)
@@ -323,18 +358,10 @@ class DataLoader:
                 return False
 
         # Create new session for data related updates
-        with self.driver.session(database = self.db_name) as session:
-            # Split Transactions enabled
-            #if split:
-            #    self._load_all(session, file_list, loading_mode, split, wipe_db)
-
-            # Split Transactions Disabled
-            #else:
-            # Data updates transaction
+        with self.driver.session(database=self.db_name) as session:
             tx = session.begin_transaction()
             try:
                 self._load_all(session, tx, file_list, loading_mode, split, wipe_db)
-                 #tx.commit()
             except Exception as e:
                 tx.rollback()
                 self.log.exception(e)
@@ -352,63 +379,49 @@ class DataLoader:
             combined_dict_counters(self.relationships_stat, plugin.relationships_stat)
             self.nodes_created += plugin.nodes_created
             self.relationships_created += plugin.relationships_created
-        #for node in sorted(self.nodes_stat.keys()):
-        #    count = self.nodes_stat[node]
-        #    self.log.info('Node: (:{}) loaded: {}'.format(node, count))
-        #for rel in sorted(self.relationships_stat.keys()):
-        #    count = self.relationships_stat[rel]
-        #    self.log.info('Relationship: [:{}] loaded: {}'.format(rel, count))
-        #self.log.info('{} new indexes created!'.format(self.indexes_created))
-        #self.log.info('{} nodes and {} relationships loaded!'.format(self.nodes_created, self.relationships_created))
-        #self.log.info('{} nodes and {} relationships deleted!'.format(self.nodes_deleted, self.relationships_deleted))
-        #self.log.info('Loading time: {:.2f} seconds'.format(end - start))  # Time in seconds, e.g. 5.38091952400282
         return {NODES_CREATED: self.nodes_created, RELATIONSHIP_CREATED: self.relationships_created,
-               NODES_DELETED: self.nodes_deleted, RELATIONSHIP_DELETED: self.relationships_deleted}
+                NODES_DELETED: self.nodes_deleted, RELATIONSHIP_DELETED: self.relationships_deleted}
 
-
-    def _load_all(self,session,  tx, file_list, loading_mode, split, wipe_db):
+    def _load_all(self, session, tx, file_list, loading_mode, split, wipe_db):
         if wipe_db:
-            self.wipe_db(session)   #deletes all node in db
-            
-        self.load_passed =0
+            self.wipe_db(session)   # deletes all node in db
+
+        self.load_passed = 0
         self.load_failed = 0
-        self.relationship_passed =0
+        self.relationship_passed = 0
         self.relationship_failed = 0
-        
-        ## call create index after the wipe database (if was called)
-        start = timer()
-        self.log.info(' ')
-        self.get_schema_indexes()   #create a dictionary that maps the current neo4j database as defined by self.db_name
-        end = timer()
-        self.log.info('Creating Index Dictionary took: {:.2f} seconds'.format(end - start))  # Time in seconds, e.g. 5.38091952400282
 
+        # call create index after the wipe database (if was called)
+        self.log.info(' ')
+        self.log.info('Mapping index values to primary keys ')
+        self.get_schema_indexes("Creating")   # create a dictionary that maps the current neo4j database as defined by self.db_name
 
         self.log.info(' ')
-        processed_files = []                
+        processed_files = []
         load_start_time = time.perf_counter()
         for txt in file_list:
             if loading_mode != DELETE_MODE:
                 new_nodes, updated_nodes, all_obj_list = self.load_nodes(session, tx, txt, loading_mode, wipe_db, split)
                 processed_files.append(all_obj_list)
-        
+
         self.log.info(f"Number of Nodes Created / Updated: {self.load_passed}, Nodes Failed: {self.load_failed}")
         self.log.info(f"Total Loading time for all nodes: {time.perf_counter()-load_start_time:.4f} seconds")
-        
+
         self.log.info(' ')
         self.log.info('updating schema dictionary  for new nodes created')
-        self.get_schema_indexes()   #create a dictionary that maps the current neo4j database as defined by self.db_name
+        self.update_indexs_with_new()   # updates index dictionary with new nodes (created today)
         self.log.info('schema dictionary has been refreshed')  # Time in seconds, e.g. 5.38091952400282
         self.log.info(' ')
-        
-        #for txt in file_list:
+
         rel_start_time = time.perf_counter()
-        batch_size = 5000
-        
+        batch_size = 10000
+        batch_index = 1
+
         for txt in processed_files:
             if loading_mode != DELETE_MODE:
                 nodes_done = 0
                 while nodes_done < len(txt):
-                    #batch_time = time.time()
+                    batch_time = time.time()
                     if len(txt) <= batch_size:
                         start_node = 0
                         end_node = len(txt)
@@ -419,21 +432,22 @@ class DataLoader:
                         start_node = nodes_done
                         end_node = nodes_done + batch_size
                     data_to_work = txt[start_node: end_node]
-                
-                    #print(data_to_work)
 
-                    self.load_relationships(session, data_to_work, loading_mode, split)
+                    self.load_relationships(session, data_to_work, loading_mode, batch_index, batch_time,  split)
                     nodes_done += len(data_to_work)
+
+                    batch_index += 1
 #                    print(f"Total Elapsed time for relationships: {time.perf_counter()-batch_time:.4f} seconds")
 
-        self.log.info(f"Number of Relationships Created / Updated: {self.relationship_passed}, Nodes Failed: {self.relationship_failed}")
+        self.log.info(f"Total Number of Relationships Created / Updated: {self.relationship_passed}, Nodes Failed: {self.relationship_failed}")
         self.log.info(f"Total time to make all relationships {time.perf_counter()-rel_start_time:.4f} seconds")
 
     # Remove extra spaces at beginning and end of the keys and values
     @staticmethod
     def cleanup_node(node):
-        return {key if not key else key.strip(): value if not value else value.strip() if isinstance(value,str) else value for key, value in node.items()}
-        #return {key if not key else key.strip(): value if not value else value.strip() for key, value in node.items()}
+        return {key if not key else key.strip(): value if not value else value.strip()
+                if isinstance(value, str) else value for key, value in node.items()}
+        # return {key if not key else key.strip(): value if not value else value.strip() for key, value in node.items()}
 
     # Cleanup values for Boolean, Int and Float types
     # Add uuid to nodes if one not exists
@@ -486,7 +500,7 @@ class DataLoader:
                     obj[key] = cleaned_value
                 elif key_type == 'Array':
                     items = get_list_values(value)
-                    # todo: need to transform items if item type is not string
+
                     obj[key] = json.dumps(items)
                 elif key_type == 'DateTime' or key_type == 'Date':
                     if value is None:
@@ -528,8 +542,6 @@ class DataLoader:
                     obj2[UUID] = self.schema.get_uuid_for_node(node_type, id_value)
             else:
                 print('No "type" property in node')
-                #raise Exception('No "type" property in node')
-
         return obj2
 
     def get_signature(self, node):
@@ -545,7 +557,7 @@ class DataLoader:
         if not self.driver or not isinstance(self.driver, Driver):
             self.log.error('Invalid Neo4j Python Driver!')
             return False
-        with self.driver.session(database = self.db_name) as session:
+        with self.driver.session(database=self.db_name) as session:
             file_encoding = check_encoding(file_name)
             with open(file_name, encoding=file_encoding) as in_file:
                 self.log.info('Validating relationships in file "{}" ...'.format(file_name))
@@ -574,7 +586,7 @@ class DataLoader:
         if not self.driver or not isinstance(self.driver, Driver):
             self.log.error('Invalid Neo4j Python Driver!')
             return False
-        with self.driver.session(database = self.db_name) as session:
+        with self.driver.session(database=self.db_name) as session:
             file_encoding = check_encoding(file_name)
             with open(file_name, encoding=file_encoding) as in_file:
                 self.log.info('Validating relationships in file "{}" ...'.format(file_name))
@@ -644,7 +656,7 @@ class DataLoader:
                     try:
                         if key.split('.')[1] not in self.schema.get_props_for_node(key.split('.')[0]):
                             parent_error_list.append(key)
-                    except:
+                    except Exception:
                         parent_error_list.append(key)
             if len(error_list) > 0:
                 for error_field_name in error_list:
@@ -670,16 +682,13 @@ class DataLoader:
                 return False
 
             for org_obj in reader:
-                obj = self.cleanup_node(org_obj)
+                # obj = self.cleanup_node(org_obj)
+                obj = self.prepare_node(org_obj)
+
                 props = self.get_node_properties(obj)
                 line_num += 1
                 id_field = self.schema.get_id_field(obj)
                 node_id = self.schema.get_id(obj)
-
-                #properties = self.schema.nodes[obj[NODE_TYPE]]["Props"]
-                #obj = {i:obj[i] if properties[i]["Type"] == 'String' 
-                #       else np.nan if properties[i]["Type"] == 'Float' and len(i) == 0
-                #       else obj[i] for i in obj}
 
                 if node_id:
                     if node_id in ids:
@@ -796,90 +805,91 @@ class DataLoader:
         return nodes_deleted, relationship_deleted
 
     # load file
-    def convert_df_to_dict(self,file_data):
+    def convert_df_to_dict(self, file_data):
         total_records = len(file_data)
-        file_data.columns = [i if len(i.split('.')) == 1 else  i.split('.')[1] for i in file_data.columns]
-        qry_str = ['n.' + i + ' = row.' +  i   for i in file_data.columns]
+        file_data.columns = [i if len(i.split('.')) == 1 else i.split('.')[1] for i in file_data.columns]
+        qry_str = ['n.' + i + ' = row.' + i for i in file_data.columns]
         file_data = file_data.to_dict('records')
-        
+
         return file_data, qry_str, total_records
-    
+
     def process_data_in_batches(self, tx, data, create_type, node_type):
-        new_qry =  """CALL apoc.periodic.iterate( """ 
+        new_qry = """CALL apoc.periodic.iterate( """
         new_qry += """\"UNWIND $data AS item return item\", """  # Iterate statement: Unwinds the list of data items
-        
+
         if create_type == "CREATE":
-            new_qry += """\"CREATE (n:MyNode) SET n = item  SET n.created = datetime() return n \", """    # Action statement: Creates a node for each item
-        elif create_type == 'MATCH':  #add filtering criteria to node
-            new_qry += """ \"Match(n:MyNode) where elementId(n) = item.Node_ID and n.Primary_Key_Value = item.Primary_Key_Value """
+            new_qry += """\"CREATE (n:MyNode) SET n = item, n.created = datetime() return n \", """  # Action statement: Creates a node for each item
+        elif create_type == 'MATCH':  # add filtering criteria to node
+            new_qry += """ \"Match(n:MyNode) where """ + f"{ID_FUNC}(n) " + """ = item.Node_ID and n.Primary_Key_Value = item.Primary_Key_Value """
             new_qry += """  SET n.updated = datetime()  return n \", """
-        
-        new_qry += """{batchSize: 1000, """   # Process 1000 items per batch
-        new_qry += """parallel: true, """    # Run batches sequentially
-        new_qry += """iterateList: true, """ # process all batches at once
-        new_qry += """params: { data: $data } } )"""   # Pass the data list as a parameter
-        
+
+        new_qry += """{batchSize: 5000, retries: 1, """   # Process 1000 items per batch
+        new_qry += """parallel: false, """    # Run batches sequentially
+        # new_qry += """iterateList: true, """ # process all batches at once
+        new_qry += """params: { data: $data } } )"""
+
         new_qry = new_qry.replace("MyNode", node_type)
 
-        ##remove user created variables, do not need to be loaded into db
-        new_qry = new_qry.replace("n.Node_Exists = item.Node_Exists","")
-        new_qry = new_qry.replace("n.Node_ID = item.Node_ID","")
-        new_qry = new_qry.replace("n.Primary_Key_Value = item.Primary_Key_Value","")
+        # remove user created variables, do not need to be loaded into db
+        new_qry = new_qry.replace("n.Node_Exists = item.Node_Exists", "")
+        new_qry = new_qry.replace("n.Node_ID = item.Node_ID", "")
+        # new_qry = new_qry.replace("n.Primary_Key_Value = item.Primary_Key_Value","")
 
-        try:
-            result = tx.run(new_qry, data=data)
-        except Exception:
-            new_qry = new_qry.replace("elementId", "ID")
-            result = tx.run(new_qry, data=data)
-            
+        result = tx.run(new_qry, data=data)
         data_list = [i for i in result.data()]
-        return  data_list[0]
-    
+        if data_list[0]["failedBatches"] == 0:
+            return data_list[0]
+        else:
+            print("error found")
+            return []
+
     def process_relationships_batches(self, tx, data, curr_qry):
-        new_qry =  """CALL apoc.periodic.iterate( """ 
+        new_qry = """CALL apoc.periodic.iterate( """
         new_qry += """\"UNWIND $data AS batch return batch\", """  # Iterate statement: Unwinds the list of data items
         new_qry += """ \"old_qry \", """
-        
+
         new_qry += """{batchSize: 5000, """   # Process 1000 items per batch
-        new_qry += """parallel: true, """    # Run batches sequentially
-        new_qry += """iterateList: true, """ # process all batches at once
+        new_qry += """parallel: true, """     # Run batches sequentially
+        new_qry += """iterateList: true, """  # process all batches at once
         new_qry += """params: { data: $data } } )"""   # Pass the data list as a parameter
-        
+
         new_qry = new_qry.replace("old_qry", curr_qry)
-        
+
         result = tx.run(new_qry, data=data)
-        #result = tx.run(curr_qry, data)
-        
+        # result = tx.run(curr_qry, data)
+
         data_list = [i for i in result.data()]
-        return  data_list[0]
-    
+        return data_list[0]
+
     def write_nodes_to_db(self, session, col_name, node_type, current_nodes, create_type):
 
         file_data, qry_str, total_records = self.convert_df_to_dict(current_nodes)
         rem_list = ['Node_Exists', 'Node_ID', 'Primary_Key_Value']
-        
+
         index = 0
         for curr_row in file_data:
-            file_data[index] = {i:curr_row[i] for i in curr_row if i not in rem_list}
-            index +=1
-        
+            file_data[index] = {i: curr_row[i] for i in curr_row if i not in rem_list}
+            index += 1
+
         qry_result = session.execute_write(self.process_data_in_batches, file_data, create_type, node_type)
-        self.load_passed += qry_result["operations"]["committed"]
-        self.load_failed += qry_result["operations"]['failed']
-    
+        if len(qry_result) == 0:
+            self.load_failed += len(file_data)  # entire batch failed
+        else:
+            self.load_passed += qry_result["operations"]["committed"]
+            self.load_failed += qry_result["operations"]['failed']
+
     def convert_codes(self, df, column_name, code_list):
         if column_name in df.columns:
-            df = df.merge(code_list, left_on=column_name, 
-                          right_on="ICD-O-3 Code", how="left")
+            df = df.merge(code_list, left_on=column_name, right_on="ICD-O-3 Code", how="left")
 
             df.drop([column_name, "Primary Site"], axis=1, inplace=True)
             df.rename(columns={"Sub Site": column_name, "ICD-O-3 Code": "ICD-O-3 Code" + column_name.replace("cancer_diagnosis", "")}, inplace=True)
-            
+
             x = df.query("participant_case_indicator == 'No'")
             df.loc[x.index, column_name] = "N/A"
             df.loc[x.index, "ICD-O-3 Code" + column_name.replace("cancer_diagnosis", "")] = "N/A"
         return df
-    
+
     def load_nodes(self, session, tx, file_name, loading_mode,  wipe_db, split=False):
         if loading_mode == NEW_MODE:
             action_word = 'Loading new'
@@ -900,17 +910,17 @@ class DataLoader:
                 file_data[col] = file_data[col].fillna(pd.to_datetime('1900-01-01'))
             else:
                 file_data[col] = file_data[col].fillna("missing data")
-        
-        file_data = self.convert_codes(file_data, 'cancer_diagnosis_primary_site', self.location_codes)
-        file_data = self.convert_codes(file_data, 'cancer_diagnosis_disease_morphology', self.histology_codes)
-        
-        ## load nodes in batches of 5,000
+
+        file_data = self.convert_codes(file_data, 'cancer_diagnosis_primary_site', self.schema.location_codes)
+        file_data = self.convert_codes(file_data, 'cancer_diagnosis_disease_morphology', self.schema.histology_codes)
+
+        # load nodes in batches of 5,000
         nodes_done = 0
         all_obj = []
         all_new_nodes = 0
         all_existing_nodes = 0
         batches = 0
-        
+
         # remove duplicate records by primay ID (This value should be unique)
         file_data = file_data.drop_duplicates(self.schema.get_id_field(file_data.iloc[0].to_dict()))
 
@@ -923,47 +933,42 @@ class DataLoader:
             elif (nodes_done+batch_size) > len(file_data):
                 start_node = nodes_done
                 end_node = len(file_data)
-            else: 
+            else:
                 start_node = nodes_done
                 end_node = nodes_done + batch_size
             data_to_work = file_data[start_node: end_node]
 
-            data_to_work.reset_index(inplace = True, drop=True)
+            data_to_work.reset_index(inplace=True, drop=True)
             for index in data_to_work.index:
-                obj = self.prepare_node(data_to_work.iloc[index].to_dict())  #formats incomming data
+                obj = self.prepare_node(data_to_work.iloc[index].to_dict())  # formats incomming data
                 all_obj.append(obj)
-    
+
             df = pd.DataFrame(all_obj[start_node: end_node])
-            col_name = self.schema.get_id_field(obj)  #primary key field
-            node_type = obj[NODE_TYPE]   #current node to match
-    
-            #current_nodes = self.node_keys_dict[node_type]
-            #if len(current_nodes["Node_Index_DF"]) == 0:
-            #    print(f"Node: {node_type} is empty")
-                
+            col_name = self.schema.get_id_field(obj)  # primary key field
+            node_type = obj[NODE_TYPE]   # current node to match
+
             if loading_mode != DELETE_MODE:
                 check_db = df.merge(self.node_keys_dict[node_type]['Node_Index_DF'],
-                                    left_on=self.schema.get_id_field(obj), right_on= "Primary_Key_Value", 
+                                    left_on=self.schema.get_id_field(obj), right_on="Primary_Key_Value",
                                     how="left", indicator="Node_Exists")
-                
-                ## if the node does not already exist on primary key then create it
-                new_nodes = check_db.query("Node_Exists == 'left_only'")   #use create
+
+                # if the node does not already exist on primary key then create it
+                new_nodes = check_db.query("Node_Exists == 'left_only'")   # use create
                 if len(new_nodes) > 0:
                     self.write_nodes_to_db(session, col_name, node_type, new_nodes, "CREATE")
-                 
-                ## if the node does  already exist on primary key then update it using the merge statement
-                existing_nodes = check_db.query("Node_Exists == 'both'")   #use merge
-                if len(existing_nodes ) > 0:
+
+                # if the node does  already exist on primary key then update it using the merge statement
+                existing_nodes = check_db.query("Node_Exists == 'both'")   # use match
+                if len(existing_nodes) > 0:
                     self.write_nodes_to_db(session, col_name, node_type, existing_nodes, "MATCH")
             all_existing_nodes += len(existing_nodes)
             all_new_nodes += len(new_nodes)
-            
+
             nodes_done += len(data_to_work)
             batches += 1
             end_time = time.time()
             self.log.info(f"Completed batch {batches}, total nodes done: {nodes_done} in {end_time - batch_time: .4f} seconds")
-        return all_new_nodes, all_existing_nodes , all_obj
-
+        return all_new_nodes, all_existing_nodes, all_obj
 
     def node_exists(self, session, label, prop, value):
         statement = 'MATCH (m:{0} {{ {1}: ''${1}'' }}) return m'.format(label, prop)
@@ -979,7 +984,6 @@ class DataLoader:
         int_node_created = 0
         provided_parents = 0
         relationship_properties = {}
-        #print(obj.items())
         for key, value in obj.items():
             if is_parent_pointer(key):
                 provided_parents += 1
@@ -1061,16 +1065,13 @@ class DataLoader:
         parent_type = relationship[PARENT_TYPE]
         parent_id_field = relationship[PARENT_ID_FIELD]
 
-        base_statement = 'MATCH (n:{0})-[r:{2}]->(m:{3}) where n.{1} = ${1} and ElementId(n) = {4} '.format(node_type,
-                                                                                 self.schema.get_id_field(node),
-                                                                                 relationship_name, parent_type, curr_index)
+        base_statement = 'MATCH (n:{0})-[r:{2}]->(m:{3}) where n.{1} = ${1} and {5}(n) = {4} '.format(node_type,
+                                                                                                      self.schema.get_id_field(node),
+                                                                                                      relationship_name, parent_type,
+                                                                                                      curr_index, ID_FUNC)
         statement = base_statement + ' return m.{} AS {}'.format(parent_id_field, PARENT_ID)
-        try:
-            result = session.run(statement, node)
-        except Exception:
-            statement = statement.replace("elementId", "ID")
-            result = session.run(statement, node)
-        
+        result = session.run(statement, node)
+
         if result:
             old_parent = result.single()
             if old_parent:
@@ -1096,41 +1097,23 @@ class DataLoader:
             if not del_result:
                 self.log.error('Delete old relationship failed!')
 
-    def load_relationships(self, session, file_data, loading_mode, split=False):
-        #if loading_mode == NEW_MODE:
-        #    action_word = 'Loading new'
-        #elif loading_mode == UPSERT_MODE:
-        #    action_word = 'Loading'
-        #else:
-        #    raise Exception('Wrong loading_mode: {}'.format(loading_mode))
-        #self.log.info('{} relationships from file: {}'.format(action_word, file_name))
-        
-        
-        #file_encoding = check_encoding(file_name)
-        #with open(file_name, encoding=file_encoding) as in_file:
-        #    reader = csv.DictReader(in_file, delimiter='\t')
-        #relationships_created = {}
-        #int_nodes_created = 0
-        #line_num = 1
-        #transaction_counter = 0
-        
+    def load_relationships(self, session, file_data, loading_mode, batch_index, batch_time,  split=False):
         file_data_df = pd.DataFrame(file_data)
         obj = file_data_df.iloc[0].to_dict()
 
         node_type = obj[NODE_TYPE]
-        file_data_df = file_data_df.merge(self.node_keys_dict[node_type]['Node_Index_DF'], 
-                                    left_on=self.schema.get_id_field(obj), right_on= "Primary_Key_Value", 
-                                    how="left", indicator="Node_Exists")
-        
-        file_data_df.drop("Node_Exists", axis=1, inplace=True)
-        file_data_df.fillna(-1, inplace=True)
-        missing_id = file_data_df.query("Node_ID == -1")
+        file_data_df = file_data_df.merge(self.node_keys_dict[node_type]['Node_Index_DF'],
+                                          left_on=self.schema.get_id_field(obj), right_on="Primary_Key_Value",
+                                          how="left", indicator="Node_Exists")
+
+        missing_id = file_data_df.query("Node_Exists not in ['both']")
         if len(missing_id) > 0:
-            print("x")
-        
+            self.log.error("Unable to make relationships: file data does not align properly with database")
+
+        file_data_df.drop("Node_Exists", axis=1, inplace=True)
         ids = self.schema.props.id_fields
         header_names = [f"{curr_id}.{ids[curr_id]}" for curr_id in ids]
-        
+
         check_relationship = [i for i in file_data_df.columns if i in header_names]
         if len(check_relationship) == 0:
             self.log.info(f"no relationship found for file type: {list(set(file_data_df[NODE_TYPE]))}")
@@ -1142,21 +1125,27 @@ class DataLoader:
                     qry_str += f"MATCH (m:{curr_relationship.split('.')[0]}) "
                     qry_str += f"MATCH (n:{node_type}) "
                     qry_str += f"where m.{curr_relationship.split('.')[1]} = batch.{curr_relationship.split('.')[1]} and "
-                    
-                    qry_str += 'n.{0} = batch.{0} and elementId(n) = batch.Node_ID '.format(self.schema.get_id_field(obj))
+
+                    qry_str += 'n.{0} = batch.{0} and {1}(n) = batch.Node_ID '.format(self.schema.get_id_field(obj), ID_FUNC)
                     qry_str += f"MERGE (n)-[r:{relation}]->(m) ON CREATE SET r.created = datetime() ON MATCH SET r.updated = datetime()"
-                    
-                    file_data_df.columns = [i if len(i.split('.')) == 1 else  i.split('.')[1] for i in file_data_df.columns]
+
+                    file_data_df.columns = [i if len(i.split('.')) == 1 else i.split('.')[1] for i in file_data_df.columns]
                     file_data_dct = file_data_df.to_dict('records')
-                    try:
-                        qry_result = session.execute_write(self.process_relationships_batches, file_data_dct, qry_str)
-                    except Exception:
-                        qry_str = qry_str.replace("elementId", "ID")
-                        qry_result = session.execute_write(self.process_relationships_batches, file_data_dct, qry_str)
-                    finally:
-                        self.log.info(f"{qry_result["operations"]['committed']} Created and {qry_result["operations"]['failed']} failed")
-                        self.relationship_passed += qry_result["operations"]['committed']
-                        self.relationship_failed += qry_result["operations"]['failed']
+
+                    qry_result = session.execute_write(self.process_relationships_batches, file_data_dct, qry_str)
+
+                    if qry_result["operations"]['failed'] > 0:
+                        self.log.error(qry_result["errorMessage"])
+
+                    rel_created = qry_result["updateStatistics"]['relationshipsCreated']
+
+                    end_time = time.time()
+                    self.log.info(f"Completed batch {batch_index}, Relationships Created: {rel_created}, " +
+                                  f"Relationships Failed: {len(file_data) - rel_created} in {end_time - batch_time: .4f} seconds")
+
+                    self.relationship_passed += rel_created
+                    self.relationship_failed += len(file_data) - rel_created
+
                 except Exception:
                     print(file_data_dct)
         return True
@@ -1168,24 +1157,10 @@ class DataLoader:
         for key in props:
             prop_stmts.append('r.{0} = ${0}'.format(key))
         return prop_stmts
-    
-    
-    
-    
+
     def clean_database(self, tx):
         batch_size = 10000
         self.log.info(" ")
-        #query = ""
-        #query +=  """:auto MATCH ()-[r]->()
-        #    CALL {
-        #        WITH r
-        #        DELETE r
-        #        } IN TRANSACTIONS OF $batch_size ROWS
-        #    """
-        #tx.run(query, batch_size=batch_size)
-        #self.log.info("all relationships deleted!")
-        #self.log.info(" ")
-        #self.log.info(" ")
 
         query = """
              CALL apoc.periodic.iterate(
@@ -1193,25 +1168,21 @@ class DataLoader:
             "DETACH DELETE n",
             {batchSize: $batch_size, parallel: true} ) """
         result = tx.run(query, batch_size=batch_size)
-        
+
         data_list = [i for i in result.data()]
-        return  data_list[0]
-        
-        #query = """  MATCH (n) CALL { WITH n DETACH DELETE n } IN TRANSACTIONS OF 1000 ROWS"""
-        #result = tx.run(query).consume()
-        
-        #return node_result
+        return data_list[0]
 
     def wipe_db(self, session, split=False):
         failed_nodes = 1
         deleted_nodes = 0
         while failed_nodes > 0:
             qry_result = session.execute_write(self.clean_database)
-            
+
             deleted_nodes += qry_result["operations"]["committed"]
             failed_nodes = qry_result["operations"]['failed']
 
         self.log.info(" ")
+        self.log.info('In process of wipping Database...')
         self.log.info(f'{deleted_nodes} nodes deleted...')
 
     def wipe_db_split(self, session):
