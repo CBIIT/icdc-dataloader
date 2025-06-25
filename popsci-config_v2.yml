@@ -17,7 +17,7 @@ Config:
       - './model_files/popsci-model-props.yml'
 
   convert_files:
-     location:  ./model_files/cancer_site_location.yaml
+     location:  ./model_files/cancer_site_location_v2.yaml
      histology: ./model_files/cancer_histology_v2.yaml
 
 
@@ -38,7 +38,7 @@ Config:
   # Validations only, skip loading, can be overridden by -d/--dry-run argument
   dry_run: false
   # Wipe clean database before loading, you'll lose all data!, can be overridden by --wipe-db argument
-  wipe_db: False
+  wipe_db: True
   # Skip backup database step, can be overridden by --no-backup argument
   no_backup: True
   # Automatically confirm deletion and database wiping, without asking user to confirm, can be overridden by -y/--yes argument

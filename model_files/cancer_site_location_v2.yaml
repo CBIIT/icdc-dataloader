@@ -1,0 +1,1399 @@
+CancerSiteLocation:
+  UBERON:0002520:
+  - NCIt Concept Code: C77650
+    NCIt Preferred Term: Submandibular Lymph Node
+    UBERON Preferred Term: submandibular lymph node
+  UBERON:0007650:
+  - NCIt Concept Code: C32668
+    NCIt Preferred Term: Gastroesophageal Junction
+    UBERON Preferred Term: esophagogastric junction
+  UBERON:0002108:
+  - NCIt Concept Code: C12386
+    NCIt Preferred Term: Small Intestine
+    UBERON Preferred Term: small intestine
+  UBERON:0000996:
+  - NCIt Concept Code: C12407
+    NCIt Preferred Term: Vagina
+    UBERON Preferred Term: vagina
+  UBERON:0001707:
+  - NCIt Concept Code: C12424
+    NCIt Preferred Term: Nasal Cavity
+    UBERON Preferred Term: nasal cavity
+  UBERON:0001155:
+  - NCIt Concept Code: C12382
+    NCIt Preferred Term: Colon
+    UBERON Preferred Term: colon
+  UBERON:0001981:
+  - NCIt Concept Code: C12679
+    NCIt Preferred Term: Blood Vessel
+    UBERON Preferred Term: blood vessel
+  UBERON:0001300:
+  - NCIt Concept Code: C12785
+    NCIt Preferred Term: Scrotum
+    UBERON Preferred Term: scrotum
+  UBERON:0001832:
+  - NCIt Concept Code: C12234
+    NCIt Preferred Term: Sublingual Salivary Gland
+    UBERON Preferred Term: sublingual gland
+  UBERON:0035162:
+  - NCIt Concept Code: C63705
+    NCIt Preferred Term: Infraclavicular Lymph Node
+    UBERON Preferred Term: infraclavicular lymph node
+  UBERON:0000014:
+  - NCIt Concept Code: C12470
+    NCIt Preferred Term: Skin
+    UBERON Preferred Term: skin of body
+  UBERON:0001637:
+  - NCIt Concept Code: C12372
+    NCIt Preferred Term: Artery
+    UBERON Preferred Term: artery
+  UBERON:0009853:
+  - NCIt Concept Code: C12316
+    NCIt Preferred Term: Corpus Uteri
+    UBERON Preferred Term: body of uterus
+  UBERON:0003693:
+  - NCIt Concept Code: C12298
+    NCIt Preferred Term: Retroperitoneum
+    UBERON Preferred Term: retroperitoneal space
+  UBERON:0000981:
+  - NCIt Concept Code: C12717
+    NCIt Preferred Term: Femur
+    UBERON Preferred Term: femur
+  UBERON:0001044:
+  - NCIt Concept Code: C12426
+    NCIt Preferred Term: Salivary Gland
+    UBERON Preferred Term: saliva-secreting gland
+  UBERON:0001869:
+  - NCIt Concept Code: C12351
+    NCIt Preferred Term: Cerebral Hemisphere
+    UBERON Preferred Term: cerebral hemisphere
+  UBERON:0001359:
+  - NCIt Concept Code: C12692
+    NCIt Preferred Term: Cerebrospinal Fluid
+    UBERON Preferred Term: cerebrospinal fluid
+  UBERON:0001870:
+  - NCIt Concept Code: C177766
+    NCIt Preferred Term: Frontal Lobe Cortex
+    UBERON Preferred Term: frontal cortex
+  UBERON:0015876:
+  - NCIt Concept Code: C12363
+    NCIt Preferred Term: Pelvic Lymph Node
+    UBERON Preferred Term: pelvic lymph node
+  UBERON:0001896:
+  - NCIt Concept Code: C12442
+    NCIt Preferred Term: Medulla Oblongata
+    UBERON Preferred Term: medulla oblongata
+  UBERON:0001542:
+  - NCIt Concept Code: C32801
+    NCIt Preferred Term: Inguinal Lymph Node
+    UBERON Preferred Term: inguinal lymph node
+  UBERON:0001322:
+  - NCIt Concept Code: C52810
+    NCIt Preferred Term: Sciatic Nerve
+    UBERON Preferred Term: sciatic nerve
+  UBERON:0035240:
+  - NCIt Concept Code: C12240
+    NCIt Preferred Term: Posterior Wall of the Oropharynx
+    UBERON Preferred Term: posterior wall of oropharynx
+  UBERON:0002371:
+  - NCIt Concept Code: C12431
+    NCIt Preferred Term: Bone Marrow
+    UBERON Preferred Term: bone marrow
+  UBERON:0001705:
+  - NCIt Concept Code: C33156
+    NCIt Preferred Term: Nail
+    UBERON Preferred Term: nail
+  UBERON:0000059:
+  - NCIt Concept Code: C12379
+    NCIt Preferred Term: Large Intestine
+    UBERON Preferred Term: large intestine
+  UBERON:0002060:
+  - NCIt Concept Code: C12715
+    NCIt Preferred Term: Femoral Artery
+    UBERON Preferred Term: femoral artery
+  UBERON:0000391:
+  - NCIt Concept Code: C32979
+    NCIt Preferred Term: Leptomeninges
+    UBERON Preferred Term: leptomeninx
+  UBERON:0001423:
+  - NCIt Concept Code: C12777
+    NCIt Preferred Term: Radius Bone
+    UBERON Preferred Term: radius bone
+  UBERON:0001016:
+  - NCIt Concept Code: C12755
+    NCIt Preferred Term: Nervous System
+    UBERON Preferred Term: nervous system
+  UBERON:0002397:
+  - NCIt Concept Code: C26470
+    NCIt Preferred Term: Maxilla
+    UBERON Preferred Term: maxilla
+  UBERON:0002072:
+  - NCIt Concept Code: C33645
+    NCIt Preferred Term: Subcutis
+    UBERON Preferred Term: hypodermis
+  UBERON:0001796:
+  - NCIt Concept Code: C13190
+    NCIt Preferred Term: Aqueous Humor
+    UBERON Preferred Term: aqueous humor of eyeball
+  UBERON:0002095:
+  - NCIt Concept Code: C33103
+    NCIt Preferred Term: Mesentery
+    UBERON Preferred Term: mesentery
+  UBERON:0000057:
+  - NCIt Concept Code: C12417
+    NCIt Preferred Term: Urethra
+    UBERON Preferred Term: urethra
+  UBERON:0013472:
+  - NCIt Concept Code: C12253
+    NCIt Preferred Term: Upper Third of the Esophagus
+    UBERON Preferred Term: upper esophagus
+  UBERON:0016540:
+  - NCIt Concept Code: C177767
+    NCIt Preferred Term: Occipital Lobe Cortex
+    UBERON Preferred Term: occipital cortex
+  UBERON:0003625:
+  - NCIt Concept Code: C52838
+    NCIt Preferred Term: Hand Digit 5
+    UBERON Preferred Term: manual digit 5
+  UBERON:0006562:
+  - NCIt Concept Code: C12425
+    NCIt Preferred Term: Pharynx
+    UBERON Preferred Term: pharynx
+  UBERON:0001245:
+  - NCIt Concept Code: C43362
+    NCIt Preferred Term: Anus
+    UBERON Preferred Term: anus
+  UBERON:0000974:
+  - NCIt Concept Code: C13063
+    NCIt Preferred Term: Neck
+    UBERON Preferred Term: neck
+  UBERON:0004086:
+  - NCIt Concept Code: C12356
+    NCIt Preferred Term: Brain Ventricle
+    UBERON Preferred Term: brain ventricle
+  UBERON:8410050:
+  - NCIt Concept Code: C186102
+    NCIt Preferred Term: Anorectum
+    UBERON Preferred Term: anorectum
+  UBERON:0001829:
+  - NCIt Concept Code: C12999
+    NCIt Preferred Term: Major Salivary Gland
+    UBERON Preferred Term: major salivary gland
+  UBERON:0002481:
+  - NCIt Concept Code: C12366
+    NCIt Preferred Term: Bone
+    UBERON Preferred Term: bone element
+  UBERON:0035279:
+  - NCIt Concept Code: C12903
+    NCIt Preferred Term: Supraclavicular Lymph Node
+    UBERON Preferred Term: supraclavicular lymph node
+  UBERON:0005352:
+  - NCIt Concept Code: C12329
+    NCIt Preferred Term: Spermatic Cord
+    UBERON Preferred Term: spermatic cord
+  UBERON:0036068:
+  - NCIt Concept Code: C12280
+    NCIt Preferred Term: Subglottis
+    UBERON Preferred Term: subglottis
+  UBERON:0002110:
+  - NCIt Concept Code: C12377
+    NCIt Preferred Term: Gallbladder
+    UBERON Preferred Term: gallbladder
+  UBERON:0000947:
+  - NCIt Concept Code: C12669
+    NCIt Preferred Term: Aorta
+    UBERON Preferred Term: aorta
+  UBERON:0002048:
+  - NCIt Concept Code: C12468
+    NCIt Preferred Term: Lung
+    UBERON Preferred Term: lung
+  UBERON:0002106:
+  - NCIt Concept Code: C12432
+    NCIt Preferred Term: Spleen
+    UBERON Preferred Term: spleen
+  UBERON:0035477:
+  - NCIt Concept Code: C12302
+    NCIt Preferred Term: Lower-Inner Quadrant of the Breast
+    UBERON Preferred Term: lower inner quadrant of breast
+  UBERON:0001132:
+  - NCIt Concept Code: C12765
+    NCIt Preferred Term: Parathyroid Gland
+    UBERON Preferred Term: parathyroid gland
+  UBERON:0001785:
+  - NCIt Concept Code: C12700
+    NCIt Preferred Term: Cranial Nerve
+    UBERON Preferred Term: cranial nerve
+  UBERON:0008953:
+  - NCIt Concept Code: C33020
+    NCIt Preferred Term: Lower Lobe of the Left Lung
+    UBERON Preferred Term: lower lobe of left lung
+  UBERON:0002726:
+  - NCIt Concept Code: C12892
+    NCIt Preferred Term: Cervical Spinal Cord
+    UBERON Preferred Term: cervical spinal cord
+  UBERON:0035365:
+  - NCIt Concept Code: C12304
+    NCIt Preferred Term: Lower-Outer Quadrant of the Breast
+    UBERON Preferred Term: lower outer quadrant of breast
+  UBERON:0002411:
+  - NCIt Concept Code: C12308
+    NCIt Preferred Term: Clitoris
+    UBERON Preferred Term: clitoris
+  UBERON:0000998:
+  - NCIt Concept Code: C12787
+    NCIt Preferred Term: Seminal Vesicle
+    UBERON Preferred Term: seminal vesicle
+  UBERON:0000310:
+  - NCIt Concept Code: C204859
+    NCIt Preferred Term: Mammary Region
+    UBERON Preferred Term: breast
+  UBERON:0003688:
+  - NCIt Concept Code: C33209
+    NCIt Preferred Term: Omentum
+    UBERON Preferred Term: omentum
+  UBERON:0001296:
+  - NCIt Concept Code: C12314
+    NCIt Preferred Term: Myometrium
+    UBERON Preferred Term: myometrium
+  UBERON:0001052:
+  - NCIt Concept Code: C12390
+    NCIt Preferred Term: Rectum
+    UBERON Preferred Term: rectum
+  UBERON:0002046:
+  - NCIt Concept Code: C12400
+    NCIt Preferred Term: Thyroid Gland
+    UBERON Preferred Term: thyroid gland
+  UBERON:0001008:
+  - NCIt Concept Code: C12413
+    NCIt Preferred Term: Urinary System
+    UBERON Preferred Term: renal system
+  UBERON:0001151:
+  - NCIt Concept Code: C12271
+    NCIt Preferred Term: Tail of the Pancreas
+    UBERON Preferred Term: tail of pancreas
+  UBERON:0002792:
+  - NCIt Concept Code: C12895
+    NCIt Preferred Term: Lumbar Spinal Cord
+    UBERON Preferred Term: lumbar spinal cord
+  UBERON:0004103:
+  - NCIt Concept Code: C89749
+    NCIt Preferred Term: Alveolar Ridge
+    UBERON Preferred Term: alveolar ridge
+  UBERON:0001811:
+  - NCIt Concept Code: C12341
+    NCIt Preferred Term: Conjunctiva
+    UBERON Preferred Term: conjunctiva
+  UBERON:0002524:
+  - NCIt Concept Code: C33073
+    NCIt Preferred Term: Mediastinal Lymph Node
+    UBERON Preferred Term: mediastinal lymph node
+  UBERON:0000167:
+  - NCIt Concept Code: C12421
+    NCIt Preferred Term: Oral Cavity
+    UBERON Preferred Term: mouth || oral cavity
+  UBERON:0002368:
+  - NCIt Concept Code: C12704
+    NCIt Preferred Term: Endocrine Gland
+    UBERON Preferred Term: endocrine gland
+  UBERON:0000945:
+  - NCIt Concept Code: C12391
+    NCIt Preferred Term: Stomach
+    UBERON Preferred Term: stomach
+  UBERON:0001166:
+  - NCIt Concept Code: C12260
+    NCIt Preferred Term: Pylorus
+    UBERON Preferred Term: pylorus
+  UBERON:0000458:
+  - NCIt Concept Code: C12309
+    NCIt Preferred Term: Endocervix
+    UBERON Preferred Term: endocervix
+  UBERON:0003622:
+  - NCIt Concept Code: C52835
+    NCIt Preferred Term: Hand Digit 2
+    UBERON Preferred Term: manual digit 2
+  UBERON:0001069:
+  - NCIt Concept Code: C12269
+    NCIt Preferred Term: Head of the Pancreas
+    UBERON Preferred Term: head of pancreas
+  UBERON:0003679:
+  - NCIt Concept Code: C54187
+    NCIt Preferred Term: Floor of Mouth
+    UBERON Preferred Term: mouth floor
+  UBERON:0001013:
+  - NCIt Concept Code: C12472
+    NCIt Preferred Term: Adipose Tissue
+    UBERON Preferred Term: adipose tissue
+  UBERON:0002358:
+  - NCIt Concept Code: C12770
+    NCIt Preferred Term: Peritoneum
+    UBERON Preferred Term: peritoneum
+  UBERON:0000977:
+  - NCIt Concept Code: C12469
+    NCIt Preferred Term: Pleura
+    UBERON Preferred Term: pleura
+  UBERON:0002390:
+  - NCIt Concept Code: C12909
+    NCIt Preferred Term: Hematopoietic System
+    UBERON Preferred Term: hematopoietic system
+  UBERON:0003697:
+  - NCIt Concept Code: C77608
+    NCIt Preferred Term: Abdominal Wall
+    UBERON Preferred Term: abdominal wall
+  UBERON:0001732:
+  - NCIt Concept Code: C33318
+    NCIt Preferred Term: Pharyngeal Tonsil
+    UBERON Preferred Term: pharyngeal tonsil
+  UBERON:0001270:
+  - NCIt Concept Code: C12767
+    NCIt Preferred Term: Pelvis
+    UBERON Preferred Term: pelvic region of trunk
+  UBERON:0000165:
+  - NCIt Concept Code: C12421
+    NCIt Preferred Term: Oral Cavity
+    UBERON Preferred Term: mouth || oral cavity
+  UBERON:0004122:
+  - NCIt Concept Code: C12810
+    NCIt Preferred Term: Genitourinary System
+    UBERON Preferred Term: genitourinary system
+  UBERON:0002018:
+  - NCIt Concept Code: C12473
+    NCIt Preferred Term: Synovial Membrane
+    UBERON Preferred Term: synovial membrane of synovial joint
+  UBERON:0003126:
+  - NCIt Concept Code: C12428
+    NCIt Preferred Term: Trachea
+    UBERON Preferred Term: trachea
+  UBERON:0000978:
+  - NCIt Concept Code: C32974
+    NCIt Preferred Term: Leg
+    UBERON Preferred Term: leg
+  UBERON:0003703:
+  - NCIt Concept Code: C32573
+    NCIt Preferred Term: Extrahepatic Bile Duct
+    UBERON Preferred Term: extrahepatic bile duct
+  UBERON:0004722:
+  - NCIt Concept Code: C32431
+    NCIt Preferred Term: Deep Cervical Lymph Node
+    UBERON Preferred Term: deep cervical lymph node
+  UBERON:0003691:
+  - NCIt Concept Code: C41449
+    NCIt Preferred Term: Epidural Spinal Space
+    UBERON Preferred Term: epidural space
+  UBERON:0001274:
+  - NCIt Concept Code: C32884
+    NCIt Preferred Term: Ischium
+    UBERON Preferred Term: ischium
+  UBERON:0001828:
+  - NCIt Concept Code: C32677
+    NCIt Preferred Term: Gingiva
+    UBERON Preferred Term: gingiva
+  UBERON:0001097:
+  - NCIt Concept Code: C12904
+    NCIt Preferred Term: Axillary Lymph Node
+    UBERON Preferred Term: axillary lymph node
+  UBERON:0002097:
+  - NCIt Concept Code: C12470
+    NCIt Preferred Term: Skin
+    UBERON Preferred Term: skin of body
+  UBERON:0001756:
+  - NCIt Concept Code: C12274
+    NCIt Preferred Term: Middle Ear
+    UBERON Preferred Term: middle ear
+  UBERON:0011859:
+  - NCIt Concept Code: C95443
+    NCIt Preferred Term: Internal Auditory Canal
+    UBERON Preferred Term: internal acoustic meatus
+  UBERON:0001764:
+  - NCIt Concept Code: C12275
+    NCIt Preferred Term: Maxillary Sinus
+    UBERON Preferred Term: maxillary sinus
+  UBERON:0002298:
+  - NCIt Concept Code: C12441
+    NCIt Preferred Term: Brain Stem
+    UBERON Preferred Term: brainstem
+  UBERON:0002030:
+  - NCIt Concept Code: C12299
+    NCIt Preferred Term: Nipple
+    UBERON Preferred Term: nipple
+  UBERON:0001897:
+  - NCIt Concept Code: C12459
+    NCIt Preferred Term: Thalamus
+    UBERON Preferred Term: dorsal plus ventral thalamus
+  UBERON:0005473:
+  - NCIt Concept Code: C33508
+    NCIt Preferred Term: Sacrum
+    UBERON Preferred Term: fused sacrum
+  UBERON:0001258:
+  - NCIt Concept Code: C12336
+    NCIt Preferred Term: Bladder Neck
+    UBERON Preferred Term: neck of urinary bladder
+  UBERON:0002398:
+  - NCIt Concept Code: C32712
+    NCIt Preferred Term: Hand
+    UBERON Preferred Term: manus
+  UBERON:0001130:
+  - NCIt Concept Code: C12998
+    NCIt Preferred Term: Vertebral Column
+    UBERON Preferred Term: vertebral column
+  UBERON:0001464:
+  - NCIt Concept Code: C64193
+    NCIt Preferred Term: Hip
+    UBERON Preferred Term: hip
+  UBERON:0001150:
+  - NCIt Concept Code: C12270
+    NCIt Preferred Term: Body of the Pancreas
+    UBERON Preferred Term: body of pancreas
+  UBERON:0001905:
+  - NCIt Concept Code: C12398
+    NCIt Preferred Term: Pineal Gland
+    UBERON Preferred Term: pineal body
+  UBERON:0008822:
+  - NCIt Concept Code: C33368
+    NCIt Preferred Term: Posterior Mediastinum
+    UBERON Preferred Term: posterior mediastinum
+  UBERON:0001446:
+  - NCIt Concept Code: C12718
+    NCIt Preferred Term: Fibula
+    UBERON Preferred Term: fibula
+  UBERON:0001733:
+  - NCIt Concept Code: C12231
+    NCIt Preferred Term: Soft Palate
+    UBERON Preferred Term: soft palate
+  UBERON:0001891:
+  - NCIt Concept Code: C12510
+    NCIt Preferred Term: Mesencephalon
+    UBERON Preferred Term: midbrain
+  UBERON:0010011:
+  - NCIt Concept Code: C12447
+    NCIt Preferred Term: Basal Ganglia
+    UBERON Preferred Term: collection of basal ganglia
+  UBERON:0035639:
+  - NCIt Concept Code: C32574
+    NCIt Preferred Term: Eye Appendage
+    UBERON Preferred Term: ocular adnexa
+  UBERON:0000995:
+  - NCIt Concept Code: C12405
+    NCIt Preferred Term: Uterus
+    UBERON Preferred Term: uterus
+  UBERON:0000363:
+  - NCIt Concept Code: C12780
+    NCIt Preferred Term: Reticuloendothelial System
+    UBERON Preferred Term: reticuloendothelial system
+  UBERON:0001163:
+  - NCIt Concept Code: C12261
+    NCIt Preferred Term: Lesser Curvature of the Stomach
+    UBERON Preferred Term: lesser curvature of stomach
+  UBERON:0002394:
+  - NCIt Concept Code: C12376
+    NCIt Preferred Term: Bile Duct
+    UBERON Preferred Term: bile duct
+  UBERON:0000992:
+  - NCIt Concept Code: C12404
+    NCIt Preferred Term: Ovary
+    UBERON Preferred Term: ovary
+  UBERON:0000033:
+  - NCIt Concept Code: C12419
+    NCIt Preferred Term: Head
+    UBERON Preferred Term: head
+  UBERON:0001273:
+  - NCIt Concept Code: C32765
+    NCIt Preferred Term: Ilium
+    UBERON Preferred Term: ilium
+  UBERON:0001474:
+  - NCIt Concept Code: C12366
+    NCIt Preferred Term: Bone
+    UBERON Preferred Term: bone element
+  UBERON:0000002:
+  - NCIt Concept Code: C12311
+    NCIt Preferred Term: Cervix Uteri
+    UBERON Preferred Term: uterine cervix
+  UBERON:0001638:
+  - NCIt Concept Code: C12814
+    NCIt Preferred Term: Vein
+    UBERON Preferred Term: vein
+  UBERON:0003532:
+  - NCIt Concept Code: C164047
+    NCIt Preferred Term: Skin of the Lower Extremity
+    UBERON Preferred Term: hindlimb skin
+  UBERON:0002446:
+  - NCIt Concept Code: C33282
+    NCIt Preferred Term: Patella
+    UBERON Preferred Term: patella
+  UBERON:0035383:
+  - NCIt Concept Code: C12244
+    NCIt Preferred Term: Lateral Wall of the Nasopharynx
+    UBERON Preferred Term: lateral wall of nasopharynx
+  UBERON:0006072:
+  - NCIt Concept Code: C69313
+    NCIt Preferred Term: Cervical Spine
+    UBERON Preferred Term: cervical region of vertebral column
+  UBERON:0001301:
+  - NCIt Concept Code: C12328
+    NCIt Preferred Term: Epididymis
+    UBERON Preferred Term: epididymis
+  UBERON:0001460:
+  - NCIt Concept Code: C12671
+    NCIt Preferred Term: Upper Extremity
+    UBERON Preferred Term: arm
+  UBERON:0000473:
+  - NCIt Concept Code: C12412
+    NCIt Preferred Term: Testis
+    UBERON Preferred Term: testis
+  UBERON:0001136:
+  - NCIt Concept Code: C33105
+    NCIt Preferred Term: Mesothelium
+    UBERON Preferred Term: mesothelium
+  UBERON:0000029:
+  - NCIt Concept Code: C12745
+    NCIt Preferred Term: Lymph Node
+    UBERON Preferred Term: lymph node
+  UBERON:0010033:
+  - NCIt Concept Code: C12228
+    NCIt Preferred Term: Base of Tongue
+    UBERON Preferred Term: posterior part of tongue
+  UBERON:0002240:
+  - NCIt Concept Code: C12464
+    NCIt Preferred Term: Spinal Cord
+    UBERON Preferred Term: spinal cord
+  UBERON:0000317:
+  - NCIt Concept Code: C164003
+    NCIt Preferred Term: Colonic Mucosa
+    UBERON Preferred Term: colonic mucosa
+  UBERON:0001000:
+  - NCIt Concept Code: C12813
+    NCIt Preferred Term: Vas Deferens
+    UBERON Preferred Term: vas deferens
+  UBERON:0008820:
+  - NCIt Concept Code: C32098
+    NCIt Preferred Term: Anterior Mediastinum
+    UBERON Preferred Term: anterior mediastinum
+  UBERON:0001488:
+  - NCIt Concept Code: C32078
+    NCIt Preferred Term: Ankle Joint
+    UBERON Preferred Term: ankle joint
+  UBERON:0001158:
+  - NCIt Concept Code: C12268
+    NCIt Preferred Term: Descending Colon
+    UBERON Preferred Term: descending colon
+  UBERON:0005409:
+  - NCIt Concept Code: C34082
+    NCIt Preferred Term: Gastrointestinal Tract
+    UBERON Preferred Term: alimentary part of gastrointestinal system || digestive
+      tract
+  UBERON:0001443:
+  - NCIt Concept Code: C12799
+    NCIt Preferred Term: Thorax
+    UBERON Preferred Term: chest
+  UBERON:0002182:
+  - NCIt Concept Code: C12284
+    NCIt Preferred Term: Main Bronchus
+    UBERON Preferred Term: main bronchus
+  UBERON:0012376:
+  - NCIt Concept Code: C54223
+    NCIt Preferred Term: Retromolar Trigone
+    UBERON Preferred Term: retromolar triangle
+  UBERON:0001255:
+  - NCIt Concept Code: C12414
+    NCIt Preferred Term: Bladder
+    UBERON Preferred Term: urinary bladder
+  UBERON:0006679:
+  - NCIt Concept Code: C25264
+    NCIt Preferred Term: Carina
+    UBERON Preferred Term: carina of trachea
+  UBERON:0000975:
+  - NCIt Concept Code: C12793
+    NCIt Preferred Term: Sternum
+    UBERON Preferred Term: sternum
+  UBERON:0001831:
+  - NCIt Concept Code: C12427
+    NCIt Preferred Term: Parotid Gland
+    UBERON Preferred Term: parotid gland
+  UBERON:0001629:
+  - NCIt Concept Code: C66852
+    NCIt Preferred Term: Carotid Body
+    UBERON Preferred Term: carotid body
+  UBERON:0001708:
+  - NCIt Concept Code: C48821
+    NCIt Preferred Term: Jaw Bone
+    UBERON Preferred Term: jaw skeleton
+  UBERON:0008948:
+  - NCIt Concept Code: C12285
+    NCIt Preferred Term: Upper Lobe of the Lung
+    UBERON Preferred Term: upper lobe of lung
+  UBERON:0001908:
+  - NCIt Concept Code: C33218
+    NCIt Preferred Term: Optic Tract
+    UBERON Preferred Term: optic tract
+  UBERON:0002369:
+  - NCIt Concept Code: C12666
+    NCIt Preferred Term: Adrenal Gland
+    UBERON Preferred Term: adrenal gland
+  UBERON:0001736:
+  - NCIt Concept Code: C12233
+    NCIt Preferred Term: Submandibular Salivary Gland
+    UBERON Preferred Term: submandibular gland
+  UBERON:0003889:
+  - NCIt Concept Code: C12403
+    NCIt Preferred Term: Fallopian Tube
+    UBERON Preferred Term: fallopian tube
+  UBERON:0013473:
+  - NCIt Concept Code: C12255
+    NCIt Preferred Term: Lower Third of the Esophagus
+    UBERON Preferred Term: lower esophagus
+  UBERON:0000474:
+  - NCIt Concept Code: C12402
+    NCIt Preferred Term: Female Reproductive System
+    UBERON Preferred Term: female reproductive system
+  UBERON:0006849:
+  - NCIt Concept Code: C12783
+    NCIt Preferred Term: Scapula
+    UBERON Preferred Term: scapula
+  UBERON:0035204:
+  - NCIt Concept Code: C98188
+    NCIt Preferred Term: Occipital Lymph Node
+    UBERON Preferred Term: occipital lymph node
+  UBERON:0011602:
+  - NCIt Concept Code: C54204
+    NCIt Preferred Term: Lower Gingiva
+    UBERON Preferred Term: gingiva of lower jaw
+  UBERON:0001690:
+  - NCIt Concept Code: C12394
+    NCIt Preferred Term: Ear
+    UBERON Preferred Term: ear
+  UBERON:0003531:
+  - NCIt Concept Code: C164048
+    NCIt Preferred Term: Skin of the Upper Extremity
+    UBERON Preferred Term: forelimb skin
+  UBERON:0001257:
+  - NCIt Concept Code: C12331
+    NCIt Preferred Term: Bladder Trigone
+    UBERON Preferred Term: trigone of urinary bladder
+  UBERON:0001157:
+  - NCIt Concept Code: C12385
+    NCIt Preferred Term: Transverse Colon
+    UBERON Preferred Term: transverse colon
+  UBERON:0000160:
+  - NCIt Concept Code: C12736
+    NCIt Preferred Term: Intestine
+    UBERON Preferred Term: intestine
+  UBERON:0016525:
+  - NCIt Concept Code: C12352
+    NCIt Preferred Term: Frontal Lobe
+    UBERON Preferred Term: frontal lobe
+  UBERON:0001825:
+  - NCIt Concept Code: C12763
+    NCIt Preferred Term: Paranasal Sinus
+    UBERON Preferred Term: paranasal sinus
+  UBERON:0011601:
+  - NCIt Concept Code: C54205
+    NCIt Preferred Term: Upper Gingiva
+    UBERON Preferred Term: gingiva of upper jaw
+  UBERON:0002372:
+  - NCIt Concept Code: C12802
+    NCIt Preferred Term: Tonsil
+    UBERON Preferred Term: tonsil
+  UBERON:0022277:
+  - NCIt Concept Code: C12266
+    NCIt Preferred Term: Hepatic Flexure
+    UBERON Preferred Term: hepatic flexure of colon
+  UBERON:0006956:
+  - NCIt Concept Code: C12505
+    NCIt Preferred Term: Buccal Mucosa
+    UBERON Preferred Term: buccal mucosa
+  UBERON:0034971:
+  - NCIt Concept Code: C97112
+    NCIt Preferred Term: Aortic Body
+    UBERON Preferred Term: aortic body
+  UBERON:0001491:
+  - NCIt Concept Code: C33894
+    NCIt Preferred Term: Wrist Joint
+    UBERON Preferred Term: wrist joint
+  UBERON:0001160:
+  - NCIt Concept Code: C12257
+    NCIt Preferred Term: Fundus of the Stomach
+    UBERON Preferred Term: fundus of stomach
+  UBERON:0002402:
+  - NCIt Concept Code: C12840
+    NCIt Preferred Term: Pleural Cavity
+    UBERON Preferred Term: pleural cavity
+  UBERON:0001199:
+  - NCIt Concept Code: C32656
+    NCIt Preferred Term: Gastric Mucosa
+    UBERON Preferred Term: mucosa of stomach
+  UBERON:0000178:
+  - NCIt Concept Code: C12434
+    NCIt Preferred Term: Blood
+    UBERON Preferred Term: blood
+  UBERON:0002412:
+  - NCIt Concept Code: C33868
+    NCIt Preferred Term: Vertebral Bone
+    UBERON Preferred Term: vertebra
+  UBERON:0000989:
+  - NCIt Concept Code: C12409
+    NCIt Preferred Term: Penis
+    UBERON Preferred Term: penis
+  UBERON:0035219:
+  - NCIt Concept Code: C32853
+    NCIt Preferred Term: Internal Mammary Lymph Node
+    UBERON Preferred Term: parasternal lymph node
+  UBERON:0000403:
+  - NCIt Concept Code: C89807
+    NCIt Preferred Term: Scalp
+    UBERON Preferred Term: scalp
+  UBERON:0001361:
+  - NCIt Concept Code: C12716
+    NCIt Preferred Term: Femoral Vein
+    UBERON Preferred Term: femoral vein
+  UBERON:0007811:
+  - NCIt Concept Code: C12418
+    NCIt Preferred Term: Head and Neck
+    UBERON Preferred Term: craniocervical region
+  UBERON:0000159:
+  - NCIt Concept Code: C12375
+    NCIt Preferred Term: Anal Canal
+    UBERON Preferred Term: anal canal
+  UBERON:0002068:
+  - NCIt Concept Code: C12338
+    NCIt Preferred Term: Urachus
+    UBERON Preferred Term: urachus
+  UBERON:0000976:
+  - NCIt Concept Code: C12731
+    NCIt Preferred Term: Humerus
+    UBERON Preferred Term: humerus
+  UBERON:0001043:
+  - NCIt Concept Code: C12389
+    NCIt Preferred Term: Esophagus
+    UBERON Preferred Term: esophagus
+  UBERON:0016386:
+  - NCIt Concept Code: C77643
+    NCIt Preferred Term: Paraaortic Lymph Node
+    UBERON Preferred Term: paraaortic lymph node
+  UBERON:0000988:
+  - NCIt Concept Code: C12511
+    NCIt Preferred Term: Pons Varolii
+    UBERON Preferred Term: pons
+  UBERON:0000173:
+  - NCIt Concept Code: C13188
+    NCIt Preferred Term: Amniotic Fluid
+    UBERON Preferred Term: amniotic fluid
+  UBERON:0003216:
+  - NCIt Concept Code: C12230
+    NCIt Preferred Term: Hard Palate
+    UBERON Preferred Term: hard palate
+  UBERON:0002387:
+  - NCIt Concept Code: C32622
+    NCIt Preferred Term: Foot
+    UBERON Preferred Term: pes
+  UBERON:0002091:
+  - NCIt Concept Code: C49477
+    NCIt Preferred Term: Appendicular Skeleton
+    UBERON Preferred Term: appendicular skeleton
+  UBERON:0003292:
+  - NCIt Concept Code: C12350
+    NCIt Preferred Term: Spinal Meninges
+    UBERON Preferred Term: meninx of spinal cord
+  UBERON:0002245:
+  - NCIt Concept Code: C32726
+    NCIt Preferred Term: Hemisphere of the Cerebellum
+    UBERON Preferred Term: cerebellar hemisphere
+  UBERON:0001224:
+  - NCIt Concept Code: C12887
+    NCIt Preferred Term: Renal Pelvis
+    UBERON Preferred Term: renal pelvis
+  UBERON:0015878:
+  - NCIt Concept Code: C103384
+    NCIt Preferred Term: Common Iliac Lymph Node
+    UBERON Preferred Term: common iliac lymph node
+  UBERON:0000341:
+  - NCIt Concept Code: C54272
+    NCIt Preferred Term: Throat
+    UBERON Preferred Term: throat
+  UBERON:0036263:
+  - NCIt Concept Code: C12279
+    NCIt Preferred Term: Supraglottis
+    UBERON Preferred Term: supraglottic part of larynx
+  UBERON:0002186:
+  - NCIt Concept Code: C12684
+    NCIt Preferred Term: Bronchiole
+    UBERON Preferred Term: bronchiole
+  UBERON:0001154:
+  - NCIt Concept Code: C12380
+    NCIt Preferred Term: Appendix
+    UBERON Preferred Term: vermiform appendix
+  UBERON:0001817:
+  - NCIt Concept Code: C12346
+    NCIt Preferred Term: Lacrimal Gland
+    UBERON Preferred Term: lacrimal gland
+  UBERON:0009472:
+  - NCIt Concept Code: C12674
+    NCIt Preferred Term: Axilla
+    UBERON Preferred Term: axilla
+  UBERON:0002509:
+  - NCIt Concept Code: C77641
+    NCIt Preferred Term: Mesenteric Lymph Node
+    UBERON Preferred Term: mesenteric lymph node
+  UBERON:0002384:
+  - NCIt Concept Code: C12374
+    NCIt Preferred Term: Connective Tissue
+    UBERON Preferred Term: connective tissue
+  UBERON:0001236:
+  - NCIt Concept Code: C12397
+    NCIt Preferred Term: Adrenal Medulla
+    UBERON Preferred Term: adrenal medulla
+  UBERON:0013474:
+  - NCIt Concept Code: C12254
+    NCIt Preferred Term: Middle Third of the Esophagus
+    UBERON Preferred Term: middle part of esophagus
+  UBERON:0013691:
+  - NCIt Concept Code: C89806
+    NCIt Preferred Term: Buttock
+    UBERON Preferred Term: buttock
+  UBERON:0000979:
+  - NCIt Concept Code: C12800
+    NCIt Preferred Term: Tibia
+    UBERON Preferred Term: tibia
+  UBERON:0002113:
+  - NCIt Concept Code: C12415
+    NCIt Preferred Term: Kidney
+    UBERON Preferred Term: kidney
+  UBERON:0015857:
+  - NCIt Concept Code: C33278
+    NCIt Preferred Term: Parotid Gland Lymph Node
+    UBERON Preferred Term: parotid lymph node
+  UBERON:0001776:
+  - NCIt Concept Code: C12344
+    NCIt Preferred Term: Choroid
+    UBERON Preferred Term: optic choroid
+  UBERON:0001987:
+  - NCIt Concept Code: C13272
+    NCIt Preferred Term: Placenta
+    UBERON Preferred Term: placenta
+  UBERON:0015469:
+  - NCIt Concept Code: C142320
+    NCIt Preferred Term: Splenic Lymph Node
+    UBERON Preferred Term: splenic lymph node
+  UBERON:0002331:
+  - NCIt Concept Code: C34320
+    NCIt Preferred Term: Umbilical Cord
+    UBERON Preferred Term: umbilical cord
+  UBERON:0003684:
+  - NCIt Concept Code: C12664
+    NCIt Preferred Term: Abdomen
+    UBERON Preferred Term: abdomen
+  UBERON:0016435:
+  - NCIt Concept Code: C62484
+    NCIt Preferred Term: Chest Wall
+    UBERON Preferred Term: chest wall
+  UBERON:0001467:
+  - NCIt Concept Code: C25203
+    NCIt Preferred Term: Shoulder
+    UBERON Preferred Term: shoulder
+  UBERON:0001775:
+  - NCIt Concept Code: C12345
+    NCIt Preferred Term: Ciliary Body
+    UBERON Preferred Term: ciliary body
+  UBERON:0005396:
+  - NCIt Concept Code: C199220
+    NCIt Preferred Term: Carotid Artery Segment
+    UBERON Preferred Term: carotid artery segment
+  UBERON:0001295:
+  - NCIt Concept Code: C12313
+    NCIt Preferred Term: Endometrium
+    UBERON Preferred Term: endometrium
+  UBERON:0012332:
+  - NCIt Concept Code: C12318
+    NCIt Preferred Term: Broad Ligament
+    UBERON Preferred Term: broad ligament of uterus
+  UBERON:0035328:
+  - NCIt Concept Code: C12303
+    NCIt Preferred Term: Upper-Outer Quadrant of the Breast
+    UBERON Preferred Term: upper outer quadrant of breast
+  UBERON:0003704:
+  - NCIt Concept Code: C12677
+    NCIt Preferred Term: Intrahepatic Bile Duct
+    UBERON Preferred Term: intrahepatic bile duct
+  UBERON:0000949:
+  - NCIt Concept Code: C12705
+    NCIt Preferred Term: Endocrine System
+    UBERON Preferred Term: endocrine system
+  UBERON:0000010:
+  - NCIt Concept Code: C12465
+    NCIt Preferred Term: Peripheral Nervous System
+    UBERON Preferred Term: peripheral nervous system
+  UBERON:0010225:
+  - NCIt Concept Code: C12459
+    NCIt Preferred Term: Thalamus
+    UBERON Preferred Term: dorsal plus ventral thalamus
+  UBERON:0002100:
+  - NCIt Concept Code: C33816
+    NCIt Preferred Term: Trunk
+    UBERON Preferred Term: trunk
+  UBERON:0001350:
+  - NCIt Concept Code: C12696
+    NCIt Preferred Term: Coccyx
+    UBERON Preferred Term: coccyx
+  UBERON:0001833:
+  - NCIt Concept Code: C12220
+    NCIt Preferred Term: Lip
+    UBERON Preferred Term: lip
+  UBERON:0000007:
+  - NCIt Concept Code: C12399
+    NCIt Preferred Term: Pituitary Gland
+    UBERON Preferred Term: pituitary gland
+  UBERON:0002291:
+  - NCIt Concept Code: C12891
+    NCIt Preferred Term: Central Canal of Spinal Cord
+    UBERON Preferred Term: central canal of spinal cord
+  UBERON:0001264:
+  - NCIt Concept Code: C12393
+    NCIt Preferred Term: Pancreas
+    UBERON Preferred Term: pancreas
+  UBERON:0001156:
+  - NCIt Concept Code: C12265
+    NCIt Preferred Term: Ascending Colon
+    UBERON Preferred Term: ascending colon
+  UBERON:0016538:
+  - NCIt Concept Code: C177768
+    NCIt Preferred Term: Temporal Lobe Cortex
+    UBERON Preferred Term: temporal cortex
+  UBERON:0000045:
+  - NCIt Concept Code: C12719
+    NCIt Preferred Term: Ganglion
+    UBERON Preferred Term: ganglion
+  UBERON:0012337:
+  - NCIt Concept Code: C12689
+    NCIt Preferred Term: Cauda Equina
+    UBERON Preferred Term: cauda equina
+  UBERON:0001165:
+  - NCIt Concept Code: C12259
+    NCIt Preferred Term: Antrum Pylori
+    UBERON Preferred Term: pyloric antrum
+  UBERON:0035216:
+  - NCIt Concept Code: C12251
+    NCIt Preferred Term: Thoracic Esophagus
+    UBERON Preferred Term: thoracic part of esophagus
+  UBERON:0002429:
+  - NCIt Concept Code: C32298
+    NCIt Preferred Term: Cervical Lymph Node
+    UBERON Preferred Term: cervical lymph node
+  UBERON:0004916:
+  - NCIt Concept Code: C165177
+    NCIt Preferred Term: Anal Sphincter
+    UBERON Preferred Term: anal sphincter
+  UBERON:0001051:
+  - NCIt Concept Code: C12246
+    NCIt Preferred Term: Hypopharynx
+    UBERON Preferred Term: hypopharynx
+  UBERON:0001021:
+  - NCIt Concept Code: C12768
+    NCIt Preferred Term: Peripheral Nerve
+    UBERON Preferred Term: nerve
+  UBERON:0001872:
+  - NCIt Concept Code: C12354
+    NCIt Preferred Term: Parietal Lobe
+    UBERON Preferred Term: parietal lobe
+  UBERON:0001161:
+  - NCIt Concept Code: C12258
+    NCIt Preferred Term: Body of Stomach
+    UBERON Preferred Term: body of stomach
+  UBERON:0001728:
+  - NCIt Concept Code: C12423
+    NCIt Preferred Term: Nasopharynx
+    UBERON Preferred Term: nasopharynx
+  UBERON:0002101:
+  - NCIt Concept Code: C12429
+    NCIt Preferred Term: Limb
+    UBERON Preferred Term: limb
+  UBERON:0001734:
+  - NCIt Concept Code: C12232
+    NCIt Preferred Term: Uvula
+    UBERON Preferred Term: palatine uvula
+  UBERON:0002021:
+  - NCIt Concept Code: C12355
+    NCIt Preferred Term: Occipital Lobe
+    UBERON Preferred Term: occipital lobe
+  UBERON:0001103:
+  - NCIt Concept Code: C12702
+    NCIt Preferred Term: Diaphragm
+    UBERON Preferred Term: diaphragm
+  UBERON:0001204:
+  - NCIt Concept Code: C33568
+    NCIt Preferred Term: Small Intestinal Mucosa
+    UBERON Preferred Term: mucosa of small intestine
+  UBERON:0002410:
+  - NCIt Concept Code: C12673
+    NCIt Preferred Term: Autonomic Nervous System
+    UBERON Preferred Term: autonomic nervous system
+  UBERON:0022276:
+  - NCIt Concept Code: C12267
+    NCIt Preferred Term: Splenic Flexure
+    UBERON Preferred Term: splenic flexure of colon
+  UBERON:0003128:
+  - NCIt Concept Code: C12789
+    NCIt Preferred Term: Skull
+    UBERON Preferred Term: skull
+  UBERON:0002389:
+  - NCIt Concept Code: C32608
+    NCIt Preferred Term: Finger
+    UBERON Preferred Term: manual digit
+  UBERON:0000970:
+  - NCIt Concept Code: C12401
+    NCIt Preferred Term: Eye
+    UBERON Preferred Term: eye
+  UBERON:0008337:
+  - NCIt Concept Code: C12726
+    NCIt Preferred Term: Inguinal Region
+    UBERON Preferred Term: inguinal part of abdomen
+  UBERON:0002037:
+  - NCIt Concept Code: C12445
+    NCIt Preferred Term: Cerebellum
+    UBERON Preferred Term: cerebellum
+  UBERON:0002115:
+  - NCIt Concept Code: C12388
+    NCIt Preferred Term: Jejunum
+    UBERON Preferred Term: jejunum
+  UBERON:0000956:
+  - NCIt Concept Code: C12443
+    NCIt Preferred Term: Cerebral Cortex
+    UBERON Preferred Term: cerebral cortex
+  UBERON:0000966:
+  - NCIt Concept Code: C12343
+    NCIt Preferred Term: Retina
+    UBERON Preferred Term: retina
+  UBERON:0002107:
+  - NCIt Concept Code: C12392
+    NCIt Preferred Term: Liver
+    UBERON Preferred Term: liver
+  UBERON:0001465:
+  - NCIt Concept Code: C32898
+    NCIt Preferred Term: Knee Joint
+    UBERON Preferred Term: knee
+  UBERON:0006073:
+  - NCIt Concept Code: C69315
+    NCIt Preferred Term: Thoracic Spine
+    UBERON Preferred Term: thoracic region of vertebral column
+  UBERON:0005171:
+  - NCIt Concept Code: C32730
+    NCIt Preferred Term: Hepatic Duct
+    UBERON Preferred Term: hepatic duct
+  UBERON:0001085:
+  - NCIt Concept Code: C12295
+    NCIt Preferred Term: Skin of the Trunk
+    UBERON Preferred Term: skin of trunk
+  UBERON:0001105:
+  - NCIt Concept Code: C12695
+    NCIt Preferred Term: Clavicle
+    UBERON Preferred Term: clavicle bone
+  UBERON:0001684:
+  - NCIt Concept Code: C12290
+    NCIt Preferred Term: Mandible
+    UBERON Preferred Term: mandible
+  UBERON:0001711:
+  - NCIt Concept Code: C12713
+    NCIt Preferred Term: Eyelid
+    UBERON Preferred Term: eyelid
+  UBERON:0002469:
+  - NCIt Concept Code: C32538
+    NCIt Preferred Term: Esophageal Mucosa
+    UBERON Preferred Term: esophagus mucosa
+  UBERON:0010996:
+  - NCIt Concept Code: C32144
+    NCIt Preferred Term: Articular Cartilage
+    UBERON Preferred Term: articular cartilage of joint
+  UBERON:0001004:
+  - NCIt Concept Code: C12779
+    NCIt Preferred Term: Respiratory System
+    UBERON Preferred Term: respiratory system
+  UBERON:1000021:
+  - NCIt Concept Code: C33561
+    NCIt Preferred Term: Skin of the Face
+    UBERON Preferred Term: skin of face
+  UBERON:0003728:
+  - NCIt Concept Code: C12748
+    NCIt Preferred Term: Mediastinum
+    UBERON Preferred Term: mediastinum
+  UBERON:0001134:
+  - NCIt Concept Code: C13050
+    NCIt Preferred Term: Skeletal Muscle Tissue
+    UBERON Preferred Term: skeletal muscle tissue
+  UBERON:0001162:
+  - NCIt Concept Code: C12256
+    NCIt Preferred Term: Gastric Cardia
+    UBERON Preferred Term: cardia of stomach
+  UBERON:0010743:
+  - NCIt Concept Code: C12348
+    NCIt Preferred Term: Meninges
+    UBERON Preferred Term: meningeal cluster
+  UBERON:0001737:
+  - NCIt Concept Code: C12420
+    NCIt Preferred Term: Larynx
+    UBERON Preferred Term: larynx
+  UBERON:0001871:
+  - NCIt Concept Code: C12353
+    NCIt Preferred Term: Temporal Lobe
+    UBERON Preferred Term: temporal lobe
+  UBERON:0001723:
+  - NCIt Concept Code: C12422
+    NCIt Preferred Term: Tongue
+    UBERON Preferred Term: tongue
+  UBERON:0008788:
+  - NCIt Concept Code: C33361
+    NCIt Preferred Term: Posterior Cranial Fossa
+    UBERON Preferred Term: posterior cranial fossa
+  UBERON:0001256:
+  - NCIt Concept Code: C48941
+    NCIt Preferred Term: Bladder Wall
+    UBERON Preferred Term: wall of urinary bladder
+  UBERON:0000955:
+  - NCIt Concept Code: C12439
+    NCIt Preferred Term: Brain
+    UBERON Preferred Term: brain
+  UBERON:0000376:
+  - NCIt Concept Code: C33763
+    NCIt Preferred Term: Thigh
+    UBERON Preferred Term: hindlimb stylopod
+  UBERON:0000211:
+  - NCIt Concept Code: C13046
+    NCIt Preferred Term: Ligament
+    UBERON Preferred Term: ligament
+  UBERON:0001153:
+  - NCIt Concept Code: C12381
+    NCIt Preferred Term: Cecum
+    UBERON Preferred Term: caecum
+  UBERON:0001235:
+  - NCIt Concept Code: C12396
+    NCIt Preferred Term: Adrenal Cortex
+    UBERON Preferred Term: adrenal cortex
+  UBERON:0002355:
+  - NCIt Concept Code: C12767
+    NCIt Preferred Term: Pelvis
+    UBERON Preferred Term: pelvic region of trunk
+  UBERON:0003038:
+  - NCIt Concept Code: C12894
+    NCIt Preferred Term: Thoracic Spinal Cord
+    UBERON Preferred Term: thoracic spinal cord
+  UBERON:0001982:
+  - NCIt Concept Code: C32212
+    NCIt Preferred Term: Blood Capillary
+    UBERON Preferred Term: capillary
+  UBERON:0001237:
+  - NCIt Concept Code: C207628
+    NCIt Preferred Term: Para-aortic Body
+    UBERON Preferred Term: paraaortic body
+  UBERON:0010163:
+  - NCIt Concept Code: C32575
+    NCIt Preferred Term: Eyebrow
+    UBERON Preferred Term: eyebrow
+  UBERON:0002116:
+  - NCIt Concept Code: C12387
+    NCIt Preferred Term: Ileum
+    UBERON Preferred Term: ileum
+  UBERON:0003624:
+  - NCIt Concept Code: C52837
+    NCIt Preferred Term: Hand Digit 4
+    UBERON Preferred Term: manual digit 4
+  UBERON:0001179:
+  - NCIt Concept Code: C12769
+    NCIt Preferred Term: Peritoneal Cavity
+    UBERON Preferred Term: peritoneal cavity
+  UBERON:0001567:
+  - NCIt Concept Code: C13070
+    NCIt Preferred Term: Cheek
+    UBERON Preferred Term: cheek
+  UBERON:0002367:
+  - NCIt Concept Code: C12410
+    NCIt Preferred Term: Prostate Gland
+    UBERON Preferred Term: prostate gland
+  UBERON:0001906:
+  - NCIt Concept Code: C12454
+    NCIt Preferred Term: Subthalamic Nucleus
+    UBERON Preferred Term: subthalamic nucleus
+  UBERON:0015880:
+  - NCIt Concept Code: C88143
+    NCIt Preferred Term: External Iliac Lymph Node
+    UBERON Preferred Term: external iliac lymph node
+  UBERON:0035371:
+  - NCIt Concept Code: C98189
+    NCIt Preferred Term: Retroperitoneal Lymph Node
+    UBERON Preferred Term: retroperitoneal lymph node
+  UBERON:0001450:
+  - NCIt Concept Code: C32250
+    NCIt Preferred Term: Calcaneum
+    UBERON Preferred Term: calcaneus
+  UBERON:0001463:
+  - NCIt Concept Code: C52834
+    NCIt Preferred Term: Hand Digit 1
+    UBERON Preferred Term: manual digit 1
+  UBERON:0001259:
+  - NCIt Concept Code: C32205
+    NCIt Preferred Term: Bladder Mucosa
+    UBERON Preferred Term: mucosa of urinary bladder
+  UBERON:0002370:
+  - NCIt Concept Code: C12433
+    NCIt Preferred Term: Thymus Gland
+    UBERON Preferred Term: thymus
+  UBERON:0013069:
+  - NCIt Concept Code: C103222
+    NCIt Preferred Term: Popliteal Fossa
+    UBERON Preferred Term: popliteal area
+  UBERON:0002407:
+  - NCIt Concept Code: C13005
+    NCIt Preferred Term: Pericardium
+    UBERON Preferred Term: pericardium
+  UBERON:0000043:
+  - NCIt Concept Code: C13045
+    NCIt Preferred Term: Tendon
+    UBERON Preferred Term: tendon
+  UBERON:0001911:
+  - NCIt Concept Code: C12367
+    NCIt Preferred Term: Mammary Gland
+    UBERON Preferred Term: mammary gland
+  UBERON:0001898:
+  - NCIt Concept Code: C12458
+    NCIt Preferred Term: Hypothalamus
+    UBERON Preferred Term: hypothalamus
+  UBERON:0001417:
+  - NCIt Concept Code: C52756
+    NCIt Preferred Term: Neck Skin
+    UBERON Preferred Term: skin of neck
+  UBERON:0012303:
+  - NCIt Concept Code: C12337
+    NCIt Preferred Term: Ureteric Orifice
+    UBERON Preferred Term: ureteral orifice
+  UBERON:0008200:
+  - NCIt Concept Code: C89803
+    NCIt Preferred Term: Forehead
+    UBERON Preferred Term: forehead
+  UBERON:0006074:
+  - NCIt Concept Code: C69314
+    NCIt Preferred Term: Lumbar Spine
+    UBERON Preferred Term: lumbar region of vertebral column
+  UBERON:0002486:
+  - NCIt Concept Code: C12724
+    NCIt Preferred Term: Glottis
+    UBERON Preferred Term: glottis
+  UBERON:0003689:
+  - NCIt Concept Code: C12497
+    NCIt Preferred Term: Sella Turcica
+    UBERON Preferred Term: sella turcica
+  UBERON:0000056:
+  - NCIt Concept Code: C12416
+    NCIt Preferred Term: Ureter
+    UBERON Preferred Term: ureter
+  UBERON:0006082:
+  - NCIt Concept Code: C48939
+    NCIt Preferred Term: Bladder Fundus
+    UBERON Preferred Term: fundus of urinary bladder
+  UBERON:0012249:
+  - NCIt Concept Code: C12310
+    NCIt Preferred Term: Ectocervix
+    UBERON Preferred Term: ectocervix
+  UBERON:0002185:
+  - NCIt Concept Code: C12683
+    NCIt Preferred Term: Bronchus
+    UBERON Preferred Term: bronchus
+  UBERON:0001729:
+  - NCIt Concept Code: C12762
+    NCIt Preferred Term: Oropharynx
+    UBERON Preferred Term: oropharynx
+  UBERON:0001137:
+  - NCIt Concept Code: C13062
+    NCIt Preferred Term: Back
+    UBERON Preferred Term: dorsum
+  UBERON:0036214:
+  - NCIt Concept Code: C54188
+    NCIt Preferred Term: Rectosigmoid Region
+    UBERON Preferred Term: rectosigmoid junction
+  UBERON:0000997:
+  - NCIt Concept Code: C12408
+    NCIt Preferred Term: Vulva
+    UBERON Preferred Term: mammalian vulva
+  UBERON:0001143:
+  - NCIt Concept Code: C32736
+    NCIt Preferred Term: Hepatic Vein
+    UBERON Preferred Term: hepatic vein
+  UBERON:0003864:
+  - NCIt Concept Code: C12863
+    NCIt Preferred Term: Middle Phalanx of Hand
+    UBERON Preferred Term: middle phalanx of manus
+  UBERON:0035289:
+  - NCIt Concept Code: C12305
+    NCIt Preferred Term: Axillary Tail of the Breast
+    UBERON Preferred Term: axillary tail of breast
+  UBERON:0001555:
+  - NCIt Concept Code: C34082
+    NCIt Preferred Term: Gastrointestinal Tract
+    UBERON Preferred Term: alimentary part of gastrointestinal system || digestive
+      tract
+  UBERON:0002114:
+  - NCIt Concept Code: C12263
+    NCIt Preferred Term: Duodenum
+    UBERON Preferred Term: duodenum
+  UBERON:0035542:
+  - NCIt Concept Code: C12301
+    NCIt Preferred Term: Upper-Inner Quadrant of the Breast
+    UBERON Preferred Term: upper inner quadrant of breast
+  UBERON:0002067:
+  - NCIt Concept Code: C12701
+    NCIt Preferred Term: Dermis
+    UBERON Preferred Term: dermis
+  UBERON:0003729:
+  - NCIt Concept Code: C77637
+    NCIt Preferred Term: Oral Mucosa
+    UBERON Preferred Term: mouth mucosa
+  UBERON:0001174:
+  - NCIt Concept Code: C12698
+    NCIt Preferred Term: Common Bile Duct
+    UBERON Preferred Term: common bile duct
+  UBERON:0002228:
+  - NCIt Concept Code: C12782
+    NCIt Preferred Term: Rib
+    UBERON Preferred Term: rib
+  UBERON:0001352:
+  - NCIt Concept Code: C12498
+    NCIt Preferred Term: External Acoustic Meatus
+    UBERON Preferred Term: external acoustic meatus
+  UBERON:0001017:
+  - NCIt Concept Code: C12438
+    NCIt Preferred Term: Central Nervous System
+    UBERON Preferred Term: central nervous system
+  UBERON:0008199:
+  - NCIt Concept Code: C81169
+    NCIt Preferred Term: Mentum
+    UBERON Preferred Term: chin
+  UBERON:0001332:
+  - NCIt Concept Code: C33049
+    NCIt Preferred Term: Male Prepuce
+    UBERON Preferred Term: prepuce of penis
+  UBERON:0001269:
+  - NCIt Concept Code: C32042
+    NCIt Preferred Term: Acetabulum
+    UBERON Preferred Term: acetabular part of hip bone
+  UBERON:0004913:
+  - NCIt Concept Code: C13011
+    NCIt Preferred Term: Ampulla of Vater
+    UBERON Preferred Term: hepatopancreatic ampulla
+  UBERON:0008949:
+  - NCIt Concept Code: C12287
+    NCIt Preferred Term: Lower Lobe of the Lung
+    UBERON Preferred Term: lower lobe of lung
+  UBERON:0001543:
+  - NCIt Concept Code: C53146
+    NCIt Preferred Term: Popliteal Lymph Node
+    UBERON Preferred Term: popliteal lymph node
+  UBERON:0000982:
+  - NCIt Concept Code: C13044
+    NCIt Preferred Term: Joint
+    UBERON Preferred Term: skeletal joint
+  UBERON:0001757:
+  - NCIt Concept Code: C12292
+    NCIt Preferred Term: External Ear
+    UBERON Preferred Term: pinna
+  UBERON:0001159:
+  - NCIt Concept Code: C12384
+    NCIt Preferred Term: Sigmoid Colon
+    UBERON Preferred Term: sigmoid colon
+  UBERON:0000948:
+  - NCIt Concept Code: C12727
+    NCIt Preferred Term: Heart
+    UBERON Preferred Term: heart
