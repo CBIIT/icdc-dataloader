@@ -1,5 +1,5 @@
 pyyaml
-neo4j==4.4.*
+neo4j==5.*.*
 boto3
 requests
 elasticsearch==7.13.*
