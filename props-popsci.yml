@@ -1,0 +1,49 @@
+Properties:
+  domain: cds.cancer.gov
+  rel_prop_delimiter: "$"
+
+  plurals:
+    study: studies
+    study_admin: study_admins
+    participant: participants
+    diagnosis: diagnoses
+    treatment: treatments
+    specimen: specimens
+    sample: samples
+    file: files
+    genomic_info: genomic_info
+    proteomic: proteomics
+    project: projects
+    data_file: data_files
+    data_collection: data_collections
+    primary_diagnosis: primary_diagnosises
+    study_state_province_territory: study_state_province_territories
+    study_country: study_countries
+    publication: publications
+    associated_link: associated_links
+    study_personnel: study_personnel
+    
+
+
+  type_mapping:
+    string: String
+    number: Float
+    integer: Int
+    boolean: Boolean
+    array: Array
+    object: Object
+    datetime: DateTime
+    date: Date
+    TBD: String
+
+  id_fields:
+    study: phs_accession
+    study: study_short_name
+    participant: participant_id
+    diagnosis: diagnosis_id
+    treatment: treatment_id
+    specimen: specimen_id
+    sample: sample_id
+    file: file_id
+    #genomic_info:
+

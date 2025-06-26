@@ -1,0 +1,28 @@
+NODE_FILE: C:\Users\breadsp2\Desktop\Current_Model_Files\popsci-model.yml
+PROP_FILE: C:\Users\breadsp2\Desktop\Current_Model_Files\popsci-model-props.yml
+WEIGHT_FILE: C:\Users\breadsp2\Desktop\Current_Model_Files\popsci-model-weights.yml
+SYNTHETIC_DATA_FILE: ./cds_two_head_nodes_configuration_files/cds-synthetic_data_values.xlsx
+DATA_SPEC_FILE:  C:\Users\breadsp2\Desktop\Current_Model_Files\popsci-mock-data-specs_v2.yaml
+ID_FILE:  C:\Users\breadsp2\Desktop\Current_Model_Files\props-popsci.yml
+
+
+ICDO_CONV_FILE:  C:\Users\breadsp2\Desktop\Current_Model_Files\sitetype.icdo3.d20220429.xlsx
+LOCATION_CONV_FILE: C:\Users\breadsp2\Desktop\Current_Model_Files\cancer_site_location.yaml
+#TUDY_FILE: C:\Users\breadsp2\Desktop\PLCO_Mock_Data\PLCO-study.txt
+#OUTPUT_FOLDER:  C:\Users\breadsp2\Desktop\PLCO_Mock_Data\
+
+
+#STUDY_FILE: C:\Users\breadsp2\Desktop\GTSR_Mock_Data\GTSR-study.txt
+#OUTPUT_FOLDER:  C:\Users\breadsp2\Desktop\GTSR_Mock_Data\
+
+STUDY_FILE: C:\Users\breadsp2\Desktop\SMCT_Mock_Data\SMCT-study.txt
+OUTPUT_FOLDER:  C:\Users\breadsp2\Desktop\SMCT_Mock_Data\
+
+
+
+#NODE_FILE: ./cds_two_head_nodes_configuration_files/cds-model.yml
+#PROP_FILE: ./cds_two_head_nodes_configuration_files/cds-model-props_v2.yml
+#SYNTHETIC_DATA_FILE: ./cds_two_head_nodes_configuration_files/cds-synthetic_data_values.xlsx
+#DATA_SPEC_FILE: ./cds_two_head_nodes_configuration_files/cds-mock-data-specs.yaml
+#ID_FILE: ./cds_two_head_nodes_configuration_files/props-cds.yml
+#OUTPUT_FOLDER: ./cds_two_head_nodes_data_files/

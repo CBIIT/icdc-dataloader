@@ -1,0 +1,399 @@
+CancerLocation:
+  LIP:
+    External upper lip: C00.0
+    External lower lip: C00.1
+    External lip  NOS: C00.2
+    Mucosa of upper lip: C00.3
+    Mucosa of lower lip: C00.4
+    Mucosa of lip  NOS: C00.5
+    Commissure of lip: C00.6
+    Overlapping lesion of lip: C00.8
+    Lip  NOS: C00.9
+  BASE OF TONGUE:
+    Base of tongue  NOS: C01.9
+  OTHER AND UNSPECIFIED PARTS OF TONGUE:
+    Dorsal surface of tongue  NOS: C02.0
+    Border of tongue: C02.1
+    Ventral surface of tongue  NOS: C02.2
+    Anterior 2/3 of tongue  NOS: C02.3
+    Lingual tonsil: C02.4
+    Overlapping lesion of tongue: C02.8
+    Tongue  NOS: C02.9
+  GUM:
+    Upper Gum: C03.0
+    Lower gum: C03.1
+    Gum  NOS: C03.9
+  FLOOR OF MOUTH:
+    Anterior floor of mouth: C04.0
+    Lateral floor of mouth: C04.1
+    Overlapping lesion of floor of mouth: C04.8
+    Floor of mouth  NOS: C04.9
+  PALATE:
+    Hard palate: C05.0
+    Soft palate  NOS: C05.1
+    Uvula: C05.2
+    Overlapping lesion of palate: C05.8
+    Palate  NOS: C05.9
+  OTHER AND UNSPECIFIED PARTS OF MOUTH:
+    Cheeck mucosa: C06.0
+    Vestibule of mouth: C06.1
+    Retromolar area: C06.2
+    Overlapping lesion of other and unspecified parts of mouth: C06.8
+    Mouth  NOS: C06.9
+  PAROTID GLANID:
+    Parotid gland: C07.9
+  OTHER AND UNSPECIFIED MAJOR SALIVARY GLANDS:
+    Submandibular gland: C08.0
+    Sublingual gland: C08.1
+    Overlapping lesion of major salivary glands: C08.8
+    Major salivary gland  NOS: C08.9
+  TONSIL:
+    Tonsillar fossa: C09.0
+    Tonsillar pillar: C09.1
+    Overlapping lesion of tonsil: C09.8
+    Tonsil  NOS: C09.9
+  OROPHARYNX:
+    Vallecula: C10.0
+    Anterior surface of epiglottis: C10.1
+    Lateral wall of oropharynx: C10.2
+    Posterior wall of oropharynx: C10.3
+    Branchial cleft: C10.4
+    Overlapping lesions of oropharynx: C10.8
+    Oropharynx  NOS: C10.9
+  NASOPHARYNX:
+    Superior wall of nasopharynx: C11.0
+    Posterior wall of nasopharynx: C11.1
+    Lateral wall of nasopharynx: C11.2
+    Anterior wall of nasopharynx: C11.3
+    Overlapping lesion of nasopharynx: C11.8
+    Nasopharynx  NOS: C11.9
+  PYRIFORM SINUS:
+    Pyriform sinus: C12.9
+  HYPOPHARYNX:
+    Postcricoid region: C13.0
+    Hypopharyngeal aspect of aryepiglottic fold: C13.1
+    Posterior wall of hypopharynx: C13.2
+    Overlapping lesion of hypopharynx: C13.8
+    Hypopharynx  NOS: C13.9
+  OTHER AND ILL-DEFINED SITES IN LIP, ORAL CAVITY AND PHARYNX:
+    Pharynx  NOS: C14.0
+    Waldeyer ring: C14.2
+    Overlapping lesion of lip  oral cavity and pharynx: C14.8
+  ESOPHAGUS:
+    Cervical esophagus: C15.0
+    Thoracic esophagus: C15.1
+    Abdominal esophagus: C15.2
+    Upper third of esophagus: C15.3
+    Middle third of esophagus: C15.4
+    Lower third of esophagus: C15.5
+    Overlapping lesion of esophagus: C15.8
+    Esophagus  NOS: C15.9
+  STOMACH:
+    Cardia  NOS: C16.0
+    Fundus of stomach: C16.1
+    Body of stomach: C16.2
+    Gastric antrum: C16.3
+    Pylorus: C16.4
+    Lesser curvature of stomach  NOS: C16.5
+    Greater curvature of stomach  NOS: C16.6
+    Overlapping lesion of stomach: C16.8
+    Stomach  NOS: C16.9
+  SMALL INTESTINE:
+    Duodenum: C17.0
+    Jejunum: C17.1
+    Ileum: C17.2
+    Meckel diverticulum: C17.3
+    Overlapping lesion of small intestine: C17.8
+    Small intestine  NOS: C17.9
+  COLON:
+    Cecum: C18.0
+    Appendix: C18.1
+    Ascending colon: C18.2
+    Hepatic flexure of colon: C18.3
+    Transverse colon: C18.4
+    Splenic flexure of colon: C18.5
+    Descending colon: C18.6
+    Sigmoid colon: C18.7
+    Overlapping lesion of colon: C18.8
+    Colon  NOS: C18.9
+  RECTOSIGMOID JUNCTION:
+    Rectosigmoid junction: C19.9
+  RECTUM:
+    Rectum  NOS: C20.9
+  ANUS AND ANAL CANAL:
+    Anus  NOS: C21.0
+    Anal canal: C21.1
+    Cloacogenic zone: C21.2
+    Overlapping lesion of rectum  anus and anal canal: C21.8
+  LIVER AND INTRAHEPATIC BILE DUCTS:
+    Liver: C22.0
+    intrahepatic bile duct: C22.1
+  GALLBLADDER:
+    Gallbladder: C23.9
+  OTHER AND UNSPECIFIED PARTS OF BILIARY TRACT:
+    Extrahepatic bile duct: C24.0
+    Ampulla of Vater: C24.1
+    Overlapping lesion of billiary tract: C24.8
+    Billiary tract  NOS: C24.9
+  PANCREAS:
+    Head of pancreas: C25.0
+    Body of pancreas: C25.1
+    Tail of pancreas: C25.2
+    Pancreatic duct: C25.3
+    Islets of Langerhans: C25.4
+    Other specified parts of pancreas: C25.7
+    Overlapping lesion of pancreas: C25.8
+    Pancreas  NOS: C25.9
+  OTHER AND ILL-DEFINED DIGESTIVE ORGANS:
+    Intestinal tract  NOS: C26.0
+    Overlapping lesion of digestive system: C26.8
+    Gastrointestinal tract  NOS: C26.9
+  NASAL CAVITY AND MIDDLE EAR:
+    Nasal cavity: C30.0
+    Middle ear: C30.1
+  ACCESSORY SINUSES:
+    Maxillary sinus: C31.0
+    Ethmoid sinus: C31.1
+    Frontal sinus: C31.2
+    Sphenoid sinus: C31.3
+    Overlapping lesion of accessory sinuses: C31.8
+    Accessory sinus  NOS: C31.9
+  LARYNX:
+    Glottis: C32.0
+    Supraglottis: C32.1
+    Subglottis: C32.2
+    Laryngeal cartilage: C32.3
+    Overlapping lesion of larynx: C32.8
+    Larynx  NOS: C32.9
+  TRACHEA:
+    Trachea: C33.9
+  BRONCHUS AND LUNG:
+    Main bronchus: C34.0
+    Upper lobe  lung: C34.1
+    Middle lobe  lung: C34.2
+    Lower lobe  lung: C34.3
+    Overlapping lesion of lung: C34.8
+    Lung  NOS: C34.9
+  THYMUS:
+    Thymus: C37.9
+  HEART, MEDIASTINUM, AND PLEURA:
+    Heart: C38.0
+    Anterior mediastinum: C38.1
+    Posterior mediastinum: C38.2
+    Mediastinum  NOS: C38.3
+    Pleura  NOS: C38.4
+    Overlapping lesion of heart  mediastinum and pleura: C38.8
+  OTHER AND ILL-DEFINED SITES WITHIN RESPIRATORY SYSTEM AMD INTRATHORACIC ORGANS:
+    Upper respiratory tract  NOS: C39.0
+    Overlapping lesion of respiratory system and intrathoracic organs: C39.8
+    Ill-defined sites within respiratory system: C39.9
+  BONES, JOINTS AND ARTICULAR CARTILAGE OF LIMBS:
+    Long bones of upper limb  scapula and associated joints: C40.0
+    Short bones of upper limb and associated joints: C40.1
+    Long bones of lower limb and associated joints: C40.2
+    Short bones of lower limb and associated joints: C40.3
+    Overlapping lesion of bones  joints and articular cartilage of limbs: C40.8
+    Bone of limb  NOS: C40.9
+  BONES, JOINTS AND ARTICULAR CARTILAGE OF OTHER AND UNSPECIFIED SITES:
+    Bones of skull and face and associated joints: C41.0
+    Mandible: C41.1
+    Vertebral column: C41.2
+    Rib  sternum  clavicle and associated joints: C41.3
+    Pelvic bones  sacrum  coccyx and associated joints: C41.4
+    Overlapping lesion of bones  joints and articular cartilage: C41.8
+    Bone  NOS: C41.9
+  HEMATOPOIETIC AND RETICULOENDOTHELIAL SYSTEMS:
+    Blood: C42.0
+    Bone marrow: C42.1
+    Spleen: C42.2
+    Reticuloendothelial system  NOS: C42.3
+    Hematopoietic system  NOS: C42.4
+  SKIN:
+    Skin of lip  NOS: C44.0
+    Eyelid: C44.1
+    External ear: C44.2
+    Skin of other and unspecified parts of face: C44.3
+    Skin of scalp and neck: C44.4
+    Skin of trunk: C44.5
+    Skin of upper limb and shoulder: C44.6
+    Skin of lower limb and hip: C44.7
+    Overlapping lesion of skin: C44.8
+    Skin  NOS: C44.9
+  PERIPHERAL NERVES AND AUTONOMIC NERVOUS SYSTEM:
+    Peripheral nerves and autonomic nervous system of head  face  and neck: C47.0
+    Peripheral nerves and autonomic nervous system of upper limb and shoulder: C47.1
+    Peripheral nerves and autonomic nervous system of lower limb and hip: C47.2
+    Peripheral nerves and autonomic nervous system of thorax: C47.3
+    Peripheral nerves and autonomic nervous system of abdomen: C47.4
+    Peripheral nerves and autonomic nervous system of pelvis: C47.5
+    Peripheral nerves and autonomic nervous system of trunk  NOS: C47.6
+    Overlapping lesion of peripheral nerves and autonomic nervous system: C47.8
+    Autonomic nervous system  NOS: C47.9
+  RETROPERITONEUM AND PERITONEUM:
+    Retroperitoneum: C48.0
+    Specified parts of peritoneum: C48.1
+    Peritoneum  NOS: C48.2
+    Overlapping lesion of retroperitoneum and peritoneum: C48.8
+  CONNECTIVE, SUBCUTANEOUS AND OTHER SOFT TISSUES:
+    Connective  Subcutaneous and other soft tissues of head  face  and neck: C49.0
+    Connective  Subcutaneous and other soft tissues of upper limb and shoulder: C49.1
+    Connective  Subcutaneous and other soft tissues of lower limb and hip: C49.2
+    Connective  Subcutaneous and other soft tissues of thorax: C49.3
+    Connective  Subcutaneous and other soft tissues of abdomen: C49.4
+    Connective  Subcutaneous and other soft tissues of pelvis: C49.5
+    Connective  Subcutaneous and other soft tissues of trunk  NOS: C49.6
+    Overlapping lesion of connective  subcutaneous and other soft tissues: C49.8
+    Connective  Subcutaneous and other soft tissues  NOS: C49.9
+  BREAST:
+    Nipple: C50.0
+    Central portion of breast: C50.1
+    Upper-inner quadrant of breast: C50.2
+    Lower-inner quadrant of breast: C50.3
+    Upper-outer quadrant of breast: C50.4
+    Lower-outer quadrant of breast: C50.5
+    Axillary tail of breast: C50.6
+    Overlapping lesion of breast: C50.8
+    Breast  NOS: C50.9
+  VULVA:
+    Labium majus: C51.0
+    Labium minus: C51.1
+    Clitorus: C51.2
+    Overlapping lesion of vulva: C51.8
+    Vulva  NOS: C51.9
+  VAGINA:
+    Vagina  NOS: C52.9
+  CERVIX UTERI:
+    Endocervix: C53.0
+    Exocervix: C53.1
+    Overlapping lesion of cervix uteri: C53.8
+    Cervix uteri: C53.9
+  CORPUS UTERI:
+    Isthmus uteri: C54.0
+    Endometrium: C54.1
+    Myometrium: C54.2
+    Fundus uteri: C54.3
+    Overlapping lesion of corpus uteri: C54.8
+    Corpus uteri: C54.9
+  UTERUS, NOS:
+    Uterus  NOS: C55.9
+  OVARY:
+    Ovary: C56.9
+  OTHER AN UNSPECIFIED FEMALE GENITAL ORGANS:
+    Fallopian tube: C57.0
+    Broad ligament: C57.1
+    Round ligament: C57.2
+    Parametrium: C57.3
+    Uterine adnexa: C57.4
+    Other specified parts of female genital organs: C57.7
+    Overlapping lesion of female genital organs: C57.8
+    Female genital tract  NOS: C57.9
+  PLACENTA:
+    Placenta: C58.9
+  PENIS:
+    Prepuce: C60.0
+    Glans penis: C60.1
+    Body of penis: C60.2
+    Overlapping lesion of penis: C60.8
+    Penis  NOS: C60.9
+  PROSTATE GLAND:
+    Prostate gland: C61.9
+  TESTIS:
+    Undescended testis: C62.0
+    Descended testis: C62.1
+    Testis  NOS: C62.9
+  OTHER AND UNSPECIFIED MALE GENITAL ORGANS:
+    Epididymis: C63.0
+    Spermatic cord: C63.1
+    Scrotum  NOS: C63.2
+    Other specified parts of male genital organs: C63.7
+    Overlapping lesion of male genital organs: C63.8
+    Male genital organs  NOS: C63.9
+  KIDNEY:
+    Kidney  NOS: C64.9
+  RENAL PELVIS:
+    Renal pelvis: C65.9
+  URETER:
+    Ureter: C66.9
+  BLADDER:
+    Trigone of bladder: C67.0
+    Dome of bladder: C67.1
+    Lateral wall of bladder: C67.2
+    Anterior wall of bladder: C67.3
+    Posterior wall of bladder: C67.4
+    Bladder neck: C67.5
+    Ureteric orifice: C67.6
+    Urachus: C67.7
+    Overlapping lesion of bladder: C67.8
+    Bladder  NOS: C67.9
+  OTHER AND UNSPECIFIED URINARY ORGANS:
+    Urethra: C68.0
+    Paraurethral gland: C68.1
+    Overlapping lesion of urinary organs: C68.8
+    Urinary system  NOS: C68.9
+  EYE AND ADNEXA:
+    Conjunctiva: C69.0
+    Cornea  NOS: C69.1
+    Retina: C69.2
+    Choroid: C69.3
+    Ciliary body: C69.4
+    Lacrimal gland: C69.5
+    Orbit  NOS: C69.6
+    Overlapping lesion of eye and adnexa: C69.8
+    Eye  NOS: C69.9
+  MENINGES:
+    Cerebral meninges: C70.0
+    Spinal meninges: C70.1
+    Meninges  NOS: C70.9
+  BRAIN:
+    Cerebrum: C71.0
+    Frontal lobe: C71.1
+    Temporal lobe: C71.2
+    Parietal lobe: C71.3
+    Occipital lobe: C71.4
+    Ventricle  NOS: C71.5
+    Cerebellum  NOS: C71.6
+    Brain stem: C71.7
+    Overlapping lesion of brain: C71.8
+    Brain  NOS: C71.9
+  SPINAL CORD, CRANIAL NERVES, AND OTHER PARTS OF CENTRAL NERVOUS SYSTEM:
+    Spinal cord: C72.0
+    Cauda equina: C72.1
+    Olfactory nerve: C72.2
+    Optic nerve: C72.3
+    Acoustic nerve: C72.4
+    Cranial nerve  NOS: C72.5
+    Overlapping lesion of brain and central nervous system: C72.8
+    Nervous system  NOS: C72.9
+  THYROID GLAND:
+    Thyroid gland: C73.9
+  ADRENAL GLAND:
+    Cortex of adrenal gland: C74.0
+    Medulla of adrenal gland: C74.1
+    Adrenal gland  NOS: C74.9
+  OTHER ENDOCRINE GLANDS AND RELATED STRUCTURES:
+    Parathyroid gland: C75.0
+    Pituitary gland: C75.1
+    Craniopharyngeal duct: C75.2
+    Pineal gland: C75.3
+    Carotid body: C75.4
+    Aortic body and other paraganglia: C75.5
+    Overlapping lesion of endocrine glands and related structures: C75.8
+    Endocrine gland  NOS: C75.9
+  OTHER AND ILL-DEFINED SITES:
+    Head  face or neck  NOS: C76.0
+    Thorax  NOS: C76.1
+    Abdomen  NOS: C76.2
+    Pelvis  NOS: C76.3
+    Upper limb  NOS: C76.4
+    Lower limb  NOS: C76.5
+    Other ill-defined sites: C76.7
+    Overlapping lesion of ill-defined sites: C76.8
+  LYMPH NODES:
+    Lymph nodes of head  face and neck: C77.0
+    Intrathoracic lymph nodes: C77.1
+    Intra-abdominal lymph nodes: C77.2
+    Lymph nodes of axilla or arm: C77.3
+    Lymph nodes of inguinal region or leg: C77.4
+    Pelvic lymph nodes: C77.5
+    Lymph nodes of multiple regions: C77.8
+    Lymph node  NOS: C77.9

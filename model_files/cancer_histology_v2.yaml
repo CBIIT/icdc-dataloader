@@ -1,0 +1,1038 @@
+CancerHistology:
+  8000/0: Benign Neoplasm
+  8000/1: Neoplasm, Uncertain Whether Benign or Malignant
+  8000/3: Malignant Neoplasm
+  8000/6: Metastatic Neoplasm
+  8000/9: Malignant Neoplasm, Uncertain Whether Primary or Metastatic
+  8001/0: Benign Cellular Infiltrate
+  8001/1: Neoplastic Cell
+  8001/3: Malignant Cell
+  8003/3: Malignant Giant Cell Neoplasm
+  8004/3: Malignant Spindle Cell Neoplasm
+  8005/0: Clear Cell Neoplasm
+  8005/3: Malignant Ovarian Clear Cell Tumor
+  8010/2: Carcinoma In Situ
+  8010/6: Metastatic Carcinoma
+  8010/9: Carcinomatosis
+  8012/3: Large Cell Carcinoma
+  8013/3: Large Cell Neuroendocrine Carcinoma
+  8014/3: Lung Large Cell Carcinoma with Rhabdoid Phenotype
+  8015/3: Glassy Cell Carcinoma
+  8022/3: Pleomorphic Carcinoma
+  8023/3: NUT Carcinoma
+  8031/3: Giant Cell Carcinoma
+  8035/3: Undifferentiated Carcinoma with Osteoclast-Like Giant Cells
+  8045/3: Combined Small Cell Lung Carcinoma
+  8046/3: Non-Small Cell Carcinoma
+  8050/0: Papilloma
+  8050/3: Papillary Carcinoma
+  8051/3: Verrucous Carcinoma
+  8052/0: Squamous Papilloma
+  8052/2: Non-Invasive Papillary Squamous Cell Carcinoma
+  8052/3: Papillary Squamous Cell Carcinoma
+  8053/0: Inverted Squamous Papilloma
+  8054/0: Warty Dyskeratoma
+  8054/3: Warty Carcinoma
+  8060/0: Squamous Papillomatosis
+  8070/0: Actinic (Solar) Keratosis
+  8070/2: Stage 0 Squamous Cell Carcinoma
+  8070/3: Squamous Cell Carcinoma
+  8070/6: Metastatic Squamous Cell Carcinoma
+  8071/2: Differentiated Intraepithelial Neoplasia
+  8071/3: Keratinizing Squamous Cell Carcinoma
+  8072/0: Large Cell Acanthoma
+  8072/3: Non-Keratinizing Large Cell Squamous Cell Carcinoma
+  8073/3: Non-Keratinizing Small Cell Squamous Cell Carcinoma
+  8074/3: Spindle Cell Squamous Cell Carcinoma
+  8075/3: Pseudoglandular Squamous Cell Carcinoma
+  8076/2: Squamous Cell Carcinoma In Situ with Questionable Stromal Invasion
+  8076/3: Microinvasive Squamous Cell Carcinoma
+  8077/0: Low Grade Squamous Intraepithelial Neoplasia
+  8077/2: High Grade Squamous Intraepithelial Neoplasia
+  8078/3: Squamous Cell Carcinoma with Horn Formation
+  8080/2: Penile Carcinoma In Situ
+  8081/2: Bowen Disease of the Skin
+  8082/3: Nasopharyngeal Type Undifferentiated Carcinoma
+  8083/3: Basaloid Squamous Cell Carcinoma
+  8084/0: Clear Cell Acanthoma
+  8084/3: Squamous Cell Carcinoma, Clear Cell Type
+  8085/3: Human Papillomavirus-Related Squamous Cell Carcinoma
+  8086/3: Human Papillomavirus-Negative Squamous Cell Carcinoma
+  8090/1: Basal Cell Neoplasm
+  8090/3: Basal Cell Carcinoma
+  8091/3: Superficial Basal Cell Carcinoma
+  8092/3: Skin Infiltrating Basal Cell Carcinoma
+  8093/3: Skin Fibroepithelial Basal Cell Carcinoma
+  8094/3: Skin Basosquamous Cell Carcinoma
+  8095/3: Skin Metatypical Carcinoma
+  8097/3: Skin Nodular Basal Cell Carcinoma
+  8098/3: Skin Adenoid Basal Cell Carcinoma
+  8100/0: Trichoblastoma
+  8101/0: Trichofolliculoma
+  8102/0: Trichilemmoma
+  8104/0: Pilar Sheath Acanthoma
+  8110/0: Pilomatricoma
+  8110/3: Pilomatrical Carcinoma
+  8120/0: Urothelial Papilloma
+  8120/2: 'Carcinoma in situ: flat tumor'
+  8120/3: Transitional Cell Carcinoma
+  8121/0: Sinonasal Exophytic Papilloma
+  8121/1: Sinonasal Inverted Papilloma
+  8121/3: Non-Keratinizing Sinonasal Squamous Cell Carcinoma
+  8122/3: Invasive Sarcomatoid Urothelial Carcinoma
+  8123/3: Basaloid Carcinoma
+  8124/3: Anal Cloacogenic Carcinoma
+  8130/1: Papillary Urothelial Neoplasm of Low Malignant Potential
+  8130/2: Non-Invasive Papillary Transitional Cell Carcinoma
+  8130/3: Papillary Transitional Cell Carcinoma
+  8131/3: Micropapillary Transitional Cell Carcinoma
+  8140/0: Adenoma
+  8140/1: Atypical Adenoma
+  8140/2: Adenocarcinoma, in situ
+  8140/3: Adenocarcinoma
+  8140/6: Metastatic Adenocarcinoma
+  8141/3: Scirrhous Adenocarcinoma
+  8142/3: Linitis Plastica
+  8144/0: Gastrointestinal Tract Adenoma, Intestinal-Type
+  8144/3: Intestinal-Type Adenocarcinoma
+  8145/3: Diffuse Type Adenocarcinoma
+  8146/0: Salivary Gland Monomorphic Adenoma
+  8147/0: Salivary Gland Basal Cell Adenoma
+  8147/3: Salivary Gland Basal Cell Adenocarcinoma
+  8148/0: Low Grade Glandular Intraepithelial Neoplasia
+  8148/2: High Grade Glandular Intraepithelial Neoplasia
+  8149/0: Salivary Gland Canalicular Adenoma
+  8150/0: Pancreatic Neuroendocrine Microtumor
+  8150/3: Non-Functional Pancreatic Neuroendocrine Tumor
+  8151/3: Pancreatic Insulinoma
+  8152/3: Pancreatic Glucagonoma
+  8153/3: Gastrin-Producing Neuroendocrine Tumor
+  8154/3: Mixed Neuroendocrine Non-Neuroendocrine Neoplasm
+  8155/3: VIP-Producing Neuroendocrine Tumor
+  8156/3: Somatostatin-Producing Neuroendocrine Tumor
+  8158/3: Pancreatic ACTH-Producing Neuroendocrine Tumor
+  8160/0: Bile Duct Adenoma
+  8160/3: Cholangiocarcinoma
+  8161/0: Bile Duct Cystadenoma
+  8161/3: Bile Duct Cystadenocarcinoma
+  8162/3: Hilar Cholangiocarcinoma
+  8163/0: Ampullary Noninvasive Papillary Neoplasm, Pancreatobiliary Type
+  8163/2: Ampullary Noninvasive Pancreatobiliary Papillary Neoplasm with High Grade
+    Dysplasia
+  8163/3: Ampulla of Vater Pancreatobiliary Type Adenocarcinoma
+  8170/0: Hepatocellular Adenoma
+  8170/3: Hepatocellular Carcinoma
+  8171/3: Fibrolamellar Hepatocellular Carcinoma
+  8172/3: Scirrhous Hepatocellular Carcinoma
+  8173/3: Sarcomatoid Hepatocellular Carcinoma
+  8174/3: Clear Cell Hepatocellular Carcinoma
+  8175/3: Pleomorphic Hepatocellular Carcinoma
+  8180/3: Combined Hepatocellular Carcinoma and Cholangiocarcinoma
+  8190/0: Trabecular Adenoma
+  8190/3: Trabecular Adenocarcinoma
+  8200/0: Cylindroma
+  8200/3: Adenoid Cystic Carcinoma
+  8201/2: Non-Invasive Cribriform Carcinoma
+  8201/3: Cribriform Carcinoma
+  8202/0: Microcystic Adenoma
+  8204/0: Lactating Adenoma
+  8210/0: Adenomatous Polyp
+  8210/2: Adenocarcinoma In Situ in Adenomatous Polyp
+  8210/3: Adenocarcinoma in Adenomatous Polyp
+  8211/0: Tubular Adenoma
+  8211/3: Tubular Adenocarcinoma
+  8212/0: Flat Adenoma
+  8213/0: Traditional Serrated Adenoma
+  8213/3: Colorectal Serrated Adenocarcinoma
+  8214/3: Gastric Parietal Cell Adenocarcinoma
+  8215/3: Anal Glands Adenocarcinoma
+  8220/0: Adenomatous Polyposis Coli
+  8220/3: Adenocarcinoma in Adenomatous Polyposis Coli
+  8221/0: Multiple Adenomatous Polyps
+  8221/3: Adenocarcinoma in Multiple Adenomatous Polyps
+  8230/2: Ductal Breast Carcinoma In Situ, Solid Type
+  8230/3: Solid Carcinoma
+  8240/3: Digestive System Neuroendocrine Tumor
+  8241/3: Carcinoid Tumor
+  8242/3: Enterochromaffin-Like Cell Neuroendocrine Tumor G1
+  8244/3: Digestive System Mixed Adenoneuroendocrine Carcinoma
+  8245/1: Appendix Tubular Carcinoid
+  8246/3: Neuroendocrine Carcinoma
+  8247/3: Merkel Cell Carcinoma
+  8248/1: Neuroendocrine Tumor
+  8249/3: Digestive System Neuroendocrine Tumor G2
+  8250/0: Atypical Adenomatous Lung Hyperplasia
+  8250/2: Non-Mucinous Lung Adenocarcinoma In Situ
+  8250/3: Lepidic Predominant Adenocarcinoma
+  8251/0: Alveolar Adenoma
+  8251/3: Bronchioalveolar Carcinoma
+  8253/2: Mucinous Lung Adenocarcinoma In Situ
+  8253/3: Invasive Lung Mucinous Adenocarcinoma
+  8254/3: Mixed Mucinous and Non-Mucinous Bronchioloalveolar Carcinoma
+  8255/3: Lung Adenocarcinoma, Mixed Subtype
+  8257/3: Mucinous Bronchioloalveolar Carcinoma
+  8260/0: Papillary Adenoma
+  8260/1: Aggressive Papillary Tumor
+  8260/3: Papillary Adenocarcinoma
+  8261/0: Villous Adenoma
+  8261/2: Adenocarcinoma In Situ in Villous Adenoma
+  8261/3: Adenocarcinoma in Villous Adenoma
+  8262/3: Villous Adenocarcinoma
+  8263/0: Tubulovillous Adenoma
+  8263/2: Adenocarcinoma In Situ in Tubulovillous Adenoma
+  8263/3: Adenocarcinoma in Tubulovillous Adenoma
+  8264/0: Glandular Papillomatosis
+  8265/3: Micropapillary Lung Carcinoma
+  8271/0: Lactotroph Pituitary Neuroendocrine Tumor
+  8272/0: Pituitary Neuroendocrine Tumor
+  8272/3: Pituitary Gland Carcinoma
+  8273/3: Pituitary Gland Blastoma
+  8280/0: Pituitary Gland Acidophil Adenoma
+  8280/3: Pituitary Gland Acidophil Carcinoma
+  8290/0: Oncocytic Adenoma
+  8290/3: Oxyphilic Adenocarcinoma
+  8300/3: Basophilic Adenocarcinoma
+  8310/0: Clear Cell Adenoma
+  8310/3: Clear Cell Adenocarcinoma
+  8311/1: Clear Cell Renal Cell Carcinoma
+  8311/3: Hereditary Leiomyomatosis and Renal Cell Cancer
+  8312/3: Renal Cell Carcinoma, Not Otherwise Specified
+  8313/0: Clear Cell Adenofibroma
+  8313/1: Borderline Ovarian Clear Cell Tumor
+  8313/3: Ovarian Clear Cell Adenocarcinofibroma
+  8314/3: Lipid-Rich Carcinoma
+  8315/3: Glycogen-Rich Carcinoma
+  8316/1: Multilocular Cystic Renal Cell Carcinoma
+  8316/3: Acquired Cystic Disease-Associated Renal Cell Carcinoma
+  8318/3: Sarcomatoid Renal Cell Carcinoma
+  8319/3: Carcinoma of the Collecting Ducts of Bellini
+  8320/3: Granular Cell Carcinoma
+  8321/0: Parathyroid Gland Chief Cell Adenoma
+  8322/0: Parathyroid Gland Water-Clear Cell Adenoma
+  8323/0: Mixed cell carcinoma
+  8323/1: Clear Cell Papillary Renal Neoplasm
+  8324/0: Lipoadenoma
+  8330/0: Thyroid Gland Follicular Adenoma
+  8332/3: Solid/Trabecular Variant Thyroid Gland Papillary Carcinoma
+  8333/0: Thyroid Gland Microfollicular Adenoma
+  8333/3: Fetal Adenocarcinoma
+  8334/0: Thyroid Gland Macrofollicular Adenoma
+  8335/1: Thyroid Gland Follicular Tumor of Uncertain Malignant Potential
+  8335/3: Thyroid Gland Follicular Carcinoma, Minimally Invasive
+  8336/1: Thyroid Gland Hyalinizing Trabecular Tumor
+  8337/3: Poorly Differentiated Thyroid Gland Carcinoma
+  8339/3: Thyroid Gland Follicular Carcinoma, Encapsulated Angioinvasive
+  8340/3: Follicular Variant Thyroid Gland Papillary Carcinoma
+  8341/3: Thyroid Gland Papillary Microcarcinoma
+  8342/3: Oncocytic Variant Thyroid Gland Papillary Carcinoma
+  8343/3: Encapsulated Variant Thyroid Gland Papillary Carcinoma
+  8344/3: Columnar Cell Variant Thyroid Gland Papillary Carcinoma
+  8345/3: Thyroid Gland Medullary Carcinoma
+  8346/3: Thyroid Gland Mixed Medullary and Follicular Carcinoma
+  8347/3: Thyroid Gland Mixed Medullary and Papillary Carcinoma
+  8349/1: Thyroid Gland Noninvasive Follicular Neoplasm with Papillary-Like Nuclear
+    Features
+  8350/3: Diffuse Sclerosing Variant Thyroid Gland Papillary Carcinoma
+  8360/1: Multiple Endocrine Neoplasia
+  8361/0: Juxtaglomerular Cell Tumor
+  8370/0: Adrenal Cortex Adenoma
+  8370/3: Adrenal Cortex Carcinoma
+  8371/0: Adrenal Cortex Compact Cell Adenoma
+  8372/0: Pigmented Adrenal Cortex Adenoma
+  8373/0: Adrenal Cortex Clear Cell Adenoma
+  8374/0: Adrenal Cortex Glomerulosa Cell Adenoma
+  8375/0: Adrenal Cortex Mixed Cell Adenoma
+  8380/1: Borderline Ovarian Endometrioid Tumor
+  8380/2: Endometrial Intraepithelial Neoplasia
+  8380/3: Endometrioid Adenocarcinoma
+  8381/1: Borderline Ovarian Endometrioid Adenofibroma
+  8381/3: Ovarian Endometrioid Adenocarcinofibroma
+  8382/3: Endometrial Endometrioid Adenocarcinoma, Secretory Variant
+  8383/3: Endometrial Endometrioid Adenocarcinoma, Ciliated Variant
+  8384/3: Endocervical Adenocarcinoma, Usual-Type
+  8390/0: Skin Appendage Adenoma
+  8390/3: Adnexal Adenocarcinoma, Not Otherwise Specified
+  8391/0: Fibrofolliculoma
+  8392/0: Syringofibroadenoma
+  8400/0: Sweat Gland Adenoma
+  8400/1: Sweat Gland Neoplasm
+  8400/3: Sweat Gland Carcinoma
+  8401/0: Apocrine Adenoma
+  8401/3: Apocrine Gland Carcinoma
+  8402/0: Hidradenoma
+  8402/3: Hidradenocarcinoma
+  8403/0: Spiradenoma
+  8403/3: Spiradenocarcinoma
+  8404/0: Hidrocystoma
+  8405/0: Hidradenoma Papilliferum
+  8406/0: Syringocystadenoma Papilliferum
+  8406/3: Papillary Eccrine Carcinoma
+  8407/0: Syringoma
+  8407/3: Microcystic Adnexal Carcinoma
+  8408/3: Digital Papillary Adenocarcinoma
+  8409/0: Poroma
+  8409/2: Porocarcinoma In Situ
+  8409/3: Eccrine Porocarcinoma
+  8410/0: Sebaceoma
+  8410/3: Sebaceous Carcinoma
+  8413/3: Eccrine Carcinoma
+  8420/0: Ceruminous Adenoma
+  8420/3: Ceruminous Adenocarcinoma
+  8440/0: Cystadenoma
+  8440/3: Cystadenocarcinoma
+  8441/0: Serous Cystadenoma
+  8441/2: Serous Endometrial Intraepithelial Carcinoma
+  8441/3: Serous Adenocarcinoma
+  8442/1: Borderline Ovarian Serous Tumor
+  8443/0: Clear Cell Papillary Cystadenoma
+  8450/0: Papillary Cystadenoma
+  8450/3: Papillary Cystadenocarcinoma
+  8451/1: Borderline Papillary Cystadenoma
+  8452/1: Solid Pseudopapillary Neoplasm of the Ovary
+  8452/3: Solid Pseudopapillary Neoplasm of the Pancreas
+  8453/0: Pancreatic Intraductal Papillary Mucinous Neoplasm, Oncocytic-Type
+  8453/2: Pancreatic Intraductal Papillary-Mucinous Neoplasm with High Grade Dysplasia
+  8453/3: Pancreatic Intraductal Papillary-Mucinous Neoplasm with an Associated Invasive
+    Carcinoma
+  8454/0: Cystic Tumor of the Atrioventricular Node
+  8460/2: Micropapillary Serous Carcinoma
+  8460/3: SEROUS TUMOR OF LOW MALIGNANT POTENTIAL
+  8461/0: Serous Surface Papilloma
+  8461/3: Ovarian High Grade Serous Adenocarcinoma
+  8470/2: Pancreatic Mucinous-Cystic Neoplasm, High Grade
+  8470/3: Mucinous Cystadenocarcinoma
+  8472/1: Lung Mucinous Adenocarcinoma
+  8474/0: Ovarian Seromucinous Cystadenoma
+  8474/1: Borderline Tumors With Microinvasion Mixed Epithelial
+  8474/3: Ovarian Seromucinous Carcinoma
+  8480/1: Low Grade Appendix Mucinous Neoplasm
+  8480/3: Mucinous Adenocarcinoma
+  8480/6: Pseudomyxoma Peritonei
+  8481/3: Mucin-Producing Adenocarcinoma
+  8482/3: Human Papillomavirus-Independent Cervical Adenocarcinoma, Gastric-Type
+  8490/3: Signet Ring Cell Carcinoma
+  8490/6: Metastatic Signet Ring Cell Carcinoma
+  8500/2: DCIS - Ductal Carcinoma in Situ (High Risk)
+  8501/2: Breast Ductal Carcinoma In Situ, Comedo Type
+  8501/3: Comedocarcinoma
+  8503/0: Intraductal Papilloma
+  8503/2: Intraductal Papillary Breast Carcinoma
+  8503/3: Breast Papillary Ductal Carcinoma In Situ with Invasion
+  8504/0: Breast Intraductal Papilloma
+  8504/2: Encapsulated Variant Thyroid Gland Papillary Carcinoma
+  8505/0: Intraductal Papillomatosis
+  8506/0: Nipple Adenoma
+  8507/2: Intraductal Micropapillary Breast Carcinoma
+  8507/3: Invasive Micropapillary Breast Carcinoma
+  8510/3: Medullary Carcinoma, Not Otherwise Specified
+  8512/3: Medullary Breast Carcinoma
+  8513/3: Breast Atypical Medullary Carcinoma
+  8514/3: Scirrhous
+  8519/2: Pleomorphic Lobular Breast Carcinoma In Situ
+  8520/2: Lobular Carcinoma In Situ
+  8520/3: Lobular Breast Carcinoma
+  8522/2: Ductal Breast Carcinoma In Situ and Lobular Carcinoma In Situ
+  8524/3: Breast Ductal Carcinoma In Situ and Invasive Lobular Carcinoma
+  8525/3: Salivary Gland Polymorphous Low Grade Adenocarcinoma
+  8530/3: Inflammatory Breast Carcinoma
+  8540/3: Ductal carcinoma in situ involving nipple skin (Paget disease)
+  8541/3: Paget Disease of the Breast with Invasive Ductal Carcinoma
+  8542/3: Extramammary Paget Disease
+  8543/3: Breast Paget Disease and Intraductal Carcinoma
+  8550/0: Acinar Cell Adenoma
+  8550/1: Acinar Cell Neoplasm
+  8550/3: Acinar Cell Carcinoma
+  8551/3: Pancreatic Acinar Cell Cystadenocarcinoma
+  8552/3: Mixed Acinar-Ductal Carcinoma of the Pancreas
+  8560/0: Bronchial Mixed Squamous Cell and Glandular Papilloma
+  8560/3: Adenosquamous Carcinoma
+  8561/0: Warthin Tumor
+  8562/3: Epithelial-Myoepithelial Carcinoma
+  8563/0: Salivary Gland Sebaceous Lymphadenoma
+  8570/3: Adenocarcinoma with Squamous Metaplasia
+  8571/3: Adenocarcinoma with Cartilaginous and Osseous Metaplasia
+  8572/3: Adenocarcinoma with Spindle Cell Metaplasia
+  8573/3: Adenocarcinoma with Apocrine Metaplasia
+  8574/3: Adenocarcinoma with Neuroendocrine Differentiation
+  8575/3: Metaplastic Carcinoma
+  8576/3: Hepatoid Adenocarcinoma
+  8580/0: Microscopic Thymoma
+  8580/1: Micronodular Thymoma with Lymphoid Stroma
+  8580/3: thymoma
+  8581/3: Malignant Type A Thymoma
+  8582/3: Malignant Type AB Thymoma
+  8583/3: Malignant Type B1 Thymoma
+  8584/3: Malignant Type B2 Thymoma
+  8585/3: Thymoma Type B3
+  8586/3: Thymic Carcinoma
+  8587/0: Ectopic Hamartomatous Thymoma
+  8588/3: Thyroid Gland Spindle Epithelial Tumor with Thymus-Like Elements
+  8589/3: Intrathyroid Thymic Carcinoma
+  8590/0: Benign Ovarian Sex Cord-Stromal Tumor
+  8590/1: Sex Cord-Stromal Tumor
+  8591/1: Testicular Sex Cord-Stromal Tumor, Not Otherwise Specified
+  8592/1: Testicular Mixed Sex Cord-Stromal Tumor
+  8593/1: Ovarian Stromal Tumor with Minor Sex Cord Elements
+  8594/1: Mixed Germ Cell-Sex Cord-Stromal Tumor
+  8600/0: Thecoma
+  8600/3: Malignant Ovarian Thecoma
+  8601/0: Ovarian Luteinized Thecoma
+  8602/0: Ovarian Sclerosing Stromal Tumor
+  8610/0: Ovarian Stromal Luteoma
+  8620/1: Adult Testicular Granulosa Cell Tumor
+  8620/3: Adult Type Ovarian Granulosa Cell Tumor
+  8621/1: Granulosa Cell-Theca Cell Tumor
+  8622/0: Juvenile Testicular Granulosa Cell Tumor
+  8622/1: Juvenile Type Granulosa Cell Tumor
+  8623/1: Ovarian Sex Cord Tumor with Annular Tubules
+  8630/0: Benign Sertoli Cell Tumor
+  8630/1: Ovarian Sertoli-Leydig Cell Tumor
+  8631/0: Well Differentiated Ovarian Sertoli-Leydig Cell Tumor
+  8631/1: Moderately Differentiated Ovarian Sertoli-Leydig Cell Tumor
+  8631/3: Poorly Differentiated Ovarian Sertoli-Leydig Cell Tumor
+  8632/1: Ovarian Gynandroblastoma
+  8633/1: Ovarian Sertoli-Leydig Cell Tumor with Retiform Elements
+  8634/1: Moderately Differentiated Ovarian Sertoli-Leydig Cell Tumor, Variant with
+    Heterologous Elements
+  8634/3: Poorly Differentiated Ovarian Sertoli-Leydig Cell Tumor, Variant with Heterologous
+    Elements
+  8640/1: Sertoli Cell Tumor
+  8641/0: Ovarian Sertoli Cell Tumor with Lipid Storage
+  8642/1: Testicular Large Cell Calcifying Sertoli Cell Tumor
+  8643/1: Intratubular Large Cell Hyalinizing Sertoli Cell Neoplasia
+  8650/0: Ovarian Leydig Cell Tumor
+  8650/1: Testicular Leydig Cell Tumor
+  8650/3: Malignant Leydig Cell Tumor
+  8660/0: Ovarian Hilus Cell Tumor
+  8670/0: Ovarian Steroid Cell Tumor
+  8670/3: Malignant Ovarian Steroid Cell Tumor
+  8671/0: Adrenal Rest Tumor
+  8680/3: Paraganglioma
+  8681/3: Sympathetic Paraganglioma
+  8682/3: Parasympathetic Paraganglioma
+  8683/0: Composite Gangliocytoma/Neuroma and Neuroendocrine Tumor
+  8690/3: Middle Ear Paraganglioma
+  8691/3: Aorticopulmonary Paraganglioma
+  8692/3: Carotid Body Paraganglioma
+  8693/3: Extra-Adrenal Paraganglioma
+  8700/3: Adrenal Gland Pheochromocytoma
+  8711/0: Glomus Tumor
+  8711/1: Glomangiomatosis
+  8712/0: Glomangioma
+  8713/0: Glomangiomyoma
+  8714/0: Benign PEComa
+  8714/3: Malignant PEComa
+  8720/0: Pigmented Nevus
+  8720/2: Stage 0 Skin Melanoma
+  8720/3: Melanoma
+  8721/3: Nodular Melanoma
+  8722/0: Balloon Cell Nevus
+  8722/3: Balloon Cell Melanoma
+  8723/0: Halo Nevus
+  8723/3: Regressing Melanoma
+  8725/0: Neuronevus
+  8726/0: Melanocytoma
+  8727/0: Dysplastic Nevus
+  8728/0: Meningeal Melanocytosis
+  8728/1: Meningeal Melanocytoma
+  8728/3: Meningeal Melanomatosis
+  8730/0: Nonpigmented Nevus
+  8730/3: Amelanotic Melanoma
+  8740/0: Junctional Nevus
+  8740/3: Melanoma in Junctional Nevus
+  8741/2: Precancerous Melanosis
+  8741/3: Malignant Melanoma in Precancerous Melanosis
+  8742/0: Nevus Spilus
+  8742/2: Lentigo Maligna
+  8742/3: Lentigo Maligna Melanoma
+  8743/3: Superficial Spreading Melanoma
+  8744/0: Acral Nevus
+  8744/3: Acral Lentiginous Melanoma
+  8745/3: Desmoplastic Melanoma
+  8746/3: Mucosal Lentiginous Melanoma
+  8750/0: Dermal Nevus
+  8760/0: Compound Nevus
+  8761/0: Congenital Melanocytic Nevus
+  8761/1: Giant Congenital Nevus
+  8761/3: Melanoma Arising in Giant Congenital Nevus
+  8762/1: Proliferative Nodules in Congenital Melanocytic Nevus
+  8770/3: Spitz Melanoma
+  8771/0: Epithelioid Cell Nevus
+  8771/3: Epithelioid Cell Melanoma
+  8772/3: Spindle Cell Melanoma
+  8773/3: Type A Spindle Cell Melanoma
+  8774/3: Type B Spindle Cell Melanoma
+  8780/0: Blue Nevus
+  8780/1: Pigmented Epithelioid Melanocytoma
+  8780/3: Blue Nevus-Like Melanoma
+  8790/0: Cellular Blue Nevus
+  8800/0: Benign Soft Tissue Neoplasm
+  8800/3: Sarcoma
+  8800/9: Sarcomatosis
+  8801/3: Spindle Cell Sarcoma
+  8802/1: Pleomorphic Hyalinizing Angiectatic Tumor of Soft Parts
+  8803/3: Small Cell Sarcoma
+  8804/3: Epithelioid Sarcoma
+  8805/3: Undifferentiated Soft Tissue Sarcoma
+  8806/3: Desmoplastic Small Round Cell Tumor
+  8810/0: Fibroma
+  8810/1: Cellular Fibroma
+  8810/3: Fibrosarcoma
+  8811/0: Fibromyxoid Tumor
+  8811/1: Myxoinflammatory Fibroblastic Sarcoma
+  8811/3: Myxofibrosarcoma
+  8812/0: Periosteal Fibroma
+  8812/3: Periosteal Fibrosarcoma
+  8813/0: Tendon Sheath Fibroma
+  8813/1: Palmar Fibromatosis
+  8813/3: Fascial Fibrosarcoma
+  8814/3: Infantile Fibrosarcoma
+  8815/0: Central Nervous System Solitary Fibrous Tumor, Grade 1
+  8815/1: Solitary Fibrous Tumor
+  8815/3: Malignant Solitary Fibrous Tumor
+  8816/0: Calcifying Aponeurotic Fibroma
+  8818/0: Fibrous Dysplasia
+  8820/0: Elastofibroma
+  8821/1: Fibromatosis Desmoid Tumor
+  8822/1: Abdominal desmoid
+  8823/0: Desmoplastic Fibroblastoma
+  8823/1: Desmoplastic Fibroma
+  8824/0: Myofibroma
+  8824/1: Myofibromatosis
+  8825/0: Myofibroblastoma
+  8825/1: Inflammatory Myofibroblastic Tumor
+  8825/3: Low Grade Myofibroblastic Sarcoma
+  8826/0: Angiomyofibroblastoma
+  8827/1: Lung Inflammatory Myofibroblastic Tumor
+  8828/0: Nodular Fasciitis
+  8830/0: Benign Fibrous Histiocytoma
+  8830/1: Atypical Fibroxanthoma
+  8830/3: Unclassified Pleomorphic Sarcoma
+  8831/0: Histiocytoma
+  8832/0: Cutaneous Fibrous Histiocytoma
+  8832/1: Dermatofibrosarcoma Protuberans
+  8832/3: Fibrosarcomatous Dermatofibrosarcoma Protuberans
+  8833/1: Pigmented Dermatofibrosarcoma Protuberans
+  8834/1: Giant Cell Fibroblastoma
+  8835/1: Plexiform Fibrohistiocytic Tumor
+  8836/1: Angiomatoid Fibrous Histiocytoma
+  8840/0: Myxoma
+  8840/3: Myxosarcoma
+  8841/0: Angiomyxoma
+  8842/0: Ossifying Fibromyxoid Tumor
+  8842/3: Malignant Ossifying Fibromyxoid Tumor
+  8850/0: Lipoma
+  8850/3: Liposarcoma
+  8851/0: Fibrolipoma
+  8851/1: Lipofibromatosis
+  8852/0: Fibromyxolipoma
+  8852/3: Myxoid/Round Cell Liposarcoma
+  8853/3: Round Cell Liposarcoma
+  8854/0: Pleomorphic Lipoma
+  8854/3: Pleomorphic Liposarcoma
+  8855/3: Mixed Liposarcoma
+  8856/0: Intramuscular Lipoma
+  8857/0: Spindle Cell Lipoma
+  8857/3: Fibroblastic Liposarcoma
+  8858/3: Dedifferentiated Liposarcoma
+  8860/0: Angiomyolipoma
+  8860/1: Epithelioid Angiomyolipoma
+  8861/0: Angiolipoma
+  8862/0: Chondroid Lipoma
+  8870/0: Adrenal Gland Myelolipoma
+  8880/0: Hibernoma
+  8881/0: Lipoblastomatosis
+  8890/0: Leiomyoma
+  8890/1: Leiomyomatosis
+  8890/3: Leiomyosarcoma
+  8891/0: Uterine Corpus Epithelioid Leiomyoma
+  8891/3: Epithelioid Leiomyosarcoma
+  8892/0: Cellular Leiomyoma
+  8893/0: Bizarre Leiomyoma
+  8894/0: Angioleiomyoma
+  8894/3: Angiomyosarcoma
+  8895/0: Benign Muscle Neoplasm
+  8895/3: Malignant Muscle Neoplasm
+  8896/0: Myxoid Leiomyoma
+  8896/3: Myxoid Leiomyosarcoma
+  8897/1: Uterine Corpus Smooth Muscle Tumor of Uncertain Malignant Potential
+  8898/1: Uterine Corpus Metastasizing Leiomyoma
+  8900/0: Rhabdomyoma
+  8900/3: Rhabdomyosarcoma
+  8901/3: Adult Pleomorphic Rhabdomyosarcoma
+  8902/3: Rhabdomyosarcoma with Mixed Embryonal and Alveolar Features
+  8903/0: Fetal Rhabdomyoma
+  8904/0: Adult Cardiac Cellular Rhabdomyoma
+  8905/0: Genital Rhabdomyoma
+  8910/3: Embryonal Rhabdomyosarcoma
+  8912/3: Spindle Cell Rhabdomyosarcoma
+  8920/3: Alveolar Rhabdomyosarcoma
+  8921/3: Sarcoma with Ganglionic or Neuroectodermal Differentiation
+  8930/0: Endometrial Stromal Nodule
+  8930/3: Endometrioid Stromal Sarcoma
+  8931/3: Uterine Corpus Low Grade Endometrial Stromal Sarcoma
+  8932/0: Adenomyoma
+  8933/3: Adenosarcoma
+  8934/3: Uterine Corpus Carcinofibroma
+  8935/1: Stromal Neoplasm
+  8935/3: Stromal Sarcoma
+  8936/3: Malignant Gastrointestinal Stromal Tumor
+  8940/0: Pleomorphic Adenoma
+  8940/3: Malignant Mixed Neoplasm
+  8941/3: Carcinoma ex Pleomorphic Adenoma
+  8959/0: Cystic Nephroma
+  8960/1: Congenital Mesoblastic Nephroma
+  8960/3: Wilms Tumor
+  8963/3: Rhabdoid Tumor
+  8964/3: Clear Cell Sarcoma of the Kidney
+  8966/0: Renomedullary Interstitial Cell Tumor
+  8967/0: Ossifying Renal Tumor of Infancy
+  8970/3: Hepatoblastoma
+  8971/3: Pancreatoblastoma
+  8972/3: Pulmonary Blastoma
+  8973/3: Pleuropulmonary Blastoma
+  8974/1: Sialoblastoma
+  8980/3: 'Carcinosarcoma (Malignant mullerian mixed tumor) (WHO code: 8950/3)'
+  8981/3: Malignant Mixed Mesodermal (Mullerian) Tumor
+  8982/0: Myoepithelial Neoplasm
+  8982/3: Malignant Myoepithelioma
+  8983/0: Breast Adenomyoepithelioma
+  8983/3: Malignant Breast Adenomyoepithelioma
+  8990/1: Mesenchymoma
+  8991/3: Undifferentiated (Embryonal) Sarcoma
+  8992/0: Pulmonary Hamartoma
+  9000/0: Brenner Tumor
+  9000/1: Borderline Ovarian Brenner Tumor
+  9000/3: Malignant Ovarian Brenner Tumor
+  9010/0: Fibroadenoma
+  9011/0: Breast Intracanalicular Fibroadenoma
+  9012/0: Breast Pericanalicular Fibroadenoma
+  9013/0: Adenofibroma
+  9014/0: Serous Adenofibroma
+  9014/1: Borderline Ovarian Serous Adenofibroma
+  9014/3: Ovarian Serous Adenocarcinofibroma
+  9015/0: Mucinous Adenofibroma
+  9015/1: Borderline Ovarian Mucinous Adenofibroma
+  9015/3: Ovarian Mucinous Adenocarcinofibroma
+  9016/0: Breast Giant Fibroadenoma
+  9020/0: BENIGN PHYLLODES TUMOR
+  9020/1: Borderline Phyllodes Tumor
+  9020/3: Malignant Phyllodes Tumor
+  9030/0: Juvenile Breast Fibroadenoma
+  9040/0: Benign Synovial Neoplasm
+  9040/3: Synovial Sarcoma
+  9041/3: Spindle Cell Synovial Sarcoma
+  9042/3: Epithelial Synovial Sarcoma
+  9043/3: Biphasic Synovial Sarcoma
+  9044/3: Clear Cell Sarcoma of Soft Tissue
+  9045/3: Biphenotypic Sinonasal Sarcoma
+  9050/3: Malignant Mesothelioma
+  9051/0: Pleural Solitary Fibrous Tumor
+  9051/3: Sarcomatoid Mesothelioma
+  9052/1: Pleural Well Differentiated Papillary Mesothelial Tumor
+  9052/3: Epithelioid Mesothelioma
+  9053/3: Biphasic Mesothelioma
+  9055/0: Peritoneal Multicystic Mesothelioma
+  9060/3: Ovarian Dysgerminoma
+  9061/3: Seminoma
+  9062/3: Testicular Seminoma with High Mitotic Index
+  9063/3: Testicular Spermatocytic Tumor
+  9064/2: Testicular Germ Cell Neoplasia In Situ
+  9064/3: Central Nervous System Germinoma
+  9065/3: Nongerminomatous Germ Cell Tumor
+  9070/3: Embryonal Carcinoma
+  9071/3: Yolk Sac Tumor
+  9072/3: Gonadal Polyembryoma
+  9073/1: Gonadoblastoma
+  9080/0: Benign Teratoma
+  9080/1: Teratoma
+  9081/3: Mixed Embryonal Carcinoma and Teratoma
+  9084/0: Dermoid Cyst
+  9084/3: Teratoma with Malignant Transformation
+  9085/3: Mixed Germ Cell Tumor
+  9086/3: Malignant Mediastinal Germ Cell Tumor with Associated Hematologic Malignancy
+  9090/0: Struma Ovarii
+  9090/3: Thyroid Carcinoma Arising in Struma Ovarii
+  9091/1: Strumal Carcinoid
+  9100/0: Hydatidiform Mole
+  9100/1: Invasive Hydatidiform Mole
+  9100/3: Choriocarcinoma
+  9101/3: Choriocarcinoma Combined with Other Germ Cell Elements
+  9103/0: Partial Hydatidiform Mole
+  9104/1: Placental-Site Gestational Trophoblastic Tumor
+  9105/3: Epithelioid Trophoblastic Tumor
+  9110/0: Rete Ovarii Adenoma
+  9110/1: Wolffian Adnexal Tumor
+  9110/3: Mesonephric Adenocarcinoma
+  9120/0: Hemangioma
+  9121/0: Cavernous Hemangioma
+  9122/0: Venous Hemangioma
+  9123/0: Arteriovenous Malformation
+  9124/3: Liver Angiosarcoma
+  9125/0: Epithelioid Hemangioma
+  9126/0: Atypical Vascular Lesion
+  9130/1: Hemangioendothelioma
+  9131/0: Capillary Hemangioma
+  9132/0: Intramuscular Hemangioma
+  9133/3: Epithelioid Hemangioendothelioma
+  9135/1: Papillary Intralymphatic Angioendothelioma
+  9136/1: Spindle Cell Hemangioma
+  9137/0: Penile Myointimoma
+  9137/3: Intimal Sarcoma
+  9138/1: Pseudomyogenic Hemangioendothelioma
+  9140/3: Kaposi Sarcoma
+  9141/0: Angiokeratoma
+  9142/0: Verrucous Hemangioma
+  9160/0: Angiofibroma
+  9161/0: Tufted Angioma
+  9161/1: Capillary Hemangioblastoma
+  9170/3: Lymphangiosarcoma
+  9172/0: Cavernous Lymphangioma
+  9173/0: Cystic Hygroma
+  9174/0: Lymphangioleiomyoma
+  9174/1: Lymphangioleiomyomatosis
+  9175/0: Hemolymphangioma
+  9180/0: Osteoma
+  9180/3: 'Stratum 3: Osteosarcoma patients'
+  9181/3: Chondroblastic Osteosarcoma
+  9182/3: Fibroblastic Osteosarcoma
+  9183/3: Telangiectatic Osteosarcoma
+  9184/3: Osteosarcoma Arising in Paget Disease of Bone
+  9185/3: Small Cell Osteosarcoma
+  9187/3: Low Grade Central Osteosarcoma
+  9191/0: Osteoid Osteoma
+  9192/3: Parosteal Osteosarcoma
+  9193/3: Periosteal Osteosarcoma
+  9194/3: High Grade Surface Osteosarcoma
+  9200/0: Osteoblastoma
+  9200/1: Aggressive Osteoblastoma
+  9210/0: Osteochondroma
+  9210/1: Multiple Osteochondromas
+  9211/0: Osteochondromyxoma
+  9212/0: Bizarre Parosteal Osteochondromatous Prolifeartion
+  9213/0: Subungual Exostosis
+  9220/0: Chondroma
+  9220/1: Chondromatosis
+  9220/3: Chondrosarcoma
+  9221/0: Periosteal Chondroma
+  9221/3: Periosteal Chondrosarcoma
+  9222/1: Atypical Cartilaginous Tumor
+  9230/1: Chondroblastoma
+  9230/3: Metastasizing Chondroblastoma
+  9231/3: Extraskeletal Myxoid Chondrosarcoma
+  9240/3: Mesenchymal Chondrosarcoma
+  9241/0: Chondromyxoid Fibroma
+  9242/3: Clear Cell Chondrosarcoma
+  9243/3: Dedifferentiated Chondrosarcoma
+  9250/1: Giant Cell Tumor of Bone
+  9250/3: Malignant Giant Cell Tumor of Bone
+  9251/1: Giant Cell Tumor of Soft Tissue
+  9251/3: Giant Cell Fibrous Histiocytoma
+  9252/0: Giant Cell Tumor of Tendon Sheath
+  9252/1: Tenosynovial Giant Cell Tumor, Diffuse Type
+  9252/3: Malignant Giant Cell Tumor of Tendon Sheath
+  9260/0: Aneurysmal Bone Cyst
+  9261/3: Adamantinoma
+  9262/0: Ossifying Fibroma
+  9270/0: Benign Odontogenic Neoplasm
+  9270/1: Odontogenic Neoplasm
+  9270/3: Malignant Odontogenic Neoplasm
+  9271/0: Ameloblastic Fibrodentinoma
+  9272/0: Cemento-Osseous Dysplasia
+  9273/0: Cementoblastoma
+  9274/0: Cemento-Ossifying Fibroma
+  9275/0: Florid Cemento-Osseous Dysplasia
+  9280/0: Odontoma
+  9281/0: Compound Odontoma
+  9282/0: Complex Odontoma
+  9290/0: Ameloblastic Fibro-Odontoma
+  9290/3: Ameloblastic Fibroodontosarcoma
+  9300/0: Adenomatoid Odontogenic Tumor
+  9301/0: Calcifying Cystic Odontogenic Tumor
+  9302/0: Dentinogenic Ghost Cell Tumor
+  9302/3: Ghost Cell Odontogenic Carcinoma
+  9310/0: Ameloblastoma
+  9310/3: Metastasizing Ameloblastoma
+  9311/0: Odontoameloblastoma
+  9312/0: Squamous Odontogenic Tumor
+  9320/0: Odontogenic Myxoma
+  9321/0: Odontogenic Fibroma
+  9322/0: Peripheral Odontogenic Fibroma
+  9330/0: Ameloblastic Fibroma
+  9330/3: Ameloblastic Fibrosarcoma
+  9340/0: Calcifying Epithelial Odontogenic Tumor
+  9341/3: Clear Cell Odontogenic Carcinoma
+  9342/3: Odontogenic Carcinosarcoma
+  9350/1: Craniopharyngioma
+  9351/1: Adamantinomatous Craniopharyngioma
+  9352/1: Papillary Craniopharyngioma
+  9360/1: Pineal Region Neoplasm
+  9361/1: Pineocytoma
+  9362/3: Pineoblastoma
+  9363/0: Melanotic Neuroectodermal Tumor
+  9364/3: Ewing Sarcoma
+  9365/3: Askin Tumor
+  9370/0: Benign Notochordal Cell Tumor
+  9370/3: Chordoma
+  9371/3: Chondroid Chordoma
+  9372/3: Dedifferentiated Chordoma
+  9373/0: Parachordoma
+  9380/3: Malignant Glioma
+  9381/3: Gliomatosis Cerebri
+  9382/3: Oligoastrocytoma
+  9383/1: Subependymoma
+  9384/1: Subependymal giant cell astrocytoma
+  9385/3: Diffuse Midline Glioma, H3 K27M-Mutant
+  9390/0: Choroid Plexus Papilloma
+  9390/1: Atypical Choroid Plexus Papilloma
+  9390/3: Choroid plexus carcinoma
+  9391/1: Ependymal Pituicytoma
+  9391/3: Ependymoma
+  9392/3: Anaplastic Ependymoma
+  9393/3: Papillary Ependymoma
+  9394/1: Myxopapillary Ependymoma
+  9395/3: Papillary Tumor of the Pineal Region
+  9396/3: Supratentorial Ependymoma, ZFTA-RELA Fusion-Positive
+  9400/3: Astrocytoma
+  9401/3: Anaplastic astrocytoma
+  9410/3: Protoplasmic Astrocytoma
+  9411/3: Gemistocytic Astrocytoma
+  9412/1: Desmoplastic Infantile Astrocytoma
+  9413/0: Dysembryoplastic Neuroepithelial Tumor
+  9420/3: Fibrillary astrocytoma
+  9421/1: Pilocytic astrocytoma
+  9424/3: Pleomorphic Xanthoastrocytoma
+  9425/3: Pilomyxoid Astrocytoma
+  9430/3: Astroblastoma
+  9431/1: Angiocentric Glioma
+  9432/1: Pituicytoma
+  9440/3: Glioblastoma
+  9441/3: Giant Cell Glioblastoma
+  9442/1: Gliofibroma
+  9442/3: Gliosarcoma
+  9444/1: Chordoid Glioma
+  9445/3: Glioblastoma, IDH-Mutant
+  9450/3: Oligodendroglioma, Not Otherwise Specified
+  9451/3: Anaplastic oligodendroglioma
+  9470/3: Medulloblastoma, Not Otherwise Specified
+  9471/3: Desmoplastic/Nodular Medulloblastoma
+  9472/3: Medullomyoblastoma
+  9473/3: Central Nervous System Embryonal Neoplasm
+  9474/3: Large Cell Medulloblastoma
+  9475/3: WNT signaling pathway aberrant medulloblastoma
+  9476/3: Medulloblastoma, SHH-Activated, TP53-Mutant
+  9477/3: Medulloblastoma, Non-WNT/Non-SHH
+  9478/3: Ependymoblastoma
+  9490/0: Ganglioneuroma
+  9490/3: Ganglioneuroblastoma
+  9491/0: Ganglioneuromatosis
+  9492/0: Gangliocytoma
+  9493/0: Dysplastic Cerebellar Gangliocytoma
+  9500/3: Neuroblastoma
+  9501/0: Ciliary Body Benign Medulloepithelioma
+  9502/0: Ciliary Body Benign Teratoid Medulloepithelioma
+  9502/3: Ciliary Body Teratoid Medulloepithelioma
+  9503/3: Primitive Neuroectodermal Tumor
+  9505/1: Ganglioglioma
+  9505/3: Anaplastic Ganglioglioma
+  9506/1: Central neurocytoma
+  9507/0: Pacinian Neurofibroma
+  9508/3: Atypical Teratoid/Rhabdoid Tumor
+  9509/1: Papillary Glioneuronal Tumor
+  9510/0: Retinocytoma
+  9510/3: Retinoblastoma
+  9511/3: Differentiated Retinoblastoma
+  9512/3: Undifferentiated Retinoblastoma
+  9513/3: Diffuse Retinoblastoma
+  9514/1: Spontaneously Regressed Retinoblastoma
+  9520/3: Olfactory Neurogenic Tumor
+  9521/3: Olfactory Neurocytoma
+  9530/0: Meningioma
+  9530/3: Anaplastic (Malignant) Meningioma
+  9531/0: Meningothelial Meningioma
+  9532/0: Fibrous Meningioma
+  9533/0: Psammomatous Meningioma
+  9534/0: Angiomatous Meningioma
+  9535/0: Hemangioblastic Meningioma
+  9537/0: Transitional Meningioma
+  9538/1: Clear Cell Meningioma
+  9538/3: Papillary Meningioma
+  9539/1: Atypical Meningioma
+  9539/3: Meningeal Sarcomatosis
+  9540/0: Neurofibroma
+  9541/0: Melanotic Neurofibroma
+  9542/3: Epithelioid Malignant Peripheral Nerve Sheath Tumor
+  9550/0: Plexiform Neurofibroma
+  9560/0: Schwannoma
+  9560/1: Melanotic Schwannoma
+  9561/3: Malignant Triton Tumor
+  9562/0: Neurothekeoma
+  9563/0: Nerve Sheath Neoplasm
+  9570/0: Neuroma
+  9571/0: Perineurioma
+  9571/3: Malignant Peripheral Nerve Sheath Tumor with Perineurial Differentiation
+  9580/0: Granular Cell Tumor
+  9580/3: Malignant Granular Cell Tumor
+  9581/3: Alveolar Soft Part Sarcoma
+  9582/0: Granular Cell Tumor of the Sellar Region
+  9590/3: Lymphoma
+  9591/3: Non-Hodgkin Lymphoma
+  9596/3: Composite Lymphoma
+  9597/3: Primary Cutaneous Follicle Center Lymphoma
+  9650/3: Hodgkin Lymphoma
+  9651/3: Lymphocyte Rich Classical Hodgkin Lymphoma
+  9652/3: Mixed Cellularity Classical Hodgkin Lymphoma
+  9659/3: Nodular Lymphocyte Predominant Hodgkin Lymphoma
+  9662/3: Hodgkin's Sarcoma
+  9663/3: Nodular Sclerosis Classical Hodgkin Lymphoma
+  9664/3: Nodular Sclerosis Classic Hodgkin Lymphoma, Cellular Phase
+  9665/3: Grade 1 Nodular Sclerosis Classic Hodgkin Lymphoma
+  9667/3: Grade 2 Nodular Sclerosis Classic Hodgkin Lymphoma
+  9671/3: Lymphoplasmacytic Lymphoma
+  9673/1: In Situ Mantle Cell Neoplasia
+  9673/3: Mantle Cell Lymphoma
+  9678/3: Primary Effusion Lymphoma
+  9679/3: Mediastinal (Thymic) Large B-Cell Lymphoma
+  9680/1: Epstein-Barr Virus-Positive Mucocutaneous Ulcer
+  9680/3: Diffuse Large B-Cell Lymphoma, Not Otherwise Specified
+  9684/3: Immunoblastic Lymphoma
+  9687/3: Burkitt Lymphoma
+  9688/3: T-Cell/Histiocyte-Rich Large B-Cell Lymphoma
+  9689/3: splenic marginal zone B-cell lymphoma
+  9690/3: Follicular Lymphoma
+  9691/3: Grade 2 Follicular Lymphoma
+  9695/1: In Situ Follicular Neoplasia
+  9695/3: Grade 1 Follicular Lymphoma
+  9698/3: Grade 3 Follicular Lymphoma
+  9699/3: Marginal Zone Lymphoma
+  9700/3: Mycosis Fungoides
+  9701/3: Sezary Syndrome
+  9702/1: Indolent T-Cell Lymphoproliferative Disorder of the Gastrointestinal Tract
+  9702/3: Peripheral T-Cell Lymphoma, Not Otherwise Specified
+  9708/3: Subcutaneous Panniculitis-Like T-Cell Lymphoma
+  9709/1: Primary Cutaneous CD4-Positive Small/Medium-Sized T-Cell Lymphoproliferative
+    Disorder
+  9709/3: Cutaneous T-Cell Non-Hodgkin Lymphoma
+  9712/3: Intravascular Large B-Cell Lymphoma
+  9714/3: Anaplastic Large Cell Lymphoma
+  9715/3: Anaplastic Large Cell Lymphoma, ALK-Negative
+  9716/3: Hepatosplenic T-Cell Lymphoma
+  9717/3: Intestinal T-Cell Lymphoma
+  9718/1: Primary Cutaneous CD30-Positive T-Cell Lymphoproliferative Disorder
+  9718/3: Primary Cutaneous Anaplastic Large Cell Lymphoma
+  9719/3: Nasal Type Extranodal NK/T-Cell Lymphoma
+  9724/3: Systemic EBV-Positive T-Cell Lymphoproliferative Disease of Childhood
+  9725/1: Hydroa Vacciniforme-Like Lymphoproliferative Disorder
+  9726/3: Primary Cutaneous Gamma-Delta T-Cell Lymphoma
+  9727/3: Lymphoblastic Lymphoma
+  9731/3: Plasmacytoma
+  9732/3: Plasma Cell Myeloma
+  9733/3: Plasma Cell Leukemia
+  9734/3: Extraosseous Plasmacytoma
+  9735/3: Plasmablastic Lymphoma
+  9737/3: ALK-Positive Large B-Cell Lymphoma
+  9738/3: HHV8-Positive Diffuse Large B-Cell Lymphoma, Not Otherwise Specified
+  9740/1: Mastocytoma
+  9740/3: Mast Cell Sarcoma
+  9741/1: Indolent Systemic Mastocytosis
+  9741/3: Malignant Mastocytosis
+  9742/3: Mast Cell Leukemia
+  9749/3: Erdheim-Chester Disease
+  9750/3: Malignant Histiocytosis
+  9751/1: Langerhans Cell Histiocytosis
+  9751/3: Langerhans Cell Histiocytosis, Disseminated
+  9755/3: Histiocytic Sarcoma
+  9756/3: Langerhans Cell Sarcoma
+  9757/3: Interdigitating Dendritic Cell Sarcoma/Tumor
+  9758/3: Follicular Dendritic Cell Sarcoma/Tumor
+  9759/3: Fibroblastic Reticular Cell Tumor
+  9761/1: IgM Monoclonal Gammopathy of Undetermined Significance
+  9761/3: Waldenstrom Macroglobulinemia
+  9762/3: Heavy Chain Disease
+  9765/1: Monoclonal Gammopathy of Undetermined Significance
+  9766/1: Angiocentric Immunoproliferative Lesion
+  9766/3: Grade III Lymphomatoid Granulomatosis
+  9769/1: Monoclonal Immunoglobulin Deposition Disease
+  9800/3: Leukemia
+  9801/3: Acute Leukemia
+  9805/3: Acute biphenotypic leukaemia is a form of leukaemia where the lineage is
+    of both lymphoid and myeloid origin; It is a subtype of
+  9806/3: Mixed Phenotype Acute Leukemia with t(9;22)(q34.1;q11.2); BCR-ABL1
+  9807/3: Mixed Phenotype Acute Leukemia with t(v;11q23.3); KMT2A Rearranged
+  9808/3: Mixed Phenotype Acute Leukemia, B/Myeloid, Not Otherwise Specified
+  9809/3: Mixed Phenotype Acute Leukemia, T/Myeloid, Not Otherwise Specified
+  9811/3: B Lymphoblastic Leukemia/Lymphoma, Not Otherwise Specified
+  9812/3: B Lymphoblastic Leukemia/Lymphoma with t(9;22)(q34.1;q11.2); BCR-ABL1
+  9813/3: B Lymphoblastic Leukemia/Lymphoma with t(v;11q23.3); KMT2A Rearranged
+  9814/3: B Lymphoblastic Leukemia/Lymphoma with t(12;21)(p13.2;q22.1); ETV6-RUNX1
+  9815/3: B Lymphoblastic Leukemia/Lymphoma with Hyperdiploidy
+  9816/3: B Lymphoblastic Leukemia/Lymphoma with Hypodiploidy
+  9817/3: B Lymphoblastic Leukemia/Lymphoma with t(5;14)(q31.1;q32.3); IL3-IGH
+  9818/3: B Lymphoblastic Leukemia/Lymphoma with t(1;19)(q23;p13.3); E2A-PBX1 (TCF3-PBX1)
+  9819/3: B Lymphoblastic Leukemia/Lymphoma, BCR-ABL1-Like
+  9820/3: Lymphoid Leukemia
+  9823/3: Chronic Lymphocytic Leukemia/Small Lymphocytic Lymphoma
+  9827/3: Adult T-Cell Leukemia/Lymphoma
+  9832/3: Prolymphocytic Leukemia
+  9833/3: B-Cell Prolymphocytic Leukemia
+  9834/3: T-Cell Prolymphocytic Leukemia
+  9835/3: Acute Lymphoblastic Leukemia
+  9837/3: T Acute Lymphoblastic Leukemia
+  9840/3: Acute erythroid leukemias, including erythroleukemia (M6a) and very rare
+    pure erythroid leukemia (M6b)
+  9860/3: Myeloid Leukemia
+  9861/3: Acute Myeloid Leukemia Not Otherwise Specified
+  9865/3: Acute Myeloid Leukemia with t(6;9)(p23;q34.1); DEK-NUP214
+  9866/3: Acute Promyelocytic Leukemia with t(15;17)(q22;q12); PML-RARA
+  9867/3: Acute Myelomonocytic Leukemia
+  9869/3: Acute Myeloid Leukemia with inv(3)(q21.3;q26.2) or t(3;3)(q21.3;q26.2);
+    GATA2, MECOM
+  9870/3: Acute Basophilic Leukemia
+  9871/3: Acute Myeloid Leukemia with Abnormal Marrow Eosinophils
+  9872/3: Acute Myeloid Leukemia, Minimally Differentiated
+  9873/3: Acute myeloblastic leukemia, without maturation
+  9874/3: Acute myeloblastic leukemia, with granulocytic maturation
+  9876/3: Atypical Chronic Myeloid Leukemia
+  9877/3: Acute Myeloid Leukemia with Mutated NPM1
+  9878/3: Acute Myeloid Leukemia with Biallelic Mutations of CEBPA
+  9879/3: Acute Myeloid Leukemia with Mutated RUNX1
+  9891/3: Acute Monocytic Leukemia
+  9895/3: Acute Myeloid Leukemia with Myelodysplasia-Related Changes
+  9896/3: Acute Myeloid Leukemia with t(8;21)(q22;q22); RUNX1-RUNX1T1
+  9897/3: Acute Myeloid Leukemia with MLL Rearrangement
+  9898/1: Transient Abnormal Myelopoiesis
+  9898/3: Myeloid Leukemia Associated with Down Syndrome
+  9910/3: Acute Megakaryoblastic Leukemia
+  9911/3: Acute Myeloid Leukemia (Megakaryoblastic) with t(1;22)(p13.3;q13.3); RBM15-MKL1
+  9912/3: Acute Myeloid Leukemia with BCR-ABL1
+  9920/3: Therapy-Related Acute Myeloid Leukemia and Myelodysplastic Syndrome
+  9930/3: Myeloid Sarcoma
+  9931/3: Acute Panmyelosis with Myelofibrosis
+  9940/3: Hairy Cell Leukemia
+  9945/3: Chronic Myelomonocytic Leukemia
+  9946/3: Juvenile Myelomonocytic Leukemia
+  9948/3: Natural Killer cell leukemia
+  9950/3: Polycythemia Vera
+  9960/3: Myeloproliferative Neoplasm
+  9961/3: Primary Myelofibrosis
+  9962/3: Essential Thrombocythemia
+  9963/3: Chronic Neutrophilic Leukemia
+  9964/3: Chronic Eosinophilic Leukemia, Not Otherwise Specified
+  9965/3: Myeloid and Lymphoid Neoplasms with PDGFRA Rearrangement
+  9966/3: Chronic Myelomonocytic Leukemia with Eosinophilia Associated with t(5;12)(q31;p12)
+  9967/3: Myeloid and Lymphoid Neoplasms with FGFR1 Rearrangement
+  9968/3: Myeloid and Lymphoid Neoplasms with t(8;9)(p22;p24.1);PCM1-JAK2
+  9970/1: Lymphoproliferative Disorder
+  9971/1: Post-Transplant Lymphoproliferative Disorder
+  9975/3: Myeloproliferative Neoplasm, Unclassifiable
+  9980/3: Refractory Cytopenia with Unilineage Dysplasia
+  9982/3: Myelodysplastic Syndrome with Ring Sideroblasts and Single Lineage Dysplasia
+  9983/3: Myelodysplastic Syndrome with Excess Blasts
+  9984/3: Refractory Anemia with Excess Blasts in Transformation
+  9985/3: Refractory Cytopenia with Multilineage Dysplasia
+  9986/3: Myelodysplastic Syndrome Associated with Isolated del (5q) Chromosome Abnormality
+  9987/3: Therapy-Related Myelodysplastic Syndrome
+  9989/3: Myelodysplastic Syndrome
+  Not Reported: Not Reported
+  Source Data Not Available: Source Data Not Available
+  Unknown: Unknown

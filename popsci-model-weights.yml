@@ -1,0 +1,32 @@
+# Population Sciences DC data model properties of properties file
+# Title case names are "reserved" (meaningful to the parser)
+# Lower case names are labels for the entities
+
+# set weighted percent values for a variable.
+# all remaning variables will be weighted using the formula (1-(sum({provided weights})) / {number of options for variable})
+
+  # participant properties
+  participant_sex: #mock percents for sex at birth
+    - Female: .49
+    - Male: .49
+  participant_race:  #mock percents for reported race
+    - American Indian or Alaska Native: .013
+    - Asian: .064
+    - Black or African American: .13
+    - Native Hawaiian or other Pacific Islander: .005
+    - White: .75
+  multi_race_opt:  #if want participants to be mutli-racial, set weights here
+   - Single: .85
+   - Multi: .15
+  #cancer_diagnosis_morphology:
+  #  - 8000/3 Malignant Neoplasm: .25
+  #  - 8000/9 Malignant Neoplasm, Uncertain Whether Primary or Metastatic: .25
+  #  - 8003/3 Malignant Giant Cell Neoplasm: .25
+  #  - 8004/3 Malignant Spindle Cell Neoplasm: .25
+  participant_case_indicator:  #if wish case imbalance between cancer participants (yes) and healthy (no)
+   - yes: .75
+   - no: .25
+
+
+    
+
