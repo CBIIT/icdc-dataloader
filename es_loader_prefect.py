@@ -9,9 +9,9 @@ import prefect.variables as Variable
 from neo4j import GraphDatabase
 
 MEMGRAPH_SECRET = "neo4j_secret"
-MEMGRAPH_ENDPOINT = "memgraph_endpoint"
-MEMGRAPH_USER = "memgraph_user"
-MEMGRAPH_PASSWORD = "memgraph_password"
+MEMGRAPH_ENDPOINT = "memgraph_endpoint" # Change to neo4j_ip if using Neo4j
+MEMGRAPH_USER = "memgraph_user" # Change to neo4j_user if using Neo4j
+MEMGRAPH_PASSWORD = "memgraph_password" # Change to neo4j_password if using Neo4j
 ES_HOST = "es_host"
 
 config_file = "config/prefect_drop_down_config_esloader.yaml"
