@@ -19,7 +19,7 @@ with open(config_file, 'r') as file:
     config_drop_list = yaml.safe_load(file)
 environment_choices = Literal[tuple(list(config_drop_list.keys()))]
 
-@flow(name="CRDC Dadta Hub ESloader", log_prints=True)
+@flow(name="CRDC Data Hub ESloader", log_prints=True)
 def es_loader_prefect(
     environment: environment_choices, # type: ignore
     about_file,
