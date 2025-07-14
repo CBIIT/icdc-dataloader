@@ -1,0 +1,4 @@
+dev:
+  neo4j_secret: "cds_secret_name_dev"
+dev2:
+  neo4j_secret: "cds_secret_name_dev2"

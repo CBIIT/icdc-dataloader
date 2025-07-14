@@ -951,8 +951,9 @@ class DataLoader:
                     self.log.info(f'{line_num - 1} rows loaded ...')
                     transaction_counter = 0
             # commit last transaction
-            result = tx.run(statement, batch=batch_obj_list)
-            nodes_created, nodes_updated = self.node_count(result, node_type, nodes_created, nodes_updated, batch_obj_list)
+            if not loading_mode == DELETE_MODE:
+                result = tx.run(statement, batch=batch_obj_list)
+                nodes_created, nodes_updated = self.node_count(result, node_type, nodes_created, nodes_updated, batch_obj_list)
 
             if split:
                 tx.commit()

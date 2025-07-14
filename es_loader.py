@@ -31,6 +31,7 @@ class ESLoader:
             self.es_client = Elasticsearch(
                 hosts=[es_host],
                 http_auth=awsauth,
+                port=443,
                 use_ssl=True,
                 verify_certs=True,
                 connection_class=RequestsHttpConnection,
