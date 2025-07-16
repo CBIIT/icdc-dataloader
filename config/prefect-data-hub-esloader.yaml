@@ -51,7 +51,7 @@ deployments:
     description: null
     schedule: {}
     flow_name: null
-    entrypoint: es_loader_prefect.py:es_loader_prefect
+    entrypoint: es_loader_from_neo4j_prefect.py:es_loader_prefect
     parameters:
       environment: "dev"
       about_file: "../bento-cds-frontend/src/content/prod/aboutPagesContent.yaml"
