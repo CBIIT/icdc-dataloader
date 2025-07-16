@@ -20,6 +20,9 @@ pull:
       branch: 3.2.0_hub
       include_submodules: True
   - prefect.deployments.steps.git_clone:
+      repository: https://github.com/CBIIT/CCDI-Inventory-Dataloader.git
+      branch: 2.8.0_Opensearch_Loader
+  - prefect.deployments.steps.git_clone:
       repository: https://github.com/CBIIT/cds-model.git
       branch: main
   - prefect.deployments.steps.git_clone:
@@ -53,11 +56,11 @@ deployments:
       environment: "dev"
       about_file: "../bento-cds-frontend/src/content/prod/aboutPagesContent.yaml"
       indices_list: []
-      indices_file: "../bento-cds-backend/src/main/resources/yaml/es_indices_cds.yml"
+      indices_file: "../CCDI-Inventory-Dataloader/config/es_indices_ccdi_model.yml"
       model_files:
         - ../cds-model/model-desc/cds-model.yml
         - ../cds-model/model-desc/cds-model-props.yml
-      prop_file: config/props-cds.yml
+      prop_file: "../CCDI-Inventory-Dataloader/config/props-ccdi-model.yml"
     work_pool:
       name: cds-curation-ecs
       work_queue_name: cds-curation-queue

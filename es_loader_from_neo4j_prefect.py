@@ -14,7 +14,7 @@ NEO4J_USER = "neo4j_user"
 NEO4J_PASSWORD = "neo4j_password"
 ES_HOST = "es_host"
 
-config_file = "config/prefect_drop_down_config_esloader.yaml"
+config_file = "config/prefect-data-hub-esloader.yaml"
 with open(config_file, 'r') as file:
     config_drop_list = yaml.safe_load(file)
 environment_choices = Literal[tuple(list(config_drop_list.keys()))]
