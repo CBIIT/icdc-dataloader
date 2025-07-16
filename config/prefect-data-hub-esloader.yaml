@@ -62,8 +62,8 @@ deployments:
         - ../cds-model/model-desc/cds-model-props.yml
       prop_file: "../CCDI-Inventory-Dataloader/config/props-ccdi-model.yml"
     work_pool:
-      name: cds-curation-ecs
-      work_queue_name: cds-curation-queue
+      name: ccdi-curation-8gb
+      work_queue_name: ccdi-esloader-queue
       job_variables:
         env:
           PREFECT_LOGGING_EXTRA_LOGGERS: "ESLoader"
