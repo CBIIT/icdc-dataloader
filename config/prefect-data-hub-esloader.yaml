@@ -37,7 +37,7 @@ pull:
       branch: 4.6.0
       include_submodules: True
   - prefect.deployments.steps.set_working_directory:
-      directory: "/opt/prefect/icdc-dataloader"
+      directory: "/opt/prefect/icdc-dataloader-3.2.0_hub"
   - prefect.projects.steps.pip_install_requirements:
       requirements_file: requirements.txt
       directory: "{{ clone-step.directory }}"
