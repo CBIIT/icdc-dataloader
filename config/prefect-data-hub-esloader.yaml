@@ -56,7 +56,7 @@ deployments:
     parameters:
       environment: "dev"
       about_file: "../bento-cds-frontend/src/content/prod/aboutPagesContent.yaml"
-      indices_list: []
+      indices_list: [  "cohorts",  "study_participants",  "participants",  "survivals",  "treatments",  "treatment_responses",  "diagnosis",  "studies",  "samples",  "files",  "model_nodes",  "model_properties",  "model_values",  "ccdi_hub_static_pages"]
       indices_file: "../CCDI-Inventory-Dataloader/config/es_indices_ccdi_model.yml"
       model_files:
         - ../cds-model/model-desc/cds-model.yml
