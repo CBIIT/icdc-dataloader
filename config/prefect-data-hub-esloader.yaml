@@ -22,6 +22,7 @@ pull:
   - prefect.deployments.steps.git_clone:
       repository: https://github.com/CBIIT/CCDI-Inventory-Dataloader.git
       branch: 2.8.0_Opensearch_Loader
+      include_submodules: True
   - prefect.deployments.steps.git_clone:
       repository: https://github.com/CBIIT/cds-model.git
       branch: main
