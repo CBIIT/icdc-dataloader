@@ -25,7 +25,7 @@ pull:
       include_submodules: True
   - prefect.deployments.steps.git_clone:
       repository: https://github.com/CBIIT/cds-model.git
-      branch: main
+      branch: 3.1.0
   - prefect.deployments.steps.git_clone:
       repository: https://github.com/CBIIT/icdc-model-tool.git
       branch: master
@@ -59,8 +59,8 @@ deployments:
       indices_list: [  "cohorts",  "study_participants",  "participants",  "survivals",  "treatments",  "treatment_responses",  "diagnosis",  "studies",  "samples",  "files",  "model_nodes",  "model_properties",  "model_values",  "ccdi_hub_static_pages"]
       indices_file: "../CCDI-Inventory-Dataloader/config/es_indices_ccdi_model.yml"
       model_files:
-        - ../cds-model/model-desc/cds-model.yml
-        - ../cds-model/model-desc/cds-model-props.yml
+        - ../ccdi-model/model-desc/ccdi-model.yml
+        - ../ccdi-model/model-desc/ccdi-model-props.yml
       prop_file: "../CCDI-Inventory-Dataloader/config/props-ccdi-model.yml"
     work_pool:
       name: ccdi-curation-8gb
