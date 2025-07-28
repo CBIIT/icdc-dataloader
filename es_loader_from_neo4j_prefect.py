@@ -1,6 +1,7 @@
 from es_loader import ESLoader, _validate_cypher_queries
 from prefect import flow
 from typing import Literal
+import boto3
 from bento.common.secret_manager import get_secret
 from bento.common.utils import get_logger, print_config, LOG_PREFIX, APP_NAME
 import yaml
@@ -34,6 +35,9 @@ def es_loader_prefect(
         indices_yaml = yaml.safe_load(file)
     indices = indices_yaml['Indices']
     logger = get_logger('ESLoader')
+    sts = boto3.client("sts")
+    identity = sts.get_caller_identity()
+    print(f"Current IAM role ARN: {identity['Arn']}")
     config = {}
     config['model_files'] = model_files
     config['about_file'] = about_file
