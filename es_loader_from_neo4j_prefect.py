@@ -14,20 +14,22 @@ NEO4J_USER = "neo4j_user"
 NEO4J_PASSWORD = "neo4j_password"
 ES_HOST = "es_host"
 
-config_file = "config/prefect-data-hub-esloader.yaml"
+config_file = "config/prefect_drop_down_config_esloader_hub.yaml"
 with open(config_file, 'r') as file:
     config_drop_list = yaml.safe_load(file)
 environment_choices = Literal[tuple(list(config_drop_list.keys()))]
 
 @flow(name="Hub ESloader from Neo4j", log_prints=True)
 def es_loader_prefect(
-    environment: environment_choices, # type: ignore
+    environment: str, # type: ignore
     about_file,
     model_files,
     prop_file,
     indices_list,
     indices_file,
 ):  
+    if environment not in config_drop_list:
+        raise ValueError(f"Invalid environment: {environment}. Must be one of: {list(config_drop_list.keys())}")
     with open(indices_file, 'r') as file:
         indices_yaml = yaml.safe_load(file)
     indices = indices_yaml['Indices']
