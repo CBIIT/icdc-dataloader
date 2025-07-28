@@ -41,6 +41,7 @@ def es_loader_prefect(
     config['indices_list'] = indices_list
 
     neo4j_secret = Variable.get(config_drop_list[environment][NEO4J_SECRET])
+    print(f"Using Neo4j secret: {neo4j_secret}")
     secret = get_secret(neo4j_secret)
     config['neo4j_endpoint'] = "bolt://" + secret[NEO4J_ENDPOINT] + ":7687"
     config['neo4j_user'] = secret[NEO4J_USER]
