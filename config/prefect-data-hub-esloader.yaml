@@ -72,8 +72,8 @@ deployments:
     indices_file: 
       ../CCDI-Inventory-Dataloader-2.8.0_Opensearch_Loader/config/es_indices_ccdi_model.yml
     model_files:
-    - ../ccdi-model-3.1.0/model-desc/ccdi-model.yml
-    - ../ccdi-model-3.1.0/model-desc/ccdi-model-props.yml
+    - ../CCDI-Inventory-Dataloader-2.8.0_Opensearch_Loader/config/ccdi-model.yml
+    - ../CCDI-Inventory-Dataloader-2.8.0_Opensearch_Loader/config/ccdi-model-props.yml
     prop_file: 
       ../CCDI-Inventory-Dataloader-2.8.0_Opensearch_Loader/config/props-ccdi-model.yml
   work_pool:
