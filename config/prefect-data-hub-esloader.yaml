@@ -4,7 +4,7 @@
 
 # Generic metadata about this project
 name: CRDC Data Loader
-prefect-version: 2.14.10
+prefect-version: 3.2.14
 
 # build section allows you to manage and build docker images
 build: null
@@ -63,8 +63,8 @@ deployments:
         - ../ccdi-model/model-desc/ccdi-model-props.yml
       prop_file: "../CCDI-Inventory-Dataloader/config/props-ccdi-model.yml"
     work_pool:
-      name: ccdi-curation-8gb
-      work_queue_name: ccdi-esloader-queue
+      name: cbio-8gb-prefect-3.2.14-python3.9
+      work_queue_name: default
       job_variables:
         env:
           PREFECT_LOGGING_EXTRA_LOGGERS: "ESLoader"

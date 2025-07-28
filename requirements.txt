@@ -8,4 +8,4 @@ tqdm
 requests_aws4auth
 pandas
 xlsxwriter
-prefect
+prefect==3.2.14

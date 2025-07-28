@@ -1,0 +1,32 @@
+# Welcome to your prefect.yaml file! You can use this file for storing and managing
+# configuration for deploying your flows. We recommend committing this file to source
+# control along with your flow code.
+
+# Generic metadata about this project
+name: icdc-dataloader
+prefect-version: 2.14.10
+
+# build section allows you to manage and build docker images
+build: null
+
+# push section allows you to manage if and how this project is uploaded to remote locations
+push: null
+
+# pull section allows you to provide instructions for cloning this project in remote locations
+pull:
+- prefect.deployments.steps.set_working_directory:
+    directory: /Users/wangx51/workspace/icdc-dataloader
+
+# the deployments section allows you to provide configuration for deploying flows
+deployments:
+- name: hub-esloader
+  version: null
+  tags: []
+  description: null
+  entrypoint: es_loader_from_neo4j_prefect.py:es_loader_prefect
+  parameters: {}
+  work_pool:
+    name: cbio-8gb-prefect-3.2.14-python3.9
+    work_queue_name: null
+    job_variables: {}
+  schedule: null
