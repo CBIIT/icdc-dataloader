@@ -1,0 +1,4 @@
+dev:
+  neo4j_secret: "hub_secret_name_dev"
+qa:
+  neo4j_secret: "hub_secret_name_qa"
