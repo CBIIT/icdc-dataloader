@@ -7,64 +7,78 @@ name: CRDC Data Loader
 prefect-version: 3.2.14
 
 # build section allows you to manage and build docker images
-build: null
+build:
 
 # push section allows you to manage if and how this project is uploaded to remote locations
-push: null
+push:
 
 # pull section allows you to provide instructions for cloning this project in remote locations
 pull:
-  - prefect.deployments.steps.git_clone:
+- prefect.deployments.steps.git_clone:
       #id: clone-step
-      repository: https://github.com/CBIIT/icdc-dataloader.git
-      branch: 3.2.0_hub
-      include_submodules: True
-  - prefect.deployments.steps.git_clone:
-      repository: https://github.com/CBIIT/CCDI-Inventory-Dataloader.git
-      branch: 2.8.0_Opensearch_Loader
-      include_submodules: True
-  - prefect.deployments.steps.git_clone:
-      repository: https://github.com/CBIIT/cds-model.git
-      branch: 3.1.0
-  - prefect.deployments.steps.git_clone:
-      repository: https://github.com/CBIIT/icdc-model-tool.git
-      branch: master
-  - prefect.deployments.steps.git_clone:
-      repository: https://github.com/CBIIT/bento-cds-backend.git
-      branch: 3.1.0_less_page
-      include_submodules: True
-  - prefect.deployments.steps.git_clone:
-      repository: https://github.com/CBIIT/bento-cds-frontend.git
-      branch: 4.6.0
-      include_submodules: True
-  - prefect.deployments.steps.set_working_directory:
-      directory: "/opt/prefect/icdc-dataloader-3.2.0_hub"
-  - prefect.projects.steps.pip_install_requirements:
-      requirements_file: requirements.txt
-      directory: "{{ clone-step.directory }}"
-      stream_output: False
+    repository: https://github.com/CBIIT/icdc-dataloader.git
+    branch: 3.2.0_hub
+    include_submodules: true
+- prefect.deployments.steps.git_clone:
+    repository: https://github.com/CBIIT/CCDI-Inventory-Dataloader.git
+    branch: 2.8.0_Opensearch_Loader
+    include_submodules: true
+- prefect.deployments.steps.git_clone:
+    repository: https://github.com/CBIIT/cds-model.git
+    branch: 3.1.0
+- prefect.deployments.steps.git_clone:
+    repository: https://github.com/CBIIT/icdc-model-tool.git
+    branch: master
+- prefect.deployments.steps.git_clone:
+    repository: https://github.com/CBIIT/bento-cds-backend.git
+    branch: 3.1.0_less_page
+    include_submodules: true
+- prefect.deployments.steps.git_clone:
+    repository: https://github.com/CBIIT/bento-cds-frontend.git
+    branch: 4.6.0
+    include_submodules: true
+- prefect.deployments.steps.set_working_directory:
+    directory: /opt/prefect/icdc-dataloader-3.2.0_hub
+- prefect.deployments.steps.pip_install_requirements:
+    requirements_file: requirements.txt
+    directory: /opt/prefect/icdc-dataloader-3.2.0_hub
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
-  - name: data-hub-opensearch-loader
-    version: null
-    tags: []
-    description: null
-    schedule: {}
-    flow_name: null
-    entrypoint: es_loader_from_neo4j_prefect.py:es_loader_prefect
-    parameters:
-      environment: "dev"
-      about_file: "../bento-cds-frontend/src/content/prod/aboutPagesContent.yaml"
-      indices_list: [  "cohorts",  "study_participants",  "participants",  "survivals",  "treatments",  "treatment_responses",  "diagnosis",  "studies",  "samples",  "files",  "model_nodes",  "model_properties",  "model_values",  "ccdi_hub_static_pages"]
-      indices_file: "../CCDI-Inventory-Dataloader/config/es_indices_ccdi_model.yml"
-      model_files:
-        - ../ccdi-model/model-desc/ccdi-model.yml
-        - ../ccdi-model/model-desc/ccdi-model-props.yml
-      prop_file: "../CCDI-Inventory-Dataloader/config/props-ccdi-model.yml"
-    work_pool:
-      name: cbio-8gb-prefect-3.2.14-python3.9
-      work_queue_name: default
-      job_variables:
-        env:
-          PREFECT_LOGGING_EXTRA_LOGGERS: "ESLoader"
+- name: data-hub-opensearch-loader
+  version:
+  tags: []
+  description:
+  schedule: {}
+  entrypoint: es_loader_from_neo4j_prefect.py:es_loader_prefect
+  parameters:
+    environment: dev
+    about_file: ../bento-cds-frontend/src/content/prod/aboutPagesContent.yaml
+    indices_list:
+    - cohorts
+    - study_participants
+    - participants
+    - survivals
+    - treatments
+    - treatment_responses
+    - diagnosis
+    - studies
+    - samples
+    - files
+    - model_nodes
+    - model_properties
+    - model_values
+    - ccdi_hub_static_pages
+    indices_file: ../CCDI-Inventory-Dataloader/config/es_indices_ccdi_model.yml
+    model_files:
+    - ../ccdi-model/model-desc/ccdi-model.yml
+    - ../ccdi-model/model-desc/ccdi-model-props.yml
+    prop_file: ../CCDI-Inventory-Dataloader/config/props-ccdi-model.yml
+  work_pool:
+    name: cbio-8gb-prefect-3.2.14-python3.9
+    work_queue_name: default
+    job_variables:
+      env:
+        PREFECT_LOGGING_EXTRA_LOGGERS: ESLoader
+  concurrency_limit:
+  schedules: []
