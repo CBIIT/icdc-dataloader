@@ -24,25 +24,13 @@ pull:
     branch: 2.8.0_Opensearch_Loader
     include_submodules: true
 - prefect.deployments.steps.git_clone:
-    repository: https://github.com/CBIIT/cds-model.git
+    repository: https://github.com/CBIIT/ccdi-model.git
     branch: 3.1.0
-- prefect.deployments.steps.git_clone:
-    repository: https://github.com/CBIIT/icdc-model-tool.git
-    branch: master
-- prefect.deployments.steps.git_clone:
-    repository: https://github.com/CBIIT/bento-cds-backend.git
-    branch: 3.1.0_less_page
-    include_submodules: true
-- prefect.deployments.steps.git_clone:
-    repository: https://github.com/CBIIT/bento-cds-frontend.git
-    branch: 4.6.0
-    include_submodules: true
 - prefect.deployments.steps.set_working_directory:
     directory: /opt/prefect/icdc-dataloader-3.2.0_hub
 - prefect.deployments.steps.pip_install_requirements:
     requirements_file: requirements.txt
     directory: /opt/prefect/icdc-dataloader-3.2.0_hub
-
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
 - name: data-hub-opensearch-loader
