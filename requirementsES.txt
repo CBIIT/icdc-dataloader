@@ -1,6 +1,6 @@
-#use with loader_v3.py
+#use with ESloader.py
 pyyaml
-neo4j==5.*.*
+neo4j==4.4.*
 boto3
 requests
 numpy==1.26.4
@@ -9,4 +9,3 @@ tqdm
 requests_aws4auth
 pandas
 xlsxwriter
-prefect

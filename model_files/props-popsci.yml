@@ -37,13 +37,20 @@ Properties:
     TBD: String
 
   id_fields:
-    study: phs_accession
     study: study_short_name
     participant: participant_id
     diagnosis: diagnosis_id
+    publication: publication_record_id
+    study_demographic: study_demographic_record_id
+    study_personnel: study_personnel_record_id
+    study_state_province_territory: study_state_record_id
+    associated_link: associated_link_record_id
+    data_collection: data_collection_record_id
+
     treatment: treatment_id
     specimen: specimen_id
     sample: sample_id
-    file: file_id
+    data_file: data_file_uuid
+    study_country: study_country_record_id
     #genomic_info:
 

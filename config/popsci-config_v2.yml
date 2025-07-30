@@ -5,21 +5,25 @@ Config:
   neo4j:
     # Location of Neo4j server, e.g., bolt://127.0.0.1:7687, can be overridden by -i/--uir argument
     #uri: bolt://127.0.0.1:7687
-    uri: bolt://localhost:7688
+    uri: bolt://localhost:7687
     # Neo4j username, can be overridden by -u/--user argument
     user: neo4j
     # Neo4j password, if not set here, will try to read from environment variable NEO_PASSWORD. CLI argument -p/--password will overwrite either settings
-    password: MockDataPass2025!
+    password: popsciLoader
 
+     
   # Schema files' locations, usually two file, can be overridden by -s/--schema argument
   schema:
-    - 'C:/Users/breadsp2/Desktop/Mock Data Generator V2/popsci-model.yml'
-    - 'C:/Users/breadsp2/Desktop/Mock Data Generator V2/popsci-model-props.yml'
-    
-#  convert_files:
-#    location:  C:/Users/breadsp2/Desktop/Mock Data Generator V2/cancer_site_location.yaml
-#    histology: C:/Users/breadsp2/Desktop/Mock Data Generator V2/cancer_histology.yaml
+      - './model_files/popsci-model.yml'
+      - './model_files/popsci-model-props.yml'
 
+  convert_files:
+     location:  ./model_files/cancer_site_location_v2.yaml
+     histology: ./model_files/cancer_histology_v2.yaml
+
+  neo4j_file_summmary:
+     #location: 's3://popsci-dev-files-dedicated-bucket/manifest_index_results'
+  
 
   # Plugin can be used to create additional nodes and relationships
 #  plugins:
@@ -31,17 +35,16 @@ Config:
 
   # Property file location, props-icdc.yml, props-ctdc.yml etc. can be overridden by --prop-file argument
   prop_file: #config/props-popsci.yml
-      C:/Users/breadsp2/Desktop/Mock Data Generator V2/props-popsci.yml
+      ./model_files/props-popsci.yml
       
-
   # Skip validations, aka. Cheat Mode, can be overridden by -c/--cheat-mode argument
-  cheat_mode: True
+  cheat_mode: false
   # Validations only, skip loading, can be overridden by -d/--dry-run argument
   dry_run: false
   # Wipe clean database before loading, you'll lose all data!, can be overridden by --wipe-db argument
-  wipe_db: false
+  wipe_db: True
   # Skip backup database step, can be overridden by --no-backup argument
-  no_backup: false
+  no_backup: True
   # Automatically confirm deletion and database wiping, without asking user to confirm, can be overridden by -y/--yes argument
   no_confirmation: false
   # Max violations to display, default is mockdatabd10, can be overridden by -M/--max-violations argument
@@ -49,13 +52,18 @@ Config:
   # Split the loading transaction into separate transactions for each file
   split_transactions: false
 
+  # where is the data comming from, local, s3, manifest file
+  data_source: 'local'
+
   # S3 bucket name, if you are loading from an S3 bucket, can be overridden by -b/--bucket argument
-  s3_bucket:
+  s3_bucket: 'popsci-dev-files-dedicated-bucket'
   # S3 folder for dataset, will be overridden by --s3-folder argument
-  s3_folder:
+  s3_folder: 'Mock_Data_Output'
   # Loading mode, can be UPSERT_MODE, NEW_MODE or DELETE_MODE, default is UPSERT_MODE, can be overridden by -m/--mode argument
   loading_mode: UPSERT_MODE
   # Location of dataset, can be overridden by --dataset argument
-  dataset: #'C:\Users\breadsp2\Desktop\SMCT_Mock_Data'  #'C:\Users\breadsp2\Desktop\GTSR_Mock_Data'
-      # '/data'
-  database_name: #'mockdatadb'  #'legacytest'   #defaults to neo4j
+  dataset: '../Mock Data Generator V2/Mock_Data_Output Old/PLCO_Mock_Data' #'../Mock Data Generator V2/Mock_Data_Output/SMCT_Mock_Data'
+  #dataset: 'C:\Users\breadsp2\Desktop\PLCO Data Loading Files'
+
+  # name of the database being written to, defautls to neo4j
+  database_name: 'neo4j'

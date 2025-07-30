@@ -337,7 +337,7 @@ class DataLoader:
         self.log.info("  ")
 
         with self.driver.session() as session:
-            server_info = session.execute_read(self.get_neo4j_version)
+            server_info = session.execute_read(lambda tx: self.get_neo4j_version(tx))
             if server_info:
                 self.log.info(f"Neo4j Version: {server_info['version']}")  # Extract the version from the result
                 self.log.info(f"Neo4j Edition: {server_info['edition']}")  # Extract the edition
@@ -1105,12 +1105,13 @@ class DataLoader:
     def load_relationships(self, session, file_data, loading_mode, batch_index, batch_time,  split=False):
         file_data_df = pd.DataFrame(file_data)
         obj = file_data_df.iloc[0].to_dict()
-
+        
         node_type = obj[NODE_TYPE]
+        # print(str(obj[NODE_TYPE]['Node_Index_DF'])+ " look at this file_data_df")
         file_data_df = file_data_df.merge(self.node_keys_dict[node_type]['Node_Index_DF'],
                                           left_on=self.schema.get_id_field(obj), right_on="Primary_Key_Value",
                                           how="left", indicator="Node_Exists")
-
+        
         missing_id = file_data_df.query("Node_Exists not in ['both']")
         if len(missing_id) > 0:
             self.log.error("Unable to make relationships: file data does not align properly with database")
