@@ -1,2 +1,0 @@
-[console_scripts]
-coolname = coolname.__main__:main
