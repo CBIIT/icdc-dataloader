@@ -16,7 +16,7 @@ ENVIRONMENTS = "environments"
 DATABASE_TYPES = "database_type"
 MODEL_REPO_URL = "model_repo_url"
 NEO4J_USER = "neo4j_user"
-NEO4J_URI = "neo4j_uri"
+NEO4J_IP = "neo4j_ip"
 NEO4J_PASSWORD = "neo4j_password"
 SUBMISSION_BUCKET = "submission_bucket"
 MODEL_DESC = "model-desc"
@@ -200,7 +200,7 @@ def data_hub_loader(
     secret_name = Variable.get(config_drop_list[ENVIRONMENTS][environment])
     secret = get_secret(secret_name)
     user = NEO4J_USER
-    uri = secret[NEO4J_URI]
+    uri = secret[NEO4J_IP]
     password = secret[NEO4J_PASSWORD]
     if database_type == "memgraph":
         user = secret[MEMGRAPH_USER]
