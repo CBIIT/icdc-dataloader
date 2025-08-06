@@ -79,8 +79,9 @@ deployments:
       dry_run: False
       wipe_db: False
       mode: "upsert"
-      secret_name: "{{ prefect.variables.secret_name_dev }}"
       prop_file: config/props-cds.yml
+      no_parents: True
+      plugins: []
     work_pool:
       name: cds-curation-ecs
       work_queue_name: cds-curation-queue
