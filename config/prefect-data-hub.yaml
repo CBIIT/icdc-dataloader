@@ -17,7 +17,7 @@ pull:
   - prefect.deployments.steps.git_clone:
       #id: clone-step
       repository: https://github.com/CBIIT/icdc-dataloader.git
-      branch: 3.2.0_delete_command
+      branch: 3.2.0_memgraph_loader
       include_submodules: True
   - prefect.deployments.steps.git_clone:
       repository: https://github.com/CBIIT/cds-model.git
