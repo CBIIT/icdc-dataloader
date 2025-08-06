@@ -42,7 +42,7 @@ pull:
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
-  - name: data-hub-opensearch-loader
+  - name: gc-data-hub-opensearch-loader
     version: null
     tags: []
     description: null
@@ -65,7 +65,7 @@ deployments:
         env:
           PREFECT_LOGGING_EXTRA_LOGGERS: "ESLoader"
 
-  - name: data-hub-metadata-loading-dev
+  - name: gc-data-hub-metadata-loading-dev
     version: null
     tags: []
     description: null
@@ -82,11 +82,11 @@ deployments:
       secret_name: "{{ prefect.variables.secret_name_dev }}"
       prop_file: config/props-cds.yml
     work_pool:
-      name: crdc-dh-dev-validation
-      work_queue_name: default
+      name: cds-curation-ecs
+      work_queue_name: cds-curation-queue
       job_variables:
         env:
-          PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator,Props"
+          PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator,Props,LoaderPrefect"
 
   - name: data-hub-metadata-validation-qa
     version: null
@@ -97,8 +97,8 @@ deployments:
     entrypoint: loader_prefect:data_hub_loader
     parameters:
       database_type: ""
-      organization_id: ""
-      submission_id: ""
+      s3_bucket: "{{ prefect.variables.gc_metadata_lowertier_bucket }}"
+      s3_folder: ""
       cheat_mode: False
       dry_run: False
       wipe_db: False

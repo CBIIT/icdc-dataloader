@@ -187,8 +187,8 @@ def data_hub_loader(
         environment: environment_choices,
         branch: branch_choices,
         database_type: database_choices,
-        organization_id,
-        submission_id,
+        s3_bucket,
+        s3_folder,
         cheat_mode,
         dry_run,
         wipe_db,
@@ -207,8 +207,6 @@ def data_hub_loader(
         uri = secret[MEMGRAPH_ENDPOINT]
         password = secret[MEMGRAPH_PASSWORD]
     
-    s3_bucket = secret[SUBMISSION_BUCKET]
-    s3_folder = f'{organization_id}/{submission_id}/metadata'
     schemas = data_model_download(model_repo, branch)
 
     load_data(
