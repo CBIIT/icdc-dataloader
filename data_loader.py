@@ -818,8 +818,14 @@ class DataLoader:
 
             prop_stmts.append('n.{0} = record.{0}'.format(key))
         statement += 'MERGE (n:{0} {{ {1}: record.{1} }})'.format(node_type, id_field)
-        statement += ' ON CREATE ' + 'SET n.{} = datetime(), '.format(CREATED) + ' ,'.join(prop_stmts)
-        statement += ' ON MATCH ' + 'SET n.{} = datetime(), '.format(UPDATED) + ' ,'.join(prop_stmts)
+        if self.database_type == NEO4J:
+            statement += ' ON CREATE ' + 'SET n.{} = datetime(), '.format(CREATED) + ' ,'.join(prop_stmts)
+            statement += ' ON MATCH ' + 'SET n.{} = datetime(), '.format(UPDATED) + ' ,'.join(prop_stmts)
+        elif self.database_type == MEMGRAPH: #make sure the created and upadted datatime in memgraph is in string type
+            statement += ' ON CREATE ' + 'SET n.{} = toString(datetime()), '.format(CREATED) + ' ,'.join(prop_stmts)
+            statement += ' ON MATCH ' + 'SET n.{} = toString(datetime()), '.format(UPDATED) + ' ,'.join(prop_stmts)
+        else:
+            raise Exception('Unsupported database type: {}'.format(self.database_type))
         return statement
 
     # Delete a node and children with no other parents recursively
