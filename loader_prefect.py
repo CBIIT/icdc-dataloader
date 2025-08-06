@@ -193,7 +193,6 @@ def data_hub_loader(
         dry_run,
         wipe_db,
         mode,
-        schemas,
         prop_file,
         no_parents=True,
         plugins=[]
