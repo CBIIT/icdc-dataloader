@@ -27,7 +27,6 @@ MEMGRAPH_PASSWORD = "memgraph_password"
 config_file = "config/prefect_drop_down_config_dataloader.yaml"
 
 def get_github_branches(repo_url):
-    log.info(branch_choices)
     # Remove .git if present
     if repo_url.endswith('.git'):
         repo_url = repo_url[:-4]
@@ -67,14 +66,14 @@ def data_model_download(model_repo, model_version):
 
 with open(config_file, 'r') as file:
     config_drop_list = yaml.safe_load(file)
-model_repo = config_drop_list[ENVIRONMENTS].keys()
-environment_choices = Literal[tuple(list(model_repo))]
-branch_choices = Literal[tuple(get_github_branches(config_drop_list.get(MODEL_REPO_URL)))]
+env = config_drop_list[ENVIRONMENTS].keys()
+environment_choices = Literal[tuple(list(env))]
+model_repo_url = config_drop_list.get(MODEL_REPO_URL)
+branch_choices = Literal[tuple(get_github_branches(model_repo_url))]
 database_choices = Literal[tuple(list(config_drop_list.get(DATABASE_TYPES)))]
 
 @flow(name="CRDC Data Loader", log_prints=True)
 def load_data(
-        branch,
         database_type,
         s3_bucket,
         s3_folder,
@@ -186,7 +185,7 @@ class Config:
 @flow(name="CRDC Data Hub Loader", log_prints=True)
 def data_hub_loader(
         environment: environment_choices,
-        branch: branch_choices,
+        model_branch: branch_choices,
         database_type: database_choices,
         s3_bucket,
         s3_folder,
@@ -208,7 +207,7 @@ def data_hub_loader(
         uri = secret[MEMGRAPH_ENDPOINT]
         password = secret[MEMGRAPH_PASSWORD]
     
-    schemas = data_model_download(model_repo, branch)
+    schemas = data_model_download(model_repo_url, model_branch)
 
     load_data(
         database_type = database_type,
