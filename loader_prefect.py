@@ -27,6 +27,7 @@ MEMGRAPH_PASSWORD = "memgraph_password"
 config_file = "config/prefect_drop_down_config_dataloader.yaml"
 
 def get_github_branches(repo_url):
+    log.info(branch_choices)
     # Remove .git if present
     if repo_url.endswith('.git'):
         repo_url = repo_url[:-4]
