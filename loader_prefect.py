@@ -200,11 +200,11 @@ def data_hub_loader(
     secret_name = Variable.get(config_drop_list[ENVIRONMENTS][environment])
     secret = get_secret(secret_name)
     user = NEO4J_USER
-    uri = secret[NEO4J_IP]
+    uri = "bolt://" + secret[NEO4J_IP] + ":7687"
     password = secret[NEO4J_PASSWORD]
     if database_type == "memgraph":
         user = secret[MEMGRAPH_USER]
-        uri = secret[MEMGRAPH_ENDPOINT]
+        uri = "bolt://" + secret[MEMGRAPH_ENDPOINT] + ":7687"
         password = secret[MEMGRAPH_PASSWORD]
     
     schemas = data_model_download(model_repo_url, model_branch)
