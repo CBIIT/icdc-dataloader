@@ -34,7 +34,7 @@ pull:
       branch: 4.6.0
       include_submodules: True
   - prefect.deployments.steps.set_working_directory:
-      directory: "/opt/prefect/icdc-dataloader"
+      directory: "/opt/prefect/icdc-dataloader-3.2.0_memgraph_loader"
   - prefect.projects.steps.pip_install_requirements:
       requirements_file: requirements.txt
       directory: "{{ clone-step.directory }}"
@@ -83,8 +83,8 @@ deployments:
       no_parents: True
       plugins: []
     work_pool:
-      name: cds-curation-ecs
-      work_queue_name: cds-curation-queue
+      name: cds-curation-mgconsole-prefect-2.14.19-python3.9
+      work_queue_name: default
       job_variables:
         env:
           PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator,Props,LoaderPrefect"
