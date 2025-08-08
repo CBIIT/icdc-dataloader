@@ -199,7 +199,7 @@ def data_hub_loader(
     ):
     secret_name = Variable.get(config_drop_list[ENVIRONMENTS][environment])
     secret = get_secret(secret_name)
-    user = NEO4J_USER
+    user = secret[NEO4J_USER]
     uri = "bolt://" + secret[NEO4J_IP] + ":7687"
     password = secret[NEO4J_PASSWORD]
     if database_type == "memgraph":
