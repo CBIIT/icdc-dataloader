@@ -82,6 +82,7 @@ deployments:
       prop_file: config/props-cds.yml
       no_parents: True
       plugins: []
+      split_transaction: True
     work_pool:
       name: cds-curation-mgconsole-prefect-2.14.19-python3.9
       work_queue_name: default

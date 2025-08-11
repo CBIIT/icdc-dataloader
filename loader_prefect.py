@@ -195,7 +195,8 @@ def data_hub_loader(
         mode,
         prop_file,
         no_parents=True,
-        plugins=[]
+        plugins=[],
+        split_transaction=True
     ):
     secret_name = Variable.get(config_drop_list[ENVIRONMENTS][environment])
     secret = get_secret(secret_name)
@@ -225,7 +226,8 @@ def data_hub_loader(
         no_parents = no_parents,
         max_violation = 1000000,
         mode = mode,
-        plugins = plugins
+        plugins = plugins,
+        split_transaction = split_transaction
     )
 
 if __name__ == "__main__":
