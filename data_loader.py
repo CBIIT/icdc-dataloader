@@ -884,6 +884,7 @@ class DataLoader:
         if result.consume().counters.nodes_created != batch_length and result.consume().counters.nodes_deleted != batch_length:
             update_count = batch_length - result.consume().counters.nodes_created
         nodes_updated += update_count
+        self.nodes_updated += update_count
         self.nodes_stat[node_type] = self.nodes_stat.get(node_type, 0) + count
         self.nodes_stat_updated[node_type] = self.nodes_stat_updated.get(node_type, 0) + update_count
         return nodes_created, nodes_updated
