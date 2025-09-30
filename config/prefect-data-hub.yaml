@@ -4,7 +4,7 @@
 
 # Generic metadata about this project
 name: CRDC Data Loader
-prefect-version: 2.14.10
+prefect-version: null
 
 # build section allows you to manage and build docker images
 build: null
@@ -35,7 +35,7 @@ pull:
       include_submodules: True
   - prefect.deployments.steps.set_working_directory:
       directory: "/opt/prefect/icdc-dataloader-3.2.0_memgraph_loader"
-  - prefect.projects.steps.pip_install_requirements:
+  - prefect.deployments.steps.pip_install_requirements:
       requirements_file: requirements.txt
       directory: "{{ clone-step.directory }}"
       stream_output: False
@@ -59,8 +59,8 @@ deployments:
         - ../cds-model/model-desc/cds-model-props.yml
       prop_file: config/props-cds.yml
     work_pool:
-      name: cds-curation-ecs
-      work_queue_name: cds-curation-queue
+      name: cds-general-mgconsole-prefect-3.4.18-python3.12
+      work_queue_name: default
       job_variables:
         env:
           PREFECT_LOGGING_EXTRA_LOGGERS: "ESLoader"
@@ -84,7 +84,7 @@ deployments:
       plugins: []
       split_transaction: True
     work_pool:
-      name: cds-curation-mgconsole-prefect-2.14.19-python3.9
+      name: cds-general-mgconsole-prefect-3.4.18-python3.12
       work_queue_name: default
       job_variables:
         env:
