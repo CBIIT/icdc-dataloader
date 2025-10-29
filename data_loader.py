@@ -818,8 +818,14 @@ class DataLoader:
 
             prop_stmts.append('n.{0} = record.{0}'.format(key))
         statement += 'MERGE (n:{0} {{ {1}: record.{1} }})'.format(node_type, id_field)
-        statement += ' ON CREATE ' + 'SET n.{} = datetime(), '.format(CREATED) + ' ,'.join(prop_stmts)
-        statement += ' ON MATCH ' + 'SET n.{} = datetime(), '.format(UPDATED) + ' ,'.join(prop_stmts)
+        if self.database_type == NEO4J:
+            statement += ' ON CREATE ' + 'SET n.{} = datetime(), '.format(CREATED) + ' ,'.join(prop_stmts)
+            statement += ' ON MATCH ' + 'SET n.{} = datetime(), '.format(UPDATED) + ' ,'.join(prop_stmts)
+        elif self.database_type == MEMGRAPH: #make sure the created and upadted datatime in memgraph is in string type
+            statement += ' ON CREATE ' + 'SET n.{} = toString(datetime()), '.format(CREATED) + ' ,'.join(prop_stmts)
+            statement += ' ON MATCH ' + 'SET n.{} = toString(datetime()), '.format(UPDATED) + ' ,'.join(prop_stmts)
+        else:
+            raise Exception('Unsupported database type: {}'.format(self.database_type))
         return statement
 
     # Delete a node and children with no other parents recursively
@@ -878,6 +884,7 @@ class DataLoader:
         if result.consume().counters.nodes_created != batch_length and result.consume().counters.nodes_deleted != batch_length:
             update_count = batch_length - result.consume().counters.nodes_created
         nodes_updated += update_count
+        self.nodes_updated += update_count
         self.nodes_stat[node_type] = self.nodes_stat.get(node_type, 0) + count
         self.nodes_stat_updated[node_type] = self.nodes_stat_updated.get(node_type, 0) + update_count
         return nodes_created, nodes_updated

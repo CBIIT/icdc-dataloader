@@ -4,7 +4,7 @@
 
 # Generic metadata about this project
 name: CRDC Data Loader
-prefect-version: 2.14.10
+prefect-version: null
 
 # build section allows you to manage and build docker images
 build: null
@@ -17,32 +17,21 @@ pull:
   - prefect.deployments.steps.git_clone:
       #id: clone-step
       repository: https://github.com/CBIIT/icdc-dataloader.git
-      branch: 3.2.0_delete_command
+      branch: 3.2.0
       include_submodules: True
-  - prefect.deployments.steps.git_clone:
-      repository: https://github.com/CBIIT/cds-model.git
-      branch: main
   - prefect.deployments.steps.git_clone:
       repository: https://github.com/CBIIT/icdc-model-tool.git
       branch: master
-  - prefect.deployments.steps.git_clone:
-      repository: https://github.com/CBIIT/bento-cds-backend.git
-      branch: 3.1.0_less_page
-      include_submodules: True
-  - prefect.deployments.steps.git_clone:
-      repository: https://github.com/CBIIT/bento-cds-frontend.git
-      branch: 4.6.0
-      include_submodules: True
   - prefect.deployments.steps.set_working_directory:
-      directory: "/opt/prefect/icdc-dataloader"
-  - prefect.projects.steps.pip_install_requirements:
+      directory: "/opt/prefect/icdc-dataloader-3.2.0"
+  - prefect.deployments.steps.pip_install_requirements:
       requirements_file: requirements.txt
       directory: "{{ clone-step.directory }}"
       stream_output: False
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
-  - name: data-hub-opensearch-loader
+  - name: gc-data-hub-opensearch-loader
     version: null
     tags: []
     description: null
@@ -50,22 +39,18 @@ deployments:
     flow_name: null
     entrypoint: es_loader_prefect.py:es_loader_prefect
     parameters:
-      environment: "dev"
-      about_file: "../bento-cds-frontend/src/content/prod/aboutPagesContent.yaml"
       indices_list: []
-      indices_file: "../bento-cds-backend/src/main/resources/yaml/es_indices_cds.yml"
-      model_files:
-        - ../cds-model/model-desc/cds-model.yml
-        - ../cds-model/model-desc/cds-model-props.yml
+      about_file: "src/content/prod/aboutPagesContent.yaml"
+      indices_file: "src/main/resources/yaml/es_indices_cds.yml"
       prop_file: config/props-cds.yml
     work_pool:
-      name: cds-curation-ecs
-      work_queue_name: cds-curation-queue
+      name: cds-general-mgconsole-prefect-3.4.18-python3.12
+      work_queue_name: default
       job_variables:
         env:
           PREFECT_LOGGING_EXTRA_LOGGERS: "ESLoader"
 
-  - name: data-hub-metadata-validation-dev
+  - name: gc-data-hub-metadata-loading-dev
     version: null
     tags: []
     description: null
@@ -73,24 +58,22 @@ deployments:
     flow_name: null
     entrypoint: loader_prefect:data_hub_loader
     parameters:
-      database_type: ""
-      organization_id: ""
-      submission_id: ""
-      cheat_mode: False
+      s3_folder: ""
+      s3_bucket: "{{ prefect.variables.gc_metadata_lowertier_bucket }}"
+      cheat_mode: True
       dry_run: False
       wipe_db: False
       mode: "upsert"
-      secret_name: "{{ prefect.variables.secret_name_dev }}"
-      schemas:
-        - ../cds-model/model-desc/cds-model.yml
-        - ../cds-model/model-desc/cds-model-props.yml
       prop_file: config/props-cds.yml
+      no_parents: True
+      plugins: []
+      split_transaction: True
     work_pool:
-      name: crdc-dh-dev-validation
+      name: cds-general-mgconsole-prefect-3.4.18-python3.12
       work_queue_name: default
       job_variables:
         env:
-          PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator,Props"
+          PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator,Props,LoaderPrefect"
 
   - name: data-hub-metadata-validation-qa
     version: null

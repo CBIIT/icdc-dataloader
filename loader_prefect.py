@@ -3,15 +3,78 @@ from typing import Literal
 from loader import main
 from config import PluginConfig
 from bento.common.secret_manager import get_secret
+import os
+import yaml
+import requests
+import subprocess
+import glob
+import prefect.variables as Variable
+from bento.common.utils import get_logger
 
-NEO4J_URI = "neo4j_uri"
+log = get_logger('LoaderPrefect')
+ENVIRONMENTS = "environments"
+DATABASE_TYPES = "database_type"
+MODEL_REPO_URL = "model_repo_url"
+NEO4J_USER = "neo4j_user"
+NEO4J_IP = "neo4j_ip"
 NEO4J_PASSWORD = "neo4j_password"
 SUBMISSION_BUCKET = "submission_bucket"
-database_choices = Literal["neo4j", "memgraph"]
+MODEL_DESC = "model-desc"
+MEMGRAPH_USER = "memgraph_user"
+MEMGRAPH_ENDPOINT = "memgraph_endpoint"
+MEMGRAPH_PASSWORD = "memgraph_password"
+
+config_file = "config/prefect_drop_down_config_dataloader.yaml"
+
+def get_github_branches(repo_url):
+    # Remove .git if present
+    if repo_url.endswith('.git'):
+        repo_url = repo_url[:-4]
+    # Extract owner and repo name
+    parts = repo_url.rstrip('/').split('/')
+    owner, repo = parts[-2], parts[-1]
+    branches = []
+    page = 1
+    while True:
+        api_url = f'https://api.github.com/repos/{owner}/{repo}/branches?per_page=100&page={page}'
+        try:
+            response = requests.get(api_url)
+            response.raise_for_status()
+            data = response.json()
+            if not data:
+                break
+            branches.extend([branch['name'] for branch in data])
+            if len(data) < 100:
+                break
+            page += 1
+        except Exception as e:
+            log.error(f"Error fetching branches from GitHub: {e}")
+            break
+    return branches
+
+def data_model_download(model_repo, model_version):
+    subprocess.run(['git', 'clone', model_repo])
+    model_folder = os.path.splitext(os.path.basename(model_repo))[0]
+    subprocess.run(['git', '-C', model_folder, 'checkout', model_version])
+    log.info(f"Finished cloning the data model repository from {model_repo} to {model_folder}")
+    model_yaml_files = glob.glob(f'{model_folder}/{MODEL_DESC}/*model*.yaml')
+    model_yml_files = glob.glob(f'{model_folder}/{MODEL_DESC}/*model*.yml')
+    schemas = model_yaml_files + model_yml_files
+    return schemas
+
+
+
+with open(config_file, 'r') as file:
+    config_drop_list = yaml.safe_load(file)
+env = config_drop_list[ENVIRONMENTS].keys()
+environment_choices = Literal[tuple(list(env))]
+model_repo_url = config_drop_list.get(MODEL_REPO_URL)
+branch_choices = Literal[tuple(get_github_branches(model_repo_url))]
+database_choices = Literal[tuple(list(config_drop_list.get(DATABASE_TYPES)))]
 
 @flow(name="CRDC Data Loader", log_prints=True)
 def load_data(
-        database_type: database_choices,
+        database_type,
         s3_bucket,
         s3_folder,
         upload_log_dir = None,
@@ -19,7 +82,7 @@ def load_data(
         temp_folder = "tmp",
         uri = "bolt://127.0.0.1:7687",
         user = "neo4j",
-        password = "your-password",
+        password = "password",
         schemas = ["../icdc-model-tool/model-desc/icdc-model.yml", "../icdc-model-tool/model-desc/icdc-model-props.yml"],
         prop_file = "config/props-icdc-pmvp.yml",
         backup_folder = None,
@@ -121,25 +184,31 @@ class Config:
 
 @flow(name="CRDC Data Hub Loader", log_prints=True)
 def data_hub_loader(
+        environment: environment_choices,
+        model_branch: branch_choices,
         database_type: database_choices,
-        organization_id,
-        submission_id,
+        s3_bucket,
+        s3_folder,
         cheat_mode,
         dry_run,
         wipe_db,
         mode,
-        secret_name,
-        schemas,
         prop_file,
         no_parents=True,
-        plugins=[]
+        plugins=[],
+        split_transaction=True
     ):
-
+    secret_name = Variable.get(config_drop_list[ENVIRONMENTS][environment])
     secret = get_secret(secret_name)
-    uri = secret[NEO4J_URI]
+    user = secret[NEO4J_USER]
+    uri = "bolt://" + secret[NEO4J_IP] + ":7687"
     password = secret[NEO4J_PASSWORD]
-    s3_bucket = secret[SUBMISSION_BUCKET]
-    s3_folder = f'{organization_id}/{submission_id}/metadata'
+    if database_type == "memgraph":
+        user = secret[MEMGRAPH_USER]
+        uri = "bolt://" + secret[MEMGRAPH_ENDPOINT] + ":7687"
+        password = secret[MEMGRAPH_PASSWORD]
+    
+    schemas = data_model_download(model_repo_url, model_branch)
 
     load_data(
         database_type = database_type,
@@ -147,6 +216,7 @@ def data_hub_loader(
         s3_folder = s3_folder,
         upload_log_dir = f's3://{s3_bucket}/{s3_folder}/logs', #
         uri = uri,
+        user = user,
         password = password,
         schemas = schemas,
         prop_file = prop_file,
@@ -156,7 +226,8 @@ def data_hub_loader(
         no_parents = no_parents,
         max_violation = 1000000,
         mode = mode,
-        plugins = plugins
+        plugins = plugins,
+        split_transaction = split_transaction
     )
 
 if __name__ == "__main__":
