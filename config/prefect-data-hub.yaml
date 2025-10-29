@@ -21,7 +21,7 @@ pull:
       include_submodules: True
   - prefect.deployments.steps.git_clone:
       repository: https://github.com/CBIIT/cds-model.git
-      branch: main
+      branch: 9.0.0
   - prefect.deployments.steps.git_clone:
       repository: https://github.com/CBIIT/icdc-model-tool.git
       branch: master

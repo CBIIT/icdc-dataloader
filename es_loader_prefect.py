@@ -45,7 +45,7 @@ def es_loader_prefect(
     config['about_file'] = about_file
     config['prop_file'] = prop_file
     config['indices_list'] = indices_list
-    neo4j_secret = Variable.get(config_drop_list[environment][MEMGRAPH_SECRET])
+    neo4j_secret = Variable.get(config_drop_list[ENVIRONMENTS][environment])
     secret = get_secret(neo4j_secret)
     config['memgraph_endpoint'] = "bolt://" + secret[MEMGRAPH_ENDPOINT] + ":7687"
     config['memgraph_user'] = secret[MEMGRAPH_USER]
