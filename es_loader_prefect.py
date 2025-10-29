@@ -12,12 +12,19 @@ MEMGRAPH_SECRET = "neo4j_secret"
 MEMGRAPH_ENDPOINT = "memgraph_endpoint" # Change to neo4j_ip if using Neo4j
 MEMGRAPH_USER = "memgraph_user" # Change to neo4j_user if using Neo4j
 MEMGRAPH_PASSWORD = "memgraph_password" # Change to neo4j_password if using Neo4j
+NEO4J_IP = "neo4j_ip"
+NEO4J_USER = "neo4j_user"
+NEO4J_PASSWORD = "neo4j_password"
 ES_HOST = "es_host"
+ENVIRONMENTS = "environments"
+DATABASE_TYPES = "database_type"
 
 config_file = "config/prefect_drop_down_config_esloader.yaml"
 with open(config_file, 'r') as file:
     config_drop_list = yaml.safe_load(file)
-environment_choices = Literal[tuple(list(config_drop_list.keys()))]
+env = config_drop_list[ENVIRONMENTS].keys()
+environment_choices = Literal[tuple(list(env))]
+database_choices = Literal[tuple(list(config_drop_list.get(DATABASE_TYPES)))]
 
 @flow(name="CRDC Data Hub ESloader", log_prints=True)
 def es_loader_prefect(
@@ -42,14 +49,25 @@ def es_loader_prefect(
     config['memgraph_endpoint'] = "bolt://" + secret[MEMGRAPH_ENDPOINT] + ":7687"
     config['memgraph_user'] = secret[MEMGRAPH_USER]
     config['memgraph_password'] = secret[MEMGRAPH_PASSWORD]
+    config['nneo4j_ip'] = secret[NEO4J_IP]
+    config['neo4j_user'] = secret[NEO4J_USER]
+    config['neo4j_password'] = secret[NEO4J_PASSWORD]
     config['es_host'] = secret[ES_HOST]
     print_config(logger, config)
-
-    neo4j_driver = GraphDatabase.driver(
+    if environment_choices == 'memgraph':
+        neo4j_driver = GraphDatabase.driver(
         config['memgraph_endpoint'],
         auth=(config['memgraph_user'],  config['memgraph_password']),
-        encrypted=False
-    )
+        encrypted=False)
+    elif environment_choices == 'neo4j':
+        neo4j_driver = GraphDatabase.driver(
+        config['neo4j_uri'],
+        auth=(config['neo4j_user'], config['neo4j_password']),
+        encrypted=False)
+    else:
+        logger.error(f"Unsupported database type: {environment_choices}")
+        return
+    
 
     # ...existing code...
 
