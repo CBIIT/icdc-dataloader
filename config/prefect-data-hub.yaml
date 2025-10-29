@@ -27,7 +27,7 @@ pull:
       branch: master
   - prefect.deployments.steps.git_clone:
       repository: https://github.com/CBIIT/bento-cds-backend.git
-      branch: 3.1.0_less_page
+      branch: 2.4.0_update
       include_submodules: True
   - prefect.deployments.steps.git_clone:
       repository: https://github.com/CBIIT/bento-cds-frontend.git
