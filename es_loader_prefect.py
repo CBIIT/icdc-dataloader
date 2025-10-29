@@ -29,6 +29,7 @@ database_choices = Literal[tuple(list(config_drop_list.get(DATABASE_TYPES)))]
 @flow(name="CRDC Data Hub ESloader", log_prints=True)
 def es_loader_prefect(
     environment: environment_choices, # type: ignore
+    database_type: database_choices, # type: ignore
     about_file,
     model_files,
     prop_file,
@@ -54,12 +55,12 @@ def es_loader_prefect(
     config['neo4j_password'] = secret[NEO4J_PASSWORD]
     config['es_host'] = secret[ES_HOST]
     print_config(logger, config)
-    if environment_choices == 'memgraph':
+    if database_type == 'memgraph':
         neo4j_driver = GraphDatabase.driver(
         config['memgraph_endpoint'],
         auth=(config['memgraph_user'],  config['memgraph_password']),
         encrypted=False)
-    elif environment_choices == 'neo4j':
+    elif database_type == 'neo4j':
         neo4j_driver = GraphDatabase.driver(
         config['neo4j_uri'],
         auth=(config['neo4j_user'], config['neo4j_password']),
