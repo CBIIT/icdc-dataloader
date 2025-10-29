@@ -20,21 +20,8 @@ pull:
       branch: 3.2.0_memgraph_loader
       include_submodules: True
   - prefect.deployments.steps.git_clone:
-      repository: https://github.com/CBIIT/cds-model.git
-      branch: 9.0.0
-  - prefect.deployments.steps.git_clone:
       repository: https://github.com/CBIIT/icdc-model-tool.git
       branch: master
-  - prefect.deployments.steps.git_clone:
-      repository: https://github.com/CBIIT/bento-cds-backend.git
-      branch: 2.4.0_update
-      include_submodules: True
-  - prefect.deployments.steps.git_clone:
-      repository: https://github.com/CBIIT/bento-cds-frontend.git
-      branch: 4.6.0
-      include_submodules: True
-  - prefect.deployments.steps.set_working_directory:
-      directory: "/opt/prefect/icdc-dataloader-3.2.0_memgraph_loader"
   - prefect.deployments.steps.pip_install_requirements:
       requirements_file: requirements.txt
       directory: "{{ clone-step.directory }}"
@@ -50,13 +37,9 @@ deployments:
     flow_name: null
     entrypoint: es_loader_prefect.py:es_loader_prefect
     parameters:
-      environment: "dev"
-      about_file: "../bento-cds-frontend/src/content/prod/aboutPagesContent.yaml"
       indices_list: []
-      indices_file: "../bento-cds-backend/src/main/resources/yaml/es_indices_cds.yml"
-      model_files:
-        - ../cds-model/model-desc/cds-model.yml
-        - ../cds-model/model-desc/cds-model-props.yml
+      about_file: "src/content/prod/aboutPagesContent.yaml"
+      indices_file: "src/main/resources/yaml/es_indices_cds.yml"
       prop_file: config/props-cds.yml
     work_pool:
       name: cds-general-mgconsole-prefect-3.4.18-python3.12
