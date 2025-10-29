@@ -50,7 +50,7 @@ def es_loader_prefect(
     config['memgraph_endpoint'] = "bolt://" + secret[MEMGRAPH_ENDPOINT] + ":7687"
     config['memgraph_user'] = secret[MEMGRAPH_USER]
     config['memgraph_password'] = secret[MEMGRAPH_PASSWORD]
-    config['nneo4j_ip'] = secret[NEO4J_IP]
+    config['neo4j_uri'] = secret[NEO4J_IP]
     config['neo4j_user'] = secret[NEO4J_USER]
     config['neo4j_password'] = secret[NEO4J_PASSWORD]
     config['es_host'] = secret[ES_HOST]
