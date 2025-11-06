@@ -3,6 +3,7 @@ database_type:
   - memgraph
 environments:
   dev: "ctdc_secret_name_dev"
+  dev2: "ctdc_secret_name_dev2"
 model_repo_url: "https://github.com/CBIIT/ctdc-model.git"
 backend_repo_url: "https://github.com/CBIIT/crdc-ctdc-backend.git"
 frontend_repo_url: "https://github.com/CBIIT/crdc-ctdc-ui.git"
