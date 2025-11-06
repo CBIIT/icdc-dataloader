@@ -1,0 +1,193 @@
+- page: '/submit'
+  title: "Data Submission"
+  primaryContentImage: https://raw.githubusercontent.com/CBIIT/datacommons-assets/ctdc_Assets/ctdc/images/aboutPages/About_CRDC.png
+  content:
+    - paragraph: "The Clinical and Translational Data Commons (CTDC) is designed to facilitate the integration and analysis of a wide array of clinical and translational research data. To support this initiative, the CTDC will accept a variety of data types, each crucial for the comprehensive understanding of clinical outcomes and the translational pathway from laboratory and clinical research to clinical applications."
+    - paragraph: "Those interested in submitting data to the CTDC must first fill out a data submission request through $$[the CRDC Submission Portal](https://hub.datacommons.cancer.gov/)$$. Requests will be reviewed to assess alignment with CTDC and CRDC’s mission and overall data requirements. Review times can be expected to be four to six weeks. For more information regarding submission requests and data submission, see $$[CRDC’s Submit Data page](https://datacommons.cancer.gov/submit)$$ or contact $$[NCICRDC@mail.nih.gov✉️](type: email NCICRDC@mail.nih.gov)$$."
+    - paragraph: "Below are the primary categories of data the CTDC currently accepts:"
+    - paragraph: "$$*De-identified Clinical Data:*$$"
+    - listWithDots:
+      - "Patient demographics"
+      - "Clinical outcomes"
+      - "Treatment regimens"
+      - "Follow-up data (disease progression, etc.)"
+      - "Pathology reports"
+    - paragraph: "$$*Molecular Sequencing Data:*$$"
+    - listWithDots:
+      - "Whole genome sequencing data"
+      - "Exome sequencing data"
+      - "Transcriptome data (e.g., RNA-Seq)"
+      - "Epigenetic data (e.g., methylation profiles)"
+      - "Variant and gene expression data"
+    - paragraph: "$$*Biomarker Data:*$$"
+    - listWithDots:
+      - "Proteomics"
+      - "Metabolomics"
+      - "Immunohistochemistry"
+      - "Other omics data relevant to biomarker discovery"
+    - paragraph: "$$*Pharmacological Data*$$"
+    - listWithDots:
+      - "Drug dosing and administration records"
+      - "Pharmacokinetics and pharmacodynamics data"
+      - "Adverse event profiles"
+    - paragraph: "$$*Patient-Reported Outcomes*$$"
+    - listWithDots:
+      - "Quality of life assessments"
+      - "Symptom diaries"
+      - "Functional status evaluations"
+    - paragraph: "$$*Data from Non-interventional Studies*$$"
+    - listWithDots:
+      - "Observational cohort data"
+      - "Retrospective study data"
+      - "Real-world evidence"
+    - paragraph: "$$*Imaging Data*$$"
+    - listWithDots:
+      - "CTDC accepts a variety of imaging data files and accompanying metadata. Image files are not viewable directly on CTDC but can be migrate to NCI’s cloud resources for analysis. Alternatively, data submitters can provide links to corresponding imaging files already deposited within The Cancer Imaging Archive (TCIA) and the Imaging Data Commons (IDC) to be included with their submitted data set in the CTDC."
+    - paragraph: "The CTDC will accept image files from the following sources:"
+    - listWithDots:
+      - "Radiological images (e.g., MRI, CT scans, X-rays)"
+      - "Pathological images (e.g., histology slides)"
+      - "Derived quantitative features (e.g., radiomics)"
+    - paragraph: "Please contact us regarding sources not listed here."
+    - paragraph: "$$*State of Data:*$$ All data submitted to the CTDC should be cleaned, ready to share for secondary use, curated, and annotated with sufficient metadata to ensure high quality and usability for further analysis. Please ensure that data is free of errors and discrepancies and is in allowable standardized formats. To protect patient privacy, all data must be de-identified by the submitter prior to submission to the CTDC. All submissions will be processed by the CRDC Data Hub to ensure compliance with CRDC standards."
+    - paragraph: "$$*Data Formats:*$$ The CTDC will accept data primarily in standardized, interoperable formats to ensure ease of integration and analysis. Accepted structured data formats include, but are not limited to:"
+    - listWithDots :
+      - "$$*Clinical*$$: CSV, JSON, or XML"
+      - "$$*Genomic*$$: VCF for genetic mutation data, BAM for aligned DNA sequencing reads, and FASTQ for raw sequence data"
+      - "$$*Statistical and Bioinformatics:*$$ CSV or TSV"
+      - "$$*Metadata and Documentation:*$$ XML, JSON, YAML"
+      - "$$*Reports:*$$ PDF"
+      - "$$*Images:*$$ DICOM, JPEG, TIFF, PNG, SVS, NDPI, MRXS"
+    - paragraph: "We will also link to corresponding imaging files already deposited within The Cancer Imaging Archive (TCIA) and the Imaging Data Commons (IDC) as described above."
+    - paragraph: "$$*Data Model:*$$ The CTDC is committed to evolving and enhancing its data model to meet the dynamic needs of clinical and translational research. The CTDC collaborates with NCI's Semantic Infrastructure Team. This collaboration assists with data mapping to common data elements (CDEs) within NCI's Cancer Data Standards Registry and Repository (caDSR). The team also supports the development of new CDEs as needed. We may work collaboratively with data submitters to update our data model to accommodate new types of data or to refine existing data structures, ensuring the CTDC remains at the forefront of research innovation."
+
+- page: '/additional-information'
+  title: "Additional Information"
+  primaryContentImage: https://raw.githubusercontent.com/CBIIT/datacommons-assets/ctdc_Assets/ctdc/images/aboutPages/About_Developers.png
+  content:
+    - paragraph: "Users can query the CTDC data via its Graphical User Interface (GUI) or Application Programming Interface (API). The $$[ CTDC GitHub repository](https://github.com/CBIIT/crdc-ctdc-ui)$$ is also available for those interested in accessing our codebase and documentation."
+    - paragraph: "$$#CTDC GUI#$$"
+    - paragraph: "The GUI provides users a distilled set of parameters (faceted querying) you can use to explore a subset of the CTDC data model. "
+    - paragraph: "$$#CTDC API#$$"
+    - paragraph: "CTDC is based on a Graph database, featuring a GraphQL API (Java) and a React front-end (JavaScript). Each tier in the application stack is designed to be modular and adaptable for a variety of use-cases and scenarios. A $$[GraphQL API](type:internal url:/#/graphql target:_blank)$$ enables querying of the entire data model. The API is provided “as is”: there are no warranties or conditions arising out of usage of these services."
+    - paragraph: "$$#GITHUB#$$"
+    - paragraph: "The CTDC GitHub repository is available for research, usage, forking, and pull requests. The codebase is intended for sharing and building frameworks for related initiatives and projects. The CTDC GitHub repository has documentation about how to access the system, including endpoints and recommendations for tools and example queries. The CTDC team maintains and updates the project and documentation in accordance with major and minor releases."
+- page: '/purpose'
+  title: "Purpose"
+  primaryContentImage: https://raw.githubusercontent.com/CBIIT/datacommons-assets/ctdc_Assets/ctdc/images/aboutPages/About_Purpose.png
+  content:
+     - paragraph: "The CTDC is part of the $$[Cancer Research Data Commons](https://datacommons.cancer.gov/)$$ (CRDC), an initiative from NCI’s Center for Biomedical Informatics and Information Technology (CBIIT). The goals of the CTDC are to advance cancer research and accelerate the development of innovative therapies by improving access to data from NCI-sponsored clinical studies, including genomic panel assay and clinical data. The CTDC does this through:  "
+     - paragraph: "$$%space%$$"
+     - paragraph: "$$*Graphical User Interface (GUI)*$$ - The CTDC’s GUI includes an Explore dashboard with search filters to help users visualize, explore, and navigate complex metadata without the need for coding or specialized technical skills." 
+     - paragraph: "$$%space%$$"
+     - paragraph: "$$*Data consolidation*$$ - The CTDC consolidates data from clinical studies funded by the NCI. This allows researchers to analyze data collectively, leading to deeper insights and a better understanding of cancer’s complexities. "
+     - paragraph: "$$%space%$$"
+     - paragraph: "$$*Data harmonization*$$ - Data harmonization ensures that data across studies within the CTDC are standardized and organized in a consistent manner to improve data compatibility, integration, and meta-analysis. "
+     - paragraph: "$$%space%$$"
+     - paragraph: "$$*Integration with NCI Cloud Resources*$$ - Users can easily transfer selected CTDC data to the $$[Velsera Seven Bridges Cancer Genomics Cloud](https://datacommons.cancer.gov/analytical-resource/seven-bridges-cancer-genomics-cloud)$$ (SB-CGC), a cloud-based platform for cancer research funded by the NCI. Here, researchers can integrate multi-omic data across sources and leverage access to a multitude of tools and workflows for computation and analysis."
+     - paragraph: "$$%space%$$"
+     - paragraph: "$$*Fueling collaborative research*$$ - By centralizing data and making them available through NCI’s Cloud Resources, the CTDC promotes secure collaboration among distributed research groups, fostering interdisciplinary partnerships. "
+     - paragraph: "$$%space%$$"
+     - paragraph: "$$*Democratizing Data access*$$ - Data access in the CTDC may be open (no registration required) or controlled (registration required). The CTDC aims to make each dataset as open as possible while protecting participant privacy and adhering to regulations, agreements, and other considerations specific to each study. "
+     - paragraph: "$$%space%$$"
+     - paragraph: "$$*Alignment to F.A.I.R data principles*$$ - The CTDC adheres to Findable, Accessible, Interoperable, and Reusable ($$[FAIR](https://www.go-fair.org/fair-principles/)$$) principles for scientific data management and stewardship. CTDC seeks to provide clearly organized data and guidance enabling end users to search for, find, and access data of interest. The emphasis on harmonization described above promotes the interoperability of data within and across the CRDC ecosystem and beyond and promotes reusability of data beyond the primary publication."
+- page: '/support'
+  title: "Support"
+  primaryContentImage: https://raw.githubusercontent.com/CBIIT/datacommons-assets/ctdc_Assets/ctdc/images/aboutPages/About_Support.png
+  content:
+    - paragraph: "If you have any questions, please contact us at $$[NCICRDC@mail.nih.gov✉️](type: email NCICRDC@mail.nih.gov)$$."
+- page: '/cloud-computing'
+  title: "Cloud computing"
+  primaryContentImage: https://raw.githubusercontent.com/CBIIT/datacommons-assets/ctdc_Assets/ctdc/images/aboutPages/About_CRDC.png
+  content:
+    - paragraph: "$$~CTDC and NCI’s Cloud Resources~$$ "
+    - paragraph: "The CTDC supports analysis via the $$[Seven Bridges Cancer Genomics Cloud](https://datacommons.cancer.gov/analytical-resource/seven-bridges-cancer-genomics-cloud-developed-velsera#)$$(SB-CGC). SB-CGC supports data access through a web-based user interface, programmatic access to analytic tools and workflows, and collaborative data analysis and sharing pipelines. Users can transfer data of interest from the CTDC directly to SB-CGC, eliminating the need to download and store extremely large datasets. Through the SB-CGC, researchers can bring analysis tools to the data in the cloud, instead of the traditional process of bringing the data to tools on local hardware. Analyzing data through the cloud offers many benefits, including: "
+    - listWithDots :
+      - "State-of-the-art analysis using high-performance computing"
+      - "Remote access and flexibility for nationally or globally distributed teams"
+      - "On-demand computational capacity to scale resources as needed "
+    - paragraph: "Data brought to the SB-CGC can be analyzed using more than 200 preinstalled, curated bioinformatics tools and workflows. Researchers can also extend the functionality of the platform by adding their own data and tools via an intuitive software development kit. "
+    - paragraph: "$300 in credits are available to new users who want to test out the platform.  "
+    - paragraph: "For more information on getting started with SB-CGC including onboarding videos and more, visit: $$[https://www.cancergenomicscloud.org/getting-started](https://www.cancergenomicscloud.org/getting-started )$$."
+- page: '/data-use'
+  title: "Data Terms of Use"
+  primaryContentImage: https://raw.githubusercontent.com/CBIIT/datacommons-assets/ctdc_Assets/ctdc/images/aboutPages/About_CRDC.png
+  content:
+    - paragraph: "$$~Data Access~$$"
+    - paragraph: "     "
+    - paragraph: "The CTDC hosts data with varying access requirements, allowing researchers to work with a wide range of data across studies while also protecting participant privacy. Data deposited within the CTDC is available through three different access tiers including open-access, registered-access, and controlled-access tiers (visit our $$[Request Access](type:internal url:/#/request-access target:_blank )$$ page for more details). Users and their associated institutions are responsible for understanding specific terms of use for each study and adhering to study-specific Data Use Agreement(s) (DUAs), Institutional Review Board policies, and other relevant guidelines. DUAs may be required to access controlled-access tier data for certain trials or studies. If a DUA is required, the authorizing entity will provide it as part of the data request process."
+    - paragraph: "     "
+    - paragraph: "$$#Re-IdentifIcation#$$"
+    - paragraph: "     "
+    - paragraph: "Data available within the CTDC includes de-identified clinical study data. Users of any data provided by CTDC, whether open, registered, or controlled access, agree not to attempt to reidentify any individual participant in any study represented within the CTDC, for any purpose. Additionally, care must be taken to protect patient data from accidently being made identifiable through reverse-engineering of algorithms or other potential accidental disclosures. This includes, but is not limited to, the use of analytical techniques of reidentification on genomic or clinical data."
+    - paragraph: "     "
+    - paragraph: "$$#Citing CTDC In Publications#$$"
+    - paragraph: "     "
+    - paragraph: "CTDC recommends that users follow standard scientific etiquette and practices when working with CTDC-managed data or publishing results generated using data accessed via the CTDC.  "
+    - paragraph: "     "
+    - paragraph: "Please acknowledge in all oral or written presentations, disclosures, or publications: "
+    - paragraph: "$$>1>$$. Clinical and Translational Data Commons, including URL ($$[clinical.datacommons.cancer.gov](type:internal url:/#/ target:_blank )$$)"
+    - paragraph: "$$>2>$$. Study dataset(s) accessed (e.g. Cancer Moonshot Biobank)"
+    - paragraph: "$$>3>$$. Study ID (e.g. NCTXXXXX) and/or accession number(s) (PHSXXXX) "
+    - paragraph: "$$>4>$$. Digital Object Identifier (DOI) "
+    - paragraph: "     "
+    - paragraph: "The CTDC requests that researchers who use CTDC data acknowledge it as follows: "
+    - paragraph: "     "
+    - paragraph: "$$!\"The results published here are, in whole or in part, derived from the analysis of data found within the Clinical and Translational Data Commons (CTDC), part of the National Cancer Institute's Cancer Research Data Commons (CRDC). This includes data generated as part of the [Study Name] NCT XXXXXX study, https://doi.org/xxx. This data can be found within NCI’s Clinical and Translational Data Commons, found at clinical.datacommons.cancer.gov.\"!$$"
+    - paragraph: "     "
+    - paragraph: "If you have utilized data within the CTDC in your research, please contact $$[NCICRDC@mail.nih.gov](NCICRDC@mail.nih.gov)$$ so we can include your work on our website."
+    - paragraph: "     "
+    - paragraph: "$$#Intellectual Property#$$"
+    - paragraph: "     "
+    - paragraph: "CTDC discourages users from making intellectual property (IP) claims derived directly from the available dataset(s). CTDC-provided data, and conclusions derived thereof, shall remain freely available, without license requirements. However, the CTDC also recognizes the importance of the subsequent development of IP on downstream discoveries, especially in therapeutics, which will be necessary to support full investment in products that the public needs. "
+    - paragraph: "     "
+    - paragraph: "$$#Questions#$$"
+    - paragraph: "Please contact $$[NCICRDC@mail.nih.gov](NCICRDC@mail.nih.gov)$$ with any questions or concerns related to data."
+- page: '/data-harmonization'
+  title: "Data Harmonization"
+  primaryContentImage: https://raw.githubusercontent.com/CBIIT/datacommons-assets/ctdc_Assets/ctdc/images/aboutPages/About_CRDC.png
+  content:
+    - paragraph: "CTDC data elements have been aligned with NCI’s $$[ Data Standards Services ](https://datascience.cancer.gov/data-commons/data-standards-services)$$(DSS) common data elements (CDEs), which were curated through the CRDC in the $$[ Cancer Data Standards Registry and Repository](https://cadsr.cancer.gov/onedata/Home.jsp)$$(caDSR)."
+    - paragraph: "caDSR II contains a list of the current CRDC Standard Data Elements $$[here](https://cadsr.cancer.gov/onedata/dmdirect/NIH/NCI/CO/CDEDD?filter=Administered%20Item%20%28Data%20Element%20CO%29.CDEDD%20Classification.P_ITEM_ID_VER=10466051v1)$$."
+- page: "/data-model"
+  primaryContentImage: https://raw.githubusercontent.com/CBIIT/datacommons-assets/ctdc_Assets/ctdc/images/aboutPages/About_Model.png
+  title: "Data Model"
+  content:
+    - paragraph: "The CTDC data model is a representation of how data in the CTDC are arranged relative to each other. The data model is flexibly designed to accommodate an ever-expanding CTDC database."
+    - paragraph: "The SVG graphic below represents the current CTDC data model consisting of data nodes, node properties, and relationships (edges). It provides a comprehensive mapping of the system data, part of which may be viewed in the application and user interface. Additional nodes and properties beyond those presented on the front-end are available for inspection and querying via API at $$[https://clinical.datacommons.cancer.gov/#/graphql.](type:internal url:/#/graphql target:_blank )$$ "
+    - paragraph: "Information about the graphic data model, including the model description files, can be found on GitHub at $$[https://github.com/CBIIT/ctdc-model](https://github.com/CBIIT/ctdc-model)$$."
+  secondaryZoomImageTitle: "The CTDC Data Model"
+  secondaryZoomImage: 'https://raw.githubusercontent.com/CBIIT/ctdc-model/ctdc-model/model-desc/ctdc-model.svg'
+- page: "/request-access"
+  title: "Request Access"
+  content:
+    - paragraph: "PUBLIC ACCESS DATA"
+    - paragraph: "Public tier datasets contain de-identified aggregated data available to the public without the need for account registration or data access approval."
+    - paragraph: "CONTROLLED ACCESS DATA"
+    - paragraph: "Controlled data within the CTDC include genomic and other potentially sensitive Personal Identifiable Information (PII). To protect the privacy of individuals who have contributed data to clinical studies, researchers who want to access controlled data must register for an  account and apply for data access authorization through the $$[NIH database of Genotypes and Phenotypes](https://dbgap.ncbi.nlm.nih.gov/aa/wga.cgi?page=login)$$ (dbGaP). See instructions below for how to access controlled data.."
+    - paragraph: "ACCESSING CONTROLLED DATA IN THE CTDC"
+    - paragraph: "Obtain an NIH eRA Commons account"
+    - paragraph: "$$[eRA Commons Frequently Asked Questions (FAQs)](https://www.era.nih.gov/faqs.htm)$$"
+    - paragraph: "$$[eRA Help and Tutorials](https://www.era.nih.gov/help-tutorials)$$"
+    - paragraph: "$$[NIH / eRA Helpdesk/Ticketing System](https://www.era.nih.gov/need-help)$$"
+    - paragraph: "Obtain dbGaP access"
+    - paragraph: "$$[VIDEO - dbGaP: Apply for Controlled Access Data](https://www.youtube.com/watch?v=m0xp_cCO7kA)$$"
+    - paragraph: "$$[dbGaP Frequently Asked Questions (FAQs)](https://www.ncbi.nlm.nih.gov/books/NBK5295/)$$"
+    - paragraph: "$$[dbGaP Helpdesk](https://dbgap.ncbi.nlm.nih.gov/aa/wga.cgi?page=email&filter=from&from=login)$$"
+    - paragraph: "Request access to controlled data of choice through dbGaP"
+    - paragraph: "Log in to your dbGaP account using your eRA Commons username and password."
+    - paragraph: "Navigate to the “My Projects” page."
+    - paragraph: "Create a new research project or revise project to request access to new data."
+    - paragraph: "Enter the appropriate ID for your project of interest."
+    - paragraph: "E.g. “phs002192” for Cancer Moonshot Biobank dataset."
+    - paragraph: "Submit request."
+    - paragraph: "You will receive notification of approval via email."
+    - paragraph: "Access approved datasets within the CTDC"
+    - paragraph: "After receiving dbGaP approval for a desired dataset, you can access and download the dataset through your CTDC account or create a manifest to analyze data within the Seven Bridges’ Cancer Genomics Cloud (SB-CGC)."
+- page: "/graphql"
+  title: "graphql"
+  content:
+    - paragraph: "GraphQL is a powerful query language for APIs. It provides a more efficient, powerful, and flexible alternative to the traditional REST API. Unlike traditional REST APIs, which typically require multiple endpoints to retrieve various pieces of data, GraphQL allows clients (the systems making the queries) to fetch exactly what they need in a single request. The Clinical and Translational Data Commons (CTDC) leverages this technology by offering a GraphQL API interface, which enables users to interact with CTDC data directly from their own systems, such as through Jupyter notebooks."
+    - paragraph: "To begin querying the CTDC data via GraphQL, access our API endpoint at $$[https://clinical.datacommons.cancer.gov/#/](https://clinical.datacommons.cancer.gov/#/)$$"
+    - paragraph: "If you are new to GraphQL and want to learn more about query language, comprehensive tutorials and example queries are available at $$[https://graphql.org](https://graphql.org)$$ web site icon. These resources provide an excellent starting point for understanding and utilizing GraphQL effectively."
+   

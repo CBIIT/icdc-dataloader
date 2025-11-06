@@ -17,13 +17,13 @@ pull:
   - prefect.deployments.steps.git_clone:
       #id: clone-step
       repository: https://github.com/CBIIT/icdc-dataloader.git
-      branch: 3.2.0
+      branch: 3.2.0_ctdc
       include_submodules: True
   - prefect.deployments.steps.git_clone:
       repository: https://github.com/CBIIT/icdc-model-tool.git
       branch: master
   - prefect.deployments.steps.set_working_directory:
-      directory: "/opt/prefect/icdc-dataloader-3.2.0"
+      directory: "/opt/prefect/icdc-dataloader-3.2.0_ctdc"
   - prefect.deployments.steps.pip_install_requirements:
       requirements_file: requirements.txt
       directory: "{{ clone-step.directory }}"
