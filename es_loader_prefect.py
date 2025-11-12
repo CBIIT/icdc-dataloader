@@ -77,20 +77,20 @@ def es_loader_prefect(
     config['indices_list'] = indices_list
     neo4j_secret = Variable.get(config_drop_list[ENVIRONMENTS][environment])
     secret = get_secret(neo4j_secret)
-    config['memgraph_endpoint'] = "bolt://" + secret[MEMGRAPH_ENDPOINT] + ":7687"
-    config['memgraph_user'] = secret[MEMGRAPH_USER]
-    config['memgraph_password'] = secret[MEMGRAPH_PASSWORD]
-    config['neo4j_uri'] = "bolt://" + secret[NEO4J_IP] + ":7687"
-    config['neo4j_user'] = secret[NEO4J_USER]
-    config['neo4j_password'] = secret[NEO4J_PASSWORD]
     config['es_host'] = secret[ES_HOST]
     print_config(logger, config)
     if database_type == 'memgraph':
+        config['memgraph_endpoint'] = "bolt://" + secret[MEMGRAPH_ENDPOINT] + ":7687"
+        config['memgraph_user'] = secret[MEMGRAPH_USER]
+        config['memgraph_password'] = secret[MEMGRAPH_PASSWORD]
         neo4j_driver = GraphDatabase.driver(
         config['memgraph_endpoint'],
         auth=(config['memgraph_user'],  config['memgraph_password']),
         encrypted=False)
     elif database_type == 'neo4j':
+        config['neo4j_uri'] = "bolt://" + secret[NEO4J_IP] + ":7687"
+        config['neo4j_user'] = secret[NEO4J_USER]
+        config['neo4j_password'] = secret[NEO4J_PASSWORD]
         neo4j_driver = GraphDatabase.driver(
         config['neo4j_uri'],
         auth=(config['neo4j_user'], config['neo4j_password']),
