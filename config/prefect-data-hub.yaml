@@ -23,7 +23,7 @@ pull:
       repository: https://github.com/CBIIT/icdc-model-tool.git
       branch: master
   - prefect.deployments.steps.set_working_directory:
-      directory: "~/icdc-dataloader"
+      directory: "icdc-dataloader"
   - prefect.deployments.steps.pip_install_requirements:
       requirements_file: requirements.txt
       directory: "{{ clone-step.directory }}"
