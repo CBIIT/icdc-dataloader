@@ -3,7 +3,7 @@
 # control along with your flow code.
 
 # Generic metadata about this project
-name: CRDC Data Loader
+name: C3DC Data Loader
 prefect-version: null
 
 # build section allows you to manage and build docker images
@@ -17,7 +17,7 @@ pull:
   - prefect.deployments.steps.git_clone:
       #id: clone-step
       repository: https://github.com/CBIIT/icdc-dataloader.git
-      branch: 3.2.0
+      branch: 3.2.0_c3dc
       include_submodules: True
   - prefect.deployments.steps.git_clone:
       repository: https://github.com/CBIIT/icdc-model-tool.git
@@ -31,7 +31,7 @@ pull:
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
-  - name: gc-data-hub-opensearch-loader
+  - name: c3dc-opensearch-loader
     version: null
     tags: []
     description: null
@@ -40,139 +40,12 @@ deployments:
     entrypoint: es_loader_prefect.py:es_loader_prefect
     parameters:
       indices_list: []
-      about_file: "src/content/prod/aboutPagesContent.yaml"
-      indices_file: "src/main/resources/yaml/es_indices_cds.yml"
-      prop_file: config/props-cds.yml
+      about_file: "config/searchablePagesContent.yaml"
+      indices_file: "config/es_indices_c3dc.yml"
+      prop_file: config/props-c3dc.yml
     work_pool:
-      name: cds-general-mgconsole-prefect-3.4.18-python3.12
+      name: ccdi-c3dc-16gb-prefect-3.2.14-python3.9
       work_queue_name: default
       job_variables:
         env:
           PREFECT_LOGGING_EXTRA_LOGGERS: "ESLoader"
-
-  - name: gc-data-hub-metadata-loading-dev
-    version: null
-    tags: []
-    description: null
-    schedule: {}
-    flow_name: null
-    entrypoint: loader_prefect:data_hub_loader
-    parameters:
-      s3_folder: ""
-      s3_bucket: "{{ prefect.variables.gc_metadata_lowertier_bucket }}"
-      cheat_mode: True
-      dry_run: False
-      wipe_db: False
-      mode: "upsert"
-      prop_file: config/props-cds.yml
-      no_parents: True
-      plugins: []
-      split_transaction: True
-    work_pool:
-      name: cds-general-mgconsole-prefect-3.4.18-python3.12
-      work_queue_name: default
-      job_variables:
-        env:
-          PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator,Props,LoaderPrefect"
-
-  - name: data-hub-metadata-validation-qa
-    version: null
-    tags: []
-    description: null
-    schedule: {}
-    flow_name: null
-    entrypoint: loader_prefect:data_hub_loader
-    parameters:
-      database_type: ""
-      organization_id: ""
-      submission_id: ""
-      cheat_mode: False
-      dry_run: False
-      wipe_db: False
-      mode: "upsert"
-      secret_name: "{{ prefect.variables.secret_name_qa }}"
-      schemas:
-        - ../cds-model/model-desc/cds-model.yml
-        - ../cds-model/model-desc/cds-model-props.yml
-      prop_file: config/props-cds.yml
-    work_pool:
-      name: crdc-dh-qa-validation
-      work_queue_name: default
-      job_variables:
-        env:
-          PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator,Props"
-
-  - name: data-hub-file-validation-dev
-    version: null
-    tags: []
-    description: null
-    schedule: {}
-    flow_name: null
-    entrypoint:  stream_file_validator_prefect.py:data_hub_file_validator
-    parameters:
-      organization_id: ""
-      submission_id: ""
-      manifest_name: ""
-      file_name_column: file_name
-      file_size_column: file_size
-      file_md5_column: md5sum
-      secret_name: "{{ prefect.variables.secret_name_dev }}"
-      # If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided
-    work_pool:
-      name: crdc-dh-dev-validation
-      work_queue_name: default
-      job_variables:
-        env:
-          PREFECT_LOGGING_EXTRA_LOGGERS: "Stream File Validator, S3 Bucket,Bento Config"
-
-  - name: data-hub-file-validation-qa
-    version: null
-    tags: []
-    description: null
-    schedule: {}
-    flow_name: null
-    entrypoint:  stream_file_validator_prefect.py:data_hub_file_validator
-    parameters:
-      organization_id: ""
-      submission_id: ""
-      manifest_name: ""
-      file_name_column: file_name
-      file_size_column: file_size
-      file_md5_column: md5sum
-      secret_name: "{{ prefect.variables.secret_name_qa }}"
-      # If file urls are not available in the manifest, then bucket name and prefix (folder name) need to be provided
-    work_pool:
-      name: crdc-dh-qa-validation
-      work_queue_name: default
-      job_variables:
-        env:
-          PREFECT_LOGGING_EXTRA_LOGGERS: "Stream File Validator, S3 Bucket,Bento Config"
-  
-
-  #- name: data-hub-dev-icdc
-  #  version: null
-  #  tags: []
-  #  description: null
-  #  schedule: {}
-  #  flow_name: null
-  #  entrypoint: loader_prefect:data_hub_loader
-  #  parameters:
-  #    s3_folder: ""
-  #    cheat_mode: False
-  #    dry_run: False
-  #    wipe_db: False
-  #    mode: "upsert"
-  #    secret_name: "{{ prefect.variables.secret_name_dev }}"
-  #    schemas:
-  #      - ../icdc-model-tool/model-desc/icdc-model.yml
-  #      - ../icdc-model-tool/model-desc/icdc-model-props.yml
-  #    prop_file: config/props-icdc-pmvp.yml
-  #    no_parents: False
-  #
-  #  work_pool:
-  #    name: crdc-dh-validation
-  #    work_queue_name: default
-  #    job_variables:
-  #      env:
-  #        PREFECT_LOGGING_EXTRA_LOGGERS: "Data Loader,Loader,ICDC Schema,S3 Bucket,Bento Config,Copier,ESLoader,FileLoader,File Loader,Model Converter,Props,UUID_util,Bento_adapter,SQS,Visibility Extender,VisitCreator,VisitCreator,Props"
-  #
