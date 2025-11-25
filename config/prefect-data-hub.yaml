@@ -15,13 +15,13 @@ push: null
 # pull section allows you to provide instructions for cloning this project in remote locations
 pull:
   - prefect.deployments.steps.git_clone:
+      repository: https://github.com/CBIIT/icdc-model-tool.git
+      branch: master
+  - prefect.deployments.steps.git_clone:
       #id: clone-step
       repository: https://github.com/CBIIT/icdc-dataloader.git
       branch: 3.2.0_c3dc
       include_submodules: True
-  - prefect.deployments.steps.git_clone:
-      repository: https://github.com/CBIIT/icdc-model-tool.git
-      branch: master
   # - prefect.deployments.steps.set_working_directory:
   #     directory: "./icdc-dataloader"
   - prefect.deployments.steps.pip_install_requirements:
