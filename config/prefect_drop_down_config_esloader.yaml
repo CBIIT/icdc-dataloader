@@ -1,8 +1,7 @@
 database_type:
   - neo4j
   - memgraph
-environments:
-  dev: "neo4j-dev-creds"
+environments: "neo4j-dev-creds"
 model_repo_url: "https://github.com/CBIIT/C3DC-model.git"
 backend_repo_url: "https://github.com/CBIIT/CCDI-C3DC-Dataloader.git"
 frontend_repo_url: "https://github.com/CBIIT/CCDI-C3DC-Dataloader.git"
