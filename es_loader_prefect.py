@@ -59,7 +59,6 @@ def es_loader_prefect(
     prop_file,
 ):
     logger = get_logger('ESLoader')
-    logger.info(f"Current directory: {os.getcwd()}")
     model_repo = repo_download(model_repo_url, model_branch, logger)
     model_yaml_files = glob.glob(f'{model_repo}/{MODEL_DESC}/*model*.yaml')
     model_yml_files = glob.glob(f'{model_repo}/{MODEL_DESC}/*model*.yml')
