@@ -42,7 +42,7 @@ deployments:
       indices_list: []
       about_file: "config/searchablePagesContent.yaml"
       indices_file: "config/es_indices_c3dc.yml"
-      prop_file: config/props-c3dc.yml
+      prop_file: "config/props-c3dc.yml"
     work_pool:
       name: ccdi-c3dc-16gb-prefect-3.2.14-python3.9
       work_queue_name: default

@@ -2,7 +2,7 @@ database_type:
   - neo4j
   - memgraph
 environments:
-  dev: "ccdi-dev-c3dc-credentials"
+  dev: "c3dc_dataloader_dev_secret_name"
   dev2: "not-real"
   dev_cdk: "also-not-real"
 model_repo_url: "https://github.com/CBIIT/C3DC-model.git"
