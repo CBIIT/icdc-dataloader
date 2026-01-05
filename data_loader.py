@@ -527,7 +527,7 @@ class DataLoader:
 
     # Validate all parents exist in a data (TSV/TXT) file
     def validate_parents_exist_in_file(self, file_name, max_violations):
-        if not self.driver or not isinstance(self.driver, Driver):
+        if not self.driver or not callable(getattr(self.driver, 'session', None)):
             self.log.error('Invalid Neo4j Python Driver!')
             return False
         with self.driver.session() as session:
