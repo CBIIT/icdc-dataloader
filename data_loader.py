@@ -38,7 +38,7 @@ RELATIONSHIPS = 'relationships'
 INT_NODE_CREATED = 'int_node_created'
 PROVIDED_PARENTS = 'provided_parents'
 RELATIONSHIP_PROPS = 'relationship_properties'
-BATCH_SIZE = 10000
+BATCH_SIZE = 2000
 OTHER = '__other__'
 
 maxInt = sys.maxsize
