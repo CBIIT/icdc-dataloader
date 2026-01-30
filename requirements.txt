@@ -10,3 +10,4 @@ pandas
 xlsxwriter
 prefect
 pytest
+pytest-cov
