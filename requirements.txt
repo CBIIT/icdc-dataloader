@@ -9,3 +9,5 @@ requests_aws4auth
 pandas
 xlsxwriter
 prefect
+pytest
+pytest-cov
