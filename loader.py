@@ -220,62 +220,68 @@ def main(args):
     mg_connection = None
     restore_cmd = ''
     load_result = None
+    subfolders = [
+        os.path.join(config.dataset, name)
+        for name in os.listdir(config.dataset)
+        if os.path.isdir(os.path.join(config.dataset, name))
+        ]
     try:
-        txt_files = glob.glob('{}/*.txt'.format(config.dataset))
-        tsv_files = glob.glob('{}/*.tsv'.format(config.dataset))
-        file_list = txt_files + tsv_files
-        if file_list:
-            if config.wipe_db and not config.yes:
-                if not confirm_deletion('Wipe out entire Neo4j database before loading?'):
-                    sys.exit(1)
+        for folder in subfolders:
+            txt_files = glob.glob('{}/*.txt'.format(folder))
+            tsv_files = glob.glob('{}/*.tsv'.format(folder))
+            file_list = txt_files + tsv_files
+            if file_list:
+                if config.wipe_db and not config.yes:
+                    if not confirm_deletion('Wipe out entire Neo4j database before loading?'):
+                        sys.exit(1)
 
-            if config.loading_mode == DELETE_MODE and not config.yes:
-                if not confirm_deletion('Delete all nodes and child nodes from data file?'):
-                    sys.exit(1)
+                if config.loading_mode == DELETE_MODE and not config.yes:
+                    if not confirm_deletion('Delete all nodes and child nodes from data file?'):
+                        sys.exit(1)
 
-            prop_path = os.path.join(config.dataset, config.prop_file)
-            if os.path.isfile(prop_path):
-                props = Props(prop_path)
-            else:
-                props = Props(config.prop_file)
-            schema = ICDC_Schema(config.schema_files, props)
-            if not config.dry_run or config.loading_mode == DELETE_MODE:
-                driver = GraphDatabase.driver(
-                    config.neo4j_uri,
-                    auth=(config.neo4j_user, config.neo4j_password),
-                    encrypted=False
-                )
-
-            plugins = []
-            memgraph_snapshot_dir = None
-            if len(config.plugins) > 0:
-                for plugin_config in config.plugins:
-                    plugins.append(prepare_plugin(plugin_config, schema))
-            if config.memgraph_snapshot_dir:
-                memgraph_snapshot_dir = config.memgraph_snapshot_dir
-            loader = DataLoader(driver, schema, config, memgraph_snapshot_dir, plugins)
-
-            load_result = loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db,
-                        config.max_violations, config.temp_folder, config.verbose, split=config.split_transactions,
-                        no_backup=config.no_backup, neo4j_uri=config.neo4j_uri, backup_folder=config.backup_folder, username=config.neo4j_user, password=config.neo4j_password)
-            
-            if load_result == False:
-                if loader.validation_result_file_key != "":
-                    zip_file_key = loader.validation_result_file_key.replace(".xlsx", ".zip")
-                    with zipfile.ZipFile(zip_file_key, 'w') as zipf:
-                        zipf.write(loader.validation_result_file_key, os.path.basename(loader.validation_result_file_key))
-                        zipf.write(log_file, os.path.basename(log_file))
-                    log.error('Data loading failed, validation result zip file was created at {}'.format(zip_file_key))
+                prop_path = os.path.join(config.dataset, config.prop_file)
+                if os.path.isfile(prop_path):
+                    props = Props(prop_path)
                 else:
-                    log.error('Data loading failed')
-            else:
-                zip_file_key = log_file.replace(".log", ".zip")
-                with zipfile.ZipFile(zip_file_key, 'w') as zipf:
-                    zipf.write(log_file, os.path.basename(log_file))
-                log.info('Data loading succeeded, zip file was created at {}'.format(zip_file_key))
+                    props = Props(config.prop_file)
+                schema = ICDC_Schema(config.schema_files, props)
+                if not config.dry_run or config.loading_mode == DELETE_MODE:
+                    driver = GraphDatabase.driver(
+                        config.neo4j_uri,
+                        auth=(config.neo4j_user, config.neo4j_password),
+                        encrypted=False
+                    )
 
-        else:
-            log.info('No files to load.')
+                plugins = []
+                memgraph_snapshot_dir = None
+                if len(config.plugins) > 0:
+                    for plugin_config in config.plugins:
+                        plugins.append(prepare_plugin(plugin_config, schema))
+                if config.memgraph_snapshot_dir:
+                    memgraph_snapshot_dir = config.memgraph_snapshot_dir
+                loader = DataLoader(driver, schema, config, memgraph_snapshot_dir, plugins)
+
+                load_result = loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db,
+                            config.max_violations, config.temp_folder, config.verbose, split=config.split_transactions,
+                            no_backup=config.no_backup, neo4j_uri=config.neo4j_uri, backup_folder=config.backup_folder, username=config.neo4j_user, password=config.neo4j_password)
+                
+                if load_result == False:
+                    if loader.validation_result_file_key != "":
+                        zip_file_key = loader.validation_result_file_key.replace(".xlsx", ".zip")
+                        with zipfile.ZipFile(zip_file_key, 'w') as zipf:
+                            zipf.write(loader.validation_result_file_key, os.path.basename(loader.validation_result_file_key))
+                            zipf.write(log_file, os.path.basename(log_file))
+                        log.error('Data loading failed, validation result zip file was created at {}'.format(zip_file_key))
+                    else:
+                        log.error('Data loading failed')
+                else:
+                    zip_file_key = log_file.replace(".log", ".zip")
+                    with zipfile.ZipFile(zip_file_key, 'w') as zipf:
+                        zipf.write(log_file, os.path.basename(log_file))
+                    log.info('Data loading succeeded, zip file was created at {}'.format(zip_file_key))
+
+            else:
+                log.info('No files to load.')
 
 
     except ServiceUnavailable:
