@@ -279,6 +279,30 @@ def main(args):
                     with zipfile.ZipFile(zip_file_key, 'w') as zipf:
                         zipf.write(log_file, os.path.basename(log_file))
                     log.info('Data loading succeeded, zip file was created at {}'.format(zip_file_key))
+                    log_file = get_log_file()
+                    dest_log_dir = None
+                    #check if uploaded dir is configured
+                    if config.upload_log_dir:
+                        dest_log_dir = config.upload_log_dir
+                    else:
+                        #check if s3 bucket/folder are set.
+                        if config.s3_bucket and config.s3_folder: 
+                            dest_log_dir = f's3://{config.s3_bucket}/{config.s3_folder}/logs'
+
+                    if dest_log_dir:
+                        try:
+                            if load_result == False:
+                                if loader.validation_result_file_key != "":
+                                    upload_log_file(dest_log_dir, zip_file_key)
+                                    log.info(f'Uploading validation result zip file {zip_file_key} succeeded!')
+                            else:
+                                upload_log_file(dest_log_dir, zip_file_key)
+                                log.info(f'Uploading validation result zip file {zip_file_key} succeeded!')
+                            # upload_log_file(dest_log_dir, log_file)
+                            log.info(f'Uploading log file {log_file} succeeded!')
+                        except Exception as e:
+                            log.debug(e)
+                            log.exception('Copy file failed! Check debug log for detailed information')
 
             else:
                 log.info('No files to load.')
@@ -298,31 +322,6 @@ def main(args):
             driver.close()
         if restore_cmd:
             log.info(restore_cmd)
-
-    log_file = get_log_file()
-    dest_log_dir = None
-    #check if uploaded dir is configured
-    if config.upload_log_dir:
-        dest_log_dir = config.upload_log_dir
-    else:
-        #check if s3 bucket/folder are set.
-        if config.s3_bucket and config.s3_folder: 
-            dest_log_dir = f's3://{config.s3_bucket}/{config.s3_folder}/logs'
-
-    if dest_log_dir:
-        try:
-            if load_result == False:
-                if loader.validation_result_file_key != "":
-                    upload_log_file(dest_log_dir, zip_file_key)
-                    log.info(f'Uploading validation result zip file {zip_file_key} succeeded!')
-            else:
-                upload_log_file(dest_log_dir, zip_file_key)
-                log.info(f'Uploading validation result zip file {zip_file_key} succeeded!')
-            # upload_log_file(dest_log_dir, log_file)
-            log.info(f'Uploading log file {log_file} succeeded!')
-        except Exception as e:
-            log.debug(e)
-            log.exception('Copy file failed! Check debug log for detailed information')
 
     if load_result == False:
         sys.exit(1)
