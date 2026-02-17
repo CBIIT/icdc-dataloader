@@ -27,7 +27,7 @@ Properties:
     TBD: String
 
   id_fields:
-    study: phs_accession
+    study: study_id
     participant: study_participant_id
     diagnosis: study_diagnosis_id
     treatment: treatment_id
