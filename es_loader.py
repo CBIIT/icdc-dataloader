@@ -47,7 +47,9 @@ class ESLoader:
             body={
                 "settings": {
                     "number_of_shards": 1,
-                    "index.mapping.nested_objects.limit": 100000
+                    "index.max_result_window": 200000,
+                    "index.mapping.nested_objects.limit": 200000,
+                    "index.max_terms_count": 200000
                 },
                 "mappings": {
                     "properties": mapping
@@ -101,7 +103,7 @@ class ESLoader:
                 logger.info(f'Page size is set to {page_size}')
                 skip = 0
                 total = page_size
-                while total == page_size:
+                while total > 0:
                     successes, total = self.bulk_load(
                         index_name,
                         self.get_data(
