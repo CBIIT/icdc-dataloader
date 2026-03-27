@@ -394,8 +394,6 @@ class DataLoader:
                     search_node_type, search_key = key.split('.')
                 elif self.schema.is_relationship_property(key):
                     search_node_type, search_key = key.split(self.rel_prop_delimiter)
-                if key == "file_description":
-                    print(value)
                 if self.empty_cell_null and value == '' and not is_parent_pointer(key):
                     obj[key] = None
                 key_type = self.schema.get_prop_type(search_node_type, search_key)
