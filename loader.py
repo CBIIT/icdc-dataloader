@@ -71,7 +71,10 @@ def process_arguments(args, log):
 
     if args.s3_folder:
         config.s3_folder = args.s3_folder
-    if not config.s3_folder and not os.path.isdir(config.dataset):
+    dataset = config.dataset
+    if isinstance(config.dataset, list):
+        dataset = config.dataset[0]
+    if not config.s3_folder and not os.path.isdir(dataset):
         log.error('{} is not a directory!'.format(config.dataset))
         sys.exit(1)
 
@@ -181,6 +184,12 @@ def process_arguments(args, log):
             log.error('database_type is neither neo4j nor memgraph, abort loading')
             sys.exit(1)
 
+    if not config.empty_cell_null:
+        config.empty_cell_null = False
+    if config.empty_cell_null not in [True, False]:
+        log.error('empty_cell_null should be a boolean value, abort loading')
+        sys.exit(1)
+
     if args.database_type:
         config.database_type = args.database_type
     # Only applies when running in Prefect via loader_prefect.py, which doesn't have config files and temp_foldetemp_folderr
@@ -220,11 +229,12 @@ def main(args):
     mg_connection = None
     restore_cmd = ''
     load_result = None
-    subfolders = [
-        os.path.join(config.dataset, name)
-        for name in os.listdir(config.dataset)
-        if os.path.isdir(os.path.join(config.dataset, name))
-        ]
+    list_dataset = False
+    if isinstance(config.dataset, str):
+        subfolders = [config.dataset]
+    else:
+        subfolders = config.dataset
+        list_dataset = True
     try:
         for folder in subfolders:
             txt_files = glob.glob('{}/*.txt'.format(folder))
@@ -238,10 +248,12 @@ def main(args):
                 if config.loading_mode == DELETE_MODE and not config.yes:
                     if not confirm_deletion('Delete all nodes and child nodes from data file?'):
                         sys.exit(1)
-
-                prop_path = os.path.join(config.dataset, config.prop_file)
-                if os.path.isfile(prop_path):
-                    props = Props(prop_path)
+                if not list_dataset:
+                    prop_path = os.path.join(config.dataset, config.prop_file)
+                    if os.path.isfile(prop_path):
+                        props = Props(prop_path)
+                    else:
+                        props = Props(config.prop_file)
                 else:
                     props = Props(config.prop_file)
                 schema = ICDC_Schema(config.schema_files, props)
@@ -263,7 +275,7 @@ def main(args):
 
                 load_result = loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db,
                             config.max_violations, config.temp_folder, config.verbose, split=config.split_transactions,
-                            no_backup=config.no_backup, neo4j_uri=config.neo4j_uri, backup_folder=config.backup_folder, username=config.neo4j_user, password=config.neo4j_password)
+                            no_backup=config.no_backup, neo4j_uri=config.neo4j_uri, backup_folder=config.backup_folder, username=config.neo4j_user, password=config.neo4j_password, empty_cell_null=config.empty_cell_null)
                 
                 if load_result == False:
                     if loader.validation_result_file_key != "":

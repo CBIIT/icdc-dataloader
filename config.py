@@ -48,6 +48,7 @@ class BentoConfig:
             self.database_type = "neo4j"
             self.plugins = []
             self.memgraph_snapshot_dir = None
+            self.empty_cell_null = False
         else:
             if os.path.isfile(config_file):
                 with open(config_file) as c_file:
@@ -110,6 +111,7 @@ class BentoConfig:
                     self.verbose = config.get('verbose')
                     self.database_type = config.get("database_type")
                     self.memgraph_snapshot_dir = config.get("memgraph_snapshot_dir")
+                    self.empty_cell_null = config.get("empty_cell_null")
             else:
                 msg = f'Can NOT open configuration file "{config_file}"!'
                 self.log.error(msg)
