@@ -179,6 +179,7 @@ class DataLoader:
         self.df_validation_dict = {}
         self.skip_validation_flag = False
         self.cheat_mode = True
+        self.empty_cell_null = False
 
     def check_files(self, file_list):
         if not file_list:

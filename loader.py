@@ -71,12 +71,19 @@ def process_arguments(args, log):
 
     if args.s3_folder:
         config.s3_folder = args.s3_folder
+    multiple_datasets = False
     dataset = config.dataset
     if isinstance(config.dataset, list):
-        dataset = config.dataset[0]
-    if not config.s3_folder and not os.path.isdir(dataset):
-        log.error('{} is not a directory!'.format(config.dataset))
-        sys.exit(1)
+        multiple_datasets = True
+    if not multiple_datasets:
+        if not config.s3_folder and not os.path.isdir(dataset):
+            log.error('{} is not a directory!'.format(config.dataset))
+            sys.exit(1)
+    elif multiple_datasets and not config.s3_folder:
+        for subfolder in config.dataset:
+            if not os.path.isdir(subfolder):
+                log.error('{} is not a directory!'.format(subfolder))
+                sys.exit(1)
 
     if args.prop_file:
         config.prop_file = args.prop_file
@@ -248,12 +255,9 @@ def main(args):
                 if config.loading_mode == DELETE_MODE and not config.yes:
                     if not confirm_deletion('Delete all nodes and child nodes from data file?'):
                         sys.exit(1)
-                if not list_dataset:
-                    prop_path = os.path.join(config.dataset, config.prop_file)
-                    if os.path.isfile(prop_path):
-                        props = Props(prop_path)
-                    else:
-                        props = Props(config.prop_file)
+                prop_path = os.path.join(folder, config.prop_file)
+                if os.path.isfile(prop_path):
+                    props = Props(prop_path)
                 else:
                     props = Props(config.prop_file)
                 schema = ICDC_Schema(config.schema_files, props)
