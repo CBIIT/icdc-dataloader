@@ -152,6 +152,8 @@ class ICDC_Schema:
         return {PROPERTIES: props, REQUIRED: required, PRIVATE: private}
 
     def get_list_values(self, list_str):
+        if list_str is None:
+            return None
         return [item.strip() for item in list_str.split(self.delimiter) if item.strip()]
     def process_node(self, name, desc, is_relationship=False):
         """

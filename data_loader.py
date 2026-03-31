@@ -38,7 +38,7 @@ RELATIONSHIPS = 'relationships'
 INT_NODE_CREATED = 'int_node_created'
 PROVIDED_PARENTS = 'provided_parents'
 RELATIONSHIP_PROPS = 'relationship_properties'
-BATCH_SIZE = 10000
+BATCH_SIZE = 2000
 OTHER = '__other__'
 
 maxInt = sys.maxsize
@@ -179,6 +179,7 @@ class DataLoader:
         self.df_validation_dict = {}
         self.skip_validation_flag = False
         self.cheat_mode = True
+        self.empty_cell_null = False
 
     def check_files(self, file_list):
         if not file_list:
@@ -265,7 +266,7 @@ class DataLoader:
             return True
 
     def load(self, file_list, cheat_mode, dry_run, loading_mode, wipe_db, max_violations, temp_folder, verbose,
-             split=False, no_backup=True, neo4j_uri=None, backup_folder="/", username=None, password=None):
+             split=False, no_backup=True, neo4j_uri=None, backup_folder="/", username=None, password=None, empty_cell_null=False):
         if not self.check_files(file_list):
             return False
         start = timer()
@@ -306,6 +307,7 @@ class DataLoader:
         self.nodes_deleted_stat = {}
         self.relationships_deleted_stat = {}
         self.cheat_mode = True
+        self.empty_cell_null = empty_cell_null
         if not self.driver or not isinstance(self.driver, Driver):
             self.log.error('Invalid Neo4j Python Driver!')
             return False
@@ -393,7 +395,8 @@ class DataLoader:
                     search_node_type, search_key = key.split('.')
                 elif self.schema.is_relationship_property(key):
                     search_node_type, search_key = key.split(self.rel_prop_delimiter)
-
+                if self.empty_cell_null and value == '' and not is_parent_pointer(key):
+                    obj[key] = None
                 key_type = self.schema.get_prop_type(search_node_type, search_key)
                 if key_type == 'Boolean':
                     cleaned_value = None
