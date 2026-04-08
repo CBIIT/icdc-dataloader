@@ -952,7 +952,7 @@ class DataLoader:
                     raise Exception('Wrong loading_mode: {}'.format(loading_mode))
 
                 # commit and restart a transaction when batch size reached
-                if split and transaction_counter >= BATCH_SIZE:
+                if split and transaction_counter >= BATCH_SIZE and loading_mode != DELETE_MODE:
                     result = tx.run(statement, batch=batch_obj_list)
                     tx.commit()
                     nodes_created, nodes_updated = self.node_count(result, node_type, nodes_created, nodes_updated, batch_obj_list)
