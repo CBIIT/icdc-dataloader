@@ -96,7 +96,8 @@ def load_data(
         max_violation = 1000000,
         mode = "upsert",
         split_transaction = False,
-        plugins = []
+        plugins = [],
+        empty_cell_null = True
     ):
 
     params = Config(
@@ -122,7 +123,8 @@ def load_data(
         split_transaction,
         upload_log_dir,
         plugins,
-        temp_folder
+        temp_folder,
+        empty_cell_null
     )
     main(params)
 
@@ -151,7 +153,9 @@ class Config:
             split_transaction,
             upload_log_dir,
             plugins,
-            temp_folder
+            temp_folder,
+            empty_cell_null
+
     ):
         self.dataset = dataset
         self.uri = uri
@@ -176,6 +180,7 @@ class Config:
         self.plugins = []
         self.temp_folder = temp_folder
         self.database_type = database_type
+        self.empty_cell_null = empty_cell_null
         for plugin in plugins:
             self.plugins.append(PluginConfig(plugin))
 
@@ -196,7 +201,8 @@ def data_hub_loader(
         prop_file,
         no_parents=True,
         plugins=[],
-        split_transaction=True
+        split_transaction=True,
+        empty_cell_null=True
     ):
     secret_name = Variable.get(config_drop_list[ENVIRONMENTS][environment])
     secret = get_secret(secret_name)
@@ -209,12 +215,18 @@ def data_hub_loader(
         password = secret[MEMGRAPH_PASSWORD]
     
     schemas = data_model_download(model_repo_url, model_branch)
+    if isinstance(s3_folder, str):
+        s3_folder = [s3_folder]
+    upload_log_dir = []
+    for s3f in s3_folder:
+        upload_log_dir.append(f's3://{s3_bucket}/{s3f}/logs')
+
 
     load_data(
         database_type = database_type,
         s3_bucket = s3_bucket,
         s3_folder = s3_folder,
-        upload_log_dir = f's3://{s3_bucket}/{s3_folder}/logs', #
+        upload_log_dir = upload_log_dir,
         uri = uri,
         user = user,
         password = password,
@@ -227,7 +239,8 @@ def data_hub_loader(
         max_violation = 1000000,
         mode = mode,
         plugins = plugins,
-        split_transaction = split_transaction
+        split_transaction = split_transaction,
+        empty_cell_null = empty_cell_null
     )
 
 if __name__ == "__main__":

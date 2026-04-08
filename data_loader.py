@@ -1126,7 +1126,7 @@ class DataLoader:
                 old_parent_list = []
                 for record in parent_query_results:
                     old_parent_list.append(record[PARENT_ID])
-                if len(old_parent_list) > 0:
+                if len(old_parent_list) > 0 and len(old_parent_list) == len(uploaded_parent_dict[parent_node]):
                     delete_node_id = []
                     for i in range(0, len(old_parent_list)):
                         old_parent_id = old_parent_list[i]

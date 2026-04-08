@@ -53,6 +53,7 @@ def parse_arguments(args = None):
                         action='store_true')
     parser.add_argument('--upload-log-dir', help='Upload destination dir for log file,  if dir in s3, use the format, s3://[bucket]/[prefix]')
     parser.add_argument('--database-type', help='The database type, can be either neo4j or memgraph', choices=[NEO4J, MEMGRAPH])
+    parser.add_argument('--empty-cell-null', help='Whether to treat empty cell as null value instead of empty string, default is false', action='store_true')
     return parser.parse_args(args)
 
 
@@ -124,10 +125,11 @@ def process_arguments(args, log):
         sys.exit(1)
 
     if config.s3_folder:
-        if not os.path.exists(config.dataset):
-            os.makedirs(config.dataset)
+        
+        if not os.path.exists(config.dataset[0]):
+            os.makedirs(config.dataset[0])
         else:
-            exist_files = glob.glob('{}/*.txt'.format(config.dataset))
+            exist_files = glob.glob('{}/*.txt'.format(config.dataset[0]))
             if len(exist_files) > 0:
                 log.error('Folder: "{}" is not empty, please empty it first'.format(config.dataset))
                 sys.exit(1)
@@ -138,13 +140,22 @@ def process_arguments(args, log):
             log.error('Please specify S3 bucket name with -b/--bucket argument!')
             sys.exit(1)
         bucket = S3Bucket(config.s3_bucket)
-        if not os.path.isdir(config.dataset):
-            log.error('{} is not a directory!'.format(config.dataset))
+        if not os.path.isdir(config.dataset[0]):
+            log.error('{} is not a directory!'.format(config.dataset[0]))
             sys.exit(1)
-        log.info(f'Loading data from s3://{config.s3_bucket}/{config.s3_folder}')
-        if not bucket.download_files_in_folder(config.s3_folder, config.dataset):
-            log.error('Download files from S3 bucket "{}" failed!'.format(config.s3_bucket))
-            sys.exit(1)
+        if isinstance(config.s3_folder, str):
+            s3_folders = [config.s3_folder]
+        else:
+            s3_folders = config.s3_folder
+        download_folders = []
+        for s3f in s3_folders:
+            log.info(f'Loading data from s3://{config.s3_bucket}/{s3f}')
+            download_folder = os.path.join(config.dataset[0], os.path.basename(s3f.rstrip('/')))
+            download_folders.append(download_folder)
+            if not bucket.download_files_in_folder(s3f, download_folder):
+                log.error('Download files from S3 bucket "{}" failed!'.format(config.s3_bucket))
+                sys.exit(1)
+        config.dataset = download_folders
 
     # Optional Fields
     if args.uri:
@@ -182,7 +193,10 @@ def process_arguments(args, log):
         config.max_violations = DEFAULT_MAX_VIOLATIONS
 
     if args.upload_log_dir:
-        config.upload_log_dir = args.upload_log_dir
+        if isinstance(args.upload_log_dir, str):
+            config.upload_log_dir = [args.upload_log_dir]
+        else:
+            config.upload_log_dir = args.upload_log_dir
     
     if not config.database_type:
         config.database_type = NEO4J
@@ -243,6 +257,7 @@ def main(args):
         subfolders = config.dataset
         list_dataset = True
     try:
+        upload_log_index = 0
         for folder in subfolders:
             txt_files = glob.glob('{}/*.txt'.format(folder))
             tsv_files = glob.glob('{}/*.tsv'.format(folder))
@@ -299,11 +314,13 @@ def main(args):
                     dest_log_dir = None
                     #check if uploaded dir is configured
                     if config.upload_log_dir:
-                        dest_log_dir = config.upload_log_dir
+                        dest_log_dir = config.upload_log_dir[upload_log_index]
+                        upload_log_index += 1
                     else:
                         #check if s3 bucket/folder are set.
                         if config.s3_bucket and config.s3_folder: 
-                            dest_log_dir = f's3://{config.s3_bucket}/{config.s3_folder}/logs'
+                            dest_log_dir = f's3://{config.s3_bucket}/{config.s3_folder[upload_log_index]}/logs'
+                            upload_log_index += 1
 
                     if dest_log_dir:
                         try:

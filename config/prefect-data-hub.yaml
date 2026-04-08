@@ -17,13 +17,13 @@ pull:
   - prefect.deployments.steps.git_clone:
       #id: clone-step
       repository: https://github.com/CBIIT/icdc-dataloader.git
-      branch: 3.2.0
+      branch: 3.2.0_multi_batch
       include_submodules: True
   - prefect.deployments.steps.git_clone:
       repository: https://github.com/CBIIT/icdc-model-tool.git
       branch: master
   - prefect.deployments.steps.set_working_directory:
-      directory: "/opt/prefect/icdc-dataloader-3.2.0"
+      directory: "/opt/prefect/icdc-dataloader-3.2.0_multi_batch"
   - prefect.deployments.steps.pip_install_requirements:
       requirements_file: requirements.txt
       directory: "{{ clone-step.directory }}"
@@ -58,7 +58,7 @@ deployments:
     flow_name: null
     entrypoint: loader_prefect:data_hub_loader
     parameters:
-      s3_folder: ""
+      s3_folder: []
       s3_bucket: "{{ prefect.variables.gc_metadata_lowertier_bucket }}"
       cheat_mode: True
       dry_run: False
@@ -68,6 +68,7 @@ deployments:
       no_parents: True
       plugins: []
       split_transaction: True
+      empty_cell_null: True
     work_pool:
       name: cds-general-mgconsole-prefect-3.4.18-python3.12
       work_queue_name: default
