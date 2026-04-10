@@ -39,8 +39,26 @@ class ESLoader:
         else:
             self.es_client = Elasticsearch(hosts=[es_host], timeout=timeout_seconds)
 
+    # def create_index(self, index_name, mapping):
+    #     """Creates an index in Elasticsearch if one isn't already there."""
+    #     return self.es_client.indices.create(
+    #         index=index_name,
+    #         body={
+    #             "settings": {
+    #                 "number_of_shards": 1,
+    #                 "index.mapping.nested_objects.limit": 100000
+    #             },
+    #             "mappings": {
+    #                 "properties": mapping
+    #             },
+    #         },
+    #         ignore=400,
+    #     )
+
     def create_index(self, index_name, mapping):
-        """Creates an index in Elasticsearch if one isn't already there."""
+        """Creates an index, deleting any existing index first to ensure mapping is current."""
+        if self.es_client.indices.exists(index=index_name):
+            self.es_client.indices.delete(index=index_name)
         return self.es_client.indices.create(
             index=index_name,
             body={
@@ -51,8 +69,7 @@ class ESLoader:
                 "mappings": {
                     "properties": mapping
                 },
-            },
-            ignore=400,
+            }
         )
 
     def delete_index(self, index_name):
