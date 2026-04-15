@@ -72,19 +72,14 @@ def process_arguments(args, log):
 
     if args.s3_folder:
         config.s3_folder = args.s3_folder
-    multiple_datasets = False
-    dataset = config.dataset
-    if isinstance(config.dataset, list):
-        multiple_datasets = True
-    if not multiple_datasets:
-        if not config.s3_folder and not os.path.isdir(dataset):
-            log.error('{} is not a directory!'.format(config.dataset))
+
+    if isinstance(config.dataset, str):
+        config.dataset = [config.dataset]
+
+    for subfolder in config.dataset:
+        if not os.path.isdir(subfolder):
+            log.error('{} is not a directory!'.format(subfolder))
             sys.exit(1)
-    elif multiple_datasets and not config.s3_folder:
-        for subfolder in config.dataset:
-            if not os.path.isdir(subfolder):
-                log.error('{} is not a directory!'.format(subfolder))
-                sys.exit(1)
 
     if args.prop_file:
         config.prop_file = args.prop_file
@@ -125,13 +120,17 @@ def process_arguments(args, log):
         sys.exit(1)
 
     if config.s3_folder:
-        
+        if len(config.dataset) != 1:
+            log.error('When using S3 folder, only one dataset can be specified!')
+            sys.exit(1)
         if not os.path.exists(config.dataset[0]):
             os.makedirs(config.dataset[0])
         else:
-            exist_files = glob.glob('{}/*.txt'.format(config.dataset[0]))
+            txt_files = glob.glob('{}/**/*.txt'.format(config.dataset[0]), recursive=True)
+            tsv_files = glob.glob('{}/**/*.tsv'.format(config.dataset[0]), recursive=True)
+            exist_files = txt_files + tsv_files
             if len(exist_files) > 0:
-                log.error('Folder: "{}" is not empty, please empty it first'.format(config.dataset))
+                log.error('Folder: "{}" is not empty, please empty it first'.format(config.dataset[0]))
                 sys.exit(1)
 
         if args.bucket:
@@ -140,9 +139,11 @@ def process_arguments(args, log):
             log.error('Please specify S3 bucket name with -b/--bucket argument!')
             sys.exit(1)
         bucket = S3Bucket(config.s3_bucket)
-        if not os.path.isdir(config.dataset[0]):
-            log.error('{} is not a directory!'.format(config.dataset[0]))
-            sys.exit(1)
+
+        for dataset in config.dataset:
+            if not os.path.isdir(dataset):
+                log.error('{} is not a directory!'.format(dataset))
+                sys.exit(1)
         if isinstance(config.s3_folder, str):
             s3_folders = [config.s3_folder]
         else:
@@ -250,15 +251,9 @@ def main(args):
     mg_connection = None
     restore_cmd = ''
     load_result = None
-    list_dataset = False
-    if isinstance(config.dataset, str):
-        subfolders = [config.dataset]
-    else:
-        subfolders = config.dataset
-        list_dataset = True
     try:
         upload_log_index = 0
-        for folder in subfolders:
+        for folder in config.dataset:
             txt_files = glob.glob('{}/*.txt'.format(folder))
             tsv_files = glob.glob('{}/*.tsv'.format(folder))
             file_list = txt_files + tsv_files
