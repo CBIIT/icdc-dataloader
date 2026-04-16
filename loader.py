@@ -77,7 +77,7 @@ def process_arguments(args, log):
         config.dataset = [config.dataset]
 
     for subfolder in config.dataset:
-        if not os.path.isdir(subfolder):
+        if not os.path.isdir(subfolder) and not config.s3_folder:
             log.error('{} is not a directory!'.format(subfolder))
             sys.exit(1)
 
