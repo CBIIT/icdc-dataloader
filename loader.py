@@ -5,6 +5,7 @@ import os
 import sys
 import zipfile
 
+from dataclasses_json import config
 from neo4j import GraphDatabase
 from neo4j.exceptions import ServiceUnavailable
 from neo4j.exceptions import AuthError
@@ -72,15 +73,12 @@ def process_arguments(args, log):
 
     if args.s3_folder:
         config.s3_folder = args.s3_folder
-    multiple_datasets = False
-    dataset = config.dataset
-    if isinstance(config.dataset, list):
-        multiple_datasets = True
-    if not multiple_datasets:
-        if not config.s3_folder and not os.path.isdir(dataset):
-            log.error('{} is not a directory!'.format(config.dataset))
-            sys.exit(1)
-    elif multiple_datasets and not config.s3_folder:
+    if isinstance(config.dataset, str):
+        config.dataset = [config.dataset]
+    if not isinstance(config.dataset, list):
+        log.error('Dataset should be with list or string formats!')
+        sys.exit(1)
+    if not config.s3_folder:
         for subfolder in config.dataset:
             if not os.path.isdir(subfolder):
                 log.error('{} is not a directory!'.format(subfolder))
@@ -125,13 +123,16 @@ def process_arguments(args, log):
         sys.exit(1)
 
     if config.s3_folder:
-        
+        if len(config.dataset) != 1:
+            log.error('Only one local folder should be specified if given s3_bucket and s3_folder!')
+            sys.exit(1)
         if not os.path.exists(config.dataset[0]):
             os.makedirs(config.dataset[0])
         else:
-            exist_files = glob.glob('{}/*.txt'.format(config.dataset[0]))
+            exist_files = glob.glob('{}/**/*.txt'.format(config.dataset[0]), recursive=True)
+            exist_files += glob.glob('{}/**/*.tsv'.format(config.dataset[0]), recursive=True)
             if len(exist_files) > 0:
-                log.error('Folder: "{}" is not empty, please empty it first'.format(config.dataset))
+                log.error('Folder: "{}" is not empty, please empty it first'.format(config.dataset[0]))
                 sys.exit(1)
 
         if args.bucket:
@@ -250,15 +251,9 @@ def main(args):
     mg_connection = None
     restore_cmd = ''
     load_result = None
-    list_dataset = False
-    if isinstance(config.dataset, str):
-        subfolders = [config.dataset]
-    else:
-        subfolders = config.dataset
-        list_dataset = True
     try:
         upload_log_index = 0
-        for folder in subfolders:
+        for folder in config.dataset:
             txt_files = glob.glob('{}/*.txt'.format(folder))
             tsv_files = glob.glob('{}/*.tsv'.format(folder))
             file_list = txt_files + tsv_files
