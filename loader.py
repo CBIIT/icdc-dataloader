@@ -4,6 +4,7 @@ import glob
 import os
 import sys
 import zipfile
+import uuid
 
 from neo4j import GraphDatabase
 from neo4j.exceptions import ServiceUnavailable
@@ -150,7 +151,10 @@ def process_arguments(args, log):
         download_folders = []
         for s3f in s3_folders:
             log.info(f'Loading data from s3://{config.s3_bucket}/{s3f}')
-            download_folder = os.path.join(config.dataset[0], os.path.basename(s3f.rstrip('/')))
+            # add a random uuid to the local folder name to make sure the local folder names are unique if the different s3 folders have the same last subfolders names.
+            folder_uuid = uuid.uuid4()
+            download_subfolder = os.path.basename(s3f.rstrip('/') + '_' + str(folder_uuid))
+            download_folder = os.path.join(config.dataset[0], download_subfolder)
             download_folders.append(download_folder)
             if not bucket.download_files_in_folder(s3f, download_folder):
                 log.error('Download files from S3 bucket "{}" failed!'.format(config.s3_bucket))
