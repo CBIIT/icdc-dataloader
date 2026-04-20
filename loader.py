@@ -5,7 +5,6 @@ import os
 import sys
 import zipfile
 
-from dataclasses_json import config
 from neo4j import GraphDatabase
 from neo4j.exceptions import ServiceUnavailable
 from neo4j.exceptions import AuthError
