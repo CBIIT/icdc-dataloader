@@ -273,8 +273,8 @@ def main():
                     f'"model_files" not set in configuration file, {index_name} will not be loaded!')
         elif index['type'] == 'external':
             logger.info("External data index created - loading will be done via data retriever service")
-            loader.recreate_index(index_name, index["mapping"])
-            summary[index_name] = "Index created"
+            loader.create_index(index_name, index["mapping"])
+            summary[index_name] = "Index created or already exists"
         else:
             logger.error(f'Unknown index type: "{index["type"]}"')
     logger.info(f'Index loading summary:')
