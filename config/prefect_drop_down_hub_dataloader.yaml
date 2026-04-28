@@ -1,0 +1,9 @@
+database_type:
+  - neo4j
+  - memgraph
+environments:
+  dev: "cds_secret_name_dev"
+  dev2: "cds_secret_name_dev2"
+  dev_cdk: "gc_memgraph_secret_name_dev_cdk"
+  dev2_cdk: "gc_memgraph_secret_name_dev2_cdk"
+model_repo_url: "https://github.com/CBIIT/ccdi-model.git"
