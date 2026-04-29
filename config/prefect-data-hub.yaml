@@ -26,7 +26,6 @@ pull:
       directory: "{{ clone-step.directory }}"
   - prefect.deployments.steps.pip_install_requirements:
       requirements_file: requirements.txt
-      directory: "{{ clone-step.directory }}"
       stream_output: False
 
 # the deployments section allows you to provide configuration for deploying flows
