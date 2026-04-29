@@ -24,7 +24,7 @@ MEMGRAPH_USER = "memgraph_user"
 MEMGRAPH_ENDPOINT = "memgraph_endpoint"
 MEMGRAPH_PASSWORD = "memgraph_password"
 
-config_file = "config/prefect_drop_down_config_dataloader.yaml"
+config_file = "config/prefect_drop_down_hub_dataloader.yaml"
 
 def get_github_branches(repo_url):
     # Remove .git if present
