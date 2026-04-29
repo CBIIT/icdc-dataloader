@@ -63,7 +63,7 @@ deployments:
       dry_run: False
       wipe_db: False
       mode: "upsert"
-      prop_file: model-desc/props-ccdi-model.yml
+      prop_file: config/props-ccdi-model.yml
       no_parents: True
       plugins: []
       split_transaction: True
@@ -94,7 +94,7 @@ deployments:
       schemas:
         - ../ccdi-model/model-desc/ccdi-model.yml
         - ../ccdi-model/model-desc/ccdi-model-props.yml
-      prop_file: model-desc/props-ccdi-model.yml
+      prop_file: config/props-ccdi-model.yml
     work_pool:
       name: ccdi-curation-16gb-future-prefect-3.4.19-python3.13
       work_queue_name: default
