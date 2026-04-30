@@ -932,6 +932,20 @@ class DataLoader:
                 if not node_id:
                     raise Exception('Line:{}: No ids found!'.format(line_num))
                 id_field = self.schema.get_id_field(obj)
+                # Safeguard: generic_file_id values like "gen_file_1".."gen_file_N" are
+                # not globally unique across studies, which causes the MERGE below to
+                # collapse generic_file nodes from different studies into one and then
+                # re-parent them. Fall back to dcf_indexd_guid (a true per-file GUID)
+                # as the MERGE key when it is available.
+                if node_type == 'generic_file' and id_field == 'generic_file_id':
+                    if obj.get('dcf_indexd_guid'):
+                        id_field = 'dcf_indexd_guid'
+                        node_id = obj['dcf_indexd_guid']
+                    else:
+                        self.log.warning(
+                            'Line {}: generic_file row has no dcf_indexd_guid; '
+                            'falling back to non-unique generic_file_id "{}". '
+                            'This may collide with rows from other studies.'.format(line_num, node_id))
                 if loading_mode == UPSERT_MODE:
                     batch_obj_list.append(obj)
                     updated_statement = self.get_upsert_statement(node_type, id_field, obj)
