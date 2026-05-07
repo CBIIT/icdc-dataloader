@@ -34,7 +34,7 @@ pull:
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
-  - name: gc-data-hub-opensearch-loader
+  - name: data-hub-opensearch-loader
     version: null
     tags: []
     description: null
