@@ -30,6 +30,9 @@ pull:
   - prefect.deployments.steps.pip_install_requirements:
       requirements_file: requirements.txt
       stream_output: False
+  - prefect.deployments.steps.pip_install_requirements:
+      requirements_file: bento/requirements.txt
+      stream_output: False
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
