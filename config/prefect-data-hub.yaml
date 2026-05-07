@@ -18,7 +18,6 @@ pull:
       id: clone-step
       repository: https://github.com/CBIIT/icdc-dataloader.git
       branch: hub-prefect
-      include_submodules: True
   - prefect.deployments.steps.git_clone:
       repository: https://github.com/CBIIT/ccdi-model.git
       branch: 3.1.0
@@ -43,9 +42,9 @@ deployments:
     entrypoint: es_loader_prefect.py:es_loader_prefect
     parameters:
       indices_list: []
-      about_file: "src/content/prod/aboutPagesContent.yaml"
-      indices_file: "{{ ccdi-inventory-clone.directory }}/config/es_indices_ccdi_model.yml"
-      prop_file: "{{ ccdi-inventory-clone.directory }}/config/ccdi-model-props.yml"
+      about_file: ""
+      indices_file: "../CCDI-Inventory-Dataloader/config/es_indices_ccdi_model.yml"
+      prop_file: "../CCDI-Inventory-Dataloader/config/ccdi-model-props.yml"
     work_pool:
       name: ccdi-curation-16gb-future-prefect-3.4.19-python3.13
       work_queue_name: default
