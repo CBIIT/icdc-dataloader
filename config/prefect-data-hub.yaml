@@ -18,6 +18,7 @@ pull:
       id: clone-step
       repository: https://github.com/CBIIT/icdc-dataloader.git
       branch: hub-prefect
+      include_submodules: True
   - prefect.deployments.steps.git_clone:
       repository: https://github.com/CBIIT/ccdi-model.git
       branch: 3.1.0
