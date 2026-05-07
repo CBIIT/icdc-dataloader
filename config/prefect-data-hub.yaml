@@ -22,6 +22,10 @@ pull:
   - prefect.deployments.steps.git_clone:
       repository: https://github.com/CBIIT/ccdi-model.git
       branch: 3.1.0
+  - prefect.deployments.steps.git_clone:
+      id: ccdi-inventory-clone
+      repository: https://github.com/CBIIT/CCDI-Inventory-Dataloader.git
+      branch: 2.11.0_Opensearch_Loader
   - prefect.deployments.steps.set_working_directory:
       directory: "{{ clone-step.directory }}"
   - prefect.deployments.steps.pip_install_requirements:
@@ -40,8 +44,8 @@ deployments:
     parameters:
       indices_list: []
       about_file: "src/content/prod/aboutPagesContent.yaml"
-      indices_file: "src/main/resources/yaml/es_indices_cds.yml"
-      prop_file: config/props-cds.yml
+      indices_file: "{{ ccdi-inventory-clone.directory }}/config/es_indices_ccdi_model.yml"
+      prop_file: "{{ ccdi-inventory-clone.directory }}/config/ccdi-model-props.yml"
     work_pool:
       name: ccdi-curation-16gb-future-prefect-3.4.19-python3.13
       work_queue_name: default
