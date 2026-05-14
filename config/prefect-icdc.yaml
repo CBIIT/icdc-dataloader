@@ -29,7 +29,7 @@ pull:
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
-  - name: icdc-metadata-validation-dev
+  - name: icdc-data-loading-dev
     version: null
     tags: []
     description: null
