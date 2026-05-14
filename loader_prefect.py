@@ -1,3 +1,5 @@
+import redis
+
 from prefect import flow, task
 
 from loader import main
@@ -8,32 +10,38 @@ NEO4J_URI = "neo4j_uri"
 NEO4J_PASSWORD = "neo4j_password"
 SUBMISSION_BUCKET = "submission_bucket"
 
+REDIS_HOST = "redis_host"
+REDIS_PASSWORD = "redis_password"
+
 
 @flow(name="CRDC Data Loader", log_prints=True)
 def load_data(
-        s3_bucket,
-        s3_folder,
-        upload_log_dir = None,
-        dataset = "data",
-        temp_folder = "tmp",
-        uri = "bolt://127.0.0.1:7687",
-        user = "neo4j",
-        password = "your-password",
-        schemas = ["../icdc-model-tool/model-desc/icdc-model.yml", "../icdc-model-tool/model-desc/icdc-model-props.yml"],
-        prop_file = "config/props-icdc-pmvp.yml",
-        backup_folder = None,
-        cheat_mode = False,
-        dry_run = False,
-        wipe_db = False,
-        no_backup = True,
-        no_parents = True,
-        verbose = False,
-        yes = True,
-        max_violation = 1000000,
-        mode = "upsert",
-        split_transaction = False,
-        plugins = []
-    ):
+    s3_bucket,
+    s3_folder,
+    upload_log_dir=None,
+    dataset="data",
+    temp_folder="tmp",
+    uri="bolt://127.0.0.1:7687",
+    user="neo4j",
+    password="your-password",
+    schemas=[
+        "../icdc-model-tool/model-desc/icdc-model.yml",
+        "../icdc-model-tool/model-desc/icdc-model-props.yml",
+    ],
+    prop_file="config/props-icdc-pmvp.yml",
+    backup_folder=None,
+    cheat_mode=False,
+    dry_run=False,
+    wipe_db=False,
+    no_backup=True,
+    no_parents=True,
+    verbose=False,
+    yes=True,
+    max_violation=1000000,
+    mode="upsert",
+    split_transaction=False,
+    plugins=[],
+):
 
     params = Config(
         dataset,
@@ -57,35 +65,36 @@ def load_data(
         split_transaction,
         upload_log_dir,
         plugins,
-        temp_folder
+        temp_folder,
     )
     main(params)
 
+
 class Config:
     def __init__(
-            self,
-            dataset,
-            uri,
-            user,
-            password,
-            schemas,
-            prop_file,
-            bucket,
-            s3_folder,
-            backup_folder,
-            cheat_mode,
-            dry_run,
-            wipe_db,
-            no_backup,
-            no_parents,
-            verbose,
-            yes,
-            max_violation,
-            mode,
-            split_transaction,
-            upload_log_dir,
-            plugins,
-            temp_folder
+        self,
+        dataset,
+        uri,
+        user,
+        password,
+        schemas,
+        prop_file,
+        bucket,
+        s3_folder,
+        backup_folder,
+        cheat_mode,
+        dry_run,
+        wipe_db,
+        no_backup,
+        no_parents,
+        verbose,
+        yes,
+        max_violation,
+        mode,
+        split_transaction,
+        upload_log_dir,
+        plugins,
+        temp_folder,
     ):
         self.dataset = dataset
         self.uri = uri
@@ -117,41 +126,89 @@ class Config:
 
 @flow(name="CRDC Data Hub Loader", log_prints=True)
 def data_hub_loader(
-        organization_id,
-        submission_id,
-        cheat_mode,
-        dry_run,
-        wipe_db,
-        mode,
-        secret_name,
-        schemas,
-        prop_file,
-        no_parents=True,
-        plugins=[]
-    ):
+    organization_id,
+    submission_id,
+    cheat_mode,
+    dry_run,
+    wipe_db,
+    mode,
+    secret_name,
+    schemas,
+    prop_file,
+    no_parents=True,
+    plugins=[],
+):
 
     secret = get_secret(secret_name)
     uri = secret[NEO4J_URI]
     password = secret[NEO4J_PASSWORD]
     s3_bucket = secret[SUBMISSION_BUCKET]
-    s3_folder = f'{organization_id}/{submission_id}/metadata'
+    s3_folder = f"{organization_id}/{submission_id}/metadata"
 
     load_data(
-        s3_bucket = s3_bucket,
-        s3_folder = s3_folder,
-        upload_log_dir = f's3://{s3_bucket}/{s3_folder}/logs', #
-        uri = uri,
-        password = password,
-        schemas = schemas,
-        prop_file = prop_file,
-        cheat_mode = cheat_mode,
-        dry_run = dry_run,
-        wipe_db = wipe_db,
-        no_parents = no_parents,
-        max_violation = 1000000,
-        mode = mode,
-        plugins = plugins
+        s3_bucket=s3_bucket,
+        s3_folder=s3_folder,
+        upload_log_dir=f"s3://{s3_bucket}/{s3_folder}/logs",  #
+        uri=uri,
+        password=password,
+        schemas=schemas,
+        prop_file=prop_file,
+        cheat_mode=cheat_mode,
+        dry_run=dry_run,
+        wipe_db=wipe_db,
+        no_parents=no_parents,
+        max_violation=1000000,
+        mode=mode,
+        plugins=plugins,
     )
+
+
+@flow(name="CRDC ICDC Data Loader", log_prints=True)
+def icdc_loader(
+    s3_bucket,
+    s3_folder,
+    cheat_mode,
+    dry_run,
+    wipe_db,
+    mode,
+    secret_name,
+    schemas,
+    prop_file,
+    flush_redis,
+    plugins=[],
+):
+
+    secret = get_secret(secret_name)
+    neo4j_uri = secret[NEO4J_URI]
+    neo4j_password = secret[NEO4J_PASSWORD]
+    redis_host = secret[REDIS_HOST]
+    redis_password = secret[REDIS_PASSWORD]
+
+    load_data(
+        s3_bucket=s3_bucket,
+        s3_folder=s3_folder,
+        upload_log_dir=f"s3://{s3_bucket}/{s3_folder}/logs",
+        uri=neo4j_uri,
+        password=neo4j_password,
+        schemas=schemas,
+        prop_file=prop_file,
+        cheat_mode=cheat_mode,
+        dry_run=dry_run,
+        wipe_db=wipe_db,
+        max_violation=1000000,
+        mode=mode,
+        plugins=plugins,
+    )
+
+    if flush_redis:
+        flush_redis_cache(redis_host, redis_password)
+
+
+@task(name="Flush Redis", log_prints=True)
+def flush_redis_cache(redis_host, redis_password):
+    r = redis.Redis(host=redis_host, password=redis_password)
+    r.flushall(asynchronous=True)
+
 
 if __name__ == "__main__":
     # create your first deployment
