@@ -42,7 +42,7 @@ deployments:
       wipe_db: False
       cheat_mode: False
       mode: "upsert"
-      secret_name: "{{ prefect.variables.secret_name_dev }}"
+      secret_name: "{{ prefect.variables.icdc_secret_name_dev }}"
       schemas:
         - ../icdc-model-tool/model-desc/icdc-model.yml
         - ../icdc-model-tool/model-desc/icdc-model-props.yml
