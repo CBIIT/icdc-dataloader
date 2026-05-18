@@ -20,11 +20,20 @@ NEO4J_USER = "neo4j_user"
 NEO4J_PASSWORD = "neo4j_password"
 ES_HOST = "es_host"
 ENVIRONMENTS = "environments"
+ENVIRONMENTS_DB = "environments_db"
+ENVIRONMENTS_ES = "environments_es"
 DATABASE_TYPES = "database_type"
 MODEL_REPO_URL = "model_repo_url"
 BACKEND_REPO_URL = "backend_repo_url"
 FRONTEND_REPO_URL = "frontend_repo_url"
 MODEL_DESC = "model-desc"
+
+
+def _resolve_secret_name(environment, mapping_key, fallback_key=ENVIRONMENTS):
+    mapping = config_drop_list.get(mapping_key)
+    if isinstance(mapping, dict) and environment in mapping:
+        return Variable.get(mapping[environment]), mapping_key
+    return Variable.get(config_drop_list[fallback_key][environment]), fallback_key
 
 def repo_download(repo, version, logger):
     subprocess.run(['git', 'clone', repo])
@@ -75,22 +84,27 @@ def es_loader_prefect(
     config['about_file'] = about_file
     config['prop_file'] = prop_file
     config['indices_list'] = indices_list
-    neo4j_secret = Variable.get(config_drop_list[ENVIRONMENTS][environment])
-    secret = get_secret(neo4j_secret)
-    config['es_host'] = secret[ES_HOST]
+
+    db_secret_name, db_mapping_key = _resolve_secret_name(environment, ENVIRONMENTS_DB)
+    es_secret_name, es_mapping_key = _resolve_secret_name(environment, ENVIRONMENTS_ES)
+    db_secret = get_secret(db_secret_name)
+    es_secret = db_secret if es_secret_name == db_secret_name else get_secret(es_secret_name)
+    logger.info(f"Database secret source: {db_mapping_key}; OpenSearch secret source: {es_mapping_key}")
+
+    config['es_host'] = es_secret[ES_HOST]
     print_config(logger, config)
     if database_type == 'memgraph':
-        config['memgraph_endpoint'] = "bolt://" + secret[MEMGRAPH_ENDPOINT] + ":7687"
-        config['memgraph_user'] = secret[MEMGRAPH_USER]
-        config['memgraph_password'] = secret[MEMGRAPH_PASSWORD]
+        config['memgraph_endpoint'] = "bolt://" + db_secret[MEMGRAPH_ENDPOINT] + ":7687"
+        config['memgraph_user'] = db_secret[MEMGRAPH_USER]
+        config['memgraph_password'] = db_secret[MEMGRAPH_PASSWORD]
         neo4j_driver = GraphDatabase.driver(
         config['memgraph_endpoint'],
         auth=(config['memgraph_user'],  config['memgraph_password']),
         encrypted=False)
     elif database_type == 'neo4j':
-        config['neo4j_uri'] = "bolt://" + secret[NEO4J_IP] + ":7687"
-        config['neo4j_user'] = secret[NEO4J_USER]
-        config['neo4j_password'] = secret[NEO4J_PASSWORD]
+        config['neo4j_uri'] = "bolt://" + db_secret[NEO4J_IP] + ":7687"
+        config['neo4j_user'] = db_secret[NEO4J_USER]
+        config['neo4j_password'] = db_secret[NEO4J_PASSWORD]
         neo4j_driver = GraphDatabase.driver(
         config['neo4j_uri'],
         auth=(config['neo4j_user'], config['neo4j_password']),
