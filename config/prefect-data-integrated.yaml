@@ -41,7 +41,7 @@ deployments:
     parameters:
       indices_list: []
       about_file: "src/content/prod/aboutPagesContent.yaml"
-      indices_file: "src/main/resources/yaml/es_indices_cds.yml"
+      indices_file: "src/main/resources/yaml/indices.yaml"
       prop_file: config/props-cds.yml
     work_pool:
       name: ccdi-dcc-16gb-old-prefect-3.2.14-python3.9

@@ -7,15 +7,15 @@ environments:
   dev_cdk: "gc_memgraph_secret_name_dev_cdk"
   dev2_cdk: "gc_memgraph_secret_name_dev2_cdk"
 environments_db:
-  dev: "cds_secret_name_dev"
+  dev: "arn:aws:secretsmanager:us-east-1:245214250451:secret:ccdi/inventory/nonprod/dev/memgraph-db-creds-Ezpswo"
   dev2: "cds_secret_name_dev2"
   dev_cdk: "gc_memgraph_secret_name_dev_cdk"
   dev2_cdk: "gc_memgraph_secret_name_dev2_cdk"
 environments_es:
-  dev: "cds_secret_name_dev"
+  dev: "arn:aws:secretsmanager:us-east-1:624882275043:secret:ccdi-dev-integrated-dashboards-credentials-cdk-ZrILBM"
   dev2: "cds_secret_name_dev2"
   dev_cdk: "gc_memgraph_secret_name_dev_cdk"
   dev2_cdk: "gc_memgraph_secret_name_dev2_cdk"
 model_repo_url: "https://github.com/CBIIT/cds-model.git"
-backend_repo_url: "https://github.com/CBIIT/bento-cds-backend.git"
+backend_repo_url: "https://github.com/CBIIT/CCDI-Integrated-Backend.git"
 frontend_repo_url: "https://github.com/CBIIT/bento-cds-frontend.git"

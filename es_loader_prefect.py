@@ -15,6 +15,9 @@ MEMGRAPH_SECRET = "neo4j_secret"
 MEMGRAPH_ENDPOINT = "memgraph_endpoint" # Change to neo4j_ip if using Neo4j
 MEMGRAPH_USER = "memgraph_user" # Change to neo4j_user if using Neo4j
 MEMGRAPH_PASSWORD = "memgraph_password" # Change to neo4j_password if using Neo4j
+DB_URI = "db_uri"
+DB_USER = "db_user"
+DB_PASS = "db_pass"
 NEO4J_IP = "neo4j_ip"
 NEO4J_USER = "neo4j_user"
 NEO4J_PASSWORD = "neo4j_password"
@@ -32,8 +35,33 @@ MODEL_DESC = "model-desc"
 def _resolve_secret_name(environment, mapping_key, fallback_key=ENVIRONMENTS):
     mapping = config_drop_list.get(mapping_key)
     if isinstance(mapping, dict) and environment in mapping:
-        return Variable.get(mapping[environment]), mapping_key
-    return Variable.get(config_drop_list[fallback_key][environment]), fallback_key
+        secret_ref = mapping[environment]
+        try:
+            return Variable.get(secret_ref), mapping_key
+        except Exception:
+            # Allow direct AWS secret names/ARNs in config mappings.
+            return secret_ref, f"{mapping_key} (direct secret)"
+
+    fallback_ref = config_drop_list[fallback_key][environment]
+    try:
+        return Variable.get(fallback_ref), fallback_key
+    except Exception:
+        return fallback_ref, f"{fallback_key} (direct secret)"
+
+
+def _get_first_present(secret, keys):
+    for key in keys:
+        value = secret.get(key)
+        if value:
+            return value
+    return None
+
+
+def _normalize_bolt_uri(endpoint_or_uri):
+    endpoint_or_uri = endpoint_or_uri.strip()
+    if endpoint_or_uri.startswith("bolt://"):
+        return endpoint_or_uri
+    return "bolt://" + endpoint_or_uri + ":7687"
 
 def repo_download(repo, version, logger):
     subprocess.run(['git', 'clone', repo])
@@ -94,17 +122,37 @@ def es_loader_prefect(
     config['es_host'] = es_secret[ES_HOST]
     print_config(logger, config)
     if database_type == 'memgraph':
-        config['memgraph_endpoint'] = "bolt://" + db_secret[MEMGRAPH_ENDPOINT] + ":7687"
-        config['memgraph_user'] = db_secret[MEMGRAPH_USER]
-        config['memgraph_password'] = db_secret[MEMGRAPH_PASSWORD]
+        memgraph_uri = _get_first_present(db_secret, [MEMGRAPH_ENDPOINT, DB_URI])
+        memgraph_user = _get_first_present(db_secret, [MEMGRAPH_USER, DB_USER])
+        memgraph_password = _get_first_present(db_secret, [MEMGRAPH_PASSWORD, DB_PASS])
+        if not memgraph_uri or not memgraph_user or not memgraph_password:
+            logger.error(
+                "Memgraph secret is missing required keys. Provide either "
+                "memgraph_endpoint/memgraph_user/memgraph_password or db_uri/db_user/db_pass."
+            )
+            return
+
+        config['memgraph_endpoint'] = _normalize_bolt_uri(memgraph_uri)
+        config['memgraph_user'] = memgraph_user
+        config['memgraph_password'] = memgraph_password
         neo4j_driver = GraphDatabase.driver(
         config['memgraph_endpoint'],
         auth=(config['memgraph_user'],  config['memgraph_password']),
         encrypted=False)
     elif database_type == 'neo4j':
-        config['neo4j_uri'] = "bolt://" + db_secret[NEO4J_IP] + ":7687"
-        config['neo4j_user'] = db_secret[NEO4J_USER]
-        config['neo4j_password'] = db_secret[NEO4J_PASSWORD]
+        neo4j_uri = _get_first_present(db_secret, [NEO4J_IP, DB_URI])
+        neo4j_user = _get_first_present(db_secret, [NEO4J_USER, DB_USER])
+        neo4j_password = _get_first_present(db_secret, [NEO4J_PASSWORD, DB_PASS])
+        if not neo4j_uri or not neo4j_user or not neo4j_password:
+            logger.error(
+                "Neo4j secret is missing required keys. Provide either "
+                "neo4j_ip/neo4j_user/neo4j_password or db_uri/db_user/db_pass."
+            )
+            return
+
+        config['neo4j_uri'] = _normalize_bolt_uri(neo4j_uri)
+        config['neo4j_user'] = neo4j_user
+        config['neo4j_password'] = neo4j_password
         neo4j_driver = GraphDatabase.driver(
         config['neo4j_uri'],
         auth=(config['neo4j_user'], config['neo4j_password']),
