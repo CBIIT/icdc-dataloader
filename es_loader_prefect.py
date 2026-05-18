@@ -63,6 +63,14 @@ def _normalize_bolt_uri(endpoint_or_uri):
         return endpoint_or_uri
     return "bolt://" + endpoint_or_uri + ":7687"
 
+
+def _warn_if_unknown_branch(repo_url, branch, known_branches, logger):
+    if known_branches and branch not in known_branches:
+        logger.warning(
+            f"Branch '{branch}' is not in current remote branch list for {repo_url}. "
+            "Proceeding with checkout attempt."
+        )
+
 def repo_download(repo, version, logger):
     subprocess.run(['git', 'clone', repo])
     repo_folder = os.path.splitext(os.path.basename(repo))[0]
@@ -87,15 +95,18 @@ frontend_branch_choices = Literal[tuple(get_github_branches(frontend_repo_url))]
 def es_loader_prefect(
     environment: environment_choices, # type: ignore
     database_type: database_choices, # type: ignore
-    model_branch: model_branch_choices, # type: ignore
-    backend_branch: backend_branch_choices, # type: ignore
-    frontend_branch: frontend_branch_choices, # type: ignore
+    model_branch: str,
+    backend_branch: str,
+    frontend_branch: str,
     indices_list,
     about_file,
     indices_file,
     prop_file,
 ):
     logger = get_logger('ESLoader')
+    _warn_if_unknown_branch(model_repo_url, model_branch, get_github_branches(model_repo_url), logger)
+    _warn_if_unknown_branch(backend_repo_url, backend_branch, get_github_branches(backend_repo_url), logger)
+    _warn_if_unknown_branch(frontend_repo_url, frontend_branch, get_github_branches(frontend_repo_url), logger)
     model_repo = repo_download(model_repo_url, model_branch, logger)
     model_yaml_files = glob.glob(f'{model_repo}/{MODEL_DESC}/*model*.yaml')
     model_yml_files = glob.glob(f'{model_repo}/{MODEL_DESC}/*model*.yml')
