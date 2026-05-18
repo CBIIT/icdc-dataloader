@@ -44,7 +44,7 @@ deployments:
       indices_file: "src/main/resources/yaml/es_indices_cds.yml"
       prop_file: config/props-cds.yml
     work_pool:
-      name: ccdi-c3dc-16gb-prefect-3.2.14-python3.9
+      name: ccdi-dcc-16gb-old-prefect-3.2.14-python3.9
       work_queue_name: default
       job_variables:
         env:
@@ -70,7 +70,7 @@ deployments:
       split_transaction: True
       empty_cell_null: True
     work_pool:
-      name: ccdi-c3dc-16gb-prefect-3.2.14-python3.9
+      name: ccdi-dcc-16gb-old-prefect-3.2.14-python3.9
       work_queue_name: default
       job_variables:
         env:
