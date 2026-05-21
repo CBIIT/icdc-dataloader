@@ -48,7 +48,7 @@ deployments:
         - ../icdc-model-tool/model-desc/icdc-model-props.yml
       prop_file: config/props-icdc-pmvp.yml
     work_pool:
-      name: icdc-dev-ecs
+      name: crdc-curation-16gb-future-prefect-3.4.19-python3.13
       work_queue_name: default
       job_variables:
         env:
