@@ -201,11 +201,19 @@ def icdc_loader(
     )
 
     if flush_redis:
-        flush_redis_cache(redis_host, redis_password)
+        icdc_redis_flush(redis_host, redis_password)
 
 
-@task(name="Flush Redis", log_prints=True)
-def flush_redis_cache(redis_host, redis_password):
+@flow(name="ICDC Redis Flush", log_prints=True)
+def icdc_redis_flush_wrapper(secret_name):
+    secret = get_secret(secret_name)
+    redis_host = secret[REDIS_HOST]
+    redis_password = secret[REDIS_PASSWORD]
+    icdc_redis_flush(redis_host, redis_password)
+
+
+@flow(name="ICDC Redis Flush (Core)", log_prints=True)
+def icdc_redis_flush(redis_host, redis_password):
     r = redis.Redis(host=redis_host, password=redis_password)
     r.flushall(asynchronous=True)
 
