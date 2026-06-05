@@ -214,6 +214,12 @@ def process_arguments(args, log):
     if config.empty_cell_null not in [True, False]:
         log.error('empty_cell_null should be a boolean value, abort loading')
         sys.exit(1)
+    
+    if not config.skip_permissive_values_validation:
+        config.skip_permissive_values_validation = False
+    if config.skip_permissive_values_validation not in [True, False]:
+        log.error('skip_permissive_values_validation should be a boolean value, abort loading')
+        sys.exit(1)
 
     if args.database_type:
         config.database_type = args.database_type
@@ -292,7 +298,7 @@ def main(args):
 
                 load_result = loader.load(file_list, config.cheat_mode, config.dry_run, config.loading_mode, config.wipe_db,
                             config.max_violations, config.temp_folder, config.verbose, split=config.split_transactions,
-                            no_backup=config.no_backup, neo4j_uri=config.neo4j_uri, backup_folder=config.backup_folder, username=config.neo4j_user, password=config.neo4j_password, empty_cell_null=config.empty_cell_null)
+                            no_backup=config.no_backup, neo4j_uri=config.neo4j_uri, backup_folder=config.backup_folder, username=config.neo4j_user, password=config.neo4j_password, empty_cell_null=config.empty_cell_null, skip_permissive_values_validation=config.skip_permissive_values_validation)
                 
                 if load_result == False:
                     if loader.validation_result_file_key != "":

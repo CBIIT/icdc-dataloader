@@ -401,7 +401,7 @@ class ICDC_Schema:
     def get_original_value_property_name(name):
         return name + '_original'
 
-    def validate_node(self, model_type, obj, verbose):
+    def validate_node(self, model_type, obj, verbose, skip_permissive_values_validation=False):
         result = {'result': True, 'messages': [], 'warning': False, 'invalid_values': [], 'invalid_properties': [], 'invalid_reason': [], 'missing_properties': [], 'missing_reason': []}
         if not model_type or model_type not in self.nodes:
             return {'result': False, 'messages': ['Node type: "{}" not found in data model'.format(model_type)], 'warning': False}
@@ -444,7 +444,7 @@ class ICDC_Schema:
                     continue
 
                 prop_type = self.relationship_props[rel_type][PROPERTIES][rel_prop]
-                type_validation_result, error_type = self._validate_type(prop_type, value)
+                type_validation_result, error_type = self._validate_type(prop_type, value, skip_permissive_values_validation)
                 if not type_validation_result:
                     result['result'] = False
                     result['invalid_values'].append(value)
@@ -465,7 +465,7 @@ class ICDC_Schema:
                 self.log.debug('Property "{}" is not in data model!'.format(key))
             else:
                 prop_type = properties[key]
-                type_validation_result, error_type = self._validate_type(prop_type, value)
+                type_validation_result, error_type = self._validate_type(prop_type, value, skip_permissive_values_validation)
                 if not type_validation_result:
                     if type(error_type) is tuple:
                         result['result'] = False
@@ -525,7 +525,7 @@ class ICDC_Schema:
                 return False
         return True
 
-    def _validate_type(self, model_type, str_value):
+    def _validate_type(self, model_type, str_value, skip_permissive_values_validation=False):
         wrong_type = "wrong_type"
         out_of_range = "out_of_range"
         non_permissive_value = "non_permissive_value"
@@ -553,7 +553,7 @@ class ICDC_Schema:
                 return False, wrong_type
         elif model_type[PROP_TYPE] == 'Array':
             for item in self.get_list_values(str_value):
-                if ENUM in model_type[ITEM_TYPE]:
+                if ENUM in model_type[ITEM_TYPE] and not skip_permissive_values_validation:
                     validation_result, error_type = self._validate_type(model_type[ITEM_TYPE], item)
                     if not validation_result:
                         return False, (item, error_type)
@@ -565,7 +565,7 @@ class ICDC_Schema:
             if not isinstance(str_value, dict):
                 return False, wrong_type
         elif model_type[PROP_TYPE] == 'String':
-            if ENUM in model_type:
+            if ENUM in model_type and not skip_permissive_values_validation:
                 if not isinstance(str_value, str):
                     return False, wrong_type
                 if str_value != '' and str_value not in model_type[ENUM]:

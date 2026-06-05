@@ -97,7 +97,8 @@ def load_data(
         mode = "upsert",
         split_transaction = False,
         plugins = [],
-        empty_cell_null = True
+        empty_cell_null = True,
+        skip_permissive_values_validation = False
     ):
 
     params = Config(
@@ -124,7 +125,8 @@ def load_data(
         upload_log_dir,
         plugins,
         temp_folder,
-        empty_cell_null
+        empty_cell_null,
+        skip_permissive_values_validation
     )
     main(params)
 
@@ -202,7 +204,8 @@ def data_hub_loader(
         no_parents=True,
         plugins=[],
         split_transaction=True,
-        empty_cell_null=True
+        empty_cell_null=True,
+        skip_permissive_values_validation=False
     ):
     secret_name = Variable.get(config_drop_list[ENVIRONMENTS][environment])
     secret = get_secret(secret_name)
@@ -240,7 +243,8 @@ def data_hub_loader(
         mode = mode,
         plugins = plugins,
         split_transaction = split_transaction,
-        empty_cell_null = empty_cell_null
+        empty_cell_null = empty_cell_null,
+        skip_permissive_values_validation = skip_permissive_values_validation
     )
 
 if __name__ == "__main__":
