@@ -156,7 +156,8 @@ class Config:
             upload_log_dir,
             plugins,
             temp_folder,
-            empty_cell_null
+            empty_cell_null,
+            skip_permissive_values_validation
 
     ):
         self.dataset = dataset
@@ -183,6 +184,7 @@ class Config:
         self.temp_folder = temp_folder
         self.database_type = database_type
         self.empty_cell_null = empty_cell_null
+        self.skip_permissive_values_validation = skip_permissive_values_validation
         for plugin in plugins:
             self.plugins.append(PluginConfig(plugin))
 
