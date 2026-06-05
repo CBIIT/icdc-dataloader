@@ -55,6 +55,7 @@ def parse_arguments(args = None):
     parser.add_argument('--upload-log-dir', help='Upload destination dir for log file,  if dir in s3, use the format, s3://[bucket]/[prefix]')
     parser.add_argument('--database-type', help='The database type, can be either neo4j or memgraph', choices=[NEO4J, MEMGRAPH])
     parser.add_argument('--empty-cell-null', help='Whether to treat empty cell as null value instead of empty string, default is false', action='store_true')
+    parser.add_argument('--skip-permissive-values-validation', help='Whether to skip empty cells instead of treating them as null values, default is false', action='store_true')
     return parser.parse_args(args)
 
 
@@ -209,12 +210,15 @@ def process_arguments(args, log):
             log.error('database_type is neither neo4j nor memgraph, abort loading')
             sys.exit(1)
 
+    if args.empty_cell_null:
+        config.empty_cell_null = args.empty_cell_null
     if not config.empty_cell_null:
         config.empty_cell_null = False
     if config.empty_cell_null not in [True, False]:
         log.error('empty_cell_null should be a boolean value, abort loading')
         sys.exit(1)
-    
+    if args.skip_permissive_values_validation:
+        config.skip_permissive_values_validation = args.skip_permissive_values_validation
     if not config.skip_permissive_values_validation:
         config.skip_permissive_values_validation = False
     if config.skip_permissive_values_validation not in [True, False]:
