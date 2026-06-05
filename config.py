@@ -49,6 +49,7 @@ class BentoConfig:
             self.plugins = []
             self.memgraph_snapshot_dir = None
             self.empty_cell_null = False
+            self.skip_permissive_values_validation = False
         else:
             if os.path.isfile(config_file):
                 with open(config_file) as c_file:
