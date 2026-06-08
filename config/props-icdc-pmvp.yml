@@ -58,7 +58,7 @@ Properties:
     case: case_id
     enrollment: enrollment_id
     visit: visit_id
-    diagnosis: diagnosis_id
+    diagnosis: diagnosis_record_id
     sample: sample_id
     file: uuid
     canine_individual: canine_individual_id
