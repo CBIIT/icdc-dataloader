@@ -61,6 +61,7 @@ deployments:
       s3_folder: []
       s3_bucket: "{{ prefect.variables.gc_metadata_lowertier_bucket }}"
       cheat_mode: True
+      skip_permissive_values_validation: False
       dry_run: False
       wipe_db: False
       mode: "upsert"

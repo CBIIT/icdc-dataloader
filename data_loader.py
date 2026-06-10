@@ -229,14 +229,14 @@ class DataLoader:
         return validation_result
 
 
-    def validate_files(self, cheat_mode, loading_mode, file_list, max_violations, temp_folder, verbose):
+    def validate_files(self, cheat_mode, loading_mode, file_list, max_violations, temp_folder, verbose, skip_permissive_values_validation=False):
         if not cheat_mode:
             if loading_mode != DELETE_MODE:
                 self.cheat_mode = False
                 validation_failed = False
                 output_key_invalid = ""
                 for txt in file_list:
-                    validate_result = self.validate_file(txt, max_violations, verbose)
+                    validate_result = self.validate_file(txt, max_violations, verbose, skip_permissive_values_validation)
                     if not validate_result:
                         self.log.error('Validating file "{}" failed!'.format(txt))
                         validation_failed = True
@@ -266,11 +266,11 @@ class DataLoader:
             return True
 
     def load(self, file_list, cheat_mode, dry_run, loading_mode, wipe_db, max_violations, temp_folder, verbose,
-             split=False, no_backup=True, neo4j_uri=None, backup_folder="/", username=None, password=None, empty_cell_null=False):
+             split=False, no_backup=True, neo4j_uri=None, backup_folder="/", username=None, password=None, empty_cell_null=False, skip_permissive_values_validation=False):
         if not self.check_files(file_list):
             return False
         start = timer()
-        if not self.validate_files(cheat_mode, loading_mode, file_list, max_violations, temp_folder, verbose):
+        if not self.validate_files(cheat_mode, loading_mode, file_list, max_violations, temp_folder, verbose, skip_permissive_values_validation):
             return False
         if not no_backup and not dry_run:
             if not neo4j_uri:
@@ -638,7 +638,7 @@ class DataLoader:
         df_validation_result = pd.concat([df_validation_result, tmp_df_validation_result_field])
         return df_validation_result
     # Validate file
-    def validate_file(self, file_name, max_violations, verbose):
+    def validate_file(self, file_name, max_violations, verbose, skip_permissive_values_validation=False):
         self.skip_validation_flag = False
         file_encoding = check_encoding(file_name)
         with open(file_name, encoding=file_encoding) as in_file:
@@ -694,7 +694,7 @@ class DataLoader:
                     else:
                         ids[node_id] = {'props': get_props_signature(props), 'lines': [str(line_num)]}
 
-                validate_result = self.schema.validate_node(obj[NODE_TYPE], obj, verbose)
+                validate_result = self.schema.validate_node(obj[NODE_TYPE], obj, verbose, skip_permissive_values_validation)
                 try:
                     if len(validate_result['invalid_properties']) > 0:
                         tmp_df_invalid = pd.DataFrame()

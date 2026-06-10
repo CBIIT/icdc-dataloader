@@ -49,6 +49,7 @@ class BentoConfig:
             self.plugins = []
             self.memgraph_snapshot_dir = None
             self.empty_cell_null = False
+            self.skip_permissive_values_validation = False
         else:
             if os.path.isfile(config_file):
                 with open(config_file) as c_file:
@@ -112,6 +113,7 @@ class BentoConfig:
                     self.database_type = config.get("database_type")
                     self.memgraph_snapshot_dir = config.get("memgraph_snapshot_dir")
                     self.empty_cell_null = config.get("empty_cell_null")
+                    self.skip_permissive_values_validation = config.get("skip_permissive_values_validation")
             else:
                 msg = f'Can NOT open configuration file "{config_file}"!'
                 self.log.error(msg)
