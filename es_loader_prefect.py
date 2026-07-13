@@ -1,4 +1,4 @@
-from es_loader import ESLoader, _validate_cypher_queries
+from es_loader import DEFAULT_INDEX_SETTINGS, ESLoader, _validate_cypher_queries
 from prefect import flow
 from typing import Literal
 from bento.common.secret_manager import get_secret
@@ -70,7 +70,7 @@ def es_loader_prefect(
     with open(indices_file, 'r') as file:
         indices_yaml = yaml.safe_load(file)
     indices = indices_yaml['Indices']
-    settings = indices_yaml['Settings']
+    settings = indices_yaml.get('Settings') or DEFAULT_INDEX_SETTINGS
     config = {}
     config['model_files'] = model_files
     config['about_file'] = about_file

@@ -16,6 +16,10 @@ from props import Props
 
 logger = get_logger('ESLoader')
 OPENSEARCH_DATA = 'opensearch_data'
+DEFAULT_INDEX_SETTINGS = {
+    "number_of_shards": 1,
+    "index.mapping.nested_objects.limit": 100000
+}
 
 
 class ESLoader:
@@ -223,7 +227,7 @@ def main():
     config = yaml.safe_load(args.config_file)['Config']
     indices_file = yaml.safe_load(args.indices_file)
     indices = indices_file['Indices']
-    settings = indices_file['Settings']
+    settings = indices_file.get('Settings') or DEFAULT_INDEX_SETTINGS
     print_config(logger, config)
 
     neo4j_driver = GraphDatabase.driver(
