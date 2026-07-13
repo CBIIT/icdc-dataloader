@@ -1,4 +1,46 @@
-  # Indices settings
+# Settings applied when each index is created
+Settings:
+  number_of_shards: 1
+  index.mapping.nested_objects.limit: 100000
+  max_result_window: 60000
+  max_inner_result_window: 500
+  mapping.total_fields.limit: 2000
+  max_ngram_diff: 30
+  analysis: # Custom analysis components can tweak Bento global search behavior
+    tokenizer: # Custom tokenizer(s)
+      ngram_tokenizer: # Splits original character stream into token n-grams of size 3, size 4, ..., size 30
+        type: "ngram"
+        min_gram: 3
+        max_gram: 30
+        token_chars:
+          - "letter"
+          - "digit"
+          - "punctuation"
+          - "symbol"
+    filter: # Custom token filter(s)
+      ngram_filter: # Splits tokens into n-grams of size 3, size 4, ..., size 30
+        type: "ngram"
+        min_gram: 3
+        max_gram: 30
+    analyzer: # Custom analyzers
+      keyword_analyzer: # An analyzer that treats the entire string as a single token and lowercases it
+        type: "custom"
+        tokenizer: "keyword" # Built-in OpenSearch tokenizer
+        filter:
+          - "lowercase"
+      ngram_analyzer: # An analyzer that splits the text into n-grams using the ngram_tokenizer and lowercases them
+        type: "custom"
+        tokenizer: "ngram_tokenizer" # Our custom tokenizer
+        filter:
+          - "lowercase"
+      standard_analyzer: # An analyzer that splits the text by whitespace, lowercases it, and applies the custom n-gram filter
+        type: "custom"
+        tokenizer: "whitespace" # Built-in OpenSearch tokenizer
+        filter:
+          - "lowercase"
+          - "ngram_filter"
+
+# Indices settings
 Indices:
     # the name of the index to be created, existing indices with same name will be deleted
   - index_name: cases
