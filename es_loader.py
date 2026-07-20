@@ -16,6 +16,10 @@ from props import Props
 
 logger = get_logger('ESLoader')
 OPENSEARCH_DATA = 'opensearch_data'
+DEFAULT_INDEX_SETTINGS = {
+    "number_of_shards": 1,
+    "index.mapping.nested_objects.limit": 100000
+}
 
 
 class ESLoader:
@@ -40,15 +44,12 @@ class ESLoader:
         else:
             self.es_client = Elasticsearch(hosts=[es_host], timeout=timeout_seconds)
 
-    def create_index(self, index_name, mapping):
+    def create_index(self, index_name, settings, mapping):
         """Creates an index in Elasticsearch if one isn't already there."""
         return self.es_client.indices.create(
             index=index_name,
             body={
-                "settings": {
-                    "number_of_shards": 1,
-                    "index.mapping.nested_objects.limit": 100000
-                },
+                "settings": settings,
                 "mappings": {
                     "properties": mapping
                 },
@@ -75,17 +76,17 @@ class ESLoader:
                     doc[key] = record[key]
                 yield doc
 
-    def recreate_index(self, index_name, mapping):
+    def recreate_index(self, index_name, settings, mapping):
         logger.info(f'Deleting old index: "{index_name}"')
         result = self.delete_index(index_name)
         logger.info(result)
 
         logger.info(f'Creating index: "{index_name}"')
-        result = self.create_index(index_name, mapping)
+        result = self.create_index(index_name, settings, mapping)
         logger.info(result)
 
-    def load(self, index_name, mapping, cypher_queries):
-        self.recreate_index(index_name, mapping)
+    def load(self, index_name, settings, mapping, cypher_queries):
+        self.recreate_index(index_name, settings, mapping)
         logger.info('Indexing data from Neo4j')
         total_successes = 0
         total_documents = 0
@@ -136,12 +137,12 @@ class ESLoader:
             successes += 1 if ok else 0
         return successes, total
 
-    def load_about_page(self, index_name, mapping, file_name):
+    def load_about_page(self, index_name, settings, mapping, file_name):
         logger.info('Indexing content from about page')
         if not os.path.isfile(file_name):
             raise Exception(f'"{file_name} is not a file!')
 
-        self.recreate_index(index_name, mapping)
+        self.recreate_index(index_name, settings, mapping)
         with open(file_name) as file_obj:
             about_file = yaml.safe_load(file_obj)
             for page in about_file:
@@ -157,13 +158,13 @@ class ESLoader:
 
         self.model = ICDC_Schema(model_files, Props(prop_file))
 
-    def load_model(self, index_name, mapping, subtype):
+    def load_model(self, index_name, settings, mapping, subtype):
         logger.info(f'Indexing data model')
         if not self.model:
             logger.warning(f'Data model is not loaded, {index_name} will not be loaded!')
             return
 
-        self.recreate_index(index_name, mapping)
+        self.recreate_index(index_name, settings, mapping)
         self.bulk_load(index_name, self.get_model_data(subtype))
 
     def get_model_data(self, subtype):
@@ -224,7 +225,9 @@ def main():
     args = parser.parse_args()
 
     config = yaml.safe_load(args.config_file)['Config']
-    indices = yaml.safe_load(args.indices_file)['Indices']
+    indices_file = yaml.safe_load(args.indices_file)
+    indices = indices_file['Indices']
+    settings = indices_file.get('Settings') or DEFAULT_INDEX_SETTINGS
     print_config(logger, config)
 
     neo4j_driver = GraphDatabase.driver(
@@ -273,26 +276,26 @@ def main():
                 cypher_queries = [{'query': cypher_query}]
             try:
                 _validate_cypher_queries(cypher_queries)
-                summary[index_name] = loader.load(index_name, index['mapping'], cypher_queries)
+                summary[index_name] = loader.load(index_name, settings, index['mapping'], cypher_queries)
             except Exception as ex:
                 logger.error(f'There is an error in the "{index_name}" index definition, this index will not be loaded')
                 logger.error(ex)
         elif index['type'] == 'about_file':
             if 'about_file' in config:
-                loader.load_about_page(index_name, index['mapping'], config['about_file'])
+                loader.load_about_page(index_name, settings, index['mapping'], config['about_file'])
                 summary[index_name] = "Loaded Successfully"
             else:
                 logger.warning(f'"about_file" not set in configuration file, {index_name} will not be loaded!')
         elif index['type'] == 'model':
             if load_model and 'subtype' in index:
-                loader.load_model(index_name, index['mapping'], index['subtype'])
+                loader.load_model(index_name, settings, index['mapping'], index['subtype'])
                 summary[index_name] = "Loaded Successfully"
             else:
                 logger.warning(
                     f'"model_files" not set in configuration file, {index_name} will not be loaded!')
         elif index['type'] == 'external':
             logger.info("External data index created - loading will be done via data retriever service")
-            loader.create_index(index_name, index["mapping"])
+            loader.create_index(index_name, settings, index["mapping"])
             summary[index_name] = "Index created"
         else:
             logger.error(f'Unknown index type: "{index["type"]}"')

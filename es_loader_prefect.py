@@ -1,4 +1,4 @@
-from es_loader import ESLoader, _validate_cypher_queries
+from es_loader import DEFAULT_INDEX_SETTINGS, ESLoader, _validate_cypher_queries
 from prefect import flow
 from typing import Literal
 from bento.common.secret_manager import get_secret
@@ -70,6 +70,7 @@ def es_loader_prefect(
     with open(indices_file, 'r') as file:
         indices_yaml = yaml.safe_load(file)
     indices = indices_yaml['Indices']
+    settings = indices_yaml.get('Settings') or DEFAULT_INDEX_SETTINGS
     config = {}
     config['model_files'] = model_files
     config['about_file'] = about_file
@@ -149,26 +150,26 @@ def es_loader_prefect(
                 cypher_queries = [{'query': cypher_query}]
             try:
                 _validate_cypher_queries(cypher_queries)
-                summary[index_name] = loader.load(index_name, index['mapping'], cypher_queries)
+                summary[index_name] = loader.load(index_name, settings, index['mapping'], cypher_queries)
             except Exception as ex:
                 logger.error(f'There is an error in the "{index_name}" index definition, this index will not be loaded')
                 logger.error(ex)
         elif index['type'] == 'about_file':
             if 'about_file' in config:
-                loader.load_about_page(index_name, index['mapping'], config['about_file'])
+                loader.load_about_page(index_name, settings, index['mapping'], config['about_file'])
                 summary[index_name] = "Loaded Successfully"
             else:
                 logger.warning(f'"about_file" not set in configuration file, {index_name} will not be loaded!')
         elif index['type'] == 'model':
             if load_model and 'subtype' in index:
-                loader.load_model(index_name, index['mapping'], index['subtype'])
+                loader.load_model(index_name, settings, index['mapping'], index['subtype'])
                 summary[index_name] = "Loaded Successfully"
             else:
                 logger.warning(
                     f'"model_files" not set in configuration file, {index_name} will not be loaded!')
         elif index['type'] == 'external':
             logger.info("External data index created - loading will be done via data retriever service")
-            loader.create_index(index_name, index["mapping"])
+            loader.create_index(index_name, settings, index["mapping"])
             summary[index_name] = "Index created"
         else:
             logger.error(f'Unknown index type: "{index["type"]}"')
@@ -182,4 +183,4 @@ def es_loader_prefect(
 
 if __name__ == "__main__":
     # create your first deployment
-   es_loader_prefect.serve(name="es_loader")
+    es_loader_prefect.serve(name="es_loader")
