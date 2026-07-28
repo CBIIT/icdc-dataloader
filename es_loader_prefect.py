@@ -3,11 +3,12 @@ from prefect import flow
 from typing import Literal
 from bento.common.secret_manager import get_secret
 from bento.common.utils import get_logger, print_config, LOG_PREFIX, APP_NAME
+from github_refs import get_github_refs
+from prefect_options import load_prefect_options
 import yaml
 import os
 import prefect.variables as Variable
 from neo4j import GraphDatabase
-from loader_prefect import get_github_branches
 import subprocess
 import glob
 
@@ -39,14 +40,15 @@ with open(config_file, 'r') as file:
 env = config_drop_list[ENVIRONMENTS].keys()
 environment_choices = Literal[tuple(list(env))]
 database_choices = Literal[tuple(list(config_drop_list.get(DATABASE_TYPES)))]
+flow_names, include_github_tags = load_prefect_options()
 model_repo_url = config_drop_list.get(MODEL_REPO_URL)
-model_branch_choices = Literal[tuple(get_github_branches(model_repo_url))]
+model_branch_choices = Literal[tuple(get_github_refs(model_repo_url, include_github_tags))]
 backend_repo_url = config_drop_list.get(BACKEND_REPO_URL)
-backend_branch_choices = Literal[tuple(get_github_branches(backend_repo_url))]
+backend_branch_choices = Literal[tuple(get_github_refs(backend_repo_url, include_github_tags))]
 frontend_repo_url = config_drop_list.get(FRONTEND_REPO_URL)
-frontend_branch_choices = Literal[tuple(get_github_branches(frontend_repo_url))]
+frontend_branch_choices = Literal[tuple(get_github_refs(frontend_repo_url, include_github_tags))]
 
-@flow(name="CRDC Data Hub ESloader", log_prints=True)
+@flow(name=flow_names["opensearch_loader"], log_prints=True)
 def es_loader_prefect(
     environment: environment_choices, # type: ignore
     database_type: database_choices, # type: ignore

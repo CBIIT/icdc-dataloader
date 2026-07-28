@@ -5,11 +5,12 @@ from config import PluginConfig
 from bento.common.secret_manager import get_secret
 import os
 import yaml
-import requests
 import subprocess
 import glob
 import prefect.variables as Variable
 from bento.common.utils import get_logger
+from github_refs import get_github_refs
+from prefect_options import load_prefect_options
 
 log = get_logger('LoaderPrefect')
 ENVIRONMENTS = "environments"
@@ -25,32 +26,6 @@ MEMGRAPH_ENDPOINT = "memgraph_endpoint"
 MEMGRAPH_PASSWORD = "memgraph_password"
 
 config_file = "config/prefect_drop_down_config_dataloader.yaml"
-
-def get_github_branches(repo_url):
-    # Remove .git if present
-    if repo_url.endswith('.git'):
-        repo_url = repo_url[:-4]
-    # Extract owner and repo name
-    parts = repo_url.rstrip('/').split('/')
-    owner, repo = parts[-2], parts[-1]
-    branches = []
-    page = 1
-    while True:
-        api_url = f'https://api.github.com/repos/{owner}/{repo}/branches?per_page=100&page={page}'
-        try:
-            response = requests.get(api_url)
-            response.raise_for_status()
-            data = response.json()
-            if not data:
-                break
-            branches.extend([branch['name'] for branch in data])
-            if len(data) < 100:
-                break
-            page += 1
-        except Exception as e:
-            log.error(f"Error fetching branches from GitHub: {e}")
-            break
-    return branches
 
 def data_model_download(model_repo, model_version):
     subprocess.run(['git', 'clone', model_repo])
@@ -69,10 +44,11 @@ with open(config_file, 'r') as file:
 env = config_drop_list[ENVIRONMENTS].keys()
 environment_choices = Literal[tuple(list(env))]
 model_repo_url = config_drop_list.get(MODEL_REPO_URL)
-branch_choices = Literal[tuple(get_github_branches(model_repo_url))]
+flow_names, include_github_tags = load_prefect_options()
+branch_choices = Literal[tuple(get_github_refs(model_repo_url, include_github_tags))]
 database_choices = Literal[tuple(list(config_drop_list.get(DATABASE_TYPES)))]
 
-@flow(name="CRDC Data Loader", log_prints=True)
+@flow(name=flow_names["data_loader"], log_prints=True)
 def load_data(
         database_type,
         s3_bucket,
@@ -191,7 +167,7 @@ class Config:
         self.config_file = None
 
 
-@flow(name="CRDC Data Hub Loader", log_prints=True)
+@flow(name=flow_names["data_hub_loader"], log_prints=True)
 def data_hub_loader(
         environment: environment_choices,
         model_branch: branch_choices,
