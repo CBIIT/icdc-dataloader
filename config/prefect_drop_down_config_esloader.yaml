@@ -6,4 +6,4 @@ environments:
   qa: "ins_secret_name_qa"
 model_repo_url: "https://github.com/CBIIT/ins-model.git"
 backend_repo_url: "https://github.com/CBIIT/INS-WebService.git"
-frontend_repo_url: "https://github.com/CBIIT/INS-Dataloader.git"
+frontend_repo_url: "https://github.com/CBIIT/INS-WebPortal.git"
