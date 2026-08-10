@@ -18,6 +18,10 @@ from bento.common.utils import get_host, DATETIME_FORMAT, reformat_date, get_tim
 from neo4j import Driver
 
 from icdc_schema import ICDC_Schema, is_parent_pointer
+from utils import check_encoding
+from preprocessed_file_reader import PreprocessedFileReader
+
+
 from bento.common.utils import get_logger, NODES_CREATED, RELATIONSHIP_CREATED, UUID, \
     RELATIONSHIP_TYPE, MULTIPLIER, ONE_TO_ONE, DEFAULT_MULTIPLIER, UPSERT_MODE, \
     NEW_MODE, DELETE_MODE, NODES_DELETED, RELATIONSHIP_DELETED, NODES_UPDATED, combined_dict_counters, \
@@ -117,16 +121,16 @@ def backup_neo4j(backup_dir, name, address, log):
         return False
 
 
-def check_encoding(file_name):
-    utf8 = 'utf-8'
-    windows1252 = 'windows-1252'
-    try:
-        with open(file_name, encoding=utf8) as file:
-            for _ in file.readlines():
-                pass
-        return utf8
-    except UnicodeDecodeError:
-        return windows1252
+# def check_encoding(file_name):
+#     utf8 = 'utf-8'
+#     windows1252 = 'windows-1252'
+#     try:
+#         with open(file_name, encoding=utf8) as file:
+#             for _ in file.readlines():
+#                 pass
+#         return utf8
+#     except UnicodeDecodeError:
+#         return windows1252
 
 
 # Mask all relationship properties, so they won't participate in property comparison
@@ -137,7 +141,6 @@ def get_props_signature(props):
             clean_props[key] = ''
     signature = get_string_md5(str(clean_props))
     return signature
-
 
 class DataLoader:
     def __init__(self, driver, schema, plugins=None):
@@ -196,12 +199,8 @@ class DataLoader:
         try:
             with self.driver.session() as session:
                 for txt in file_list:
-                    file_encoding = check_encoding(txt)
-                    with open(txt, encoding=file_encoding) as in_file:
-                        reader = csv.DictReader(in_file, delimiter='\t')
-                        line_number = 1
-                        for org_obj in reader:
-                            line_number += 1
+                    with PreprocessedFileReader(txt, self.log) as reader:
+                        for line_number, org_obj in reader:
                             obj = self.cleanup_node(org_obj)
                             id_field = self.schema.get_id_field(obj)
                             if id_field not in obj.keys():
@@ -498,16 +497,12 @@ class DataLoader:
             self.log.error('Invalid Neo4j Python Driver!')
             return False
         with self.driver.session() as session:
-            file_encoding = check_encoding(file_name)
-            with open(file_name, encoding=file_encoding) as in_file:
+            with PreprocessedFileReader(file_name, self.log) as reader:
                 self.log.info('Validating relationships in file "{}" ...'.format(file_name))
-                reader = csv.DictReader(in_file, delimiter='\t')
-                line_num = 1
                 validation_failed = False
                 violations = 0
-                for org_obj in reader:
+                for line_num, org_obj in reader:
                     obj = self.prepare_node(org_obj, file_name)
-                    line_num += 1
                     # Validate parent exist
                     if CASE_ID in obj:
                         case_id = obj[CASE_ID]
@@ -527,15 +522,11 @@ class DataLoader:
             self.log.error('Invalid Neo4j Python Driver!')
             return False
         with self.driver.session() as session:
-            file_encoding = check_encoding(file_name)
-            with open(file_name, encoding=file_encoding) as in_file:
+            with PreprocessedFileReader(file_name, self.log) as reader:
                 self.log.info('Validating relationships in file "{}" ...'.format(file_name))
-                reader = csv.DictReader(in_file, delimiter='\t')
-                line_num = 1
                 validation_failed = False
                 violations = 0
-                for org_obj in reader:
-                    line_num += 1
+                for line_num, org_obj in reader:
                     obj = self.prepare_node(org_obj, file_name)
                     results = self.collect_relationships(obj, session, False, line_num)
                     relationships = results[RELATIONSHIPS]
@@ -573,10 +564,12 @@ class DataLoader:
     # Validate the field names
     def validate_field_name(self, file_name):
         df_validation_result = pd.DataFrame(columns=['File Name', 'Property', 'Value', 'Reason', 'Line Numbers', 'Severity'])
-        file_encoding = check_encoding(file_name)
-        with open(file_name, encoding=file_encoding) as in_file:
-            reader = csv.DictReader(in_file, delimiter='\t')
-            row = next(reader)
+        with PreprocessedFileReader(file_name, self.log, log_summary=False) as reader:
+            first_row = next(reader, None)
+            if first_row is None:
+                self.log.warning('No non-empty data rows found in file "{}".'.format(file_name))
+                return False
+            _, row = first_row
             row = self.cleanup_node(row)
             row_prepare_node = self.prepare_node(row, file_name)
             if self.skip_validation_flag:
@@ -633,11 +626,8 @@ class DataLoader:
     # Validate file
     def validate_file(self, file_name, max_violations, verbose):
         self.skip_validation_flag = False
-        file_encoding = check_encoding(file_name)
-        with open(file_name, encoding=file_encoding) as in_file:
+        with PreprocessedFileReader(file_name, self.log) as reader:
             self.log.info('Validating file "{}" ...'.format(file_name))
-            reader = csv.DictReader(in_file, delimiter='\t')
-            line_num = 1
             validation_failed = False
             violations = 0
             ids = {}
@@ -653,10 +643,9 @@ class DataLoader:
             duplicate_line_num = []
             duplicate_node_type = []
             duplicate_id_field = []
-            for org_obj in reader:
+            for line_num, org_obj in reader:
                 obj = self.cleanup_node(org_obj)
                 props = self.get_node_properties(obj)
-                line_num += 1
                 id_field = self.schema.get_id_field(obj)
                 node_id = self.schema.get_id(obj)
 
@@ -875,16 +864,12 @@ class DataLoader:
         else:
             raise Exception('Wrong loading_mode: {}'.format(loading_mode))
         self.log.info('{} nodes from file: {}'.format(action_word, file_name))
-
-        file_encoding = check_encoding(file_name)
-        with open(file_name, encoding=file_encoding) as in_file:
-            reader = csv.DictReader(in_file, delimiter='\t')
+        with PreprocessedFileReader(file_name, self.log) as reader:
             nodes_created = 0
             nodes_updated = 0
             nodes_deleted = 0
             node_type = 'UNKNOWN'
             relationship_deleted = 0
-            line_num = 1
             transaction_counter = 0
 
             # Use session in one transaction mode
@@ -892,13 +877,12 @@ class DataLoader:
             # Use transactions in split-transactions mode
             if split:
                 tx = session.begin_transaction()
-
-            for org_obj in reader:
-                line_num += 1
+            for line_num, org_obj in reader:
                 transaction_counter += 1
                 obj = self.prepare_node(org_obj, file_name)
                 node_type = obj[NODE_TYPE]
                 node_id = self.schema.get_id(obj)
+                print(f"node_id {node_id}")
                 if not node_id:
                     raise Exception('Line:{}: No ids found!'.format(line_num))
                 id_field = self.schema.get_id_field(obj)
@@ -1083,13 +1067,9 @@ class DataLoader:
         else:
             raise Exception('Wrong loading_mode: {}'.format(loading_mode))
         self.log.info('{} relationships from file: {}'.format(action_word, file_name))
-
-        file_encoding = check_encoding(file_name)
-        with open(file_name, encoding=file_encoding) as in_file:
-            reader = csv.DictReader(in_file, delimiter='\t')
+        with PreprocessedFileReader(file_name, self.log) as reader:
             relationships_created = {}
             int_nodes_created = 0
-            line_num = 1
             transaction_counter = 0
 
             # Use session in one transaction mode
@@ -1097,8 +1077,7 @@ class DataLoader:
             # Use transactions in split-transactions mode
             if split:
                 tx = session.begin_transaction()
-            for org_obj in reader:
-                line_num += 1
+            for line_num, org_obj in reader:
                 transaction_counter += 1
                 obj = self.prepare_node(org_obj, file_name)
                 node_type = obj[NODE_TYPE]
