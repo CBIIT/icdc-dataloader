@@ -1,5 +1,6 @@
 tmp/
 venv/
+.venv/
 env/
 venv3_new/
 .idea/
