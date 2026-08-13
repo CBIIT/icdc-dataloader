@@ -54,10 +54,10 @@ Properties:
     program: program_acronym
     study: clinical_study_designation
     study_arm: arm_id
-    cohort: cohort_id
+    cohort: cohort_record_id
     case: case_id
     enrollment: enrollment_id
-    visit: visit_id
+    visit: visit_record_id
     diagnosis: diagnosis_record_id
     sample: sample_id
     file: uuid
