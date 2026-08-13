@@ -27,6 +27,63 @@ DEFAULT_MAX_VIOLATIONS = 1000000
 DEFAULT_TEMP_FOLDER = "tmp"
 
 
+# Load node files in the same parent-to-child order as the ICDC
+# node hierarchy shown in the model diagram.  This prevents child
+# nodes such as cohort from being loaded before their required parents
+# (study and study_arm/study_site).
+NODE_LOAD_ORDER = [
+    "program",
+    "study",
+    "consent_group",
+    "human_relevance",
+    "study_site",
+    "study_arm",
+    "principal_investigator",
+    "publication",
+    "cohort",
+    "canine_individual",
+    "case",
+    "adverse_event",
+    "registration",
+    "demographic",
+    "cycle",
+    "diagnosis",
+    "visit",
+    "prior_therapy",
+    "prior_surgery",
+    "sample",
+    "physical_exam",
+    "vital_signs",
+    "disease_extent",
+    "biospecimen_source",
+    "file",
+]
+
+
+def order_node_files(file_list):
+    """Return data files in the explicit ICDC hierarchy order.
+
+    The input may contain .txt/.tsv files with UUID-prefixed filenames,
+    so the node type is determined from the filename suffix after the last
+    hyphen, e.g. '<dataset-id>-study_arm.tsv' -> 'study_arm'.
+
+    Unknown files are retained after the known hierarchy instead of being
+    dropped.  Sorting is stable, so files with the same node type keep their
+    original order.
+    """
+    order = {name: idx for idx, name in enumerate(NODE_LOAD_ORDER)}
+
+    def node_type(path):
+        filename = os.path.basename(path)
+        stem, _ = os.path.splitext(filename)
+        return stem.rsplit('-', 1)[-1]
+
+    return sorted(
+        file_list,
+        key=lambda path: (order.get(node_type(path), len(NODE_LOAD_ORDER)),),
+    )
+
+
 def parse_arguments(args = None):
     parser = argparse.ArgumentParser(description='Load TSV(TXT) files (from Pentaho) into Neo4j')
     parser.add_argument('-i', '--uri', help='Neo4j uri like bolt://12.34.56.78:7687')
@@ -212,7 +269,10 @@ def main(args):
     try:
         txt_files = glob.glob('{}/*.txt'.format(config.dataset))
         tsv_files = glob.glob('{}/*.tsv'.format(config.dataset))
-        file_list = txt_files + tsv_files
+        file_list = order_node_files(txt_files + tsv_files)
+        log.info('Node load order: {}'.format(
+            [os.path.basename(path) for path in file_list]
+        ))
         if file_list:
             if config.wipe_db and not config.yes:
                 if not confirm_deletion('Wipe out entire Neo4j database before loading?'):
