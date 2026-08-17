@@ -1,18 +1,13 @@
-from prefect import flow, task
-from typing import Literal
-from loader import main
-from config import PluginConfig
-from bento.common.secret_manager import get_secret
+from prefect import flow
+from typing import Any, Dict, List, Literal
 import os
 import yaml
 import subprocess
 import glob
 import prefect.variables as Variable
-from bento.common.utils import get_logger
 from github_refs import get_github_refs
 from prefect_options import load_prefect_options
 
-log = get_logger('LoaderPrefect')
 ENVIRONMENTS = "environments"
 DATABASE_TYPES = "database_type"
 MODEL_REPO_URL = "model_repo_url"
@@ -28,6 +23,9 @@ MEMGRAPH_PASSWORD = "memgraph_password"
 config_file = "config/prefect_drop_down_config_dataloader.yaml"
 
 def data_model_download(model_repo, model_version):
+    from bento.common.utils import get_logger
+
+    log = get_logger('LoaderPrefect')
     subprocess.run(['git', 'clone', model_repo])
     model_folder = os.path.splitext(os.path.basename(model_repo))[0]
     subprocess.run(['git', '-C', model_folder, 'checkout', model_version])
@@ -45,7 +43,8 @@ env = config_drop_list[ENVIRONMENTS].keys()
 environment_choices = Literal[tuple(list(env))]
 model_repo_url = config_drop_list.get(MODEL_REPO_URL)
 flow_names, include_github_tags = load_prefect_options()
-branch_choices = Literal[tuple(get_github_refs(model_repo_url, include_github_tags))]
+model_refs = get_github_refs(model_repo_url, include_github_tags)
+branch_choices = Literal[tuple(model_refs)] if model_refs else str
 database_choices = Literal[tuple(list(config_drop_list.get(DATABASE_TYPES)))]
 
 @flow(name=flow_names["data_loader"], log_prints=True)
@@ -76,6 +75,7 @@ def load_data(
         empty_cell_null = True,
         skip_permissive_values_validation = False
     ):
+    from loader import main
 
     params = Config(
         database_type,
@@ -136,6 +136,8 @@ class Config:
             skip_permissive_values_validation
 
     ):
+        from config import PluginConfig
+
         self.dataset = dataset
         self.uri = uri
         self.user = user
@@ -169,22 +171,24 @@ class Config:
 
 @flow(name=flow_names["data_hub_loader"], log_prints=True)
 def data_hub_loader(
-        environment: environment_choices,
-        model_branch: branch_choices,
-        database_type: database_choices,
-        s3_bucket,
-        s3_folder,
-        cheat_mode,
-        dry_run,
-        wipe_db,
-        mode,
-        prop_file,
-        no_parents=True,
-        plugins=[],
-        split_transaction=True,
-        empty_cell_null=True,
-        skip_permissive_values_validation=False
+        environment: environment_choices, # type: ignore
+        model_branch: branch_choices, # type: ignore
+        database_type: database_choices, # type: ignore
+        s3_bucket: str,
+        s3_folder: List[str],
+        cheat_mode: bool,
+        dry_run: bool,
+        wipe_db: bool,
+        mode: str,
+        prop_file: str,
+        no_parents: bool=True,
+        plugins: List[Dict[str, Any]]=[],
+        split_transaction: bool=True,
+        empty_cell_null: bool=True,
+        skip_permissive_values_validation: bool=False,
     ):
+    from bento.common.secret_manager import get_secret
+
     secret_name = Variable.get(config_drop_list[ENVIRONMENTS][environment])
     secret = get_secret(secret_name)
     user = secret[NEO4J_USER]

@@ -1,14 +1,10 @@
-from es_loader import DEFAULT_INDEX_SETTINGS, ESLoader, _validate_cypher_queries
 from prefect import flow
-from typing import Literal
-from bento.common.secret_manager import get_secret
-from bento.common.utils import get_logger, print_config, LOG_PREFIX, APP_NAME
+from typing import List, Literal
 from github_refs import get_github_refs
 from prefect_options import load_prefect_options
 import yaml
 import os
 import prefect.variables as Variable
-from neo4j import GraphDatabase
 import subprocess
 import glob
 
@@ -42,11 +38,14 @@ environment_choices = Literal[tuple(list(env))]
 database_choices = Literal[tuple(list(config_drop_list.get(DATABASE_TYPES)))]
 flow_names, include_github_tags = load_prefect_options()
 model_repo_url = config_drop_list.get(MODEL_REPO_URL)
-model_branch_choices = Literal[tuple(get_github_refs(model_repo_url, include_github_tags))]
+model_refs = get_github_refs(model_repo_url, include_github_tags)
+model_branch_choices = Literal[tuple(model_refs)] if model_refs else str
 backend_repo_url = config_drop_list.get(BACKEND_REPO_URL)
-backend_branch_choices = Literal[tuple(get_github_refs(backend_repo_url, include_github_tags))]
+backend_refs = get_github_refs(backend_repo_url, include_github_tags)
+backend_branch_choices = Literal[tuple(backend_refs)] if backend_refs else str
 frontend_repo_url = config_drop_list.get(FRONTEND_REPO_URL)
-frontend_branch_choices = Literal[tuple(get_github_refs(frontend_repo_url, include_github_tags))]
+frontend_refs = get_github_refs(frontend_repo_url, include_github_tags)
+frontend_branch_choices = Literal[tuple(frontend_refs)] if frontend_refs else str
 
 @flow(name=flow_names["opensearch_loader"], log_prints=True)
 def es_loader_prefect(
@@ -55,11 +54,16 @@ def es_loader_prefect(
     model_branch: model_branch_choices, # type: ignore
     backend_branch: backend_branch_choices, # type: ignore
     frontend_branch: frontend_branch_choices, # type: ignore
-    indices_list,
-    about_file,
-    indices_file,
-    prop_file,
+    indices_list: List[str],
+    about_file: str,
+    indices_file: str,
+    prop_file: str,
 ):
+    from bento.common.secret_manager import get_secret
+    from bento.common.utils import get_logger, print_config
+    from es_loader import DEFAULT_INDEX_SETTINGS, ESLoader, _validate_cypher_queries
+    from neo4j import GraphDatabase
+
     logger = get_logger('ESLoader')
     model_repo = repo_download(model_repo_url, model_branch, logger)
     model_yaml_files = glob.glob(f'{model_repo}/{MODEL_DESC}/*model*.yaml')
