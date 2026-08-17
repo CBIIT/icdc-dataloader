@@ -63,7 +63,7 @@ deployments:
     description: null
     schedule: {}
     flow_name: null
-    entrypoint: loader_prefect:data_hub_loader
+    entrypoint: loader_prefect.py:data_hub_loader
     parameters:
       s3_folder: []
       # s3_bucket: "{{ prefect.variables.ins_metadata_lowertier_bucket }}"
