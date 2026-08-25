@@ -54,11 +54,17 @@ def es_loader_prefect(
     model_branch: model_branch_choices, # type: ignore
     backend_branch: backend_branch_choices, # type: ignore
     frontend_branch: frontend_branch_choices, # type: ignore
-    indices_list: List[str],
     about_file: str,
     indices_file: str,
     prop_file: str,
+    indices_list: List[str] = [],
 ):
+    """Load configured OpenSearch indices from the selected data source.
+
+    Args:
+        indices_list: Index names to load. Leave empty to load every index
+            defined in the selected backend's indices file.
+    """
     from bento.common.secret_manager import get_secret
     from bento.common.utils import get_logger, print_config
     from es_loader import DEFAULT_INDEX_SETTINGS, ESLoader, _validate_cypher_queries
