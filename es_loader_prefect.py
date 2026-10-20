@@ -1,12 +1,12 @@
 from prefect import flow
 from typing import List, Literal
-from github_refs import get_github_refs
 from prefect_options import load_prefect_options
 import yaml
 import os
 import prefect.variables as Variable
 import subprocess
 import glob
+import tempfile
 
 MEMGRAPH_SECRET = "neo4j_secret"
 MEMGRAPH_ENDPOINT = "memgraph_endpoint" # Change to neo4j_ip if using Neo4j
@@ -24,10 +24,14 @@ FRONTEND_REPO_URL = "frontend_repo_url"
 MODEL_DESC = "model-desc"
 
 def repo_download(repo, version, logger):
-    subprocess.run(['git', 'clone', repo])
-    repo_folder = os.path.splitext(os.path.basename(repo))[0]
-    subprocess.run(['git', '-C', repo_folder, 'checkout', version])
-    logger.info(f"Finished cloning the data model repository from {repo} to {repo_folder}")
+    # Resolve the remote ref for every run, without reusing an older checkout.
+    repo_folder = os.path.join(tempfile.mkdtemp(prefix="ins-indexing-"), "repo")
+    subprocess.run(
+        ['git', 'clone', '--depth', '1', '--single-branch', '--branch',
+         version, '--', repo, repo_folder],
+        check=True,
+    )
+    logger.info(f"Finished cloning the repository from {repo} to {repo_folder}")
     return repo_folder
 
 config_file = "config/prefect_drop_down_config_esloader.yaml"
@@ -36,24 +40,18 @@ with open(config_file, 'r') as file:
 env = config_drop_list[ENVIRONMENTS].keys()
 environment_choices = Literal[tuple(list(env))]
 database_choices = Literal[tuple(list(config_drop_list.get(DATABASE_TYPES)))]
-flow_names, include_github_tags = load_prefect_options()
+flow_names, _ = load_prefect_options()
 model_repo_url = config_drop_list.get(MODEL_REPO_URL)
-model_refs = get_github_refs(model_repo_url, include_github_tags)
-model_branch_choices = Literal[tuple(model_refs)] if model_refs else str
 backend_repo_url = config_drop_list.get(BACKEND_REPO_URL)
-backend_refs = get_github_refs(backend_repo_url, include_github_tags)
-backend_branch_choices = Literal[tuple(backend_refs)] if backend_refs else str
 frontend_repo_url = config_drop_list.get(FRONTEND_REPO_URL)
-frontend_refs = get_github_refs(frontend_repo_url, include_github_tags)
-frontend_branch_choices = Literal[tuple(frontend_refs)] if frontend_refs else str
 
 @flow(name=flow_names["opensearch_loader"], log_prints=True)
 def es_loader_prefect(
     environment: environment_choices, # type: ignore
     database_type: database_choices, # type: ignore
-    model_branch: model_branch_choices, # type: ignore
-    backend_branch: backend_branch_choices, # type: ignore
-    frontend_branch: frontend_branch_choices, # type: ignore
+    model_branch: str,
+    backend_branch: str,
+    frontend_branch: str,
     about_file: str,
     indices_file: str,
     prop_file: str,
@@ -62,6 +60,12 @@ def es_loader_prefect(
     """Load configured OpenSearch indices from the selected data source.
 
     Args:
+        model_branch: Model branch or tag, such as 2.5.0. Fetched fresh on
+            every run; new branches need no deployment update.
+        backend_branch: Backend branch or tag. Fetched fresh on every run;
+            new branches need no deployment update.
+        frontend_branch: Frontend branch or tag. Fetched fresh on every run;
+            new branches need no deployment update.
         indices_list: Index names to load. Leave empty to load every index
             defined in the selected backend's indices file.
     """
@@ -75,6 +79,8 @@ def es_loader_prefect(
     model_yaml_files = glob.glob(f'{model_repo}/{MODEL_DESC}/*model*.yaml')
     model_yml_files = glob.glob(f'{model_repo}/{MODEL_DESC}/*model*.yml')
     model_files = model_yaml_files + model_yml_files
+    if not model_files:
+        raise ValueError(f"No model YAML schemas found for {model_branch!r} in {model_repo_url}")
     backend_repo = repo_download(backend_repo_url, backend_branch, logger)
     indices_file = os.path.join(backend_repo, indices_file)
     frontend_repo = repo_download(frontend_repo_url, frontend_branch, logger)

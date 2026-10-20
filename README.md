@@ -45,16 +45,13 @@ Three configuration files tailor `icdc-dataloader`'s Prefect flows for INS's nee
     - `CRDC Data Loader`
     - `CRDC Data Hub Loader`
     - `CRDC Data Hub ESloader`
-  - Configure `include_github_tags` to read GitHub tags in the
-    `prefect_options` section or not.
-    This configuration field is optional and defaults to `false`.
-    For the OpenSearch flow, when it is `false` or omitted, the Prefect parameter dropdowns contain
-    GitHub branches only. When it is `true`, GitHub tags are added to the
-    available refs for the model, backend, and frontend repositories.
-    Duplicate branch and tag names are shown only once.
-    The Neo4j loading flow accepts `model_branch` as a text field instead of a
-    deployment-time dropdown. Enter a branch or tag such as `2.5.0`; each run
-    fetches that ref directly from the model repository into a fresh checkout.
+  - The Neo4j loading flow accepts `model_branch` as a text field instead of a
+    deployment-time dropdown. The OpenSearch indexing flow likewise accepts
+    `model_branch`, `backend_branch`, and `frontend_branch` as text fields.
+    Enter a branch or tag such as `2.5.0`; each run fetches the requested refs
+    directly from the configured repositories into fresh checkouts.
+    `include_github_tags` is retained for compatibility and no longer controls
+    these parameters; both flows accept branch and tag names.
     New branches and tags require no code changes or redeployment. A missing ref
     or missing model schemas stops the run instead of loading an old checkout.
   - Specify the INS branch `3.2.0_ins` of `icdc-dataloader` in the `pull` section.
@@ -104,6 +101,9 @@ Select the flow you want to deploy, and choose "No" for all the options that fol
 When upgrading from the old Neo4j model-branch dropdown, publish the updated code
 to the configured pull branch and redeploy `ins-metadata-loading-dev` once to
 replace its stored parameter schema. Later model branches need no redeployment.
+Likewise, redeploy `ins-opensearch-loader` once after publishing the updated code
+to replace its three stored branch dropdowns with text fields. Later model,
+backend, and frontend branches require no further redeployment.
 
 ### Execution
 
