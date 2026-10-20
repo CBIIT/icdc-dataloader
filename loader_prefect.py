@@ -4,8 +4,8 @@ import os
 import yaml
 import subprocess
 import glob
+import tempfile
 import prefect.variables as Variable
-from github_refs import get_github_refs
 from prefect_options import load_prefect_options
 
 ENVIRONMENTS = "environments"
@@ -26,13 +26,20 @@ def data_model_download(model_repo, model_version):
     from bento.common.utils import get_logger
 
     log = get_logger('LoaderPrefect')
-    subprocess.run(['git', 'clone', model_repo])
-    model_folder = os.path.splitext(os.path.basename(model_repo))[0]
-    subprocess.run(['git', '-C', model_folder, 'checkout', model_version])
+    # Resolve the requested branch/tag from the remote on every run. A unique
+    # checkout prevents a previous run's clone from hiding newly created refs.
+    model_folder = os.path.join(tempfile.mkdtemp(prefix="ins-model-"), "model")
+    subprocess.run(
+        ['git', 'clone', '--depth', '1', '--single-branch', '--branch',
+         model_version, '--', model_repo, model_folder],
+        check=True,
+    )
     log.info(f"Finished cloning the data model repository from {model_repo} to {model_folder}")
     model_yaml_files = glob.glob(f'{model_folder}/{MODEL_DESC}/*model*.yaml')
     model_yml_files = glob.glob(f'{model_folder}/{MODEL_DESC}/*model*.yml')
     schemas = model_yaml_files + model_yml_files
+    if not schemas:
+        raise ValueError(f"No model YAML schemas found for {model_version!r} in {model_repo}")
     return schemas
 
 
@@ -42,9 +49,7 @@ with open(config_file, 'r') as file:
 env = config_drop_list[ENVIRONMENTS].keys()
 environment_choices = Literal[tuple(list(env))]
 model_repo_url = config_drop_list.get(MODEL_REPO_URL)
-flow_names, include_github_tags = load_prefect_options()
-model_refs = get_github_refs(model_repo_url, include_github_tags)
-branch_choices = Literal[tuple(model_refs)] if model_refs else str
+flow_names, _ = load_prefect_options()
 database_choices = Literal[tuple(list(config_drop_list.get(DATABASE_TYPES)))]
 
 @flow(name=flow_names["data_loader"], log_prints=True)
@@ -172,7 +177,7 @@ class Config:
 @flow(name=flow_names["data_hub_loader"], log_prints=True)
 def data_hub_loader(
         environment: environment_choices, # type: ignore
-        model_branch: branch_choices, # type: ignore
+        model_branch: str,
         database_type: database_choices, # type: ignore
         s3_bucket: str,
         s3_folder: List[str],
@@ -187,6 +192,12 @@ def data_hub_loader(
         empty_cell_null: bool=True,
         skip_permissive_values_validation: bool=False,
     ):
+    """Load metadata using a model fetched from the remote repository for this run.
+
+    Args:
+        model_branch: Branch or tag in the model repository, such as 2.5.0.
+            Fetched fresh on every run; new branches need no deployment update.
+    """
     from bento.common.secret_manager import get_secret
 
     secret_name = Variable.get(config_drop_list[ENVIRONMENTS][environment])

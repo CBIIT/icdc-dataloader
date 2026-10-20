@@ -48,10 +48,15 @@ Three configuration files tailor `icdc-dataloader`'s Prefect flows for INS's nee
   - Configure `include_github_tags` to read GitHub tags in the
     `prefect_options` section or not.
     This configuration field is optional and defaults to `false`.
-    When it is `false` or omitted, the Prefect parameter dropdowns contain
+    For the OpenSearch flow, when it is `false` or omitted, the Prefect parameter dropdowns contain
     GitHub branches only. When it is `true`, GitHub tags are added to the
     available refs for the model, backend, and frontend repositories.
     Duplicate branch and tag names are shown only once.
+    The Neo4j loading flow accepts `model_branch` as a text field instead of a
+    deployment-time dropdown. Enter a branch or tag such as `2.5.0`; each run
+    fetches that ref directly from the model repository into a fresh checkout.
+    New branches and tags require no code changes or redeployment. A missing ref
+    or missing model schemas stops the run instead of loading an old checkout.
   - Specify the INS branch `3.2.0_ins` of `icdc-dataloader` in the `pull` section.
   - Specify `name`, `parameters`, and `work_pool` for the `ins-metadata-loading-dev` (Loads TSV data into Neo4j)
     and `ins-opensearch-loader` (indexes Neo4j data in OpenSearch) deployments.
@@ -95,6 +100,10 @@ prefect deploy --prefect-file config/prefect-ins.yaml
 ```
 
 Select the flow you want to deploy, and choose "No" for all the options that follow.
+
+When upgrading from the old Neo4j model-branch dropdown, publish the updated code
+to the configured pull branch and redeploy `ins-metadata-loading-dev` once to
+replace its stored parameter schema. Later model branches need no redeployment.
 
 ### Execution
 
